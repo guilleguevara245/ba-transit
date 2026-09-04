@@ -1,0 +1,55 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "backend/**"
+      - ".github/workflows/ci.yml"
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - "backend/**"
+      - ".github/workflows/ci.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: batransit
+          POSTGRES_USER: batransit
+          POSTGRES_PASSWORD: batransit
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U batransit"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+
+      - name: Build and test
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: batransit
+          DB_USER: batransit
+          DB_PASSWORD: batransit
+        run: mvn -B clean verify

@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ba-transit-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-batransit}
+      POSTGRES_USER: ${DB_USER:-batransit}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-batransit}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ba-transit-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-batransit}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: .
+    container_name: ba-transit-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-batransit}
+      DB_USER: ${DB_USER:-batransit}
+      DB_PASSWORD: ${DB_PASSWORD:-batransit}
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080"
+
+volumes:
+  ba-transit-data:

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>BA Transit — mockup de diseño</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0C0C0D;
+    --surface: #17171A;
+    --surface-raised: #202023;
+    --line: #2C2C2F;
+    --yellow: #F4C11B;
+    --yellow-deep: #C89A0F;
+    --yellow-ink: #3A2C02;
+    --text: #F5F4EF;
+    --text-dim: #9C9A94;
+    --text-faint: #6C6A65;
+    --normal: #6FBF73;
+    --normal-ink: #0E2410;
+    --delayed: #E0942F;
+    --delayed-ink: #2E1B04;
+    --interrupted: #E0645F;
+    --interrupted-ink: #2E0D0B;
+    --unknown: #7A7975;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{ max-width:1180px; margin:0 auto; padding:0 32px; }
+
+  header{ border-bottom:1px solid var(--line); background:var(--bg); }
+  .header-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 0;
+  }
+  .brand{
+    font-family:'Barlow Condensed', sans-serif;
+    font-weight:700;
+    font-size:26px;
+    letter-spacing:0.5px;
+    color:var(--yellow);
+    text-transform:uppercase;
+    display:flex; align-items:center; gap:10px;
+  }
+  .brand-mark{
+    width:14px; height:14px; background:var(--yellow); flex-shrink:0;
+  }
+  .header-meta{
+    display:flex; align-items:center; gap:22px;
+    font-size:13px; color:var(--text-dim);
+  }
+  .header-meta .dot{ width:7px; height:7px; border-radius:50%; background:var(--normal); display:inline-block; margin-right:6px; }
+
+  .hazard{
+    height:6px;
+    background:repeating-linear-gradient(-45deg, var(--yellow) 0 14px, var(--bg) 14px 28px);
+  }
+
+  .search-row{ padding:26px 0 30px; }
+  .search-box{
+    display:flex; align-items:center; gap:12px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:2px;
+    padding:14px 18px;
+  }
+  .search-box svg{ flex-shrink:0; }
+  .search-box input{
+    flex:1; background:transparent; border:none; outline:none;
+    color:var(--text); font-family:'Inter', sans-serif; font-size:15px;
+  }
+  .search-box input::placeholder{ color:var(--text-faint); }
+
+  .section-label{
+    font-family:'Barlow Condensed', sans-serif;
+    font-weight:600;
+    font-size:14px;
+    color:var(--text-dim);
+    margin-bottom:14px;
+  }
+
+  .modes{
+    display:grid;
+    grid-template-columns:repeat(5, 1fr);
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    margin-bottom:40px;
+  }
+  .mode-card{
+    background:var(--surface);
+    padding:20px 18px;
+    border-left:3px solid var(--yellow);
+    display:flex; flex-direction:column; gap:14px;
+  }
+  .mode-icon{ color:var(--yellow); }
+  .mode-name{ font-size:15px; font-weight:600; }
+  .status-pill{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:12px; font-weight:600;
+    padding:4px 9px;
+    border-radius:2px;
+    width:fit-content;
+  }
+  .status-pill .dot{ width:6px; height:6px; border-radius:50%; }
+  .status-normal{ background:rgba(111,191,115,0.14); color:var(--normal); }
+  .status-normal .dot{ background:var(--normal); }
+  .status-delayed{ background:rgba(224,148,47,0.14); color:var(--delayed); }
+  .status-delayed .dot{ background:var(--delayed); }
+  .status-interrupted{ background:rgba(224,100,95,0.14); color:var(--interrupted); }
+  .status-interrupted .dot{ background:var(--interrupted); }
+  .mode-alerts{ font-size:12px; color:var(--text-faint); }
+
+  .line-badges{ display:flex; flex-wrap:wrap; gap:6px; }
+  .line-badge{
+    width:22px; height:22px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:700;
+    border-radius:3px;
+    font-family:'Inter', sans-serif;
+  }
+  .line-a{ background:#00A8E1; color:#00263A; }
+  .line-b{ background:#EE1C25; color:#3A0203; }
+  .line-c{ background:#0057A8; color:#DCE9F7; }
+  .line-d{ background:#00A94F; color:#00280F; }
+  .line-e{ background:#92278F; color:#F3DFF2; }
+  .line-h{ background:#FFD100; color:#3A2C02; }
+
+  .grid-main{
+    display:grid;
+    grid-template-columns:1.5fr 1fr;
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    margin-bottom:40px;
+  }
+  .panel{ background:var(--surface); padding:22px 24px; }
+  .panel-title{
+    font-family:'Barlow Condensed', sans-serif;
+    font-weight:600; font-size:15px;
+    color:var(--text);
+    margin-bottom:16px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .panel-title span.count{
+    font-size:12px; font-weight:400; color:var(--text-dim);
+  }
+
+  .alert-item{
+    padding:14px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .alert-item:last-child{ border-bottom:none; }
+  .alert-top{ display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+  .alert-tag{
+    font-size:11px; font-weight:600; text-transform:uppercase;
+    padding:2px 7px; border-radius:2px;
+    background:rgba(224,148,47,0.14); color:var(--delayed);
+  }
+  .alert-line{ font-size:13px; font-weight:600; color:var(--text); }
+  .alert-desc{ font-size:13px; color:var(--text-dim); line-height:1.5; }
+  .alert-meta{ font-size:11px; color:var(--text-faint); margin-top:6px; }
+
+  .side-panel + .side-panel{ border-top:1px solid var(--line); }
+  .fare-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    padding:9px 0; font-size:13px;
+    border-bottom:1px solid var(--line);
+  }
+  .fare-row:last-of-type{ border-bottom:none; }
+  .fare-row .name{ color:var(--text-dim); }
+  .fare-row .value{ font-weight:600; color:var(--text); }
+
+  .map-cta{
+    margin-top:16px;
+    border:1px solid var(--yellow);
+    color:var(--yellow);
+    background:transparent;
+    font-family:'Inter', sans-serif;
+    font-weight:600; font-size:13px;
+    padding:11px 16px;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    cursor:pointer;
+  }
+
+  footer{
+    border-top:1px solid var(--line);
+    padding:20px 0 34px;
+    font-size:12px; color:var(--text-faint);
+    display:flex; justify-content:space-between;
+  }
+
+  @media (max-width:900px){
+    .modes{ grid-template-columns:repeat(2, 1fr); }
+    .grid-main{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap header-row">
+    <div class="brand"><span class="brand-mark"></span>BA Transit</div>
+    <div class="header-meta">
+      <span><span class="dot"></span>Actualizado hace 2 min</span>
+    </div>
+  </div>
+</header>
+<div class="hazard"></div>
+
+<div class="wrap">
+
+  <div class="search-row">
+    <div class="search-box">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6C6A65" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Buscar líneas, estaciones, paradas o alertas">
+    </div>
+  </div>
+
+  <div class="section-label">Estado de la red</div>
+  <div class="modes">
+    <div class="mode-card">
+      <svg class="mode-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="14" rx="2"/><path d="M4 11h16"/><path d="M8 17l-2 4"/><path d="M16 17l2 4"/><circle cx="8" cy="14" r="1"/><circle cx="16" cy="14" r="1"/></svg>
+      <div class="mode-name">Trenes</div>
+      <span class="status-pill status-delayed"><span class="dot"></span>Demoras</span>
+      <div class="mode-alerts">2 alertas activas</div>
+    </div>
+    <div class="mode-card">
+      <svg class="mode-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="13" rx="2"/><path d="M4 10h16"/><path d="M9 20h6"/><path d="M12 17v3"/></svg>
+      <div class="mode-name">Subte</div>
+      <span class="status-pill status-normal"><span class="dot"></span>Normal</span>
+      <div class="line-badges">
+        <span class="line-badge line-a">A</span>
+        <span class="line-badge line-b">B</span>
+        <span class="line-badge line-c">C</span>
+        <span class="line-badge line-d">D</span>
+        <span class="line-badge line-e">E</span>
+        <span class="line-badge line-h">H</span>
+      </div>
+    </div>
+    <div class="mode-card">
+      <svg class="mode-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="6" width="14" height="11" rx="2"/><path d="M9 21h6"/><path d="M8 6V4h8v2"/></svg>
+      <div class="mode-name">Premetro</div>
+      <span class="status-pill status-normal"><span class="dot"></span>Normal</span>
+      <div class="mode-alerts">0 alertas activas</div>
+    </div>
+    <div class="mode-card">
+      <svg class="mode-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M3 11h18"/><circle cx="7.5" cy="17" r="1.3"/><circle cx="16.5" cy="17" r="1.3"/></svg>
+      <div class="mode-name">Colectivos</div>
+      <span class="status-pill status-interrupted"><span class="dot"></span>Interrupciones</span>
+      <div class="mode-alerts">1 alerta activa</div>
+    </div>
+    <div class="mode-card">
+      <svg class="mode-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 13l7-1 5-8 2 1-3 7 6-1 2 2-7 3-2 5-2-1 1-5-6 1z"/></svg>
+      <div class="mode-name">Aeropuertos</div>
+      <span class="status-pill status-normal"><span class="dot"></span>Normal</span>
+      <div class="mode-alerts">0 alertas activas</div>
+    </div>
+  </div>
+
+  <div class="grid-main">
+    <div class="panel">
+      <div class="panel-title">Alertas destacadas <span class="count">3 activas</span></div>
+
+      <div class="alert-item">
+        <div class="alert-top">
+          <span class="alert-tag">Obra</span>
+          <span class="alert-line">Línea San Martín</span>
+        </div>
+        <div class="alert-desc">Solo llega hasta San Miguel del lunes 7 al miércoles 9 por obras en la vía.</div>
+        <div class="alert-meta">Publicado hace 1 día · Fuente: Trenes Argentinos</div>
+      </div>
+
+      <div class="alert-item">
+        <div class="alert-top">
+          <span class="alert-tag">Demora</span>
+          <span class="alert-line">Línea Roca — ramal Constitución-La Plata</span>
+        </div>
+        <div class="alert-desc">Demoras de hasta 15 minutos por inconvenientes en el suministro eléctrico.</div>
+        <div class="alert-meta">Publicado hace 20 min · Fuente: Trenes Argentinos</div>
+      </div>
+
+      <div class="alert-item">
+        <div class="alert-top">
+          <span class="alert-tag" style="background:rgba(224,100,95,0.14); color:var(--interrupted);">Desvío</span>
+          <span class="alert-line">Línea 152</span>
+        </div>
+        <div class="alert-desc">Recorrido desviado por corte en Av. Maipú a la altura de Vicente López.</div>
+        <div class="alert-meta">Publicado hace 40 min · Fuente: datos abiertos AMBA</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel side-panel">
+        <div class="panel-title">Tarifas destacadas</div>
+        <div class="fare-row"><span class="name">Subte, tarifa plana</span><span class="value">$ 371,00</span></div>
+        <div class="fare-row"><span class="name">Tren, hasta 12 km</span><span class="value">$ 132,00</span></div>
+        <div class="fare-row"><span class="name">Colectivo CABA, mínima</span><span class="value">$ 300,00</span></div>
+        <button class="map-cta">Ver todas las tarifas</button>
+      </div>
+      <div class="panel side-panel">
+        <div class="panel-title">Mapa de la red</div>
+        <div style="font-size:13px; color:var(--text-dim); line-height:1.5;">Explorá líneas, estaciones y paradas sobre el mapa, con capas activables por modo de transporte.</div>
+        <button class="map-cta">Abrir mapa</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span>BA Transit — información de transporte público AMBA/CABA</span>
+    <span>Fuentes: datos abiertos GCBA · Trenes Argentinos · Transporte Nación</span>
+  </footer>
+
+</div>
+
+</body>
+</html>
