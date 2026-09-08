@@ -15,7 +15,7 @@ public class StationService {
         this.stationRepository = stationRepository;
     }
 
-    public List<Station> findByLineId(Long lineId) {
-        return stationRepository.findByTransportLineIdOrderBySequenceOrderAsc(lineId);
+    public List<Station> findByBranchId(Long branchId) {
+        return stationRepository.findByBranchIdOrderBySequenceOrderAsc(branchId);
     }
 }

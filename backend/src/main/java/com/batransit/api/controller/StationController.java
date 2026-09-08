@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/lines/{lineId}/stations")
+@RequestMapping("/api/v1/branches/{branchId}/stations")
 public class StationController {
 
     private final StationService stationService;
@@ -20,7 +20,7 @@ public class StationController {
     }
 
     @GetMapping
-    public List<Station> findByLine(@PathVariable Long lineId) {
-        return stationService.findByLineId(lineId);
+    public List<Station> findByBranch(@PathVariable Long branchId) {
+        return stationService.findByBranchId(branchId);
     }
 }

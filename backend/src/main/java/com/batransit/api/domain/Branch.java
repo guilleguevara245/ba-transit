@@ -16,31 +16,29 @@ import jakarta.persistence.UniqueConstraint;
 import java.time.Instant;
 
 /**
- * Una estacion o parada dentro de un Branch (ramal), con su orden
- * dentro del recorrido (1, 2, 3...). Las coordenadas geograficas se
- * agregan en una fase posterior, cuando se implemente el mapa.
+ * Un ramal dentro de una TransportLine. La mayoria de las lineas de
+ * subte tienen un unico ramal ("Ramal unico"); las lineas de tren
+ * suelen tener varios (por ejemplo, Sarmiento se abre en Moreno y
+ * Merlo-Lobos).
  */
 @Entity
 @Table(
-        name = "station",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"branch_id", "sequence_order"})
+        name = "branch",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"transport_line_id", "name"})
 )
-public class Station {
+public class Branch {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "branch_id", nullable = false)
+    @JoinColumn(name = "transport_line_id", nullable = false)
     @JsonIgnore
-    private Branch branch;
+    private TransportLine transportLine;
 
     @Column(nullable = false, length = 100)
     private String name;
-
-    @Column(name = "sequence_order", nullable = false)
-    private Integer sequenceOrder;
 
     @Column(nullable = false)
     private boolean active = true;
@@ -48,14 +46,13 @@ public class Station {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
-    protected Station() {
+    protected Branch() {
         // Constructor vacio requerido por JPA.
     }
 
-    public Station(Branch branch, String name, Integer sequenceOrder) {
-        this.branch = branch;
+    public Branch(TransportLine transportLine, String name) {
+        this.transportLine = transportLine;
         this.name = name;
-        this.sequenceOrder = sequenceOrder;
         this.active = true;
     }
 
@@ -63,26 +60,8 @@ public class Station {
         return id;
     }
 
-    public Branch getBranch() {
-        return branch;
-    }
-
-    /**
-     * Sin prefijo "get" a proposito, mismo motivo que en Branch:
-     * evita que Spring Data confunda esto con un atributo real al
-     * derivar queries como findByBranchIdOrderBySequenceOrderAsc.
-     */
-    @JsonProperty("branchId")
-    public Long branchId() {
-        return branch.getId();
-    }
-
     public String getName() {
         return name;
-    }
-
-    public Integer getSequenceOrder() {
-        return sequenceOrder;
     }
 
     public boolean isActive() {
@@ -95,5 +74,16 @@ public class Station {
 
     public Instant getCreatedAt() {
         return createdAt;
+    }
+
+    /**
+     * Sin prefijo "get" a proposito: evita que Spring Data lo confunda
+     * con un atributo real al derivar queries como
+     * findByTransportLineIdOrderByIdAsc (mismo problema que tuvimos
+     * con Station).
+     */
+    @JsonProperty("transportLineId")
+    public Long transportLineId() {
+        return transportLine.getId();
     }
 }
