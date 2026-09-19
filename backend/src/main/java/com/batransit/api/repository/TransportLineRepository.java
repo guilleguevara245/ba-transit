@@ -6,10 +6,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface TransportLineRepository extends JpaRepository<TransportLine, Long> {
 
     List<TransportLine> findByModeIgnoreCaseOrderByCodeAsc(String mode);
+
+    Optional<TransportLine> findByModeIgnoreCaseAndCodeIgnoreCase(String mode, String code);
 
     @Query("SELECT tl FROM TransportLine tl WHERE tl.active = true AND "
             + "(LOWER(tl.name) LIKE LOWER(CONCAT('%', :query, '%')) "

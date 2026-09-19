@@ -25,3 +25,9 @@ management:
 
 server:
   port: ${SERVER_PORT:8080}
+
+transporte:
+  api:
+    base-url: https://apitransporte.buenosaires.gob.ar
+    client-id: ${TRANSPORTE_CLIENT_ID:}
+    client-secret: ${TRANSPORTE_CLIENT_SECRET:}

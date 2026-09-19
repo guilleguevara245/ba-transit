@@ -53,6 +53,27 @@ public class Alert {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
+    /**
+     * Id que la fuente externa (API Transporte) le da a esta alerta.
+     * Nulo para las alertas cargadas a mano por POST. Sirve para
+     * encontrar y actualizar la misma alerta en la proxima corrida
+     * del job, en vez de duplicarla.
+     */
+    @Column(name = "external_id", length = 100)
+    private String externalId;
+
+    /**
+     * Valores numericos "cause"/"effect" del estandar GTFS-Realtime,
+     * guardados tal cual vienen. El mapeo a AlertType es una
+     * aproximacion (ver AlertType); conservar el original permite
+     * corregir el mapeo despues sin perder informacion.
+     */
+    @Column(name = "source_cause")
+    private Integer sourceCause;
+
+    @Column(name = "source_effect")
+    private Integer sourceEffect;
+
     protected Alert() {
         // Constructor vacio requerido por JPA.
     }
@@ -65,6 +86,14 @@ public class Alert {
         this.active = true;
         this.publishedAt = Instant.now();
         this.createdAt = Instant.now();
+    }
+
+    public Alert(TransportLine transportLine, AlertType type, String description, String source,
+                 String externalId, Integer sourceCause, Integer sourceEffect) {
+        this(transportLine, type, description, source);
+        this.externalId = externalId;
+        this.sourceCause = sourceCause;
+        this.sourceEffect = sourceEffect;
     }
 
     public Long getId() {
@@ -102,5 +131,31 @@ public class Alert {
 
     public Instant getCreatedAt() {
         return createdAt;
+    }
+
+    public String getExternalId() {
+        return externalId;
+    }
+
+    public Integer getSourceCause() {
+        return sourceCause;
+    }
+
+    public Integer getSourceEffect() {
+        return sourceEffect;
+    }
+
+    /**
+     * Actualiza los campos que pueden cambiar entre una corrida del
+     * job y la siguiente, cuando la alerta ya existia (mismo
+     * externalId). No toca id, transportLine, source, ni las fechas
+     * de creacion/publicacion originales.
+     */
+    public void updateFromSource(AlertType type, String description, Integer sourceCause, Integer sourceEffect) {
+        this.type = type;
+        this.description = description;
+        this.sourceCause = sourceCause;
+        this.sourceEffect = sourceEffect;
+        this.active = true;
     }
 }
