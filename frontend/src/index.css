@@ -1,0 +1,112 @@
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap');
+
+:root {
+  --bg: #0c0c0d;
+  --surface: #17171a;
+  --surface-raised: #202023;
+  --line: #2c2c2f;
+  --yellow: #f4c11b;
+  --yellow-deep: #c89a0f;
+  --text: #f5f4ef;
+  --text-dim: #9c9a94;
+  --text-faint: #6c6a65;
+  --normal: #6fbf73;
+  --delayed: #e0942f;
+  --interrupted: #e0645f;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.section-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-bottom: 14px;
+}
+
+.panel-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panel-title span.count {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-dim);
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 9px;
+  border-radius: 2px;
+  width: fit-content;
+}
+
+.status-pill .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.status-normal {
+  background: rgba(111, 191, 115, 0.14);
+  color: var(--normal);
+}
+.status-normal .dot {
+  background: var(--normal);
+}
+
+.status-delayed {
+  background: rgba(224, 148, 47, 0.14);
+  color: var(--delayed);
+}
+.status-delayed .dot {
+  background: var(--delayed);
+}
+
+.status-interrupted {
+  background: rgba(224, 100, 95, 0.14);
+  color: var(--interrupted);
+}
+.status-interrupted .dot {
+  background: var(--interrupted);
+}
+
+.loading-text,
+.error-text {
+  font-size: 13px;
+  color: var(--text-faint);
+  padding: 12px 0;
+}
+
+.error-text {
+  color: var(--interrupted);
+}
