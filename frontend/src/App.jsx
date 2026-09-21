@@ -1,4 +1,5 @@
 import Header from './components/Header.jsx'
+import SearchBar from './components/SearchBar.jsx'
 import ModeGrid from './components/ModeGrid.jsx'
 import AlertsPanel from './components/AlertsPanel.jsx'
 import FaresPanel from './components/FaresPanel.jsx'
@@ -19,6 +20,7 @@ export default function App() {
     <div className="app">
       <Header />
       <div className="wrap content">
+        <SearchBar />
         <div className="section-label">Estado de la red</div>
 
         {loading && <div className="loading-text">Cargando estado de la red...</div>}
