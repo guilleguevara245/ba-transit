@@ -1,0 +1,53 @@
+.alert-item {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.alert-item:last-child {
+  border-bottom: none;
+}
+
+.alert-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.alert-tag {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 2px;
+}
+
+.alert-tag-obra,
+.alert-tag-demora,
+.alert-tag-desvio {
+  background: rgba(224, 148, 47, 0.14);
+  color: var(--delayed);
+}
+
+.alert-tag-interrupcion {
+  background: rgba(224, 100, 95, 0.14);
+  color: var(--interrupted);
+}
+
+.alert-line {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.alert-desc {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+.alert-meta {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 6px;
+}

@@ -1,13 +1,5 @@
 import './ModeGrid.css'
-
-const MODE_LABELS = {
-  SUBTE: 'Subte',
-  TREN: 'Trenes',
-  PREMETRO: 'Premetro',
-  COLECTIVO: 'Colectivos',
-  AEROPUERTO: 'Aeropuertos',
-}
-
+import { MODE_LABELS } from '../constants.js'
 // Orden fijo, para que la grilla no salte de lugar entre renders.
 const MODE_ORDER = ['TREN', 'SUBTE', 'PREMETRO', 'COLECTIVO', 'AEROPUERTO']
 

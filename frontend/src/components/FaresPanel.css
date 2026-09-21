@@ -1,0 +1,25 @@
+.side-panel + .side-panel {
+  border-top: 1px solid var(--line);
+}
+
+.fare-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 9px 0;
+  font-size: 13px;
+  border-bottom: 1px solid var(--line);
+}
+
+.fare-row:last-of-type {
+  border-bottom: none;
+}
+
+.fare-row .name {
+  color: var(--text-dim);
+}
+
+.fare-row .value {
+  font-weight: 600;
+  color: var(--text);
+}
