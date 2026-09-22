@@ -13,12 +13,13 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 /**
  * Una estacion o parada dentro de un Branch (ramal), con su orden
- * dentro del recorrido (1, 2, 3...). Las coordenadas geograficas se
- * agregan en una fase posterior, cuando se implemente el mapa.
+ * dentro del recorrido (1, 2, 3...) y su ubicacion geografica real,
+ * usada en el mapa de la Fase 6.
  */
 @Entity
 @Table(
@@ -41,6 +42,12 @@ public class Station {
 
     @Column(name = "sequence_order", nullable = false)
     private Integer sequenceOrder;
+
+    @Column(precision = 10, scale = 7)
+    private BigDecimal latitude;
+
+    @Column(precision = 10, scale = 7)
+    private BigDecimal longitude;
 
     @Column(nullable = false)
     private boolean active = true;
@@ -83,6 +90,19 @@ public class Station {
 
     public Integer getSequenceOrder() {
         return sequenceOrder;
+    }
+
+    public BigDecimal getLatitude() {
+        return latitude;
+    }
+
+    public BigDecimal getLongitude() {
+        return longitude;
+    }
+
+    public void setCoordinates(BigDecimal latitude, BigDecimal longitude) {
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     public boolean isActive() {
