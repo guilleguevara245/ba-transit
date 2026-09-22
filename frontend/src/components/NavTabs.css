@@ -1,0 +1,30 @@
+.nav-tabs {
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.nav-tabs-row {
+  display: flex;
+  gap: 4px;
+}
+
+.nav-tab {
+  padding: 12px 18px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--text-dim);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+
+.nav-tab.active {
+  color: var(--yellow);
+  border-bottom-color: var(--yellow);
+}
+
+.nav-tab:hover:not(.active) {
+  color: var(--text);
+}
