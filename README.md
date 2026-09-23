@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="design/logo-ba-transit.jpg" alt="BA Transit" width="800">
+  <img src="design/ba-transit-logo.jpg" alt="BA Transit" width="800">
 </p>
 
 <p align="center">
