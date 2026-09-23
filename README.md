@@ -1,4 +1,8 @@
 <p align="center">
+  <img src="design/logo-ba-transit.jpg" alt="BA Transit" width="800">
+</p>
+
+<p align="center">
   <img src="https://github.com/guilleguevara245/ba-transit/actions/workflows/ci.yml/badge.svg" alt="Estado del backend">
   <img src="https://img.shields.io/badge/Java-21-blue" alt="Java 21">
   <img src="https://img.shields.io/badge/React-Vite-61DAFB" alt="React + Vite">
