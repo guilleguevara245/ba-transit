@@ -1,0 +1,38 @@
+.map-container {
+  height: 70vh;
+  min-height: 480px;
+  border: 1px solid var(--line);
+  margin-bottom: 24px;
+}
+
+.map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding-bottom: 30px;
+}
+
+.map-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.map-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.map-popup {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+}
+
+.map-popup strong {
+  display: block;
+  margin-bottom: 2px;
+}
