@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="design/ba-transit-logo.jpg" alt="BA Transit" width="800">
+  <img src="design/logo-ba-transit.jpg" alt="BA Transit" width="800">
 </p>
 
 <p align="center">
@@ -123,7 +123,7 @@ Un workflow de GitHub Actions corre la suite automáticamente en cada `push` y `
 **Fases 1 a 6 completas (Fase 4 solo para subte; el mapa también solo tiene datos de subte por ahora).**
 
 - [x] Fase 1 — Base: Spring Boot, PostgreSQL, Docker Compose, CI
-- [x] Fase 2 — Modelo de datos: líneas, ramales y estaciones reales de subte y tren, versionadas con Flyway *(pendiente: cargar estaciones y ramales reales de las líneas de tren, hoy solo tienen la línea en sí sin estaciones)*
+- [x] Fase 2 — Modelo de datos: líneas, ramales y estaciones reales de subte (90 estaciones) y de las 8 líneas de tren AMBA, versionadas con Flyway *(algunos ramales de trenes de larga distancia o fuera de servicio quedaron fuera del alcance a propósito — ver detalle en [`backend/README.md`](./backend/README.md))*
 - [x] Fase 3 — API: alertas, tarifas por tramo de distancia y búsqueda combinada de líneas y estaciones
 - [x] Fase 4 — Actualización automática: job programado que sincroniza alertas de subte desde la API Transporte oficial (ver limitaciones en [`backend/README.md`](./backend/README.md))
 - [x] Fase 5 — Frontend: dashboard en React con estado en vivo por modo, panel de alertas, panel de tarifas y búsqueda, todo conectado a la API real

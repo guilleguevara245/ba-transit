@@ -9,18 +9,22 @@ Este repositorio es el backend (API REST) del proyecto.
 
 ## Estado del proyecto
 
-**Fases 1, 2 y 3 completas. Fase 4 completa para subte.**
+**Fases 1 a 6 completas (Fase 4 solo para subte; el mapa solo tiene datos de subte por ahora).**
 
 - Fase 1 (base): Spring Boot, PostgreSQL, Docker Compose, CI, variables de
   entorno.
-- Fase 2 (modelo de datos): lineas, ramales y estaciones reales de subte y
-  tren, versionadas con Flyway.
+- Fase 2 (modelo de datos): lineas, ramales y estaciones reales de subte
+  (90 estaciones) y las 8 lineas de tren AMBA, versionadas con Flyway.
 - Fase 3 (API): alertas, tarifas por tramo de distancia, y busqueda
   combinada de lineas y estaciones.
 - Fase 4 (actualizacion automatica): job programado (cada 5 minutos) que
   sincroniza alertas de subte desde la API Transporte oficial de Buenos
   Aires (`apitransporte.buenosaires.gob.ar`), con reintentos ante fallos y
   sin destruir datos si la fuente no responde.
+- Fase 5 (frontend): dashboard en React con estado en vivo por modo,
+  panel de alertas, panel de tarifas y busqueda, conectado a la API real.
+- Fase 6 (mapa): mapa interactivo con Leaflet de las 90 estaciones de
+  subte, coloreadas por linea, con coordenadas reales.
 
 ## Colectivos y trenes en la Fase 4
 
@@ -31,6 +35,21 @@ tiempo real de colectivos (`vehiclePositionsSimple`) devuelve actualmente
 un error interno del servidor en vez de datos. Por estas limitaciones de
 la fuente oficial, la sincronizacion automatica de la Fase 4 se implemento
 solo para subte, que si expone datos completos y confiables.
+
+## Alcance de las estaciones y ramales de tren
+
+Las 8 lineas de tren del AMBA tienen ramales y estaciones reales cargados,
+pero no todos los ramales existentes: se excluyeron a proposito los
+servicios de larga distancia (ej. San Martin hacia Junin/Rufino), los
+ramales diesel de menor frecuencia (Sarmiento: Moreno-Mercedes,
+Merlo-Lobos), extensiones fuera del AMBA (Roca: Ezeiza, Alejandro Korn,
+Bosques, Canuelas, Lobos, Monte, Chascomus; Mitre: Zarate, Capilla del
+Senor; Belgrano Sur: Gonzalez Catan-Lozano), y el ramal Puente
+Alsina-Aldo Bonzi de Belgrano Sur, que esta confirmado que actualmente no
+esta en servicio. El criterio en todos los casos fue el mismo: cargar los
+ramales urbanos principales con buena frecuencia dentro del AMBA, y dejar
+el resto para una etapa posterior en vez de forzar datos de menor calidad
+o fuera del alcance real del proyecto.
 
 ## Stack
 
@@ -111,6 +130,8 @@ Endpoints principales (ver el codigo fuente para el detalle completo):
 - `GET /api/v1/fares`, `GET /api/v1/fares/{mode}`, `POST /api/v1/fares` -
   tarifas
 - `GET /api/v1/search?q=texto` - busqueda combinada de lineas y estaciones
+- `GET /api/v1/map/stations?mode=SUBTE` - estaciones con coordenadas para
+  el mapa (solo subte tiene coordenadas cargadas por ahora)
 
 ## Arquitectura
 
@@ -125,7 +146,7 @@ externa vive en `client` (llamadas HTTP con reintentos), `config`
 - [x] Fase 2 - Modelo de datos y carga de datasets estaticos
 - [x] Fase 3 - API de lineas, estados, alertas, tarifas y busqueda
 - [x] Fase 4 - Actualizacion automatica (solo subte, ver limitaciones arriba)
-- [ ] Fase 5 - Frontend
-- [ ] Fase 6 - Mapa
+- [x] Fase 5 - Frontend
+- [x] Fase 6 - Mapa (solo subte, ver limitaciones arriba)
 - [ ] Fase 7 - Estadisticas y calidad
 - [ ] Fase 8 - Presentacion final
