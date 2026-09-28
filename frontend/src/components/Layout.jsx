@@ -18,6 +18,9 @@ export default function Layout() {
           <NavLink to="/mapa" className={tabClass}>
             Mapa
           </NavLink>
+          <NavLink to="/estadisticas" className={tabClass}>
+            Estadísticas
+          </NavLink>
         </div>
       </nav>
       <Outlet />

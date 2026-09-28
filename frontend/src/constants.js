@@ -5,3 +5,10 @@ export const MODE_LABELS = {
   COLECTIVO: 'Colectivo',
   AEROPUERTO: 'Aeropuerto',
 }
+
+export const ALERT_TYPE_LABELS = {
+  OBRA: 'Obra',
+  DEMORA: 'Demora',
+  INTERRUPCION: 'Interrupción',
+  DESVIO: 'Desvío',
+}

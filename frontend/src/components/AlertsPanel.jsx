@@ -1,12 +1,6 @@
 import './AlertsPanel.css'
 import { formatRelativeTime } from '../utils/format.js'
-
-const TYPE_LABELS = {
-  OBRA: 'Obra',
-  DEMORA: 'Demora',
-  INTERRUPCION: 'Interrupción',
-  DESVIO: 'Desvío',
-}
+import { ALERT_TYPE_LABELS } from '../constants.js'
 
 export default function AlertsPanel({ alerts, lines }) {
   const lineById = new Map(lines.map((line) => [line.id, line]))
@@ -25,7 +19,7 @@ export default function AlertsPanel({ alerts, lines }) {
           <div className="alert-item" key={alert.id}>
             <div className="alert-top">
               <span className={`alert-tag alert-tag-${alert.type.toLowerCase()}`}>
-                {TYPE_LABELS[alert.type] ?? alert.type}
+                {ALERT_TYPE_LABELS[alert.type] ?? alert.type}
               </span>
               <span className="alert-line">{line ? line.name : `Línea #${alert.transportLineId}`}</span>
             </div>

@@ -1,0 +1,55 @@
+.stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 40px;
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: 160px 1fr 90px;
+  align-items: center;
+  gap: 14px;
+}
+
+.stats-line-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.stats-bar-track {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  height: 22px;
+  position: relative;
+  overflow: hidden;
+}
+
+.stats-bar-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.stats-bar-fill.active-fill {
+  opacity: 1;
+}
+
+.stats-count {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: right;
+}
+
+.stats-meta {
+  grid-column: 2 / 3;
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 2px;
+}
+
+.stats-row-wrapper {
+  display: flex;
+  flex-direction: column;
+}
