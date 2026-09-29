@@ -29,6 +29,7 @@ El backend sincroniza automáticamente las alertas de subte desde la API Transpo
 - Búsqueda combinada de líneas y estaciones por texto
 - Dashboard en React con estado en vivo por modo, panel de alertas y panel de tarifas, conectado en tiempo real a la API
 - Mapa interactivo (Leaflet + OpenStreetMap) de las 90 estaciones de subte, coloreadas por línea, con coordenadas reales
+- Estadísticas de alertas por línea (total histórico, activas, tipo más frecuente), calculadas con agregación SQL en el backend
 - Base de datos versionada con migraciones Flyway, sin pérdida de datos entre cambios de esquema
 
 ## Tecnologías
@@ -42,7 +43,7 @@ El backend sincroniza automáticamente las alertas de subte desde la API Transpo
 
 **Frontend**
 - **React** + **Vite**
-- **React Router** para la navegación entre Dashboard y Mapa
+- **React Router** para la navegación entre Dashboard, Mapa y Estadísticas
 - **Leaflet** + **React Leaflet** para el mapa interactivo
 - Hooks propios para consumo de API, debounce de búsqueda y datos en vivo
 
@@ -59,7 +60,7 @@ ba-transit/
 │   └── src/main/resources/db/migration/   # Migraciones Flyway
 ├── frontend/                # Cliente web (React + Vite)
 │   └── src/
-│       ├── pages/           # Dashboard y Mapa
+│       ├── pages/           # Dashboard, Mapa y Estadísticas
 │       ├── components/      # Header, navegación, búsqueda, paneles
 │       └── hooks/           # useApi, useDebounce
 ├── design/                  # Mockups y referencias visuales
@@ -98,7 +99,7 @@ El frontend espera al backend corriendo en `http://localhost:8080`.
 
 ## Uso
 
-Con el backend y el frontend corriendo, el dashboard queda disponible en `http://localhost:5173` (puerto por defecto de Vite). Desde ahí se puede buscar una línea o estación, ver el estado en vivo por modo de transporte, consultar alertas y tarifas activas, y explorar el mapa de estaciones de subte en la pestaña "Mapa".
+Con el backend y el frontend corriendo, el dashboard queda disponible en `http://localhost:5173` (puerto por defecto de Vite). Desde ahí se puede buscar una línea o estación, ver el estado en vivo por modo de transporte, consultar alertas y tarifas activas, explorar el mapa de estaciones de subte en la pestaña "Mapa", y ver estadísticas de alertas por línea en la pestaña "Estadísticas".
 
 Para probar solo el backend:
 
@@ -120,7 +121,7 @@ Un workflow de GitHub Actions corre la suite automáticamente en cada `push` y `
 
 ## Estado del proyecto
 
-**Fases 1 a 6 completas (Fase 4 solo para subte; el mapa también solo tiene datos de subte por ahora).**
+**Fases 1 a 7 completas (Fase 4 solo para subte; el mapa también solo tiene datos de subte por ahora).**
 
 - [x] Fase 1 — Base: Spring Boot, PostgreSQL, Docker Compose, CI
 - [x] Fase 2 — Modelo de datos: líneas, ramales y estaciones reales de subte (90 estaciones) y de las 8 líneas de tren AMBA, versionadas con Flyway *(algunos ramales de trenes de larga distancia o fuera de servicio quedaron fuera del alcance a propósito — ver detalle en [`backend/README.md`](./backend/README.md))*
@@ -128,7 +129,7 @@ Un workflow de GitHub Actions corre la suite automáticamente en cada `push` y `
 - [x] Fase 4 — Actualización automática: job programado que sincroniza alertas de subte desde la API Transporte oficial (ver limitaciones en [`backend/README.md`](./backend/README.md))
 - [x] Fase 5 — Frontend: dashboard en React con estado en vivo por modo, panel de alertas, panel de tarifas y búsqueda, todo conectado a la API real
 - [x] Fase 6 — Mapa: mapa interactivo con Leaflet de las 90 estaciones de subte con coordenadas reales, coloreadas por línea
-- [ ] Fase 7 — Estadísticas y calidad
+- [x] Fase 7 — Estadísticas: endpoint de estadísticas de alertas por línea, página de estadísticas en el frontend con gráfico de barras
 - [ ] Fase 8 — Presentación final
 
 ## Autor

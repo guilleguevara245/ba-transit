@@ -9,7 +9,7 @@ Este repositorio es el backend (API REST) del proyecto.
 
 ## Estado del proyecto
 
-**Fases 1 a 6 completas (Fase 4 solo para subte; el mapa solo tiene datos de subte por ahora).**
+**Fases 1 a 7 completas (Fase 4 solo para subte; el mapa solo tiene datos de subte por ahora).**
 
 - Fase 1 (base): Spring Boot, PostgreSQL, Docker Compose, CI, variables de
   entorno.
@@ -25,6 +25,9 @@ Este repositorio es el backend (API REST) del proyecto.
   panel de alertas, panel de tarifas y busqueda, conectado a la API real.
 - Fase 6 (mapa): mapa interactivo con Leaflet de las 90 estaciones de
   subte, coloreadas por linea, con coordenadas reales.
+- Fase 7 (estadisticas): endpoint de estadisticas de alertas por linea
+  (total historico, activas, tipo mas frecuente), con agregacion SQL en
+  el backend, y pagina de estadisticas en el frontend.
 
 ## Colectivos y trenes en la Fase 4
 
@@ -132,6 +135,8 @@ Endpoints principales (ver el codigo fuente para el detalle completo):
 - `GET /api/v1/search?q=texto` - busqueda combinada de lineas y estaciones
 - `GET /api/v1/map/stations?mode=SUBTE` - estaciones con coordenadas para
   el mapa (solo subte tiene coordenadas cargadas por ahora)
+- `GET /api/v1/stats/alerts` - estadisticas de alertas por linea (total,
+  activas, tipo mas frecuente)
 
 ## Arquitectura
 
@@ -148,5 +153,5 @@ externa vive en `client` (llamadas HTTP con reintentos), `config`
 - [x] Fase 4 - Actualizacion automatica (solo subte, ver limitaciones arriba)
 - [x] Fase 5 - Frontend
 - [x] Fase 6 - Mapa (solo subte, ver limitaciones arriba)
-- [ ] Fase 7 - Estadisticas y calidad
+- [x] Fase 7 - Estadisticas y calidad
 - [ ] Fase 8 - Presentacion final
