@@ -7,6 +7,7 @@
   <img src="https://img.shields.io/badge/Java-21-blue" alt="Java 21">
   <img src="https://img.shields.io/badge/React-Vite-61DAFB" alt="React + Vite">
   <img src="https://img.shields.io/badge/status-en%20desarrollo-yellow" alt="En desarrollo">
+  <img src="https://img.shields.io/badge/license-MIT-lightgrey" alt="Licencia MIT">
 </p>
 
 # BA Transit
@@ -139,4 +140,4 @@ Estudiante de la Tecnicatura Universitaria en Programación y la Licenciatura en
 
 ## Licencia
 
-Este proyecto todavía no tiene una licencia definida.
+Este proyecto está bajo licencia MIT — ver [`LICENSE`](./LICENSE) para el detalle completo.
