@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: ba-transit-backend
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:batransit}?sslmode=require
+    username: ${DB_USER:batransit}
+    password: ${DB_PASSWORD:batransit}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+
+server:
+  # Render inyecta la variable PORT automaticamente. En local no existe,
+  # asi que cae a SERVER_PORT (si la seteaste) y despues a 8080.
+  port: ${PORT:${SERVER_PORT:8080}}
+
+transporte:
+  api:
+    base-url: https://apitransporte.buenosaires.gob.ar
+    client-id: ${TRANSPORTE_CLIENT_ID:}
+    client-secret: ${TRANSPORTE_CLIENT_SECRET:}
+
+app:
+  frontend-origins: ${FRONTEND_ORIGINS:http://localhost:5173}

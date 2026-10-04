@@ -2,7 +2,9 @@ spring:
   application:
     name: ba-transit-backend
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:batransit}
+    # sslmode=prefer: intenta SSL primero (lo que exige Neon en produccion)
+    # y si no esta disponible, sigue sin el (como el Postgres local de Docker).
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:batransit}?sslmode=prefer
     username: ${DB_USER:batransit}
     password: ${DB_PASSWORD:batransit}
   jpa:
@@ -24,10 +26,15 @@ management:
       show-details: when-authorized
 
 server:
-  port: ${SERVER_PORT:8080}
+  # Render inyecta la variable PORT automaticamente. En local no existe,
+  # asi que cae a SERVER_PORT (si la seteaste) y despues a 8080.
+  port: ${PORT:${SERVER_PORT:8080}}
 
 transporte:
   api:
     base-url: https://apitransporte.buenosaires.gob.ar
     client-id: ${TRANSPORTE_CLIENT_ID:}
     client-secret: ${TRANSPORTE_CLIENT_SECRET:}
+
+app:
+  frontend-origins: ${FRONTEND_ORIGINS:http://localhost:5173}
