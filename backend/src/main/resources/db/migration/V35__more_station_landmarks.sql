@@ -1,0 +1,16 @@
+-- Mas lugares importantes cerca de estaciones de tren y del Premetro.
+-- Solo lugares a distancia caminable de la estacion; el resto queda vacio.
+
+UPDATE station s SET landmarks = 'Ciudad Universitaria (UBA); Parque de la Memoria' FROM branch b JOIN transport_line tl ON tl.id = b.transport_line_id WHERE s.branch_id = b.id AND tl.mode = 'TREN' AND tl.code = 'BELGRANO_NORTE' AND s.name = 'Ciudad Universitaria';
+UPDATE station s SET landmarks = 'Campo Argentino de Polo; Hipódromo de Palermo' FROM branch b JOIN transport_line tl ON tl.id = b.transport_line_id WHERE s.branch_id = b.id AND tl.mode = 'TREN' AND tl.code = 'MITRE' AND s.name = '3 de Febrero';
+UPDATE station s SET landmarks = 'Universidad Nacional de San Martín (Campus Miguelete)' FROM branch b JOIN transport_line tl ON tl.id = b.transport_line_id WHERE s.branch_id = b.id AND tl.mode = 'TREN' AND tl.code = 'MITRE' AND s.name = 'Miguelete';
+UPDATE station s SET landmarks = 'Universidad Nacional de Quilmes' FROM branch b JOIN transport_line tl ON tl.id = b.transport_line_id WHERE s.branch_id = b.id AND tl.mode = 'TREN' AND tl.code = 'ROCA' AND s.name = 'Bernal';
+UPDATE station s SET landmarks = 'Paseo del Bosque; Universidad Nacional de La Plata' FROM branch b JOIN transport_line tl ON tl.id = b.transport_line_id WHERE s.branch_id = b.id AND tl.mode = 'TREN' AND tl.code = 'ROCA' AND s.name = 'La Plata';
+UPDATE station s SET landmarks = 'Distrito Arcos; Plaza Italia' FROM branch b JOIN transport_line tl ON tl.id = b.transport_line_id WHERE s.branch_id = b.id AND tl.mode = 'TREN' AND tl.code = 'SAN_MARTIN' AND s.name = 'Palermo';
+UPDATE station s SET landmarks = 'Movistar Arena; Cementerio de la Chacarita' FROM branch b JOIN transport_line tl ON tl.id = b.transport_line_id WHERE s.branch_id = b.id AND tl.mode = 'TREN' AND tl.code = 'SAN_MARTIN' AND s.name = 'Chacarita';
+UPDATE station s SET landmarks = 'Hospital Dr. Domingo Cabred' FROM branch b JOIN transport_line tl ON tl.id = b.transport_line_id WHERE s.branch_id = b.id AND tl.mode = 'TREN' AND tl.code = 'SAN_MARTIN' AND s.name = 'Dr. Cabred';
+UPDATE station s SET landmarks = 'Basílica de San José de Flores; Plaza Flores' FROM branch b JOIN transport_line tl ON tl.id = b.transport_line_id WHERE s.branch_id = b.id AND tl.mode = 'TREN' AND tl.code = 'SARMIENTO' AND s.name = 'Flores';
+UPDATE station s SET landmarks = 'Catedral de Morón' FROM branch b JOIN transport_line tl ON tl.id = b.transport_line_id WHERE s.branch_id = b.id AND tl.mode = 'TREN' AND tl.code = 'SARMIENTO' AND s.name = 'Morón';
+UPDATE station s SET landmarks = 'Quinta Presidencial de Olivos' FROM branch b JOIN transport_line tl ON tl.id = b.transport_line_id WHERE s.branch_id = b.id AND tl.mode = 'TREN' AND tl.code = 'TREN_DE_LA_COSTA' AND s.name = 'Maipú';
+UPDATE station s SET landmarks = 'Guarnición Militar Campo de Mayo' FROM branch b JOIN transport_line tl ON tl.id = b.transport_line_id WHERE s.branch_id = b.id AND tl.mode = 'TREN' AND tl.code = 'URQUIZA' AND s.name = 'Campo de Mayo';
+UPDATE station s SET landmarks = 'Parque de la Ciudad; Torre Espacial' FROM branch b JOIN transport_line tl ON tl.id = b.transport_line_id WHERE s.branch_id = b.id AND tl.mode = 'PREMETRO' AND tl.code = 'P' AND s.name = 'Parque de la Ciudad';
