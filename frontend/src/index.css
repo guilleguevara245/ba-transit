@@ -110,3 +110,23 @@ body {
 .error-text {
   color: var(--interrupted);
 }
+
+.section-label-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.updated-at {
+  font-family: inherit;
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.stale-text {
+  font-size: 13px;
+  color: var(--delayed);
+  margin-bottom: 14px;
+}

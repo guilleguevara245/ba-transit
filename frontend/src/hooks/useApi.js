@@ -1,46 +1,63 @@
 import { useEffect, useState } from 'react'
 import { apiGet } from '../api.js'
 
+const INITIAL_STATE = { data: null, loading: true, error: null, updatedAt: null }
+
 /**
- * Pide un endpoint GET y devuelve { data, loading, error }.
- * Centraliza el manejo de estados de carga/error para no repetirlo
- * en cada componente que necesita datos de la API.
+ * Pide un endpoint GET y devuelve { data, loading, error, updatedAt }.
+ *
+ * Con { refreshMs } vuelve a pedir el dato cada refreshMs milisegundos
+ * (por ejemplo, las alertas, que el backend sincroniza cada 5 minutos).
+ * En los refrescos no vuelve a mostrar "cargando": si fallan, se
+ * conservan los ultimos datos y solo se informa el error. Mientras la
+ * pestaña del navegador esta oculta no se hacen pedidos.
  */
-export function useApi(path) {
-  const [data, setData] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+export function useApi(path, { refreshMs } = {}) {
+  const [state, setState] = useState(INITIAL_STATE)
 
   useEffect(() => {
     let cancelled = false
+    let timer = null
+    let hasLoaded = false
 
-    setLoading(true)
-    setError(null)
+    setState(INITIAL_STATE)
 
-    apiGet(path)
-      .then((result) => {
-        if (!cancelled) {
-          setData(result)
-        }
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setError(err.message)
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setLoading(false)
-        }
-      })
+    function scheduleNext() {
+      if (!cancelled && refreshMs) {
+        timer = setTimeout(load, refreshMs)
+      }
+    }
 
-    // Si el componente se desmonta antes de que termine el fetch,
-    // "cancelled" evita que actualicemos el estado de un componente
-    // que ya no existe (React tira un warning si eso pasa).
+    async function load() {
+      // Con la pestaña oculta no se pide nada (salvo la primera carga).
+      if (hasLoaded && document.hidden) {
+        scheduleNext()
+        return
+      }
+      try {
+        const result = await apiGet(path)
+        if (!cancelled) {
+          hasLoaded = true
+          setState({ data: result, loading: false, error: null, updatedAt: new Date() })
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setState((previous) => ({ ...previous, loading: false, error: err.message }))
+        }
+      } finally {
+        scheduleNext()
+      }
+    }
+
+    load()
+
+    // Si el componente se desmonta (o cambia el path) antes de que
+    // termine el fetch, "cancelled" evita actualizar un estado viejo.
     return () => {
       cancelled = true
+      clearTimeout(timer)
     }
-  }, [path])
+  }, [path, refreshMs])
 
-  return { data, loading, error }
+  return state
 }

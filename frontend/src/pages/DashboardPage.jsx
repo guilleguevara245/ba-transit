@@ -2,27 +2,49 @@ import SearchBar from '../components/SearchBar.jsx'
 import ModeGrid from '../components/ModeGrid.jsx'
 import AlertsPanel from '../components/AlertsPanel.jsx'
 import FaresPanel from '../components/FaresPanel.jsx'
+import ErrorMessage from '../components/ErrorMessage.jsx'
 import { useApi } from '../hooks/useApi.js'
+import { useNow } from '../hooks/useNow.js'
+import { formatRelativeTime } from '../utils/format.js'
 import '../components/Panels.css'
 
-export default function DashboardPage() {
-  const { data: lines, loading: loadingLines, error: linesError } = useApi('/api/v1/lines')
-  const { data: alerts, loading: loadingAlerts, error: alertsError } = useApi('/api/v1/alerts')
-  const { data: fares, loading: loadingFares, error: faresError } = useApi('/api/v1/fares')
+// El backend sincroniza las alertas cada 5 minutos; pedirlas cada
+// minuto deja el dashboard al dia sin cargar de mas al servidor.
+const ALERTS_REFRESH_MS = 60_000
 
-  const loading = loadingLines || loadingAlerts || loadingFares
-  const error = linesError || alertsError || faresError
+export default function DashboardPage() {
+  const linesState = useApi('/api/v1/lines')
+  const alertsState = useApi('/api/v1/alerts', { refreshMs: ALERTS_REFRESH_MS })
+  const faresState = useApi('/api/v1/fares')
+  const now = useNow()
+
+  const lines = linesState.data
+  const alerts = alertsState.data
+  const fares = faresState.data
+
   const ready = lines && alerts && fares
+  const loading = !ready && (linesState.loading || alertsState.loading || faresState.loading)
+  const error = linesState.error || alertsState.error || faresState.error
 
   return (
     <div className="wrap content">
       <SearchBar />
-      <div className="section-label">Estado de la red</div>
+      <div className="section-label section-label-row">
+        <span>Estado de la red</span>
+        {alertsState.updatedAt && (
+          <span className="updated-at" title={alertsState.updatedAt.toLocaleString('es-AR')}>
+            {/* now se usa para que el texto se recalcule cada 30 segundos */}
+            Actualizado {formatRelativeTime(alertsState.updatedAt.toISOString(), now)}
+          </span>
+        )}
+      </div>
 
       {loading && <div className="loading-text">Cargando estado de la red...</div>}
-      {error && (
-        <div className="error-text">
-          No se pudo conectar con la API ({error}). ¿Está corriendo el backend en localhost:8080?
+
+      {error && !ready && <ErrorMessage what="el estado de la red" error={error} />}
+      {error && ready && (
+        <div className="stale-text" role="status">
+          No se pudo actualizar; se muestran los últimos datos disponibles.
         </div>
       )}
 
