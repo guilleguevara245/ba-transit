@@ -1,5 +1,6 @@
 package com.batransit.api.service;
 
+import com.batransit.api.domain.TransportMode;
 import com.batransit.api.dto.MapStation;
 import com.batransit.api.repository.StationRepository;
 import org.springframework.stereotype.Service;
@@ -15,7 +16,7 @@ public class MapService {
         this.stationRepository = stationRepository;
     }
 
-    public List<MapStation> stationsByMode(String mode) {
-        return stationRepository.findMapStationsByMode(mode.toUpperCase());
+    public List<MapStation> stationsByMode(TransportMode mode) {
+        return stationRepository.findMapStationsByMode(mode);
     }
 }

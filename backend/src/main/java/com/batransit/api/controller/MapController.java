@@ -1,5 +1,6 @@
 package com.batransit.api.controller;
 
+import com.batransit.api.domain.TransportMode;
 import com.batransit.api.dto.MapStation;
 import com.batransit.api.service.MapService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,6 +26,6 @@ public class MapController {
      */
     @GetMapping("/stations")
     public List<MapStation> stations(@RequestParam(defaultValue = "SUBTE") String mode) {
-        return mapService.stationsByMode(mode);
+        return mapService.stationsByMode(TransportMode.from(mode));
     }
 }

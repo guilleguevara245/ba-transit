@@ -1,8 +1,11 @@
 package com.batransit.api.controller;
 
-import com.batransit.api.domain.Alert;
+import com.batransit.api.config.OpenApiConfig;
 import com.batransit.api.dto.AlertRequest;
+import com.batransit.api.dto.AlertResponse;
 import com.batransit.api.service.AlertService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,13 +28,15 @@ public class AlertController {
     }
 
     @GetMapping
-    public List<Alert> findAllActive() {
+    public List<AlertResponse> findAllActive() {
         return alertService.findAllActive();
     }
 
+    @Operation(summary = "Crea una alerta (requiere el header X-API-Key)")
+    @SecurityRequirement(name = OpenApiConfig.API_KEY_SCHEME)
     @PostMapping
-    public ResponseEntity<Alert> create(@Valid @RequestBody AlertRequest request) {
-        Alert created = alertService.create(request);
+    public ResponseEntity<AlertResponse> create(@Valid @RequestBody AlertRequest request) {
+        AlertResponse created = alertService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 }

@@ -1,7 +1,10 @@
 package com.batransit.api.service;
 
-import com.batransit.api.domain.TransportLine;
+import com.batransit.api.domain.TransportMode;
+import com.batransit.api.dto.LineResponse;
+import com.batransit.api.exception.NotFoundException;
 import com.batransit.api.repository.TransportLineRepository;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,11 +18,21 @@ public class TransportLineService {
         this.transportLineRepository = transportLineRepository;
     }
 
-    public List<TransportLine> findAll() {
-        return transportLineRepository.findAll();
+    public List<LineResponse> findAll() {
+        return transportLineRepository.findAll(Sort.by("mode", "code")).stream()
+                .map(LineResponse::from)
+                .toList();
     }
 
-    public List<TransportLine> findByMode(String mode) {
-        return transportLineRepository.findByModeIgnoreCaseOrderByCodeAsc(mode);
+    public LineResponse findById(Long id) {
+        return transportLineRepository.findById(id)
+                .map(LineResponse::from)
+                .orElseThrow(() -> new NotFoundException("No existe una línea con id " + id));
+    }
+
+    public List<LineResponse> findByMode(TransportMode mode) {
+        return transportLineRepository.findByModeOrderByCodeAsc(mode).stream()
+                .map(LineResponse::from)
+                .toList();
     }
 }

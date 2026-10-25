@@ -1,7 +1,5 @@
 package com.batransit.api.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -34,7 +32,6 @@ public class Station {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "branch_id", nullable = false)
-    @JsonIgnore
     private Branch branch;
 
     @Column(nullable = false, length = 100)
@@ -42,6 +39,13 @@ public class Station {
 
     @Column(name = "sequence_order", nullable = false)
     private Integer sequenceOrder;
+
+    /**
+     * Nombre en minusculas y sin tildes, calculado por la base (columna
+     * GENERATED, ver V22). Solo se lee: se usa para la busqueda.
+     */
+    @Column(name = "search_name", insertable = false, updatable = false)
+    private String searchName;
 
     @Column(precision = 10, scale = 7)
     private BigDecimal latitude;
@@ -64,6 +68,7 @@ public class Station {
         this.name = name;
         this.sequenceOrder = sequenceOrder;
         this.active = true;
+        this.createdAt = Instant.now();
     }
 
     public Long getId() {
@@ -79,7 +84,6 @@ public class Station {
      * evita que Spring Data confunda esto con un atributo real al
      * derivar queries como findByBranchIdOrderBySequenceOrderAsc.
      */
-    @JsonProperty("branchId")
     public Long branchId() {
         return branch.getId();
     }

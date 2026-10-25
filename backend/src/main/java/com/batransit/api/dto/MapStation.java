@@ -7,6 +7,7 @@ public record MapStation(
         String stationName,
         BigDecimal latitude,
         BigDecimal longitude,
+        Long branchId,
         Long lineId,
         String lineCode,
         String lineName,

@@ -1,6 +1,6 @@
 package com.batransit.api.controller;
 
-import com.batransit.api.domain.Alert;
+import com.batransit.api.dto.AlertResponse;
 import com.batransit.api.service.AlertService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,7 +20,7 @@ public class LineAlertController {
     }
 
     @GetMapping
-    public List<Alert> findByLine(@PathVariable Long lineId) {
+    public List<AlertResponse> findByLine(@PathVariable Long lineId) {
         return alertService.findActiveByLine(lineId);
     }
 }

@@ -17,7 +17,7 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
 
     Optional<Alert> findByExternalId(String externalId);
 
-    List<Alert> findByActiveTrueAndExternalIdIsNotNullAndExternalIdNotIn(List<String> externalIds);
+    List<Alert> findByActiveTrueAndExternalIdIsNotNull();
 
     @Query("SELECT new com.batransit.api.dto.LineAlertCountRow("
             + "tl.id, tl.name, tl.colorHex, COUNT(a), "

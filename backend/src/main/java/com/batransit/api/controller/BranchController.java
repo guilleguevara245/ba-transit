@@ -1,6 +1,6 @@
 package com.batransit.api.controller;
 
-import com.batransit.api.domain.Branch;
+import com.batransit.api.dto.BranchResponse;
 import com.batransit.api.service.BranchService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,7 +20,7 @@ public class BranchController {
     }
 
     @GetMapping
-    public List<Branch> findByLine(@PathVariable Long lineId) {
+    public List<BranchResponse> findByLine(@PathVariable Long lineId) {
         return branchService.findByLineId(lineId);
     }
 }

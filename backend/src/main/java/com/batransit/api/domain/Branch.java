@@ -1,7 +1,5 @@
 package com.batransit.api.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -34,7 +32,6 @@ public class Branch {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "transport_line_id", nullable = false)
-    @JsonIgnore
     private TransportLine transportLine;
 
     @Column(nullable = false, length = 100)
@@ -54,6 +51,7 @@ public class Branch {
         this.transportLine = transportLine;
         this.name = name;
         this.active = true;
+        this.createdAt = Instant.now();
     }
 
     public Long getId() {
@@ -82,7 +80,6 @@ public class Branch {
      * findByTransportLineIdOrderByIdAsc (mismo problema que tuvimos
      * con Station).
      */
-    @JsonProperty("transportLineId")
     public Long transportLineId() {
         return transportLine.getId();
     }

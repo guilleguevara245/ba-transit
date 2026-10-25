@@ -1,6 +1,8 @@
 package com.batransit.api.domain;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -27,9 +29,10 @@ public class TransportLine {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** Modo de transporte: SUBTE, TREN, PREMETRO, COLECTIVO, AEROPUERTO. */
+    /** Modo de transporte (ver TransportMode). */
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
-    private String mode;
+    private TransportMode mode;
 
     /** Identificador corto de la linea dentro de su modo (ej: "A", "152"). */
     @Column(nullable = false, length = 10)
@@ -38,6 +41,13 @@ public class TransportLine {
     /** Nombre completo para mostrar (ej: "Linea A", "Linea Roca"). */
     @Column(nullable = false, length = 100)
     private String name;
+
+    /**
+     * Nombre en minusculas y sin tildes, calculado por la base (columna
+     * GENERATED, ver V22). Solo se lee: se usa para la busqueda.
+     */
+    @Column(name = "search_name", insertable = false, updatable = false)
+    private String searchName;
 
     /** Color oficial de la linea, en formato hexadecimal (#RRGGBB). */
     @Column(name = "color_hex", nullable = false, length = 7)
@@ -53,19 +63,20 @@ public class TransportLine {
         // Constructor vacio requerido por JPA.
     }
 
-    public TransportLine(String mode, String code, String name, String colorHex) {
+    public TransportLine(TransportMode mode, String code, String name, String colorHex) {
         this.mode = mode;
         this.code = code;
         this.name = name;
         this.colorHex = colorHex;
         this.active = true;
+        this.createdAt = Instant.now();
     }
 
     public Long getId() {
         return id;
     }
 
-    public String getMode() {
+    public TransportMode getMode() {
         return mode;
     }
 

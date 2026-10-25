@@ -1,6 +1,8 @@
 package com.batransit.api.domain;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -26,8 +28,9 @@ public class Fare {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
-    private String mode;
+    private TransportMode mode;
 
     @Column(name = "min_km", precision = 6, scale = 2)
     private BigDecimal minKm;
@@ -51,7 +54,7 @@ public class Fare {
         // Constructor vacio requerido por JPA.
     }
 
-    public Fare(String mode, BigDecimal minKm, BigDecimal maxKm, BigDecimal price, LocalDate effectiveFrom) {
+    public Fare(TransportMode mode, BigDecimal minKm, BigDecimal maxKm, BigDecimal price, LocalDate effectiveFrom) {
         this.mode = mode;
         this.minKm = minKm;
         this.maxKm = maxKm;
@@ -65,7 +68,7 @@ public class Fare {
         return id;
     }
 
-    public String getMode() {
+    public TransportMode getMode() {
         return mode;
     }
 

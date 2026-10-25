@@ -1,6 +1,6 @@
 package com.batransit.api.service;
 
-import com.batransit.api.domain.Station;
+import com.batransit.api.dto.StationResponse;
 import com.batransit.api.repository.StationRepository;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +15,9 @@ public class StationService {
         this.stationRepository = stationRepository;
     }
 
-    public List<Station> findByBranchId(Long branchId) {
-        return stationRepository.findByBranchIdOrderBySequenceOrderAsc(branchId);
+    public List<StationResponse> findByBranchId(Long branchId) {
+        return stationRepository.findByBranchIdOrderBySequenceOrderAsc(branchId).stream()
+                .map(StationResponse::from)
+                .toList();
     }
 }

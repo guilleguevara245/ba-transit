@@ -1,7 +1,5 @@
 package com.batransit.api.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -31,7 +29,6 @@ public class Alert {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "transport_line_id", nullable = false)
-    @JsonIgnore
     private TransportLine transportLine;
 
     @Enumerated(EnumType.STRING)
@@ -100,7 +97,6 @@ public class Alert {
         return id;
     }
 
-    @JsonProperty("transportLineId")
     public Long transportLineId() {
         return transportLine.getId();
     }
