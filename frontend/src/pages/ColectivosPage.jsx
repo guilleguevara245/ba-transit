@@ -1,3 +1,4 @@
+import Skeleton from '../components/Skeleton.jsx'
 import ModeIcon from '../components/ModeIcon.jsx'
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
@@ -27,7 +28,7 @@ function RouteDetail({ routeId }) {
 
   useEffect(() => setDirectionIndex(0), [routeId])
 
-  if (loading) return <div className="loading-text">Cargando recorrido...</div>
+  if (loading) return <Skeleton variant="map" label="Cargando recorrido…" />
   if (error) return <ErrorMessage what="el recorrido" error={error} />
   if (!route) return null
 
@@ -104,7 +105,7 @@ export default function ColectivosPage() {
       </h1>
       <p className="page-subtitle">Buscá una línea para ver su recorrido y sus paradas.</p>
 
-      {status.loading && <div className="loading-text">Cargando...</div>}
+      {status.loading && <Skeleton variant="block" label="Cargando…" />}
       {status.data && !available && (
         <div className="bus-unavailable">
           Los datos de colectivos todavía no están disponibles. El servidor los descarga del feed oficial

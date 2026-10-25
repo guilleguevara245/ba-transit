@@ -8,6 +8,7 @@ import AirportsPage from './pages/AirportsPage.jsx'
 import ColectivosPage from './pages/ColectivosPage.jsx'
 import AccessesPage from './pages/AccessesPage.jsx'
 import AboutPage from './pages/AboutPage.jsx'
+import NotFoundPage from './pages/NotFoundPage.jsx'
 import './App.css'
 
 export default function App() {
@@ -23,6 +24,7 @@ export default function App() {
           <Route path="/colectivos" element={<ColectivosPage />} />
           <Route path="/accesos" element={<AccessesPage />} />
           <Route path="/acerca" element={<AboutPage />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -1,3 +1,4 @@
+import Skeleton from '../components/Skeleton.jsx'
 import { Link, useParams } from 'react-router-dom'
 import ModeIcon from '../components/ModeIcon.jsx'
 import BackButton from '../components/BackButton.jsx'
@@ -49,7 +50,7 @@ export default function ModePage() {
         </p>
       )}
 
-      {linesState.loading && <div className="loading-text">Cargando líneas...</div>}
+      {linesState.loading && <Skeleton variant="cards" count={6} label="Cargando líneas…" />}
       {linesState.error && <ErrorMessage what="las líneas" error={linesState.error} />}
 
       <div className="mode-lines">

@@ -1,3 +1,4 @@
+import Skeleton from '../components/Skeleton.jsx'
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import ErrorMessage from '../components/ErrorMessage.jsx'
@@ -49,7 +50,7 @@ export default function MapPage() {
         )}
       </div>
 
-      {loading && <div className="loading-text">Cargando estaciones...</div>}
+      {loading && <Skeleton variant="map" label="Cargando estaciones…" />}
       {error && <ErrorMessage what="el mapa" error={error} />}
       {focusMissing && <div className="stale-text">Esa estación todavía no tiene ubicación cargada en el mapa.</div>}
 

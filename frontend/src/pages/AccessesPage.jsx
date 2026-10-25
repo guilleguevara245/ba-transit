@@ -1,3 +1,4 @@
+import Skeleton from '../components/Skeleton.jsx'
 import ModeIcon from '../components/ModeIcon.jsx'
 import AccessesMap from '../components/AccessesMap.jsx'
 import BackButton from '../components/BackButton.jsx'
@@ -94,7 +95,7 @@ export default function AccessesPage() {
         {data?.updatedAt && ` Medido ${formatRelativeTime(data.updatedAt, now)}.`}
       </p>
 
-      {loading && <div className="loading-text">Cargando accesos...</div>}
+      {loading && <Skeleton variant="cards" count={4} label="Cargando accesos…" />}
       {error && !data && <ErrorMessage what="el estado de los accesos" error={error} />}
 
       {data && !data.configured && (

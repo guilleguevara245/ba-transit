@@ -1,3 +1,4 @@
+import Skeleton from '../components/Skeleton.jsx'
 import SearchBar from '../components/SearchBar.jsx'
 import ModeGrid from '../components/ModeGrid.jsx'
 import MyLines from '../components/MyLines.jsx'
@@ -41,7 +42,7 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {loading && <div className="loading-text">Cargando estado de la red...</div>}
+      {loading && <Skeleton variant="cards" count={6} label="Cargando estado de la red…" />}
 
       {error && !ready && <ErrorMessage what="el estado de la red" error={error} />}
       {error && ready && (

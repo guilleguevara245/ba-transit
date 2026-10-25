@@ -1,3 +1,4 @@
+import Skeleton from '../components/Skeleton.jsx'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import AlertsPanel from '../components/AlertsPanel.jsx'
@@ -31,7 +32,7 @@ function BranchStations({ branch, line, selected, onSelect, locatedIds }) {
         {stations && <span className="count">{stations.length} estaciones</span>}
       </div>
 
-      {loading && <div className="loading-text">Cargando estaciones...</div>}
+      {loading && <Skeleton variant="list" count={8} label="Cargando estaciones…" />}
       {error && <ErrorMessage what="las estaciones" error={error} />}
 
       {stations && stations.length === 0 && (
@@ -96,7 +97,7 @@ export default function LinePage() {
     <div className="wrap content">
       <BackButton />
 
-      {lineState.loading && <div className="loading-text">Cargando línea...</div>}
+      {lineState.loading && <Skeleton variant="block" label="Cargando línea…" />}
       {lineState.error && <ErrorMessage what="la línea" error={lineState.error} />}
 
       {line && (

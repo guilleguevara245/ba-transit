@@ -1,0 +1,62 @@
+.not-found {
+  padding-top: 40px;
+  padding-bottom: 40px;
+  text-align: center;
+}
+
+.not-found-code {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 96px;
+  line-height: 1;
+  color: var(--yellow);
+}
+
+.not-found-code .chevrons {
+  width: 1.1em;
+  height: 0.75em;
+  color: var(--text);
+}
+
+.not-found .page-title {
+  margin-top: 18px;
+}
+
+.not-found-text {
+  margin: 6px 0 24px;
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+.not-found-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.not-found-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.not-found-link .chevrons {
+  font-size: 11px;
+  color: var(--accent-text);
+}
+
+.not-found-link:hover {
+  border-color: var(--yellow);
+}
