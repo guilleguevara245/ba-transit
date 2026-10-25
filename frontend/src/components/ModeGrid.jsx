@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import Chevrons from './Chevrons.jsx'
+import ModeIcon from './ModeIcon.jsx'
 import './ModeGrid.css'
 import { MODE_LABELS_PLURAL, MODE_SLUGS } from '../constants.js'
 import { MODE_ORDER, statusFor, summarizeByMode } from '../utils/network.js'
@@ -16,7 +17,8 @@ export default function ModeGrid({ lines, alerts }) {
         return (
           <Link className="mode-card chevrons-host" key={mode} to={`/modos/${MODE_SLUGS[mode]}`}>
             <div className="mode-name">
-              {MODE_LABELS_PLURAL[mode] ?? mode}
+              <ModeIcon mode={mode} />
+              <span className="mode-label">{MODE_LABELS_PLURAL[mode] ?? mode}</span>
               <Chevrons className="mode-arrow" />
             </div>
             <span className={`status-pill ${status.className}`}>
@@ -34,15 +36,26 @@ export default function ModeGrid({ lines, alerts }) {
       {/* Accesos a secciones que no son modos con lineas propias. */}
       <Link className="mode-card chevrons-host" to="/colectivos">
         <div className="mode-name">
-          Colectivos
+          <ModeIcon mode="COLECTIVO" />
+          <span className="mode-label">Colectivos</span>
           <Chevrons className="mode-arrow" />
         </div>
         <span className="mode-extra">Buscá tu línea</span>
         <div className="mode-alerts">Recorrido y paradas en el mapa</div>
       </Link>
+      <Link className="mode-card chevrons-host" to="/accesos">
+        <div className="mode-name">
+          <ModeIcon mode="ACCESOS" />
+          <span className="mode-label">Accesos</span>
+          <Chevrons className="mode-arrow" />
+        </div>
+        <span className="mode-extra">Autopistas</span>
+        <div className="mode-alerts">Tránsito en vivo y concesionarias</div>
+      </Link>
       <Link className="mode-card chevrons-host" to="/aeropuertos">
         <div className="mode-name">
-          Aeropuertos
+          <ModeIcon mode="AEROPUERTO" />
+          <span className="mode-label">Aeropuertos</span>
           <Chevrons className="mode-arrow" />
         </div>
         <span className="mode-extra">Aeroparque · Ezeiza</span>

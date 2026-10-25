@@ -1,3 +1,4 @@
+import ModeIcon from '../components/ModeIcon.jsx'
 import { CircleMarker, MapContainer, TileLayer, Tooltip } from 'react-leaflet'
 import BackButton from '../components/BackButton.jsx'
 import { AIRPORTS, FLIGHTS_URL } from '../data/airports.js'
@@ -66,7 +67,10 @@ export default function AirportsPage() {
   return (
     <div className="wrap content">
       <BackButton />
-      <h1 className="page-title">Aeropuertos</h1>
+      <h1 className="page-title page-title-icon">
+        <ModeIcon mode="AEROPUERTO" size="lg" />
+        Aeropuertos
+      </h1>
       <p className="page-subtitle">Clima actual y cómo llegar en transporte público.</p>
 
       <div className="airports-grid">

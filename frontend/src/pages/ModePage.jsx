@@ -1,4 +1,5 @@
 import { Link, useParams } from 'react-router-dom'
+import ModeIcon from '../components/ModeIcon.jsx'
 import BackButton from '../components/BackButton.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
 import FavoriteButton from '../components/FavoriteButton.jsx'
@@ -38,7 +39,10 @@ export default function ModePage() {
     <div className="wrap content">
       <BackButton />
 
-      <h1 className="page-title">{MODE_LABELS_PLURAL[mode]}</h1>
+      <h1 className="page-title page-title-icon">
+        <ModeIcon mode={mode} size="lg" />
+        {MODE_LABELS_PLURAL[mode]}
+      </h1>
       {linesState.data && (
         <p className="page-subtitle">
           {lines.length} {lines.length === 1 ? 'línea' : 'líneas'}

@@ -1,7 +1,7 @@
 .modes {
   display: grid;
-  /* Tantas columnas como modos haya, ocupando todo el ancho. */
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  /* Seis tarjetas: 3 columnas en escritorio, 2 en tablet, 1 en celular. */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1px;
   background: var(--line);
   border: 1px solid var(--line);
@@ -21,16 +21,17 @@
   gap: 14px;
 }
 
-.mode-icon {
-  color: var(--yellow);
-}
-
 .mode-name {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 10px;
   font-size: 15px;
   font-weight: 600;
+}
+
+.mode-label {
+  flex: 1;
+  min-width: 0;
 }
 
 .mode-arrow {
@@ -57,7 +58,13 @@
   color: var(--text-faint);
 }
 
-@media (max-width: 480px) {
+@media (max-width: 900px) {
+  .modes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
   .modes {
     grid-template-columns: 1fr;
   }

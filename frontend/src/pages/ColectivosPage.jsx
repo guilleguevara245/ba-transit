@@ -1,3 +1,4 @@
+import ModeIcon from '../components/ModeIcon.jsx'
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import BackButton from '../components/BackButton.jsx'
@@ -97,7 +98,10 @@ export default function ColectivosPage() {
   return (
     <div className="wrap content">
       <BackButton />
-      <h1 className="page-title">Colectivos</h1>
+      <h1 className="page-title page-title-icon">
+        <ModeIcon mode="COLECTIVO" size="lg" />
+        Colectivos
+      </h1>
       <p className="page-subtitle">Buscá una línea para ver su recorrido y sus paradas.</p>
 
       {status.loading && <div className="loading-text">Cargando...</div>}

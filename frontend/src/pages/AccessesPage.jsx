@@ -1,3 +1,4 @@
+import ModeIcon from '../components/ModeIcon.jsx'
 import AccessesMap from '../components/AccessesMap.jsx'
 import BackButton from '../components/BackButton.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
@@ -84,7 +85,10 @@ export default function AccessesPage() {
   return (
     <div className="wrap content">
       <BackButton />
-      <h1 className="page-title">Accesos</h1>
+      <h1 className="page-title page-title-icon">
+        <ModeIcon mode="ACCESOS" size="lg" />
+        Accesos
+      </h1>
       <p className="page-subtitle">
         Estado del tránsito en las autopistas que entran a la Ciudad.
         {data?.updatedAt && ` Medido ${formatRelativeTime(data.updatedAt, now)}.`}

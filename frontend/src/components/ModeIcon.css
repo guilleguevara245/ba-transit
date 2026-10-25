@@ -1,0 +1,31 @@
+.mode-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: var(--mode-icon-bg);
+  color: var(--mode-icon-fg);
+  flex-shrink: 0;
+}
+
+.mode-icon svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mode-icon-lg {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+}
+
+.mode-icon-lg svg {
+  width: 26px;
+  height: 26px;
+}

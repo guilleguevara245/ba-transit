@@ -6,6 +6,12 @@
   color: var(--text);
 }
 
+.page-title-icon {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .page-subtitle {
   margin: 2px 0 20px;
   font-size: 13px;
