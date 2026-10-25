@@ -13,6 +13,7 @@ import jakarta.persistence.UniqueConstraint;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 
 /**
  * Una estacion o parada dentro de un Branch (ramal), con su orden
@@ -55,6 +56,10 @@ public class Station {
 
     @Column(nullable = false)
     private boolean active = true;
+
+    /** Fecha de inauguracion (por ahora, solo subte; ver V32). */
+    @Column(name = "opened_on")
+    private LocalDate openedOn;
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
@@ -119,5 +124,9 @@ public class Station {
 
     public Instant getCreatedAt() {
         return createdAt;
+    }
+
+    public LocalDate getOpenedOn() {
+        return openedOn;
     }
 }

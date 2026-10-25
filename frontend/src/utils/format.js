@@ -37,3 +37,23 @@ export function formatShortDate(date) {
 export function formatCurrency(value) {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(value)
 }
+
+const MONTHS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
+
+/** "1913-12-01" -> "1 de diciembre de 1913" (sin pasar por zonas horarias). */
+export function formatLongDate(isoDate) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate ?? '')
+  if (!match) return null
+  const [, year, month, day] = match
+  return `${Number(day)} de ${MONTHS[Number(month) - 1]} de ${year}`
+}
+
+/** Años completos entre una fecha "AAAA-MM-DD" y hoy. */
+export function yearsSince(isoDate, now = new Date()) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate ?? '')
+  if (!match) return null
+  const [, year, month, day] = match.map(Number)
+  let years = now.getFullYear() - year
+  if (now.getMonth() + 1 < month || (now.getMonth() + 1 === month && now.getDate() < day)) years -= 1
+  return years
+}

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import Chevrons from './Chevrons.jsx'
 import LineBadge from './LineBadge.jsx'
 import { findTransfers, routeInfo } from '../utils/map.js'
+import { formatLongDate, yearsSince } from '../utils/format.js'
 
 const MAX_ALERT_CHARS = 110
 
@@ -35,6 +36,13 @@ export default function StationPopup({ station, stations, alerts, mode }) {
       <div className="station-popup-route">
         Estación {route.position} de {route.total} · {route.from} ↔ {route.to}
       </div>
+
+      {station.openedOn && (
+        <div className="station-popup-opened">
+          Inaugurada el {formatLongDate(station.openedOn)}
+          {yearsSince(station.openedOn) > 0 && ` · hace ${yearsSince(station.openedOn)} años`}
+        </div>
+      )}
 
       {transfers.length > 0 && (
         <div className="station-popup-section">

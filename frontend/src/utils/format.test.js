@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatClock, formatRelativeTime, formatShortDate } from './format.js'
+import { formatClock, formatLongDate, formatRelativeTime, formatShortDate, yearsSince } from './format.js'
 
 const NOW = new Date('2026-10-23T15:00:00Z')
 
@@ -28,5 +28,19 @@ describe('formatShortDate', () => {
   it('dia, numero y mes abreviados, en hora de Buenos Aires', () => {
     // 01:50 UTC del 25/10 todavia es sabado 24 en Buenos Aires.
     expect(formatShortDate(new Date('2026-10-25T01:50:00Z'))).toBe('sáb 24 oct')
+  })
+})
+
+describe('formatLongDate', () => {
+  it('escribe la fecha en castellano', () => {
+    expect(formatLongDate('1913-12-01')).toBe('1 de diciembre de 1913')
+    expect(formatLongDate(null)).toBeNull()
+  })
+})
+
+describe('yearsSince', () => {
+  it('cuenta los años cumplidos', () => {
+    expect(yearsSince('1913-12-01', new Date(2026, 9, 25))).toBe(112)
+    expect(yearsSince('1913-10-01', new Date(2026, 9, 25))).toBe(113)
   })
 })

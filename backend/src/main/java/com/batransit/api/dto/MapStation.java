@@ -3,6 +3,7 @@ package com.batransit.api.dto;
 import com.batransit.api.domain.TransportMode;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 public record MapStation(
         Long stationId,
@@ -15,6 +16,7 @@ public record MapStation(
         String lineCode,
         String lineName,
         String lineColorHex,
-        Integer sequenceOrder
+        Integer sequenceOrder,
+        LocalDate openedOn
 ) {
 }

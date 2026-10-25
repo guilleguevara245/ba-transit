@@ -62,7 +62,11 @@ class RepositoryIntegrationTest {
         assertThat(stations).allSatisfy(s -> {
             assertThat(s.latitude()).isNotNull();
             assertThat(s.longitude()).isNotNull();
+            assertThat(s.openedOn()).isNotNull();
         });
+        assertThat(stations).filteredOn(s -> s.stationName().equals("Plaza de Mayo"))
+                .extracting(MapStation::openedOn)
+                .containsExactly(java.time.LocalDate.of(1913, 12, 1));
     }
 
     @Test
