@@ -1,4 +1,5 @@
-import { NavLink } from 'react-router-dom'
+import { useEffect, useRef } from 'react'
+import { NavLink, useLocation } from 'react-router-dom'
 import Logo from './Logo.jsx'
 import { useNow } from '../hooks/useNow.js'
 import { formatClock, formatShortDate } from '../utils/format.js'
@@ -10,12 +11,14 @@ const ICONS = {
   mapa: 'M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zm0 0v14m6-12v14',
   colectivos: 'M5 4h14v12H5zM5 11h14M8 19v-3m8 3v-3M7.5 13.5h.01M16.5 13.5h.01',
   aeropuertos: 'M2 13l9-2 4-8h2l-2 9 6 1 1 2-7 1-3 6h-2l1-7-9-2z',
+  accesos: 'M8 3 5 21m11-18 3 18M12 4v3m0 4v3m0 4v3',
 }
 
 const TABS = [
   { to: '/', label: 'Inicio', icon: ICONS.inicio, end: true },
   { to: '/mapa', label: 'Mapa', icon: ICONS.mapa },
   { to: '/colectivos', label: 'Colectivos', icon: ICONS.colectivos },
+  { to: '/accesos', label: 'Accesos', icon: ICONS.accesos },
   { to: '/aeropuertos', label: 'Aeropuertos', icon: ICONS.aeropuertos },
 ]
 
@@ -33,6 +36,18 @@ function tabClass({ isActive }) {
 
 export default function Header() {
   const now = useNow(15_000)
+  const navRef = useRef(null)
+  const { pathname } = useLocation()
+
+  // En pantallas angostas las pestañas se desplazan de costado: se
+  // centra la activa para que no quede fuera de la vista.
+  useEffect(() => {
+    const nav = navRef.current
+    const active = nav?.querySelector('.nav-tab.active')
+    if (!nav || !active || nav.scrollWidth <= nav.clientWidth) return
+    const offset = active.getBoundingClientRect().left - nav.getBoundingClientRect().left
+    nav.scrollLeft += offset - (nav.clientWidth - active.offsetWidth) / 2
+  }, [pathname])
 
   return (
     <header className="header">
@@ -41,7 +56,7 @@ export default function Header() {
           <Logo />
         </NavLink>
 
-        <nav className="nav-tabs" aria-label="Secciones">
+        <nav ref={navRef} className="nav-tabs" aria-label="Secciones">
           {TABS.map((tab) => (
             <NavLink key={tab.to} to={tab.to} end={tab.end} className={tabClass}>
               <TabIcon path={tab.icon} />

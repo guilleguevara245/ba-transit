@@ -1,0 +1,49 @@
+{
+  "nota": "Puntos donde se mide el transito de cada acceso (TomTom toma el tramo de ruta mas cercano a cada punto). Si en el mapa de /accesos un tramo aparece fuera de la autopista, corregir aca su latitud y longitud.",
+  "accesos": [
+    {
+      "id": "la-plata",
+      "nombre": "Autopista Buenos Aires – La Plata",
+      "ruta": "RN 1",
+      "conecta": "CABA ↔ Avellaneda, Quilmes, Berazategui, La Plata",
+      "concesionaria": "AUBASA",
+      "tramos": [
+        { "nombre": "Avellaneda – Quilmes", "lat": -34.7005, "lon": -58.2775 },
+        { "nombre": "Berazategui – Hudson", "lat": -34.7900, "lon": -58.1600 }
+      ]
+    },
+    {
+      "id": "norte",
+      "nombre": "Acceso Norte (Panamericana)",
+      "ruta": "RN 9",
+      "conecta": "CABA ↔ Vicente López, San Isidro, Tigre, Pilar, Escobar",
+      "concesionaria": "Autopistas del Sol",
+      "tramos": [
+        { "nombre": "General Paz – Márquez", "lat": -34.5180, "lon": -58.5100 },
+        { "nombre": "Ramal Pilar", "lat": -34.4500, "lon": -58.7700 }
+      ]
+    },
+    {
+      "id": "oeste",
+      "nombre": "Acceso Oeste",
+      "ruta": "RN 7",
+      "conecta": "CABA ↔ Haedo, Morón, Moreno, Luján",
+      "concesionaria": "Grupo Concesionario del Oeste",
+      "tramos": [
+        { "nombre": "General Paz – Morón", "lat": -34.6400, "lon": -58.5950 },
+        { "nombre": "Ituzaingó – Moreno", "lat": -34.6530, "lon": -58.7300 }
+      ]
+    },
+    {
+      "id": "riccheri",
+      "nombre": "Riccheri / Ezeiza–Cañuelas",
+      "ruta": "A002 · RN 205",
+      "conecta": "CABA ↔ Aeropuerto de Ezeiza, Cañuelas",
+      "concesionaria": "Corredores Viales",
+      "tramos": [
+        { "nombre": "Autopista Riccheri", "lat": -34.7200, "lon": -58.5100 },
+        { "nombre": "Autopista Ezeiza–Cañuelas", "lat": -34.8700, "lon": -58.5600 }
+      ]
+    }
+  ]
+}

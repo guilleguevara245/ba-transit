@@ -46,3 +46,7 @@ app:
     # mismas credenciales que las alertas. Se puede apuntar a otra URL.
     gtfs-url: ${COLECTIVOS_GTFS_URL:}
     gtfs-path: ${COLECTIVOS_GTFS_PATH:/colectivos/feed-gtfs}
+  tomtom:
+    # Clave de la API de trafico de TomTom (plan gratuito). Vacia = el
+    # apartado Accesos muestra la informacion fija sin estado en vivo.
+    api-key: ${TOMTOM_API_KEY:}

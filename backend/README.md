@@ -115,6 +115,7 @@ o fuera del alcance real del proyecto.
 | `FRONTEND_ORIGINS`           | Origenes permitidos por CORS (coma)      | `http://localhost:5173` |
 | `ADMIN_API_KEY`              | Clave para los endpoints de escritura    | (vacio = escritura deshabilitada) |
 | `COLECTIVOS_GTFS_URL`        | URL del feed GTFS de colectivos (zip)    | (vacio = API Transporte, `/colectivos/feed-gtfs`) |
+| `TOMTOM_API_KEY`             | Clave de la API de trafico de TomTom     | (vacio = Accesos sin estado en vivo) |
 
 Los endpoints de escritura (`POST`) requieren el header `X-API-Key` con
 el valor de `ADMIN_API_KEY`. Las lecturas (`GET`) son publicas. Ejemplo:
@@ -166,6 +167,7 @@ Endpoints principales:
 - `GET /api/v1/colectivos/estado` - si los datos de colectivos estan cargados
 - `GET /api/v1/colectivos?q=152` - busqueda de lineas de colectivo
 - `GET /api/v1/colectivos/{routeId}` - recorrido y paradas de cada sentido
+- `GET /api/v1/accesos` - estado del transito en los cuatro accesos principales
 - `GET /api/v1/stats/alerts` - estadisticas de alertas por linea (total,
   activas, tipo mas frecuente)
 
@@ -203,4 +205,29 @@ Para verificar que la API devuelve el feed con tus credenciales:
 ```bash
 curl -sS -o /tmp/feed.zip -w "%{http_code} %{size_download}\n" \
   "https://apitransporte.buenosaires.gob.ar/colectivos/feed-gtfs?client_id=$TRANSPORTE_CLIENT_ID&client_secret=$TRANSPORTE_CLIENT_SECRET"
+```
+
+## Accesos
+
+El estado de las autopistas (Buenos Aires - La Plata, Acceso Norte,
+Acceso Oeste y Riccheri / Ezeiza-Canuelas) se mide con la API Traffic
+Flow de TomTom en dos puntos por acceso, definidos en
+`src/main/resources/accesos.json`. Para no pasar el plan gratuito
+(20.000 consultas por mes) la medicion se guarda 20 minutos y solo se
+consulta cuando alguien abre la pagina: como mucho 8 x 72 = 576
+consultas por dia.
+
+El estado sale de comparar la velocidad actual con la velocidad sin
+transito del tramo: 75% o mas es fluido, entre 45% y 75% demorado y
+menos de 45% congestionado. Si TomTom devuelve una calle que no es
+autopista o ruta principal, el tramo se marca para revisar: hay que
+corregir su latitud y longitud en `accesos.json` (el mapa de `/accesos`
+muestra donde cayo cada punto).
+
+Sin `TOMTOM_API_KEY` la pagina muestra los accesos y sus concesionarias,
+sin estado en vivo. Para probar la clave (sin pegarla en la terminal):
+
+```bash
+read -rs TOMTOM_API_KEY && export TOMTOM_API_KEY
+curl -sS "https://api.tomtom.com/traffic/services/4/flowSegmentData/absolute/10/json?point=-34.7005,-58.2775&unit=KMPH&key=$TOMTOM_API_KEY"
 ```
