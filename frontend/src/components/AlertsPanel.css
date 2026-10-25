@@ -38,6 +38,11 @@
   font-size: 13px;
   font-weight: 600;
   color: var(--text);
+  text-decoration: none;
+}
+
+.alert-line:hover {
+  color: var(--yellow);
 }
 
 .alert-desc {

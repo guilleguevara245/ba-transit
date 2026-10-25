@@ -1,0 +1,128 @@
+.back-link {
+  display: inline-block;
+  font-size: 13px;
+  color: var(--text-dim);
+  text-decoration: none;
+  margin-bottom: 18px;
+}
+
+.back-link:hover {
+  color: var(--yellow);
+}
+
+.line-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.line-badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+  flex-shrink: 0;
+}
+
+.line-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
+  font-size: 28px;
+  margin: 0;
+  color: var(--text);
+}
+
+.line-mode {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.line-section {
+  border: 1px solid var(--line);
+  margin-bottom: 28px;
+}
+
+.branches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  margin-bottom: 40px;
+}
+
+.station-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.station-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 8px;
+  position: relative;
+  font-size: 14px;
+}
+
+/* Linea vertical que une las estaciones, con el color de la linea. */
+.station-item::before {
+  content: '';
+  position: absolute;
+  left: 13px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--line-color);
+  opacity: 0.6;
+}
+
+.station-item:first-child::before {
+  top: 50%;
+}
+
+.station-item:last-child::before {
+  bottom: 50%;
+}
+
+.station-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--line-color);
+  background: var(--surface);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.station-name {
+  flex: 1;
+  color: var(--text);
+}
+
+.station-map-link {
+  font-size: 12px;
+  color: var(--text-faint);
+  text-decoration: none;
+}
+
+.station-map-link:hover {
+  color: var(--yellow);
+}
+
+.station-item.highlighted {
+  background: var(--surface-raised);
+  outline: 1px solid var(--yellow);
+}
+
+.station-item.highlighted .station-dot {
+  background: var(--line-color);
+}

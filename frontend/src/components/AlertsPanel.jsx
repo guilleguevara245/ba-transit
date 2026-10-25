@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import './AlertsPanel.css'
 import { formatRelativeTime } from '../utils/format.js'
 import { ALERT_TYPE_LABELS } from '../constants.js'
@@ -21,7 +22,9 @@ export default function AlertsPanel({ alerts, lines }) {
               <span className={`alert-tag alert-tag-${alert.type.toLowerCase()}`}>
                 {ALERT_TYPE_LABELS[alert.type] ?? alert.type}
               </span>
-              <span className="alert-line">{line ? line.name : `Línea #${alert.transportLineId}`}</span>
+              <Link className="alert-line" to={`/lineas/${alert.transportLineId}`}>
+                {line ? line.name : `Línea #${alert.transportLineId}`}
+              </Link>
             </div>
             <div className="alert-desc">{alert.description}</div>
             <div className="alert-meta">

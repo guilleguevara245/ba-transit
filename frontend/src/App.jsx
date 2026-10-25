@@ -3,6 +3,7 @@ import Layout from './components/Layout.jsx'
 import DashboardPage from './pages/DashboardPage.jsx'
 import MapPage from './pages/MapPage.jsx'
 import StatsPage from './pages/StatsPage.jsx'
+import LinePage from './pages/LinePage.jsx'
 import './App.css'
 
 export default function App() {
@@ -13,6 +14,7 @@ export default function App() {
           <Route path="/" element={<DashboardPage />} />
           <Route path="/mapa" element={<MapPage />} />
           <Route path="/estadisticas" element={<StatsPage />} />
+          <Route path="/lineas/:lineId" element={<LinePage />} />
         </Route>
       </Routes>
     </BrowserRouter>
