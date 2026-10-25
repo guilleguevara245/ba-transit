@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import Chevrons from './Chevrons.jsx'
 import LineBadge from './LineBadge.jsx'
 import { findTransfers, routeInfo } from '../utils/map.js'
 
@@ -62,8 +63,8 @@ export default function StationPopup({ station, stations, alerts, mode }) {
         )}
       </div>
 
-      <Link className="station-popup-link" to={`/lineas/${station.lineId}?estacion=${station.stationId}`}>
-        Ver la línea completa →
+      <Link className="station-popup-link chevrons-host" to={`/lineas/${station.lineId}?estacion=${station.stationId}`}>
+        Ver la línea completa <Chevrons />
       </Link>
     </div>
   )

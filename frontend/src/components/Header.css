@@ -239,3 +239,30 @@
     font-size: 20px;
   }
 }
+
+/* Al pasar el mouse por el logo, sus tres chevrones avanzan en secuencia. */
+@keyframes logo-flow {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  45% {
+    opacity: 0.25;
+  }
+}
+
+.brand:hover .brand-mark polygon {
+  animation: logo-flow 0.9s ease-in-out infinite;
+}
+.brand:hover .brand-mark polygon:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.brand:hover .brand-mark polygon:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand:hover .brand-mark polygon {
+    animation: none;
+  }
+}

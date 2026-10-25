@@ -35,7 +35,8 @@
 
 .mode-arrow {
   color: var(--text-faint);
-  transition: transform 0.15s ease, color 0.15s ease;
+  font-size: 15px;
+  transition: color 0.15s ease;
 }
 
 .mode-card:hover {
@@ -44,7 +45,6 @@
 
 .mode-card:hover .mode-arrow {
   color: var(--accent-text);
-  transform: translateX(3px);
 }
 
 .mode-card:focus-visible {

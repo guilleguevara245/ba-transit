@@ -16,14 +16,17 @@
   transition: border-color 0.15s ease, color 0.15s ease;
 }
 
-.back-button svg {
-  width: 14px;
-  height: 14px;
+.back-button .chevrons {
+  font-size: 12px;
 }
 
 .back-button:hover {
   border-color: var(--yellow);
   color: var(--text);
+}
+
+.back-button:hover .chevrons {
+  color: var(--accent-text);
 }
 
 .back-button:focus-visible {
