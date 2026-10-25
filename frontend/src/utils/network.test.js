@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { statusFor, summarizeByMode } from './network.js'
+import { statusFor, summarizeByMode, worstAlertType } from './network.js'
 
 const lines = [
   { id: 1, mode: 'SUBTE' },
@@ -41,5 +41,12 @@ describe('statusFor', () => {
     expect(statusFor('DEMORA').label).toBe('Demoras')
     expect(statusFor('OBRA').label).toBe('Alertas activas')
     expect(statusFor(null).label).toBe('Normal')
+  })
+})
+
+describe('worstAlertType', () => {
+  it('devuelve el tipo mas grave o null', () => {
+    expect(worstAlertType([{ type: 'OBRA' }, { type: 'INTERRUPCION' }, { type: 'DEMORA' }])).toBe('INTERRUPCION')
+    expect(worstAlertType([])).toBe(null)
   })
 })

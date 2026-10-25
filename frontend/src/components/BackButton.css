@@ -1,0 +1,32 @@
+/* Boton para volver: con borde, para que se vea como accion y no
+   como texto suelto. */
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 18px;
+  padding: 7px 14px 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-dim);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.back-button svg {
+  width: 14px;
+  height: 14px;
+}
+
+.back-button:hover {
+  border-color: var(--yellow);
+  color: var(--text);
+}
+
+.back-button:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+}

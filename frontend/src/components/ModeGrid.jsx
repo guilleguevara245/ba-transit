@@ -1,5 +1,6 @@
+import { Link } from 'react-router-dom'
 import './ModeGrid.css'
-import { MODE_LABELS } from '../constants.js'
+import { MODE_LABELS_PLURAL, MODE_SLUGS } from '../constants.js'
 import { MODE_ORDER, statusFor, summarizeByMode } from '../utils/network.js'
 
 export default function ModeGrid({ lines, alerts }) {
@@ -12,8 +13,11 @@ export default function ModeGrid({ lines, alerts }) {
         const status = statusFor(worstType)
 
         return (
-          <div className="mode-card" key={mode}>
-            <div className="mode-name">{MODE_LABELS[mode] ?? mode}</div>
+          <Link className="mode-card" key={mode} to={`/modos/${MODE_SLUGS[mode]}`}>
+            <div className="mode-name">
+              {MODE_LABELS_PLURAL[mode] ?? mode}
+              <span className="mode-arrow" aria-hidden="true">→</span>
+            </div>
             <span className={`status-pill ${status.className}`}>
               <span className="dot"></span>
               {status.label}
@@ -22,7 +26,7 @@ export default function ModeGrid({ lines, alerts }) {
               {lineCount} {lineCount === 1 ? 'línea' : 'líneas'} · {alertCount}{' '}
               {alertCount === 1 ? 'alerta activa' : 'alertas activas'}
             </div>
-          </div>
+          </Link>
         )
       })}
     </div>

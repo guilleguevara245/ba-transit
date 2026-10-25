@@ -43,3 +43,14 @@ export function statusFor(worstType) {
   if (worstType) return { label: 'Alertas activas', className: 'status-delayed' }
   return { label: 'Normal', className: 'status-normal' }
 }
+
+/** Tipo de alerta mas grave de una linea (o null si no tiene alertas). */
+export function worstAlertType(alerts) {
+  let worst = null
+  for (const alert of alerts) {
+    if ((SEVERITY[alert.type] ?? 0) > (worst ? SEVERITY[worst] : 0)) {
+      worst = alert.type
+    }
+  }
+  return worst
+}
