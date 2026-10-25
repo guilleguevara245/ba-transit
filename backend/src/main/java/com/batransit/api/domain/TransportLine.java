@@ -53,6 +53,22 @@ public class TransportLine {
     @Column(name = "color_hex", nullable = false, length = 7)
     private String colorHex;
 
+    /** Empresa que opera la linea (ej: "Emova Movilidad"). */
+    @Column(length = 100)
+    private String operator;
+
+    /** Tipo de operacion (ej: "Concesion privada", "Empresa estatal (SOFSE)"). */
+    @Column(name = "operator_type", length = 100)
+    private String operatorType;
+
+    /** Ferrocarril que da origen a la linea (solo trenes). */
+    @Column(name = "historic_name", length = 100)
+    private String historicName;
+
+    /** Anio de inauguracion, si se conoce con certeza. */
+    @Column(name = "opened_year")
+    private Integer openedYear;
+
     @Column(nullable = false)
     private boolean active = true;
 
@@ -90,6 +106,22 @@ public class TransportLine {
 
     public String getColorHex() {
         return colorHex;
+    }
+
+    public String getOperator() {
+        return operator;
+    }
+
+    public String getOperatorType() {
+        return operatorType;
+    }
+
+    public String getHistoricName() {
+        return historicName;
+    }
+
+    public Integer getOpenedYear() {
+        return openedYear;
     }
 
     public boolean isActive() {

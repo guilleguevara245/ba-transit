@@ -118,7 +118,7 @@
   background: var(--line-color);
 }
 
-/* ---- Lista de estaciones + minimapa ---- */
+/* ---- Lista de estaciones + columna lateral (minimapa e informacion) ---- */
 
 .line-layout {
   display: grid;
@@ -128,25 +128,26 @@
   margin-bottom: 40px;
 }
 
-.line-layout.no-map {
-  grid-template-columns: minmax(0, 1fr);
-}
-
 .line-layout .branches {
   grid-template-columns: minmax(0, 1fr);
   margin-bottom: 0;
 }
 
-.line-minimap {
+/* La columna lateral entera queda fija al hacer scroll, asi el mapa y
+   la informacion acompanan listas largas. */
+.line-side {
   position: sticky;
   top: 20px;
-  height: 560px;
+}
+
+.line-minimap {
+  height: 440px;
   border: 1px solid var(--line);
   box-shadow: var(--shadow);
 }
 
 .line-minimap-hint {
-  margin-top: 8px;
+  margin: 8px 0 0;
   font-size: 12px;
   color: var(--text-faint);
 }
@@ -156,12 +157,12 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .line-map-column {
+  .line-side {
+    position: static;
     order: -1;
   }
 
   .line-minimap {
-    position: static;
     height: 320px;
   }
 }

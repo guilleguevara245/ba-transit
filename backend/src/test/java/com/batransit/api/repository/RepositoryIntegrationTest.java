@@ -81,6 +81,12 @@ class RepositoryIntegrationTest {
     }
 
     @Test
+    void lasLineasTienenOperadorCargado() {
+        assertThat(lineRepository.findByModeOrderByCodeAsc(TransportMode.SUBTE))
+                .allSatisfy(line -> assertThat(line.getOperator()).isEqualTo("Emova Movilidad"));
+    }
+
+    @Test
     void hayTarifasVigentesCargadas() {
         assertThat(fareRepository.findByActiveTrueOrderByModeAscMinKmAsc()).isNotEmpty();
         assertThat(fareRepository.findByModeAndActiveTrueOrderByMinKmAsc(TransportMode.COLECTIVO)).isNotEmpty();

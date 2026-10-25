@@ -1,6 +1,7 @@
 package com.batransit.api.controller;
 
 import com.batransit.api.domain.TransportMode;
+import com.batransit.api.dto.LineDetailResponse;
 import com.batransit.api.dto.LineResponse;
 import com.batransit.api.service.TransportLineService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,7 +35,7 @@ public class TransportLineController {
     }
 
     @GetMapping("/{id}")
-    public LineResponse findById(@PathVariable Long id) {
+    public LineDetailResponse findById(@PathVariable Long id) {
         return transportLineService.findById(id);
     }
 }

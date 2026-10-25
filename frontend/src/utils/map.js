@@ -83,3 +83,53 @@ export function routeInfo(stations, station) {
     to: branch[branch.length - 1]?.stationName,
   }
 }
+
+/** Distancia en km entre dos puntos {latitude, longitude} (haversine). */
+export function distanceKm(a, b) {
+  const toRad = (deg) => (Number(deg) * Math.PI) / 180
+  const dLat = toRad(b.latitude) - toRad(a.latitude)
+  const dLng = toRad(b.longitude) - toRad(a.longitude)
+  const h =
+    Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a.latitude)) * Math.cos(toRad(b.latitude)) * Math.sin(dLng / 2) ** 2
+  return 2 * 6371 * Math.asin(Math.sqrt(h))
+}
+
+/**
+ * Resumen de una linea a partir de sus estaciones con coordenadas:
+ * cantidad de estaciones distintas y, por ramal, cabeceras y largo
+ * aproximado (suma de tramos rectos entre estaciones, asi que es una
+ * cota inferior del recorrido real).
+ */
+export function lineSummary(stations) {
+  const byBranch = new Map()
+  for (const s of stations) {
+    if (!byBranch.has(s.branchId)) byBranch.set(s.branchId, [])
+    byBranch.get(s.branchId).push(s)
+  }
+
+  const branches = Array.from(byBranch.values()).map((list) => {
+    const sorted = [...list].sort((a, b) => a.sequenceOrder - b.sequenceOrder)
+    let km = 0
+    for (let i = 1; i < sorted.length; i++) km += distanceKm(sorted[i - 1], sorted[i])
+    return { from: sorted[0].stationName, to: sorted[sorted.length - 1].stationName, km }
+  })
+
+  return {
+    stationCount: new Set(stations.map((s) => s.stationName)).size,
+    branches,
+  }
+}
+
+/** Codigos de las otras lineas de subte con las que combina una linea. */
+export function connectingLineCodes(lineCode, groups = SUBTE_TRANSFERS) {
+  const codes = new Set()
+  for (const group of groups) {
+    if (group.some((key) => key.startsWith(`${lineCode}:`))) {
+      group.forEach((key) => {
+        const code = key.split(':')[0]
+        if (code !== lineCode) codes.add(code)
+      })
+    }
+  }
+  return [...codes].sort()
+}

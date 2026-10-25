@@ -4,6 +4,7 @@ import AlertsPanel from '../components/AlertsPanel.jsx'
 import BackButton from '../components/BackButton.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
 import LineBadge from '../components/LineBadge.jsx'
+import LineInfoCard from '../components/LineInfoCard.jsx'
 import NetworkMap from '../components/NetworkMap.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { MODE_LABELS } from '../constants.js'
@@ -32,7 +33,11 @@ function BranchStations({ branch, line, selected, onSelect, locatedIds }) {
       {loading && <div className="loading-text">Cargando estaciones...</div>}
       {error && <ErrorMessage what="las estaciones" error={error} />}
 
-      {stations && (
+      {stations && stations.length === 0 && (
+        <div className="loading-text">Todavía no hay estaciones cargadas para este ramal.</div>
+      )}
+
+      {stations && stations.length > 0 && (
         <ol className="station-list" style={{ '--line-color': line.colorHex }}>
           {stations.map((station) => {
             const isSelected = station.id === selected.id
@@ -81,6 +86,8 @@ export default function LinePage() {
   )
   const locatedIds = useMemo(() => new Set(lineStations.map((s) => s.stationId)), [lineStations])
   const hasMap = lineStations.length > 0
+  // Para mostrar los badges de las lineas con las que combina.
+  const { data: allLines } = useApi(line?.mode === 'SUBTE' ? '/api/v1/lines?mode=SUBTE' : null)
 
   return (
     <div className="wrap content">
@@ -124,7 +131,7 @@ export default function LinePage() {
             <div className="loading-text">Esta línea todavía no tiene estaciones cargadas.</div>
           )}
 
-          <div className={hasMap ? 'line-layout' : 'line-layout no-map'}>
+          <div className="line-layout">
             <div className="branches">
               {branchesState.data?.map((branch) => (
                 <BranchStations
@@ -138,19 +145,24 @@ export default function LinePage() {
               ))}
             </div>
 
-            {hasMap && (
-              <div className="line-map-column">
-                <NetworkMap
-                  className="line-minimap"
-                  stations={lineStations}
-                  allStations={modeStations}
-                  alerts={alertsState.data ?? []}
-                  focusId={selected.id}
-                  onSelect={(id) => setSelected({ id, fromUrl: false })}
-                />
-                <p className="line-minimap-hint">Tocá una estación de la lista o del mapa para ubicarla.</p>
-              </div>
-            )}
+            {/* Columna derecha: siempre el mismo formato, con el minimapa
+                (si hay coordenadas) y debajo la informacion de la linea. */}
+            <aside className="line-side">
+              {hasMap && (
+                <>
+                  <NetworkMap
+                    className="line-minimap"
+                    stations={lineStations}
+                    allStations={modeStations}
+                    alerts={alertsState.data ?? []}
+                    focusId={selected.id}
+                    onSelect={(id) => setSelected({ id, fromUrl: false })}
+                  />
+                  <p className="line-minimap-hint">Tocá una estación de la lista o del mapa para ubicarla.</p>
+                </>
+              )}
+              <LineInfoCard line={line} stations={lineStations} allLines={allLines ?? []} />
+            </aside>
           </div>
         </>
       )}

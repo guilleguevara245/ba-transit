@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { SUBTE_TRANSFERS, buildLegend, buildRoutes, findTransfers, routeInfo } from './map.js'
+import { SUBTE_TRANSFERS, buildLegend, buildRoutes, connectingLineCodes, distanceKm, findTransfers, lineSummary, routeInfo } from './map.js'
 
 const station = (id, branchId, lineId, sequenceOrder, lat, lng) => ({
   stationId: id,
@@ -72,5 +72,33 @@ describe('routeInfo', () => {
     const stations = [s(3, 3, 'Retiro'), s(1, 1, 'Constitución'), s(2, 2, 'San Juan')]
 
     expect(routeInfo(stations, stations[2])).toEqual({ position: 2, total: 3, from: 'Constitución', to: 'Retiro' })
+  })
+})
+
+describe('distanceKm', () => {
+  it('Retiro (Mitre) a Belgrano R son unos 9 km en linea recta', () => {
+    const d = distanceKm({ latitude: -34.5908, longitude: -58.3751 }, { latitude: -34.5678, longitude: -58.4625 })
+    expect(d > 8 && d < 9).toBe(true)
+  })
+})
+
+describe('lineSummary', () => {
+  it('cuenta estaciones distintas y arma cada ramal', () => {
+    const s = (branchId, seq, name, lat) => ({ branchId, sequenceOrder: seq, stationName: name, latitude: lat, longitude: -58.4 })
+    const summary = lineSummary([s(1, 1, 'Retiro', -34.59), s(1, 2, 'Tigre', -34.5), s(2, 1, 'Retiro', -34.59), s(2, 2, 'Suárez', -34.53)])
+
+    expect(summary.stationCount).toBe(3)
+    expect(summary.branches.map((b) => `${b.from}-${b.to}`)).toEqual(['Retiro-Tigre', 'Retiro-Suárez'])
+    expect(Math.round(summary.branches[0].km)).toBe(10)
+  })
+})
+
+describe('connectingLineCodes', () => {
+  it('lineas con las que combina la A', () => {
+    expect(connectingLineCodes('A')).toEqual(['C', 'D', 'E', 'H'])
+  })
+
+  it('una linea sin combinaciones', () => {
+    expect(connectingLineCodes('Z')).toEqual([])
   })
 })

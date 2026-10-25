@@ -1,6 +1,7 @@
 package com.batransit.api.service;
 
 import com.batransit.api.domain.TransportMode;
+import com.batransit.api.dto.LineDetailResponse;
 import com.batransit.api.dto.LineResponse;
 import com.batransit.api.exception.NotFoundException;
 import com.batransit.api.repository.TransportLineRepository;
@@ -24,9 +25,9 @@ public class TransportLineService {
                 .toList();
     }
 
-    public LineResponse findById(Long id) {
+    public LineDetailResponse findById(Long id) {
         return transportLineRepository.findById(id)
-                .map(LineResponse::from)
+                .map(LineDetailResponse::from)
                 .orElseThrow(() -> new NotFoundException("No existe una línea con id " + id));
     }
 

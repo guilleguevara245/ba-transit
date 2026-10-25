@@ -1,6 +1,7 @@
 package com.batransit.api.controller;
 
 import com.batransit.api.domain.TransportMode;
+import com.batransit.api.dto.LineDetailResponse;
 import com.batransit.api.dto.LineResponse;
 import com.batransit.api.exception.NotFoundException;
 import com.batransit.api.service.TransportLineService;
@@ -56,6 +57,17 @@ class TransportLineControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.status").value(400));
+    }
+
+    @Test
+    void elDetalleIncluyeElOperador() throws Exception {
+        when(service.findById(1L)).thenReturn(new LineDetailResponse(1L, TransportMode.SUBTE, "A", "Línea A",
+                "#00A8E1", true, "Emova Movilidad", "Concesión de SBASE", null, 1913));
+
+        mockMvc.perform(get("/api/v1/lines/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.operator").value("Emova Movilidad"))
+                .andExpect(jsonPath("$.openedYear").value(1913));
     }
 
     @Test
