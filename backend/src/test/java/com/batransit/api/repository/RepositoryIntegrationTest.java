@@ -66,6 +66,14 @@ class RepositoryIntegrationTest {
     }
 
     @Test
+    void elMapaCompletoIncluyeTodosLosModosConCoordenadas() {
+        List<MapStation> all = stationRepository.findAllMapStations();
+
+        assertThat(all).hasSizeGreaterThanOrEqualTo(90);
+        assertThat(all).extracting(MapStation::lineMode).contains(TransportMode.SUBTE);
+    }
+
+    @Test
     void lasLineasSeFiltranPorModo() {
         assertThat(lineRepository.findByModeOrderByCodeAsc(TransportMode.SUBTE))
                 .extracting(line -> line.getCode())

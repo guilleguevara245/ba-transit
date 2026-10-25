@@ -9,7 +9,7 @@ Este repositorio es el backend (API REST) del proyecto.
 
 ## Estado del proyecto
 
-**Fases 1 a 7 completas (Fase 4 solo para subte; el mapa solo tiene datos de subte por ahora).**
+**Fases 1 a 7 completas (Fase 4 solo para subte). El mapa incluye subte y trenes.**
 
 - Fase 1 (base): Spring Boot, PostgreSQL, Docker Compose, CI, variables de
   entorno.
@@ -28,7 +28,7 @@ Este repositorio es el backend (API REST) del proyecto.
 - Fase 7 (estadisticas): endpoint de estadisticas de alertas por linea
   (total historico, activas, tipo mas frecuente), con agregacion SQL en
   el backend, y pagina de estadisticas en el frontend.
-- Ronda de calidad (v4.6 a v6.1): correcciones en la sincronizacion,
+- Ronda de calidad (v4.6 a v4.30): correcciones en la sincronizacion,
   timeouts y credenciales fuera de los logs, API key para escrituras,
   errores con Problem Details, DTOs, enum de modos, busqueda sin
   tildes, TIMESTAMPTZ, tarifas vigentes, tests y Swagger UI.
@@ -159,8 +159,9 @@ Endpoints principales:
 - `GET /api/v1/fares`, `GET /api/v1/fares?mode=TREN`, `POST /api/v1/fares` -
   tarifas
 - `GET /api/v1/search?q=texto` - busqueda combinada de lineas y estaciones
-- `GET /api/v1/map/stations?mode=SUBTE` - estaciones con coordenadas para
-  el mapa (solo subte tiene coordenadas cargadas por ahora)
+- `GET /api/v1/map/stations`, `GET /api/v1/map/stations?mode=TREN` -
+  estaciones con coordenadas para el mapa (subte y trenes; fuente de las
+  coordenadas de tren: Buenos Aires Data, "Estaciones de ferrocarril")
 - `GET /api/v1/stats/alerts` - estadisticas de alertas por linea (total,
   activas, tipo mas frecuente)
 
@@ -178,6 +179,6 @@ externa vive en `client` (llamadas HTTP con reintentos), `config`
 - [x] Fase 3 - API de lineas, estados, alertas, tarifas y busqueda
 - [x] Fase 4 - Actualizacion automatica (solo subte, ver limitaciones arriba)
 - [x] Fase 5 - Frontend
-- [x] Fase 6 - Mapa (solo subte, ver limitaciones arriba)
+- [x] Fase 6 - Mapa (subte y trenes; premetro sin coordenadas todavia)
 - [x] Fase 7 - Estadisticas y calidad
 - [ ] Fase 8 - Presentacion final

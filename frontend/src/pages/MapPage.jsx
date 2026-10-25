@@ -1,105 +1,82 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { CircleMarker, MapContainer, Polyline, Popup, TileLayer, useMap } from 'react-leaflet'
 import ErrorMessage from '../components/ErrorMessage.jsx'
-import StationPopup from '../components/StationPopup.jsx'
+import NetworkMap from '../components/NetworkMap.jsx'
 import { useApi } from '../hooks/useApi.js'
-import { buildLegend, buildRoutes } from '../utils/map.js'
+import { MODE_LABELS_PLURAL } from '../constants.js'
+import { buildLegend } from '../utils/map.js'
 import './MapPage.css'
 
-// Centro aproximado de CABA.
-const CENTER = [-34.6083, -58.4]
-const ZOOM = 12
-const FOCUS_ZOOM = 16
-
-/**
- * Centra el mapa en la estacion pedida por URL (/mapa?estacion=ID) y
- * abre su popup. Tiene que vivir dentro de MapContainer para usar useMap.
- */
-function FocusOnStation({ station, markerRef }) {
-  const map = useMap()
-
-  useEffect(() => {
-    if (!station) return
-    map.setView([Number(station.latitude), Number(station.longitude)], FOCUS_ZOOM)
-    markerRef.current?.openPopup()
-  }, [map, station, markerRef])
-
-  return null
-}
+const MODE_ORDER = ['SUBTE', 'PREMETRO', 'TREN']
 
 export default function MapPage() {
   const { data: stations, loading, error } = useApi('/api/v1/map/stations')
-  // Las alertas se usan solo para enriquecer los popups; si fallan, el
-  // mapa se muestra igual.
+  // Las alertas solo enriquecen los popups; si fallan, el mapa se muestra igual.
   const { data: alerts } = useApi('/api/v1/alerts', { refreshMs: 60_000 })
   const [searchParams] = useSearchParams()
-  const focusedMarkerRef = useRef(null)
+  const [modeFilter, setModeFilter] = useState('TODOS')
 
-  const focusedId = Number(searchParams.get('estacion')) || null
-  const focusedStation = stations?.find((s) => s.stationId === focusedId) ?? null
-  const routes = useMemo(() => (stations ? buildRoutes(stations) : []), [stations])
+  const focusId = Number(searchParams.get('estacion')) || null
+
+  const modes = useMemo(
+    () => MODE_ORDER.filter((mode) => stations?.some((s) => s.lineMode === mode)),
+    [stations],
+  )
+  const visible = useMemo(
+    () => (stations ?? []).filter((s) => modeFilter === 'TODOS' || s.lineMode === modeFilter),
+    [stations, modeFilter],
+  )
+  const focusMissing = focusId && stations && !stations.some((s) => s.stationId === focusId)
 
   return (
     <div className="wrap content">
-      <div className="section-label">Mapa de la red (subte)</div>
+      <div className="map-toolbar">
+        <div className="section-label">Mapa de la red</div>
+        {modes.length > 1 && (
+          <div className="map-filters" role="group" aria-label="Filtrar por modo">
+            {['TODOS', ...modes].map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                className={mode === modeFilter ? 'map-filter active' : 'map-filter'}
+                aria-pressed={mode === modeFilter}
+                onClick={() => setModeFilter(mode)}
+              >
+                {mode === 'TODOS' ? 'Todos' : MODE_LABELS_PLURAL[mode]}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       {loading && <div className="loading-text">Cargando estaciones...</div>}
       {error && <ErrorMessage what="el mapa" error={error} />}
-      {focusedId && stations && !focusedStation && (
-        <div className="stale-text">Esa estación todavía no tiene ubicación cargada en el mapa.</div>
-      )}
+      {focusMissing && <div className="stale-text">Esa estación todavía no tiene ubicación cargada en el mapa.</div>}
 
       {stations && (
         <>
-          <div className="map-container">
-            <MapContainer center={CENTER} zoom={ZOOM} style={{ height: '100%', width: '100%' }}>
-              <TileLayer
-                url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              />
-
-              {routes.map((route) => (
-                <Polyline
-                  key={route.branchId}
-                  positions={route.positions}
-                  pathOptions={{ color: route.color, weight: 4, opacity: 0.75 }}
-                />
-              ))}
-
-              {stations.map((station) => {
-                const focused = station.stationId === focusedId
-                return (
-                  <CircleMarker
-                    key={station.stationId}
-                    ref={focused ? focusedMarkerRef : undefined}
-                    center={[Number(station.latitude), Number(station.longitude)]}
-                    radius={focused ? 9 : 6}
-                    pathOptions={{
-                      color: focused ? '#ffffff' : station.lineColorHex,
-                      fillColor: station.lineColorHex,
-                      fillOpacity: 0.95,
-                      weight: focused ? 3 : 2,
-                    }}
-                  >
-                    <Popup className="station-popup-container" maxWidth={300} minWidth={240}>
-                      <StationPopup station={station} stations={stations} alerts={alerts ?? []} mode="SUBTE" />
-                    </Popup>
-                  </CircleMarker>
-                )
-              })}
-
-              <FocusOnStation station={focusedStation} markerRef={focusedMarkerRef} />
-            </MapContainer>
-          </div>
+          <NetworkMap
+            className="map-container"
+            stations={visible}
+            allStations={stations}
+            alerts={alerts ?? []}
+            focusId={focusId}
+          />
 
           <div className="map-legend">
-            {buildLegend(stations).map((line) => (
-              <div className="map-legend-item" key={line.name}>
-                <span className="map-legend-dot" style={{ background: line.color }}></span>
-                {line.name}
-              </div>
-            ))}
+            {modes
+              .filter((mode) => modeFilter === 'TODOS' || mode === modeFilter)
+              .map((mode) => (
+                <div className="map-legend-group" key={mode}>
+                  <span className="map-legend-title">{MODE_LABELS_PLURAL[mode]}</span>
+                  {buildLegend(stations.filter((s) => s.lineMode === mode)).map((line) => (
+                    <span className="map-legend-item" key={line.name}>
+                      <span className="map-legend-dot" style={{ background: line.color }}></span>
+                      {line.name}
+                    </span>
+                  ))}
+                </div>
+              ))}
           </div>
         </>
       )}

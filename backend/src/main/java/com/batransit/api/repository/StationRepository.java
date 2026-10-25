@@ -22,11 +22,18 @@ public interface StationRepository extends JpaRepository<Station, Long> {
             + "ORDER BY s.name ASC, tl.name ASC")
     List<StationSearchResult> search(@Param("pattern") String pattern, Pageable pageable);
 
-    @Query("SELECT new com.batransit.api.dto.MapStation("
-            + "s.id, s.name, s.latitude, s.longitude, b.id, tl.id, tl.code, tl.name, tl.colorHex, s.sequenceOrder) "
+    String MAP_STATION_SELECT = "SELECT new com.batransit.api.dto.MapStation("
+            + "s.id, s.name, s.latitude, s.longitude, b.id, tl.id, tl.mode, tl.code, tl.name, tl.colorHex, "
+            + "s.sequenceOrder) "
             + "FROM Station s JOIN s.branch b JOIN b.transportLine tl "
-            + "WHERE tl.mode = :mode AND s.active = true "
-            + "AND s.latitude IS NOT NULL AND s.longitude IS NOT NULL "
+            + "WHERE s.active = true AND s.latitude IS NOT NULL AND s.longitude IS NOT NULL ";
+
+    @Query(MAP_STATION_SELECT
+            + "AND tl.mode = :mode "
             + "ORDER BY tl.code ASC, b.id ASC, s.sequenceOrder ASC")
     List<MapStation> findMapStationsByMode(@Param("mode") TransportMode mode);
+
+    @Query(MAP_STATION_SELECT
+            + "ORDER BY tl.mode ASC, tl.code ASC, b.id ASC, s.sequenceOrder ASC")
+    List<MapStation> findAllMapStations();
 }

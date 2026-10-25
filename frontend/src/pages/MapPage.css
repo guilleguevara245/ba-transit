@@ -5,11 +5,75 @@
   margin-bottom: 24px;
 }
 
+/* ---- Barra superior con filtros por modo ---- */
+
+.map-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.map-toolbar .section-label {
+  margin-bottom: 0;
+}
+
+.map-filters {
+  display: flex;
+  gap: 6px;
+}
+
+.map-filter {
+  padding: 6px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-dim);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.map-filter:hover:not(.active) {
+  border-color: var(--yellow);
+  color: var(--text);
+}
+
+.map-filter.active {
+  background: #17171a;
+  border-color: #17171a;
+  color: var(--yellow);
+}
+
+/* ---- Leyenda agrupada por modo ---- */
+
 .map-legend {
   display: flex;
-  flex-wrap: wrap;
-  gap: 14px;
+  flex-direction: column;
+  gap: 10px;
   padding-bottom: 30px;
+}
+
+.map-legend-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+}
+
+.map-legend-title {
+  min-width: 70px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-faint);
 }
 
 .map-legend-item {

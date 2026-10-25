@@ -19,4 +19,9 @@ public class MapService {
     public List<MapStation> stationsByMode(TransportMode mode) {
         return stationRepository.findMapStationsByMode(mode);
     }
+
+    /** Todas las estaciones con coordenadas, de todos los modos. */
+    public List<MapStation> allStations() {
+        return stationRepository.findAllMapStations();
+    }
 }

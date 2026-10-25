@@ -29,7 +29,8 @@ El backend sincroniza automáticamente las alertas de subte desde la API Transpo
 - Tarifas vigentes por modo y tramo de distancia (subte, colectivos y trenes)
 - Búsqueda combinada de líneas y estaciones, sin distinguir tildes ni mayúsculas, con resultados navegables con teclado
 - Página de inicio en React con estado en vivo por modo, panel de alertas y panel de tarifas, que se actualiza sola cada minuto
-- Mapa interactivo (Leaflet + OpenStreetMap) de las 90 estaciones de subte con coordenadas reales y el recorrido de cada línea; cada estación muestra su posición en el recorrido, sus combinaciones y las alertas de la línea
+- Mapa interactivo (Leaflet + OpenStreetMap) de la red completa: 90 estaciones de subte y 165 de tren con coordenadas reales, el recorrido de cada línea y filtros por modo; cada estación muestra su posición en el recorrido, sus combinaciones y las alertas de la línea
+- Página por modo (Trenes, Subtes, Premetro) con el estado de cada línea y su mapa, y detalle de cada línea con la lista de estaciones y un minimapa
 - Endpoint de estadísticas de alertas por línea (total histórico, activas, tipo más frecuente), calculadas con agregación SQL en el backend
 - Base de datos versionada con migraciones Flyway, sin pérdida de datos entre cambios de esquema
 - Endpoints de escritura protegidos con API key y errores con formato estándar (Problem Details, RFC 9457)
@@ -111,7 +112,7 @@ En desarrollo, el proxy de Vite reenvía `/api` al backend en `http://localhost:
 
 ## Uso
 
-Con el backend y el frontend corriendo, la página de inicio queda disponible en `http://localhost:5173` (puerto por defecto de Vite). Desde ahí se puede buscar una línea o estación, ver el estado en vivo por modo de transporte, consultar alertas y tarifas activas y explorar el mapa de estaciones de subte en la pestaña "Mapa". Al elegir un resultado de búsqueda se abre el detalle de la línea, con sus ramales, estaciones y alertas.
+Con el backend y el frontend corriendo, la página de inicio queda disponible en `http://localhost:5173` (puerto por defecto de Vite). Desde ahí se puede buscar una línea o estación, ver el estado en vivo por modo de transporte, consultar alertas y tarifas activas y explorar el mapa de la red en la pestaña "Mapa". Cada tarjeta de "Estado de la red" lleva a la página de ese modo. Al elegir un resultado de búsqueda se abre el detalle de la línea, con sus ramales, estaciones y alertas.
 
 La documentación interactiva de la API está en `http://localhost:8080/swagger-ui.html`.
 
@@ -146,7 +147,7 @@ Un workflow de GitHub Actions corre en cada `push` y `pull request` a `main`, co
 
 ## Estado del proyecto
 
-**Fases 1 a 7 completas (Fase 4 solo para subte; el mapa también solo tiene datos de subte por ahora).**
+**Fases 1 a 7 completas (Fase 4 solo para subte). El mapa ya incluye subte y trenes.**
 
 - [x] Fase 1 — Base: Spring Boot, PostgreSQL, Docker Compose, CI
 - [x] Fase 2 — Modelo de datos: líneas, ramales y estaciones reales de subte (90 estaciones) y de las 8 líneas de tren AMBA, versionadas con Flyway *(algunos ramales de trenes de larga distancia o fuera de servicio quedaron fuera del alcance a propósito — ver detalle en [`backend/README.md`](./backend/README.md))*

@@ -21,11 +21,15 @@ public class MapController {
     }
 
     /**
-     * Por ahora solo SUBTE tiene coordenadas cargadas (ver limitaciones
-     * documentadas en el README del backend), por eso ese es el default.
+     * GET /api/v1/map/stations devuelve las estaciones con coordenadas de
+     * todos los modos; con ?mode=TREN filtra por modo. Las estaciones
+     * sin coordenadas cargadas no se incluyen.
      */
     @GetMapping("/stations")
-    public List<MapStation> stations(@RequestParam(defaultValue = "SUBTE") String mode) {
+    public List<MapStation> stations(@RequestParam(required = false) String mode) {
+        if (mode == null || mode.isBlank()) {
+            return mapService.allStations();
+        }
         return mapService.stationsByMode(TransportMode.from(mode));
     }
 }
