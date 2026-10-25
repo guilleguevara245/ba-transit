@@ -1,17 +1,29 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { apiGet } from '../api.js'
 import { useDebounce } from '../hooks/useDebounce.js'
+import { moveActiveIndex, toSearchOptions } from '../utils/search.js'
 import './SearchBar.css'
 
 const MIN_CHARS = 2
 
+/**
+ * Buscador con desplegable navegable (patron "combobox" de ARIA):
+ * flechas para moverse, Enter para abrir el resultado, Escape para
+ * cerrar. Una linea lleva a su pagina; una estacion, a la pagina de
+ * su linea con la estacion resaltada.
+ */
 export default function SearchBar() {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState(null)
   const [open, setOpen] = useState(false)
+  const [activeIndex, setActiveIndex] = useState(-1)
   const containerRef = useRef(null)
+  const navigate = useNavigate()
+  const listboxId = useId()
 
   const debouncedQuery = useDebounce(query.trim(), 300)
+  const options = toSearchOptions(results)
 
   useEffect(() => {
     if (debouncedQuery.length < MIN_CHARS) {
@@ -24,6 +36,7 @@ export default function SearchBar() {
       .then((data) => {
         if (!cancelled) {
           setResults(data)
+          setActiveIndex(-1)
           setOpen(true)
         }
       })
@@ -47,18 +60,49 @@ export default function SearchBar() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const hasResults = results && (results.lines.length > 0 || results.stations.length > 0)
+  function choose(option) {
+    setOpen(false)
+    setQuery('')
+    setResults(null)
+    navigate(option.href)
+  }
+
+  function handleKeyDown(event) {
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault()
+      setOpen(true)
+      setActiveIndex((current) => moveActiveIndex(current, event.key === 'ArrowDown' ? 1 : -1, options.length))
+    } else if (event.key === 'Enter') {
+      const option = options[activeIndex] ?? (options.length === 1 ? options[0] : null)
+      if (option) {
+        event.preventDefault()
+        choose(option)
+      }
+    } else if (event.key === 'Escape') {
+      setOpen(false)
+      setActiveIndex(-1)
+    }
+  }
+
+  const showDropdown = open && debouncedQuery.length >= MIN_CHARS
+  const activeOption = showDropdown ? options[activeIndex] : undefined
 
   return (
     <div className="search-wrap" ref={containerRef}>
       <div className="search-box">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
           <circle cx="11" cy="11" r="7" />
           <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
         <input
           type="text"
-          placeholder="Buscar líneas, estaciones o paradas"
+          role="combobox"
+          aria-label="Buscar líneas o estaciones"
+          aria-autocomplete="list"
+          aria-expanded={showDropdown}
+          aria-controls={listboxId}
+          aria-activedescendant={activeOption ? `${listboxId}-${activeOption.key}` : undefined}
+          placeholder="Buscar líneas o estaciones"
           value={query}
           onChange={(event) => {
             setQuery(event.target.value)
@@ -67,37 +111,35 @@ export default function SearchBar() {
           onFocus={() => {
             if (results) setOpen(true)
           }}
+          onKeyDown={handleKeyDown}
         />
       </div>
 
-      {open && debouncedQuery.length >= MIN_CHARS && (
-        <div className="search-results">
-          {!hasResults && <div className="search-empty">Sin resultados para "{debouncedQuery}"</div>}
+      {showDropdown && (
+        <div className="search-results" id={listboxId} role="listbox">
+          {options.length === 0 && <div className="search-empty">Sin resultados para “{debouncedQuery}”</div>}
 
-          {results && results.lines.length > 0 && (
-            <>
-              <div className="search-section-label">Líneas</div>
-              {results.lines.map((line) => (
-                <div className="search-result-row" key={`line-${line.id}`}>
-                  <span className="result-dot" style={{ background: line.colorHex }}></span>
-                  <span className="result-name">{line.name}</span>
+          {options.map((option, index) => (
+            <div key={option.key}>
+              {(index === 0 || options[index - 1].group !== option.group) && (
+                <div className="search-section-label" role="presentation">
+                  {option.group}
                 </div>
-              ))}
-            </>
-          )}
-
-          {results && results.stations.length > 0 && (
-            <>
-              <div className="search-section-label">Estaciones</div>
-              {results.stations.map((station) => (
-                <div className="search-result-row" key={`station-${station.stationId}`}>
-                  <span className="result-dot" style={{ background: station.lineColorHex }}></span>
-                  <span className="result-name">{station.stationName}</span>
-                  <span className="result-meta">{station.lineName}</span>
-                </div>
-              ))}
-            </>
-          )}
+              )}
+              <div
+                id={`${listboxId}-${option.key}`}
+                role="option"
+                aria-selected={index === activeIndex}
+                className={index === activeIndex ? 'search-result-row active' : 'search-result-row'}
+                onMouseEnter={() => setActiveIndex(index)}
+                onClick={() => choose(option)}
+              >
+                <span className="result-dot" style={{ background: option.color }}></span>
+                <span className="result-name">{option.name}</span>
+                <span className="result-meta">{option.meta}</span>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
