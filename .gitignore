@@ -3,8 +3,9 @@ backend/target/
 *.class
 *.jar
 *.log
+log.txt
 
-# Frontend (para cuando arranque la Fase 5)
+# Frontend
 frontend/node_modules/
 frontend/dist/
 frontend/build/
@@ -12,6 +13,7 @@ frontend/build/
 # Entorno y credenciales
 .env
 *.env
+.env.local
 
 # IDE / SO
 .idea/
