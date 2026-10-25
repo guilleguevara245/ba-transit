@@ -5,6 +5,7 @@ import BusRouteMap from '../components/BusRouteMap.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { useDebounce } from '../hooks/useDebounce.js'
+import { busDescription, busTitle } from '../utils/busNames.js'
 import './ModePage.css'
 import './ColectivosPage.css'
 
@@ -36,7 +37,8 @@ function RouteDetail({ routeId }) {
       <header className="bus-detail-head">
         <BusNumber route={route} large />
         <div>
-          <h2 className="bus-detail-name">{route.longName || `Línea ${route.shortName}`}</h2>
+          <h2 className="bus-detail-name">{busTitle(route)}</h2>
+          {busDescription(route) && <div className="bus-detail-agency">{busDescription(route)}</div>}
           {route.agency && <div className="bus-detail-agency">{route.agency}</div>}
         </div>
       </header>
@@ -85,7 +87,8 @@ export default function ColectivosPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const selectedId = searchParams.get('linea')
   const [query, setQuery] = useState('')
-  const debounced = useDebounce(query.trim(), 300)
+  // "Línea 53" o "linea 53" buscan lo mismo que "53".
+  const debounced = useDebounce(query.trim().replace(/^l[ií]nea\s*/i, ''), 300)
 
   const status = useApi('/api/v1/colectivos/estado')
   const available = status.data?.available
@@ -136,7 +139,8 @@ export default function ColectivosPage() {
                 >
                   <BusNumber route={route} />
                   <span className="bus-result-text">
-                    <span className="bus-result-name">{route.longName || `Línea ${route.shortName}`}</span>
+                    <span className="bus-result-name">{busTitle(route)}</span>
+                    {busDescription(route) && <span className="bus-result-agency">{busDescription(route)}</span>}
                     {route.agency && <span className="bus-result-agency">{route.agency}</span>}
                   </span>
                 </button>
