@@ -1,5 +1,6 @@
 import LineBadge from './LineBadge.jsx'
 import { connectingLineCodes, lineSummary } from '../utils/map.js'
+import { DAY_TYPES, OPERATOR_SITES, serviceHoursFor } from '../utils/serviceHours.js'
 import './LineInfoCard.css'
 
 const CURRENT_YEAR = new Date().getFullYear()
@@ -22,6 +23,8 @@ export default function LineInfoCard({ line, stations, allLines = [] }) {
   const summary = stations.length > 0 ? lineSummary(stations) : null
   const connections = line.mode === 'SUBTE' ? connectingLineCodes(line.code) : []
   const linesByCode = new Map(allLines.filter((l) => l.mode === 'SUBTE').map((l) => [l.code, l]))
+  const hours = serviceHoursFor(line)
+  const operatorSite = OPERATOR_SITES[line.operator]
 
   return (
     <section className="line-info" style={{ '--line-color': line.colorHex }} aria-label="Información de la línea">
@@ -71,7 +74,52 @@ export default function LineInfoCard({ line, stations, allLines = [] }) {
             </span>
           </Row>
         )}
+        {!hours && operatorSite && (
+          <Row label="Horarios">
+            <a className="info-link" href={operatorSite} target="_blank" rel="noreferrer">
+              Consultar en el sitio de {line.operator} ↗
+            </a>
+          </Row>
+        )}
       </dl>
+
+      {hours && (
+        <div className="info-hours">
+          <h3 className="info-hours-title">Horario de servicio</h3>
+          <table className="hours-table">
+            <thead>
+              <tr>
+                <th scope="col"></th>
+                {DAY_TYPES.map((day) => (
+                  <th scope="col" key={day}>
+                    {day}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Primer tren</th>
+                {hours.firstTrain.map((time, i) => (
+                  <td key={i}>{time}</td>
+                ))}
+              </tr>
+              {hours.lastTrains.map((row) => (
+                <tr key={row.from}>
+                  <th scope="row">
+                    Último desde <span className="hours-from">{row.from}</span>
+                  </th>
+                  {row.times.map((time, i) => (
+                    <td key={i}>{time}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {hours.note && <p className="info-note">{hours.note}</p>}
+          <p className="info-note">Últimos trenes ± 5 min. Fuente: Emova.</p>
+        </div>
+      )}
 
       {summary && <p className="info-note">Distancias aproximadas, medidas en línea recta entre estaciones.</p>}
     </section>
