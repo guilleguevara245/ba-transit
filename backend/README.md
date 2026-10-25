@@ -28,6 +28,10 @@ Este repositorio es el backend (API REST) del proyecto.
 - Fase 7 (estadisticas): endpoint de estadisticas de alertas por linea
   (total historico, activas, tipo mas frecuente), con agregacion SQL en
   el backend, y pagina de estadisticas en el frontend.
+- Ronda de calidad (v4.6 a v6.1): correcciones en la sincronizacion,
+  timeouts y credenciales fuera de los logs, API key para escrituras,
+  errores con Problem Details, DTOs, enum de modos, busqueda sin
+  tildes, TIMESTAMPTZ, tarifas vigentes, tests y Swagger UI.
 
 ## Colectivos y trenes en la Fase 4
 
@@ -56,7 +60,7 @@ o fuera del alcance real del proyecto.
 
 ## Stack
 
-- Java 21 + Spring Boot 3.3
+- Java 21 + Spring Boot 3.5
 - PostgreSQL 16
 - Maven
 - Docker + Docker Compose
@@ -108,6 +112,17 @@ o fuera del alcance real del proyecto.
 | `SERVER_PORT`                | Puerto en el que corre el backend        | `8080`             |
 | `TRANSPORTE_CLIENT_ID`       | Credencial de la API Transporte de BA    | (vacio)            |
 | `TRANSPORTE_CLIENT_SECRET`   | Credencial de la API Transporte de BA    | (vacio)            |
+| `FRONTEND_ORIGINS`           | Origenes permitidos por CORS (coma)      | `http://localhost:5173` |
+| `ADMIN_API_KEY`              | Clave para los endpoints de escritura    | (vacio = escritura deshabilitada) |
+
+Los endpoints de escritura (`POST`) requieren el header `X-API-Key` con
+el valor de `ADMIN_API_KEY`. Las lecturas (`GET`) son publicas. Ejemplo:
+
+```bash
+curl -X POST http://localhost:8080/api/v1/alerts \
+  -H "Content-Type: application/json" -H "X-API-Key: $ADMIN_API_KEY" \
+  -d '{"lineId": 1, "type": "DEMORA", "description": "Demoras por obras", "source": "Manual"}'
+```
 
 Ninguna credencial esta hardcodeada: todas se resuelven via variables de
 entorno. El `.env` real nunca se sube al repositorio (esta en
@@ -122,15 +137,26 @@ mvn clean verify
 
 ## API
 
-Endpoints principales (ver el codigo fuente para el detalle completo):
+La documentacion interactiva (Swagger UI) queda disponible con el
+backend corriendo en http://localhost:8080/swagger-ui.html, y la
+especificacion OpenAPI en http://localhost:8080/v3/api-docs. Desde
+Swagger UI se pueden probar los endpoints; para los `POST`, cargar la
+clave con el boton "Authorize".
+
+Todos los errores responden con el formato Problem Details
+(`application/problem+json`): `status`, `title`, `detail` y, en errores
+de validacion, `errors` con el campo invalido.
+
+Endpoints principales:
 
 - `GET /api/v1/status` - estado del servicio
-- `GET /api/v1/lines`, `GET /api/v1/lines/{mode}` - lineas de transporte
+- `GET /api/v1/lines`, `GET /api/v1/lines?mode=SUBTE` - lineas de transporte
+- `GET /api/v1/lines/{lineId}` - una linea por id
 - `GET /api/v1/lines/{lineId}/branches` - ramales de una linea
 - `GET /api/v1/branches/{branchId}/stations` - estaciones de un ramal
 - `GET /api/v1/alerts`, `POST /api/v1/alerts` - alertas de servicio
 - `GET /api/v1/lines/{lineId}/alerts` - alertas de una linea
-- `GET /api/v1/fares`, `GET /api/v1/fares/{mode}`, `POST /api/v1/fares` -
+- `GET /api/v1/fares`, `GET /api/v1/fares?mode=TREN`, `POST /api/v1/fares` -
   tarifas
 - `GET /api/v1/search?q=texto` - busqueda combinada de lineas y estaciones
 - `GET /api/v1/map/stations?mode=SUBTE` - estaciones con coordenadas para

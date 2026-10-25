@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img src="https://github.com/guilleguevara245/ba-transit/actions/workflows/ci.yml/badge.svg" alt="Estado del backend">
+  <img src="https://github.com/guilleguevara245/ba-transit/actions/workflows/ci.yml/badge.svg" alt="CI">
   <img src="https://img.shields.io/badge/Java-21-blue" alt="Java 21">
   <img src="https://img.shields.io/badge/React-Vite-61DAFB" alt="React + Vite">
   <img src="https://img.shields.io/badge/status-en%20desarrollo-yellow" alt="En desarrollo">
@@ -24,29 +24,34 @@ El backend sincroniza automáticamente las alertas de subte desde la API Transpo
 
 ## Funcionalidades
 
-- Consulta de líneas de transporte por modo (subte, tren, premetro) con sus ramales y estaciones
+- Consulta de líneas de transporte por modo (subte, tren, premetro) con sus ramales y estaciones, y una página de detalle por línea con su recorrido y sus alertas
 - Alertas de servicio por línea, con sincronización automática desde la API Transporte de Buenos Aires (cada 5 minutos, solo subte por ahora — ver limitaciones en [`backend/README.md`](./backend/README.md))
-- Tarifas por modo y tramo de distancia
-- Búsqueda combinada de líneas y estaciones por texto
-- Dashboard en React con estado en vivo por modo, panel de alertas y panel de tarifas, conectado en tiempo real a la API
-- Mapa interactivo (Leaflet + OpenStreetMap) de las 90 estaciones de subte, coloreadas por línea, con coordenadas reales
+- Tarifas vigentes por modo y tramo de distancia (subte, colectivos y trenes)
+- Búsqueda combinada de líneas y estaciones, sin distinguir tildes ni mayúsculas, con resultados navegables con teclado
+- Dashboard en React con estado en vivo por modo, panel de alertas y panel de tarifas, que se actualiza solo cada minuto
+- Mapa interactivo (Leaflet + OpenStreetMap) de las 90 estaciones de subte con coordenadas reales y el recorrido de cada línea
 - Estadísticas de alertas por línea (total histórico, activas, tipo más frecuente), calculadas con agregación SQL en el backend
 - Base de datos versionada con migraciones Flyway, sin pérdida de datos entre cambios de esquema
+- Endpoints de escritura protegidos con API key y errores con formato estándar (Problem Details, RFC 9457)
+- Documentación interactiva de la API con Swagger UI
 
 ## Tecnologías
 
 **Backend**
-- **Java 21** + **Spring Boot 3.3**
+- **Java 21** + **Spring Boot 3.5**
 - **PostgreSQL 16**
 - **Flyway** para migraciones versionadas
 - **Docker** + **Docker Compose**
+- **springdoc-openapi** (Swagger UI) para documentar la API
+- **JUnit 5**, **Mockito** y **MockMvc** para tests
 - **GitHub Actions** para integración continua
 
 **Frontend**
 - **React** + **Vite**
 - **React Router** para la navegación entre Dashboard, Mapa y Estadísticas
 - **Leaflet** + **React Leaflet** para el mapa interactivo
-- Hooks propios para consumo de API, debounce de búsqueda y datos en vivo
+- Hooks propios para consumo de API con refresco periódico, debounce de búsqueda y reloj
+- **ESLint** + **Vitest**
 
 ## Estructura del proyecto
 
@@ -56,16 +61,21 @@ ba-transit/
 │   ├── src/main/java/com/batransit/api/
 │   │   ├── controller/      # Endpoints HTTP
 │   │   ├── service/         # Lógica de negocio
+│   │   ├── dto/             # Objetos de entrada y salida de la API
+│   │   ├── domain/          # Entidades JPA y enums
 │   │   ├── client/          # Integración con la API Transporte externa
-│   │   └── scheduler/       # Job de sincronización automática de alertas
+│   │   ├── scheduler/       # Job de sincronización automática de alertas
+│   │   ├── security/        # API key para los endpoints de escritura
+│   │   └── exception/       # Manejo de errores (Problem Details)
 │   └── src/main/resources/db/migration/   # Migraciones Flyway
 ├── frontend/                # Cliente web (React + Vite)
 │   └── src/
-│       ├── pages/           # Dashboard, Mapa y Estadísticas
+│       ├── pages/           # Dashboard, Mapa, Estadísticas y detalle de línea
 │       ├── components/      # Header, navegación, búsqueda, paneles
-│       └── hooks/           # useApi, useDebounce
+│       ├── hooks/           # useApi, useDebounce, useNow
+│       └── utils/           # Lógica pura (con tests): resumen por modo, mapa, búsqueda, formatos
 ├── design/                  # Mockups y referencias visuales
-├── .github/workflows/       # CI del backend
+├── .github/workflows/       # CI de backend y frontend
 └── README.md
 ```
 
@@ -83,6 +93,7 @@ cd backend
 cp .env.example .env
 # completar TRANSPORTE_CLIENT_ID y TRANSPORTE_CLIENT_SECRET en .env
 # (se obtienen registrandose gratis en apitransporte.buenosaires.gob.ar/registro)
+# y ADMIN_API_KEY si se van a cargar alertas o tarifas por POST
 docker compose --env-file .env up --build
 ```
 
@@ -96,21 +107,26 @@ npm install
 npm run dev
 ```
 
-El frontend espera al backend corriendo en `http://localhost:8080`.
+En desarrollo, el proxy de Vite reenvía `/api` al backend en `http://localhost:8080`, así que no hace falta configurar nada. Para producción, definir `VITE_API_BASE_URL` con la URL pública del backend (ver `frontend/.env.example`).
 
 ## Uso
 
-Con el backend y el frontend corriendo, el dashboard queda disponible en `http://localhost:5173` (puerto por defecto de Vite). Desde ahí se puede buscar una línea o estación, ver el estado en vivo por modo de transporte, consultar alertas y tarifas activas, explorar el mapa de estaciones de subte en la pestaña "Mapa", y ver estadísticas de alertas por línea en la pestaña "Estadísticas".
+Con el backend y el frontend corriendo, el dashboard queda disponible en `http://localhost:5173` (puerto por defecto de Vite). Desde ahí se puede buscar una línea o estación, ver el estado en vivo por modo de transporte, consultar alertas y tarifas activas, explorar el mapa de estaciones de subte en la pestaña "Mapa", y ver estadísticas de alertas por línea en la pestaña "Estadísticas". Al elegir un resultado de búsqueda se abre el detalle de la línea, con sus ramales, estaciones y alertas.
+
+La documentación interactiva de la API está en `http://localhost:8080/swagger-ui.html`.
 
 Para probar solo el backend:
 
 ```bash
 curl http://localhost:8080/api/v1/status
-curl http://localhost:8080/api/v1/lines
+curl http://localhost:8080/api/v1/lines?mode=SUBTE
+curl "http://localhost:8080/api/v1/search?q=peru"
 curl http://localhost:8080/api/v1/map/stations
 ```
 
 ## Tests
+
+### Backend
 
 ```bash
 cd backend
@@ -118,7 +134,15 @@ docker compose up -d postgres
 mvn clean verify
 ```
 
-Un workflow de GitHub Actions corre la suite automáticamente en cada `push` y `pull request` a `main` sobre el backend. La cobertura de tests todavía es limitada y es una de las próximas cosas a reforzar.
+### Frontend
+
+```bash
+cd frontend
+npm run lint
+npm test
+```
+
+Un workflow de GitHub Actions corre en cada `push` y `pull request` a `main`, con dos jobs: el backend (build, tests unitarios, de controllers y de repositorios contra PostgreSQL) y el frontend (ESLint, tests con Vitest y build de producción).
 
 ## Estado del proyecto
 
@@ -131,6 +155,7 @@ Un workflow de GitHub Actions corre la suite automáticamente en cada `push` y `
 - [x] Fase 5 — Frontend: dashboard en React con estado en vivo por modo, panel de alertas, panel de tarifas y búsqueda, todo conectado a la API real
 - [x] Fase 6 — Mapa: mapa interactivo con Leaflet de las 90 estaciones de subte con coordenadas reales, coloreadas por línea
 - [x] Fase 7 — Estadísticas: endpoint de estadísticas de alertas por línea, página de estadísticas en el frontend con gráfico de barras
+- [x] Ronda de calidad — correcciones de sincronización y seguridad, API key para escrituras, errores estándar, DTOs, búsqueda sin tildes, tarifas vigentes, tests de backend y frontend, CI del frontend, detalle de línea, recorridos en el mapa y Swagger UI
 - [ ] Fase 8 — Presentación final
 
 ## Autor
