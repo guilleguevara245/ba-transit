@@ -178,6 +178,52 @@
   margin-bottom: 2px;
 }
 
+.next-trains-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.next-trains-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.next-trains-towards {
+  color: var(--text-dim);
+}
+
+.next-trains-times {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.next-trains-empty,
+.next-trains-note {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.live-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-left: 4px;
+  border-radius: 50%;
+  background: var(--normal);
+  vertical-align: middle;
+  animation: live-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
 .station-popup-landmarks {
   list-style: none;
   display: flex;

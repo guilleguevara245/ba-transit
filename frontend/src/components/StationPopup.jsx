@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import Chevrons from './Chevrons.jsx'
 import LineBadge from './LineBadge.jsx'
+import NextTrains from './NextTrains.jsx'
 import { findTransfers, routeInfo } from '../utils/map.js'
 import { formatLongDate, yearsSince } from '../utils/format.js'
 
@@ -43,6 +44,8 @@ export default function StationPopup({ station, stations, alerts, mode }) {
           {yearsSince(station.openedOn) > 0 && ` · hace ${yearsSince(station.openedOn)} años`}
         </div>
       )}
+
+      {mode === 'SUBTE' && <NextTrains lineCode={station.lineCode} stationName={station.stationName} />}
 
       {transfers.length > 0 && (
         <div className="station-popup-section">
