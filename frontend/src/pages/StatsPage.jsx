@@ -1,6 +1,7 @@
 import { useApi } from '../hooks/useApi.js'
 import { ALERT_TYPE_LABELS } from '../constants.js'
 import './StatsPage.css'
+import ErrorMessage from '../components/ErrorMessage.jsx'
 
 export default function StatsPage() {
   const { data: stats, loading, error } = useApi('/api/v1/stats/alerts')
@@ -12,11 +13,7 @@ export default function StatsPage() {
       <div className="section-label">Alertas históricas por línea</div>
 
       {loading && <div className="loading-text">Cargando estadísticas...</div>}
-      {error && (
-        <div className="error-text">
-          No se pudo cargar las estadísticas ({error}). ¿Está corriendo el backend en localhost:8080?
-        </div>
-      )}
+      {error && <ErrorMessage what="las estadísticas" error={error} />}
 
       {stats && stats.length === 0 && (
         <div className="loading-text">Todavía no hay alertas registradas para mostrar estadísticas.</div>
