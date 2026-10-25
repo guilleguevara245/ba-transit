@@ -9,7 +9,7 @@
       "concesionaria": "AUBASA",
       "tramos": [
         { "nombre": "Avellaneda – Quilmes", "lat": -34.7005, "lon": -58.2775 },
-        { "nombre": "Berazategui – Hudson", "lat": -34.7900, "lon": -58.1600 }
+        { "nombre": "Berazategui – Hudson", "lat": -34.79255, "lon": -58.16310 }
       ]
     },
     {
@@ -30,8 +30,8 @@
       "conecta": "CABA ↔ Haedo, Morón, Moreno, Luján",
       "concesionaria": "Grupo Concesionario del Oeste",
       "tramos": [
-        { "nombre": "General Paz – Morón", "lat": -34.6400, "lon": -58.5950 },
-        { "nombre": "Ituzaingó – Moreno", "lat": -34.6530, "lon": -58.7300 }
+        { "nombre": "General Paz – Morón", "lat": -34.63280, "lon": -58.59500 },
+        { "nombre": "Ituzaingó – Moreno", "lat": -34.628277, "lon": -58.702412 }
       ]
     },
     {
@@ -41,7 +41,7 @@
       "conecta": "CABA ↔ Aeropuerto de Ezeiza, Cañuelas",
       "concesionaria": "Corredores Viales",
       "tramos": [
-        { "nombre": "Autopista Riccheri", "lat": -34.7200, "lon": -58.5100 },
+        { "nombre": "Autopista Riccheri", "lat": -34.72255, "lon": -58.51310 },
         { "nombre": "Autopista Ezeiza–Cañuelas", "lat": -34.8700, "lon": -58.5600 }
       ]
     }
