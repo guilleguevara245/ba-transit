@@ -29,6 +29,16 @@ export default function ModeGrid({ lines, alerts }) {
           </Link>
         )
       })}
+
+      {/* Accesos a secciones que no son modos con lineas propias. */}
+      <Link className="mode-card" to="/aeropuertos">
+        <div className="mode-name">
+          Aeropuertos
+          <span className="mode-arrow" aria-hidden="true">→</span>
+        </div>
+        <span className="mode-extra">Aeroparque · Ezeiza</span>
+        <div className="mode-alerts">Clima y cómo llegar</div>
+      </Link>
     </div>
   )
 }

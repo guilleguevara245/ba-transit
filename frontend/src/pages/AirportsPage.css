@@ -1,0 +1,136 @@
+.airports-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.airport-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 22px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--yellow);
+  box-shadow: var(--shadow);
+}
+
+.airport-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.airport-code {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  background: #17171a;
+  color: var(--yellow);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 1px;
+  flex-shrink: 0;
+}
+
+.airport-name {
+  margin: 0;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1.1;
+}
+
+.airport-area {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.airport-weather {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--bg);
+  min-height: 52px;
+}
+
+.airport-weather-icon {
+  font-size: 22px;
+  align-self: center;
+}
+
+.airport-temp {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 28px;
+  font-variant-numeric: tabular-nums;
+}
+
+.airport-sky {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.airport-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 8px;
+}
+
+.airport-buses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.bus-chip {
+  min-width: 38px;
+  padding: 4px 8px;
+  text-align: center;
+  background: #17171a;
+  color: #fff;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  border-radius: 4px;
+}
+
+.airport-notes {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+.airport-flights {
+  margin-top: auto;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--accent-text);
+  text-decoration: none;
+}
+
+.airport-flights:hover {
+  text-decoration: underline;
+}
+
+.airports-map {
+  height: 420px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.airports-source {
+  margin: 8px 0 40px;
+  font-size: 12px;
+  color: var(--text-faint);
+}
