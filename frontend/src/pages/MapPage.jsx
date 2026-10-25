@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { CircleMarker, MapContainer, Polyline, Popup, TileLayer, useMap } from 'react-leaflet'
 import ErrorMessage from '../components/ErrorMessage.jsx'
+import StationPopup from '../components/StationPopup.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { buildLegend, buildRoutes } from '../utils/map.js'
 import './MapPage.css'
@@ -29,6 +30,9 @@ function FocusOnStation({ station, markerRef }) {
 
 export default function MapPage() {
   const { data: stations, loading, error } = useApi('/api/v1/map/stations')
+  // Las alertas se usan solo para enriquecer los popups; si fallan, el
+  // mapa se muestra igual.
+  const { data: alerts } = useApi('/api/v1/alerts', { refreshMs: 60_000 })
   const [searchParams] = useSearchParams()
   const focusedMarkerRef = useRef(null)
 
@@ -78,11 +82,8 @@ export default function MapPage() {
                       weight: focused ? 3 : 2,
                     }}
                   >
-                    <Popup>
-                      <div className="map-popup">
-                        <strong>{station.stationName}</strong>
-                        {station.lineName}
-                      </div>
+                    <Popup className="station-popup-container" maxWidth={300} minWidth={240}>
+                      <StationPopup station={station} stations={stations} alerts={alerts ?? []} mode="SUBTE" />
                     </Popup>
                   </CircleMarker>
                 )

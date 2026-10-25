@@ -39,3 +39,47 @@ export function buildLegend(stations) {
   }
   return Array.from(seen.values())
 }
+
+/**
+ * Combinaciones oficiales del subte ("linea:estacion"). Se listan a mano
+ * porque calcularlas por cercania da falsos positivos (por ejemplo,
+ * Piedras y Avenida de Mayo estan a 140 m pero no combinan).
+ */
+export const SUBTE_TRANSFERS = [
+  ['A:Perú', 'D:Catedral', 'E:Bolívar'],
+  ['A:Lima', 'C:Avenida de Mayo'],
+  ['A:Plaza Miserere', 'H:Once - 30 de Diciembre'],
+  ['B:Leandro N. Alem', 'E:Correo Central'],
+  ['B:Carlos Pellegrini', 'C:Diagonal Norte', 'D:9 de Julio'],
+  ['B:Pueyrredón', 'H:Corrientes'],
+  ['C:Retiro', 'E:Retiro'],
+  ['C:Independencia', 'E:Independencia'],
+  ['D:Pueyrredón', 'H:Santa Fe'],
+  ['E:Jujuy', 'H:Humberto I'],
+]
+
+const stationKey = (station) => `${station.lineCode}:${station.stationName}`
+
+/** Estaciones de otras lineas con las que combina la estacion dada. */
+export function findTransfers(stations, station, groups = SUBTE_TRANSFERS) {
+  const group = groups.find((g) => g.includes(stationKey(station)))
+  if (!group) return []
+  return stations.filter((s) => s.lineId !== station.lineId && group.includes(stationKey(s)))
+}
+
+/**
+ * Posicion de la estacion dentro de su ramal: numero, total y
+ * cabeceras (primera y ultima estacion).
+ */
+export function routeInfo(stations, station) {
+  const branch = stations
+    .filter((s) => s.branchId === station.branchId)
+    .sort((a, b) => a.sequenceOrder - b.sequenceOrder)
+
+  return {
+    position: branch.findIndex((s) => s.stationId === station.stationId) + 1,
+    total: branch.length,
+    from: branch[0]?.stationName,
+    to: branch[branch.length - 1]?.stationName,
+  }
+}

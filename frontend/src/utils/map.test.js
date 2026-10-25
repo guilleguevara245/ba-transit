@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildLegend, buildRoutes } from './map.js'
+import { SUBTE_TRANSFERS, buildLegend, buildRoutes, findTransfers, routeInfo } from './map.js'
 
 const station = (id, branchId, lineId, sequenceOrder, lat, lng) => ({
   stationId: id,
@@ -44,5 +44,33 @@ describe('buildLegend', () => {
       { name: 'Línea 1', color: '#000001' },
       { name: 'Línea 2', color: '#000002' },
     ])
+  })
+})
+
+describe('findTransfers', () => {
+  const s = (id, lineId, lineCode, stationName) => ({ stationId: id, lineId, lineCode, stationName })
+  const stations = [s(1, 1, 'A', 'Perú'), s(2, 4, 'D', 'Catedral'), s(3, 5, 'E', 'Bolívar'), s(4, 1, 'A', 'Piedras')]
+
+  it('devuelve las estaciones de otras lineas del mismo grupo', () => {
+    expect(findTransfers(stations, stations[0]).map((t) => t.stationId)).toEqual([2, 3])
+  })
+
+  it('una estacion sin combinacion devuelve lista vacia', () => {
+    expect(findTransfers(stations, stations[3])).toEqual([])
+  })
+
+  it('los nombres de SUBTE_TRANSFERS tienen formato linea:estacion', () => {
+    for (const group of SUBTE_TRANSFERS) {
+      for (const key of group) expect(/^[A-H]:.+/.test(key)).toBe(true)
+    }
+  })
+})
+
+describe('routeInfo', () => {
+  it('posicion y cabeceras dentro del ramal', () => {
+    const s = (id, seq, name) => ({ stationId: id, branchId: 7, sequenceOrder: seq, stationName: name })
+    const stations = [s(3, 3, 'Retiro'), s(1, 1, 'Constitución'), s(2, 2, 'San Juan')]
+
+    expect(routeInfo(stations, stations[2])).toEqual({ position: 2, total: 3, from: 'Constitución', to: 'Retiro' })
   })
 })
