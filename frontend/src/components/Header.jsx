@@ -1,35 +1,42 @@
-import { useEffect, useState } from 'react'
+import { NavLink } from 'react-router-dom'
+import Logo from './Logo.jsx'
+import { useNow } from '../hooks/useNow.js'
+import { formatClock } from '../utils/format.js'
 import './Header.css'
 
-function formatTime(date) {
-  return date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
+const TABS = [
+  { to: '/', label: 'Dashboard', end: true },
+  { to: '/mapa', label: 'Mapa' },
+  { to: '/estadisticas', label: 'Estadísticas' },
+]
+
+function tabClass({ isActive }) {
+  return isActive ? 'nav-tab active' : 'nav-tab'
 }
 
 export default function Header() {
-  const [now, setNow] = useState(new Date())
-
-  useEffect(() => {
-    const interval = setInterval(() => setNow(new Date()), 30_000)
-    return () => clearInterval(interval)
-  }, [])
+  const now = useNow(15_000)
 
   return (
-    <>
-      <header className="header">
-        <div className="wrap header-row">
-          <div className="brand">
-            <span className="brand-mark"></span>
-            BA Transit
-          </div>
-          <div className="header-meta">
-            <span>
-              <span className="dot"></span>
-              {formatTime(now)}
-            </span>
-          </div>
+    <header className="header">
+      <div className="wrap header-row">
+        <NavLink to="/" className="brand" aria-label="BA Transit, ir al inicio">
+          <Logo />
+        </NavLink>
+
+        <nav className="nav-tabs" aria-label="Secciones">
+          {TABS.map((tab) => (
+            <NavLink key={tab.to} to={tab.to} end={tab.end} className={tabClass}>
+              {tab.label}
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className="header-meta">
+          <span className="dot"></span>
+          <time dateTime={now.toISOString()}>{formatClock(now)}</time>
         </div>
-      </header>
-      <div className="hazard"></div>
-    </>
+      </div>
+    </header>
   )
 }

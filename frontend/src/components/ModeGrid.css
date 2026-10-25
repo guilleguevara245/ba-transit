@@ -1,6 +1,7 @@
 .modes {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  /* Tantas columnas como modos haya, ocupando todo el ancho. */
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1px;
   background: var(--line);
   border: 1px solid var(--line);
@@ -30,8 +31,8 @@
   color: var(--text-faint);
 }
 
-@media (max-width: 900px) {
+@media (max-width: 480px) {
   .modes {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
   }
 }
