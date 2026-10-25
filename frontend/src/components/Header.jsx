@@ -13,6 +13,7 @@ const ICONS = {
   colectivos: 'M5 4h14v12H5zM5 11h14M8 19v-3m8 3v-3M7.5 13.5h.01M16.5 13.5h.01',
   aeropuertos: 'M2 13l9-2 4-8h2l-2 9 6 1 1 2-7 1-3 6h-2l1-7-9-2z',
   accesos: 'M8 3 5 21m11-18 3 18M12 4v3m0 4v3m0 4v3',
+  ecobici: 'M5.5 18a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zm13 0a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM5.5 14.5 9 8h6l3.5 6.5M9 8l3 6.5h-1M14 5h2.5',
 }
 
 const TABS = [
@@ -20,6 +21,7 @@ const TABS = [
   { to: '/mapa', label: 'Mapa', icon: ICONS.mapa },
   { to: '/colectivos', label: 'Colectivos', icon: ICONS.colectivos },
   { to: '/accesos', label: 'Accesos', icon: ICONS.accesos },
+  { to: '/ecobici', label: 'EcoBici', icon: ICONS.ecobici },
   { to: '/aeropuertos', label: 'Aeropuertos', icon: ICONS.aeropuertos },
 ]
 

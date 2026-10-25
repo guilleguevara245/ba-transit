@@ -15,8 +15,14 @@
 .header-row {
   display: flex;
   align-items: center;
-  gap: 40px;
+  gap: 32px;
   min-height: 76px;
+}
+
+/* El header usa un poco mas de ancho que el contenido: con seis secciones,
+   el reloj y el boton de tema no entran en 1180 px. */
+.header .wrap.header-row {
+  max-width: 1320px;
 }
 
 /* ---- Logo ---- */
@@ -64,7 +70,7 @@
   align-items: center;
   gap: 7px;
   white-space: nowrap;
-  padding: 9px 14px;
+  padding: 9px 12px;
   border-radius: 4px;
   font-family: 'Barlow Condensed', sans-serif;
   font-weight: 600;
@@ -151,6 +157,7 @@
 }
 
 .clock-time {
+  white-space: nowrap;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -174,6 +181,14 @@
 
 /* Pantallas medianas: la navegacion entra justa al lado del logo, asi
    que se achica el espaciado antes de pasar al formato de celular. */
+/* Sin lugar para el "En vivo" junto al reloj: queda solo la hora y la fecha. */
+@media (max-width: 1360px) {
+  .clock-live,
+  .clock-sep {
+    display: none;
+  }
+}
+
 @media (max-width: 1180px) {
   .header-row {
     gap: 24px;

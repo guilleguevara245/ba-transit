@@ -35,6 +35,24 @@ const SOURCES = [
     detail: 'Fecha de cada estación de subte y ubicación de las estaciones del Premetro.',
   },
   {
+    what: 'Subte, colectivos y EcoBici en vivo',
+    source: 'API Transporte del Gobierno de la Ciudad de Buenos Aires',
+    url: 'https://api-transporte.buenosaires.gob.ar/',
+    detail: 'Próximos trenes del subte, posición de los colectivos y disponibilidad de EcoBici.',
+  },
+  {
+    what: 'Servicios especiales y cambios en trenes',
+    source: 'Trenes Argentinos — Modificaciones en el servicio',
+    url: 'https://www.argentina.gob.ar/transporte/trenes-argentinos/modificaciones-en-el-servicio-y-novedades',
+    detail: 'Se cargan a mano a partir de los avisos oficiales.',
+  },
+  {
+    what: 'Peajes',
+    source: 'Resoluciones de Vialidad Nacional y de la Provincia (vía La Nación y Ámbito)',
+    url: 'https://www.argentina.gob.ar/obras-publicas/vialidad-nacional',
+    detail: 'Valores para autos con y sin TelePASE; cada cuadro indica su vigencia.',
+  },
+  {
     what: 'Tránsito en los accesos',
     source: 'TomTom Traffic',
     url: 'https://www.tomtom.com/products/traffic-apis/',
