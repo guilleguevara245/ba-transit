@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import AlertsPanel from '../components/AlertsPanel.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
+import LineBadge from '../components/LineBadge.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { MODE_LABELS } from '../constants.js'
 import '../components/Panels.css'
@@ -69,8 +70,11 @@ export default function LinePage() {
 
   return (
     <div className="wrap content">
-      <Link to="/" className="back-link">
-        ← Volver al dashboard
+      <Link to="/" className="back-button">
+        <svg viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        Volver al inicio
       </Link>
 
       {lineState.loading && <div className="loading-text">Cargando línea...</div>}
@@ -78,13 +82,24 @@ export default function LinePage() {
 
       {line && (
         <>
-          <div className="line-header">
-            <span className="line-badge" style={{ background: line.colorHex }}>
-              {line.code}
-            </span>
-            <div>
-              <h1 className="line-title">{line.name}</h1>
+          <div className="line-hero" style={{ '--line-color': line.colorHex }}>
+            <LineBadge line={line} size="lg" />
+            <div className="line-hero-text">
               <div className="line-mode">{MODE_LABELS[line.mode] ?? line.mode}</div>
+              <h1 className="line-title">{line.name}</h1>
+              {branchesState.data && (
+                <div className="line-facts">
+                  {branchesState.data.length} {branchesState.data.length === 1 ? 'ramal' : 'ramales'}
+                  {alertsState.data && (
+                    <>
+                      {' · '}
+                      {alertsState.data.length === 0
+                        ? 'Sin alertas activas'
+                        : `${alertsState.data.length} ${alertsState.data.length === 1 ? 'alerta activa' : 'alertas activas'}`}
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 

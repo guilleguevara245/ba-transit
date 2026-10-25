@@ -1,0 +1,32 @@
+.line-badge {
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.line-badge svg {
+  width: 56%;
+  height: 56%;
+}
+
+.line-badge-lg {
+  width: 56px;
+  height: 56px;
+  font-size: 26px;
+}
+
+.line-badge-md {
+  width: 32px;
+  height: 32px;
+  font-size: 16px;
+}
+
+.line-badge-sm {
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+}
