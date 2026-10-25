@@ -29,6 +29,12 @@ services:
       DB_USER: ${DB_USER:-batransit}
       DB_PASSWORD: ${DB_PASSWORD:-batransit}
       SERVER_PORT: 8080
+      # Sin estas variables el job de sincronizacion falla al
+      # autenticarse contra la API Transporte dentro del contenedor.
+      TRANSPORTE_CLIENT_ID: ${TRANSPORTE_CLIENT_ID:-}
+      TRANSPORTE_CLIENT_SECRET: ${TRANSPORTE_CLIENT_SECRET:-}
+      FRONTEND_ORIGINS: ${FRONTEND_ORIGINS:-http://localhost:5173}
+      ADMIN_API_KEY: ${ADMIN_API_KEY:-}
     ports:
       - "8080:8080"
 
