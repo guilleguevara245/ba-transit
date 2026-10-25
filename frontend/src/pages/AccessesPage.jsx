@@ -4,8 +4,9 @@ import AccessesMap from '../components/AccessesMap.jsx'
 import BackButton from '../components/BackButton.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
 import { useApi } from '../hooks/useApi.js'
+import { TOLLS, formatToll } from '../data/tolls.js'
 import { useNow } from '../hooks/useNow.js'
-import { formatRelativeTime } from '../utils/format.js'
+import { formatLongDate, formatRelativeTime } from '../utils/format.js'
 import { speedPercent, trafficStatus, worstStatus } from '../utils/traffic.js'
 import './ModePage.css'
 import './AirportsPage.css'
@@ -52,6 +53,45 @@ function SegmentRow({ segment, configured }) {
   )
 }
 
+function TollTable({ toll }) {
+  return (
+    <div className="toll">
+      <div className="toll-title">Peaje para autos</div>
+      {toll.plazas.map((plaza) => (
+        <table className="toll-table" key={plaza.name}>
+          <caption>{plaza.name}</caption>
+          <thead>
+            <tr>
+              <th scope="col" />
+              <th scope="col">No pico</th>
+              <th scope="col">Pico</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">TelePASE</th>
+              <td>{formatToll(plaza.telepase[0])}</td>
+              <td>{formatToll(plaza.telepase[1])}</td>
+            </tr>
+            <tr>
+              <th scope="row">Sin TelePASE</th>
+              <td>{formatToll(plaza.manual[0])}</td>
+              <td>{formatToll(plaza.manual[1])}</td>
+            </tr>
+          </tbody>
+        </table>
+      ))}
+      <div className="toll-source">
+        Vigente desde el {formatLongDate(toll.since)} ·{' '}
+        <a href={toll.source} target="_blank" rel="noreferrer">
+          fuente ↗
+        </a>
+        {toll.note && <span className="toll-note">{toll.note}</span>}
+      </div>
+    </div>
+  )
+}
+
 function AccessCard({ access, configured }) {
   const overall = worstStatus(access.segments)
   return (
@@ -69,6 +109,7 @@ function AccessCard({ access, configured }) {
           <SegmentRow key={segment.name} segment={segment} configured={configured} />
         ))}
       </ul>
+      {TOLLS[access.id] && <TollTable toll={TOLLS[access.id]} />}
       <footer className="access-operator">Concesionaria: {access.operator}</footer>
     </article>
   )

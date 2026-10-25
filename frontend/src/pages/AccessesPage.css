@@ -156,6 +156,76 @@
   color: var(--text-faint);
 }
 
+.toll {
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.toll-title {
+  margin-bottom: 8px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.toll-table {
+  width: 100%;
+  margin-bottom: 10px;
+  border-collapse: collapse;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.toll-table caption {
+  padding-bottom: 4px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.toll-table th,
+.toll-table td {
+  padding: 4px 0;
+  text-align: right;
+  border-bottom: 1px solid var(--line);
+}
+
+.toll-table thead th {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-faint);
+}
+
+.toll-table tbody th {
+  text-align: left;
+  font-weight: 500;
+  color: var(--text-dim);
+}
+
+.toll-table td {
+  font-weight: 600;
+  width: 26%;
+}
+
+.toll-source {
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+.toll-source a {
+  color: var(--accent-text);
+  text-decoration: none;
+}
+
+.toll-note {
+  display: block;
+  margin-top: 2px;
+}
+
 .accesses-map {
   height: 460px;
   border: 1px solid var(--line);
