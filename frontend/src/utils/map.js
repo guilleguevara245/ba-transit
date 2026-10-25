@@ -56,6 +56,7 @@ export const SUBTE_TRANSFERS = [
   ['C:Independencia', 'E:Independencia'],
   ['D:Pueyrredón', 'H:Santa Fe'],
   ['E:Jujuy', 'H:Humberto I'],
+  ['E:Plaza de los Virreyes - Eva Perón', 'P:Intendente Saguier'],
 ]
 
 const stationKey = (station) => `${station.lineCode}:${station.stationName}`

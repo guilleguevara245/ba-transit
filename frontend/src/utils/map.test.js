@@ -61,7 +61,7 @@ describe('findTransfers', () => {
 
   it('los nombres de SUBTE_TRANSFERS tienen formato linea:estacion', () => {
     for (const group of SUBTE_TRANSFERS) {
-      for (const key of group) expect(/^[A-H]:.+/.test(key)).toBe(true)
+      for (const key of group) expect(/^[A-HP]:.+/.test(key)).toBe(true)
     }
   })
 })
@@ -100,5 +100,12 @@ describe('connectingLineCodes', () => {
 
   it('una linea sin combinaciones', () => {
     expect(connectingLineCodes('Z')).toEqual([])
+  })
+})
+
+describe('combinacion con el Premetro', () => {
+  it('la linea P combina con la E en Intendente Saguier', () => {
+    expect(connectingLineCodes('P')).toEqual(['E'])
+    expect(connectingLineCodes('E')).toContain('P')
   })
 })

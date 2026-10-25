@@ -88,7 +88,9 @@ export default function LinePage() {
   const locatedIds = useMemo(() => new Set(lineStations.map((s) => s.stationId)), [lineStations])
   const hasMap = lineStations.length > 0
   // Para mostrar los badges de las lineas con las que combina.
-  const { data: allLines } = useApi(line?.mode === 'SUBTE' ? '/api/v1/lines?mode=SUBTE' : null)
+  // Subte y premetro combinan entre si: hacen falta todas las lineas para los badges.
+  const isMetro = line?.mode === 'SUBTE' || line?.mode === 'PREMETRO'
+  const { data: allLines } = useApi(isMetro ? '/api/v1/lines' : null)
 
   return (
     <div className="wrap content">

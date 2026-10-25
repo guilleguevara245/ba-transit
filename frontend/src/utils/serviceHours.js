@@ -37,7 +37,7 @@ const LAST_TRAINS = {
     ['Hospitales', '23:51', '00:20', '22:51'],
     ['Facultad de Derecho', '23:30', '23:59', '22:29'],
   ],
-  E2: [
+  P: [
     ['Int. Saguier (a Lugano)', '21:00', '20:56', '21:00'],
     ['Centro Cívico Lugano', '21:31', '21:26', '21:32'],
     ['Int. Saguier (a Savio)', '20:49', '21:07', '20:47'],

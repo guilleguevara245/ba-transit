@@ -21,8 +21,9 @@ function Row({ label, children }) {
  */
 export default function LineInfoCard({ line, stations, allLines = [] }) {
   const summary = stations.length > 0 ? lineSummary(stations) : null
-  const connections = line.mode === 'SUBTE' ? connectingLineCodes(line.code) : []
-  const linesByCode = new Map(allLines.filter((l) => l.mode === 'SUBTE').map((l) => [l.code, l]))
+  const isMetro = line.mode === 'SUBTE' || line.mode === 'PREMETRO'
+  const connections = isMetro ? connectingLineCodes(line.code) : []
+  const linesByCode = new Map(allLines.filter((l) => l.mode === 'SUBTE' || l.mode === 'PREMETRO').map((l) => [l.code, l]))
   const hours = serviceHoursFor(line)
   const operatorSite = OPERATOR_SITES[line.operator]
 
