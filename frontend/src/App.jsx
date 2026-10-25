@@ -5,6 +5,7 @@ import MapPage from './pages/MapPage.jsx'
 import LinePage from './pages/LinePage.jsx'
 import ModePage from './pages/ModePage.jsx'
 import AirportsPage from './pages/AirportsPage.jsx'
+import ColectivosPage from './pages/ColectivosPage.jsx'
 import './App.css'
 
 export default function App() {
@@ -17,6 +18,7 @@ export default function App() {
           <Route path="/lineas/:lineId" element={<LinePage />} />
           <Route path="/modos/:slug" element={<ModePage />} />
           <Route path="/aeropuertos" element={<AirportsPage />} />
+          <Route path="/colectivos" element={<ColectivosPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

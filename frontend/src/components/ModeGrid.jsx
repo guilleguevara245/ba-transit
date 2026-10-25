@@ -31,6 +31,14 @@ export default function ModeGrid({ lines, alerts }) {
       })}
 
       {/* Accesos a secciones que no son modos con lineas propias. */}
+      <Link className="mode-card" to="/colectivos">
+        <div className="mode-name">
+          Colectivos
+          <span className="mode-arrow" aria-hidden="true">→</span>
+        </div>
+        <span className="mode-extra">Buscá tu línea</span>
+        <div className="mode-alerts">Recorrido y paradas en el mapa</div>
+      </Link>
       <Link className="mode-card" to="/aeropuertos">
         <div className="mode-name">
           Aeropuertos

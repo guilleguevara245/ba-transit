@@ -20,4 +20,6 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
   CMD wget -qO- "http://localhost:${PORT:-8080}/actuator/health" | grep -q '"UP"' || exit 1
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Por defecto la JVM usa solo el 25% de la memoria del contenedor; el
+# feed de colectivos necesita mas margen en instancias chicas (512 MB).
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "-jar", "app.jar"]

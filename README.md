@@ -30,7 +30,11 @@ El backend sincroniza automáticamente las alertas de subte desde la API Transpo
 - Búsqueda combinada de líneas y estaciones, sin distinguir tildes ni mayúsculas, con resultados navegables con teclado
 - Página de inicio en React con estado en vivo por modo, panel de alertas y panel de tarifas, que se actualiza sola cada minuto
 - Mapa interactivo (Leaflet + OpenStreetMap) de la red completa: 90 estaciones de subte y 165 de tren con coordenadas reales, el recorrido de cada línea y filtros por modo; cada estación muestra su posición en el recorrido, sus combinaciones y las alertas de la línea
-- Página por modo (Trenes, Subtes, Premetro) con el estado de cada línea y su mapa, y detalle de cada línea con la lista de estaciones y un minimapa
+- Página por modo (Trenes, Subtes, Premetro) con el estado de cada línea y su mapa, y detalle de cada línea con la lista de estaciones, un minimapa, la empresa operadora y el horario de servicio (subte y premetro)
+- **Mis líneas**: favoritas guardadas en el navegador, con su estado en el inicio
+- **Colectivos**: búsqueda por número o nombre, con el recorrido de cada sentido y sus paradas en el mapa (feed GTFS de la API Transporte, actualizado una vez por día)
+- **Aeropuertos**: Aeroparque y Ezeiza con el clima actual (Open-Meteo) y cómo llegar en colectivo
+- Cantidad de alertas activas en el título de la pestaña
 - Endpoint de estadísticas de alertas por línea (total histórico, activas, tipo más frecuente), calculadas con agregación SQL en el backend
 - Base de datos versionada con migraciones Flyway, sin pérdida de datos entre cambios de esquema
 - Endpoints de escritura protegidos con API key y errores con formato estándar (Problem Details, RFC 9457)

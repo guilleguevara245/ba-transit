@@ -1,0 +1,150 @@
+.bus-search {
+  margin-bottom: 16px;
+}
+
+.bus-unavailable {
+  padding: 16px 18px;
+  border: 1px dashed var(--line);
+  color: var(--text-dim);
+  font-size: 14px;
+  max-width: 640px;
+}
+
+.bus-number {
+  display: inline-grid;
+  place-items: center;
+  min-width: 44px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: #17171a;
+  color: #fff;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.bus-number.large {
+  min-width: 64px;
+  height: 52px;
+  font-size: 28px;
+}
+
+.bus-results {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.bus-result {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.bus-result:hover,
+.bus-result.active {
+  border-color: var(--yellow);
+}
+
+.bus-result.active {
+  box-shadow: inset 3px 0 0 var(--yellow), var(--shadow);
+}
+
+.bus-result-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.bus-result-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.bus-result-agency {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.bus-detail {
+  margin-bottom: 20px;
+}
+
+.bus-detail-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.bus-detail-name {
+  margin: 0;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 26px;
+  line-height: 1.1;
+}
+
+.bus-detail-agency {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.bus-directions {
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.bus-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.bus-map {
+  height: 520px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.bus-stops {
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  max-height: 520px;
+  overflow-y: auto;
+}
+
+.bus-stop-list {
+  margin: 0;
+  padding-left: 22px;
+  font-size: 13px;
+  line-height: 1.9;
+  color: var(--text);
+}
+
+.bus-stop-list li::marker {
+  color: var(--bus-color);
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .bus-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bus-map {
+    height: 360px;
+  }
+}

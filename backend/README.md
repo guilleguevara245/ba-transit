@@ -114,6 +114,7 @@ o fuera del alcance real del proyecto.
 | `TRANSPORTE_CLIENT_SECRET`   | Credencial de la API Transporte de BA    | (vacio)            |
 | `FRONTEND_ORIGINS`           | Origenes permitidos por CORS (coma)      | `http://localhost:5173` |
 | `ADMIN_API_KEY`              | Clave para los endpoints de escritura    | (vacio = escritura deshabilitada) |
+| `COLECTIVOS_GTFS_URL`        | URL del feed GTFS de colectivos (zip)    | (vacio = API Transporte, `/colectivos/feed-gtfs`) |
 
 Los endpoints de escritura (`POST`) requieren el header `X-API-Key` con
 el valor de `ADMIN_API_KEY`. Las lecturas (`GET`) son publicas. Ejemplo:
@@ -162,6 +163,9 @@ Endpoints principales:
 - `GET /api/v1/map/stations`, `GET /api/v1/map/stations?mode=TREN` -
   estaciones con coordenadas para el mapa (subte y trenes; fuente de las
   coordenadas de tren: Buenos Aires Data, "Estaciones de ferrocarril")
+- `GET /api/v1/colectivos/estado` - si los datos de colectivos estan cargados
+- `GET /api/v1/colectivos?q=152` - busqueda de lineas de colectivo
+- `GET /api/v1/colectivos/{routeId}` - recorrido y paradas de cada sentido
 - `GET /api/v1/stats/alerts` - estadisticas de alertas por linea (total,
   activas, tipo mas frecuente)
 
@@ -182,3 +186,21 @@ externa vive en `client` (llamadas HTTP con reintentos), `config`
 - [x] Fase 6 - Mapa (subte y trenes; premetro sin coordenadas todavia)
 - [x] Fase 7 - Estadisticas y calidad
 - [ ] Fase 8 - Presentacion final
+
+## Colectivos
+
+Los recorridos y paradas de colectivos salen del feed GTFS estatico. Por
+defecto se descarga de la API Transporte (`/colectivos/feed-gtfs`, con
+las mismas credenciales que las alertas) un minuto despues del arranque
+y despues una vez por dia. El feed pesa cientos de MB, asi que se procesa
+por partes y en memoria solo queda un recorrido representativo por linea
+y sentido, con sus paradas. Mientras no hay datos cargados, los endpoints
+responden 503. Para usar otra fuente, definir `COLECTIVOS_GTFS_URL` con
+la URL del zip.
+
+Para verificar que la API devuelve el feed con tus credenciales:
+
+```bash
+curl -sS -o /tmp/feed.zip -w "%{http_code} %{size_download}\n" \
+  "https://apitransporte.buenosaires.gob.ar/colectivos/feed-gtfs?client_id=$TRANSPORTE_CLIENT_ID&client_secret=$TRANSPORTE_CLIENT_SECRET"
+```
