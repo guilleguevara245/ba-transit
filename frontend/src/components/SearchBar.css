@@ -1,6 +1,6 @@
 .search-wrap {
   position: relative;
-  padding: 26px 0 30px;
+  padding-bottom: 30px;
 }
 
 .search-box {
@@ -39,6 +39,7 @@
   right: 0;
   background: var(--surface-raised);
   border: 1px solid var(--line);
+  box-shadow: var(--shadow);
   max-height: 360px;
   overflow-y: auto;
   z-index: 20;
@@ -71,7 +72,7 @@
 }
 
 .search-result-row.active {
-  background: var(--surface);
+  background: var(--bg);
   box-shadow: inset 3px 0 0 var(--yellow);
 }
 

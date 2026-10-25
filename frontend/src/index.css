@@ -1,18 +1,30 @@
 @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700&display=swap');
 
+/*
+ * Paleta clara para el contenido. El header redefine estas mismas
+ * variables con la paleta oscura (ver .header en Header.css), asi que
+ * los componentes no necesitan saber en que zona estan.
+ */
 :root {
-  --bg: #0c0c0d;
-  --surface: #17171a;
-  --surface-raised: #202023;
-  --line: #2c2c2f;
+  --bg: #f4f3ef;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --line: #e3e1da;
   --yellow: #f4c11b;
   --yellow-deep: #c89a0f;
-  --text: #f5f4ef;
-  --text-dim: #9c9a94;
-  --text-faint: #6c6a65;
-  --normal: #6fbf73;
-  --delayed: #e0942f;
-  --interrupted: #e0645f;
+  /* Amarillo oscurecido para texto sobre fondo claro (el amarillo puro
+     no se lee sobre blanco). */
+  --accent-text: #8a6400;
+  --text: #17171a;
+  --text-dim: #55534e;
+  --text-faint: #85827a;
+  --normal: #2f8a3c;
+  --delayed: #b5650a;
+  --interrupted: #c23b34;
+  --normal-tint: rgba(47, 138, 60, 0.1);
+  --delayed-tint: rgba(181, 101, 10, 0.1);
+  --interrupted-tint: rgba(194, 59, 52, 0.1);
+  --shadow: 0 1px 2px rgba(23, 23, 26, 0.04), 0 4px 16px rgba(23, 23, 26, 0.06);
 }
 
 * {
@@ -77,7 +89,7 @@ body {
 }
 
 .status-normal {
-  background: rgba(111, 191, 115, 0.14);
+  background: var(--normal-tint);
   color: var(--normal);
 }
 .status-normal .dot {
@@ -85,7 +97,7 @@ body {
 }
 
 .status-delayed {
-  background: rgba(224, 148, 47, 0.14);
+  background: var(--delayed-tint);
   color: var(--delayed);
 }
 .status-delayed .dot {
@@ -93,7 +105,7 @@ body {
 }
 
 .status-interrupted {
-  background: rgba(224, 100, 95, 0.14);
+  background: var(--interrupted-tint);
   color: var(--interrupted);
 }
 .status-interrupted .dot {

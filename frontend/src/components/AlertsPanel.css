@@ -25,12 +25,12 @@
 .alert-tag-obra,
 .alert-tag-demora,
 .alert-tag-desvio {
-  background: rgba(224, 148, 47, 0.14);
+  background: var(--delayed-tint);
   color: var(--delayed);
 }
 
 .alert-tag-interrupcion {
-  background: rgba(224, 100, 95, 0.14);
+  background: var(--interrupted-tint);
   color: var(--interrupted);
 }
 
@@ -42,7 +42,7 @@
 }
 
 .alert-line:hover {
-  color: var(--yellow);
+  color: var(--accent-text);
 }
 
 .alert-desc {

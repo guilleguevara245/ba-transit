@@ -2,6 +2,9 @@
   padding-bottom: 40px;
 }
 
-.content {
+/* Doble clase: con .content sola, el "padding: 0 32px" de .wrap
+   (index.css se carga despues) anulaba este espacio y el contenido
+   quedaba pegado al header en Mapa, Estadisticas y detalle de linea. */
+.wrap.content {
   padding-top: 30px;
 }

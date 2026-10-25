@@ -1,4 +1,13 @@
 .header {
+  /* El header mantiene la paleta oscura aunque el resto sea claro. */
+  --bg: #0c0c0d;
+  --surface: #17171a;
+  --line: #2c2c2f;
+  --text: #f5f4ef;
+  --text-dim: #9c9a94;
+  --text-faint: #6c6a65;
+  --normal: #6fbf73;
+
   background: var(--bg);
   border-bottom: 3px solid var(--yellow);
 }

@@ -7,7 +7,7 @@
 }
 
 .back-link:hover {
-  color: var(--yellow);
+  color: var(--accent-text);
 }
 
 .line-header {
@@ -51,7 +51,9 @@
 
 .branches {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  /* auto-fit: con un solo ramal, la tarjeta ocupa todo el ancho en vez
+     de dejar un hueco gris al costado. */
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 1px;
   background: var(--line);
   border: 1px solid var(--line);
@@ -115,12 +117,12 @@
 }
 
 .station-map-link:hover {
-  color: var(--yellow);
+  color: var(--accent-text);
 }
 
 .station-item.highlighted {
-  background: var(--surface-raised);
-  outline: 1px solid var(--yellow);
+  background: rgba(244, 193, 27, 0.16);
+  box-shadow: inset 3px 0 0 var(--yellow);
 }
 
 .station-item.highlighted .station-dot {
