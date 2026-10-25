@@ -200,6 +200,13 @@ y sentido, con sus paradas. Mientras no hay datos cargados, los endpoints
 responden 503. Para usar otra fuente, definir `COLECTIVOS_GTFS_URL` con
 la URL del zip.
 
+Para que la seccion responda apenas arranca el servidor (en el plan
+gratuito de Render se duerme tras unos minutos sin uso), los datos ya
+procesados se guardan comprimidos en la tabla `colectivos_snapshot` y
+se cargan desde ahi al arrancar. El feed solo se vuelve a descargar si
+la copia tiene mas de 24 horas (si la descarga falla, se reintenta a
+las 6 horas).
+
 Para verificar que la API devuelve el feed con tus credenciales:
 
 ```bash

@@ -9,6 +9,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -40,6 +42,17 @@ class ColectivoServiceTest {
         assertThat(service.search("152")).extracting(BusRoute::id).containsExactly("R152");
         assertThat(service.search("ezeiza")).extracting(BusRoute::id).containsExactly("R8");
         assertThat(service.search("   ")).isEmpty();
+    }
+
+    @Test
+    void soloPideElFeedSiNoHayDatosOSonViejos() throws IOException {
+        ColectivoService empty = new ColectivoService(new TransporteApiProperties(), "", "/colectivos/feed-gtfs");
+        assertThat(empty.needsRefresh(Duration.ofHours(24), Instant.now())).isTrue();
+
+        ColectivoService service = loadedService();
+        Instant loadedAt = service.current().orElseThrow().loadedAt();
+        assertThat(service.needsRefresh(Duration.ofHours(24), loadedAt.plus(Duration.ofHours(2)))).isFalse();
+        assertThat(service.needsRefresh(Duration.ofHours(24), loadedAt.plus(Duration.ofHours(25)))).isTrue();
     }
 
     @Test

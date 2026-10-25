@@ -6,6 +6,7 @@ import com.batransit.api.config.TransporteApiProperties;
 import com.batransit.api.exception.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -22,6 +23,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.text.Normalizer;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -48,11 +50,23 @@ public class ColectivoService {
     private final GtfsColectivosParser parser;
     private final RestClient restClient;
     private final AtomicReference<Catalog> catalog = new AtomicReference<>();
+    private final ColectivoSnapshotStore snapshotStore;
+    /** Ultimo intento de bajar el feed, para no reintentar cada hora si falla. */
+    private volatile Instant lastAttempt;
+    static final Duration RETRY_AFTER_FAILURE = Duration.ofHours(6);
 
+    /** Sin copia en la base (tests). */
+    public ColectivoService(TransporteApiProperties apiProperties, String customUrl, String feedPath) {
+        this(apiProperties, customUrl, feedPath, null);
+    }
+
+    @Autowired
     public ColectivoService(TransporteApiProperties apiProperties,
                             @Value("${app.colectivos.gtfs-url:}") String customUrl,
-                            @Value("${app.colectivos.gtfs-path:/colectivos/feed-gtfs}") String feedPath) {
+                            @Value("${app.colectivos.gtfs-path:/colectivos/feed-gtfs}") String feedPath,
+                            ColectivoSnapshotStore snapshotStore) {
         this.apiProperties = apiProperties;
+        this.snapshotStore = snapshotStore;
         this.customUrl = customUrl;
         this.feedPath = feedPath;
         this.parser = new GtfsColectivosParser();
@@ -65,6 +79,7 @@ public class ColectivoService {
 
     /** Descarga y procesa el feed. Si algo falla, se conserva lo que habia. */
     public void refresh() {
+        lastAttempt = Instant.now();
         Path file = null;
         try {
             file = Files.createTempFile("colectivos-gtfs", ".zip");
@@ -72,6 +87,9 @@ public class ColectivoService {
             Catalog loaded = parser.parse(file);
             catalog.set(loaded);
             log.info("Colectivos: {} lineas cargadas desde el feed GTFS.", loaded.routes().size());
+            if (snapshotStore != null) {
+                snapshotStore.save(loaded);
+            }
         } catch (Exception e) {
             // Nunca se loguea la URL: puede llevar las credenciales.
             log.error("No se pudieron cargar los colectivos ({}). Se conserva la version anterior.",
@@ -109,6 +127,30 @@ public class ColectivoService {
                 .encode()
                 .build()
                 .toUri();
+    }
+
+    /**
+     * Carga la copia guardada en la base, si hay. Se llama al arrancar:
+     * asi los colectivos estan disponibles en segundos, sin esperar al feed.
+     */
+    public void restoreSnapshot() {
+        if (snapshotStore == null || catalog.get() != null) {
+            return;
+        }
+        snapshotStore.load().ifPresent(saved -> {
+            catalog.compareAndSet(null, saved);
+            log.info("Colectivos: {} lineas cargadas desde la copia de la base (feed del {}).",
+                    saved.routes().size(), saved.loadedAt());
+        });
+    }
+
+    /** Si hace falta bajar el feed: no hay datos o los que hay tienen mas de maxAge. */
+    public boolean needsRefresh(Duration maxAge, Instant now) {
+        if (lastAttempt != null && lastAttempt.plus(RETRY_AFTER_FAILURE).isAfter(now)) {
+            return false;
+        }
+        Catalog loaded = catalog.get();
+        return loaded == null || loaded.loadedAt().plus(maxAge).isBefore(now);
     }
 
     /** Usado por los tests y por refresh(). */
