@@ -1,25 +1,26 @@
-import { useEffect, useRef } from 'react'
-import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useParams, useSearchParams } from 'react-router-dom'
 import AlertsPanel from '../components/AlertsPanel.jsx'
+import BackButton from '../components/BackButton.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
 import LineBadge from '../components/LineBadge.jsx'
+import NetworkMap from '../components/NetworkMap.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { MODE_LABELS } from '../constants.js'
 import '../components/Panels.css'
 import './LinePage.css'
 
-// Por ahora solo las estaciones de subte tienen coordenadas en el mapa.
-const MODES_ON_MAP = ['SUBTE']
-
-function BranchStations({ branch, line, highlightedId }) {
+function BranchStations({ branch, line, selected, onSelect, locatedIds }) {
   const { data: stations, loading, error } = useApi(`/api/v1/branches/${branch.id}/stations`)
-  const highlightedRef = useRef(null)
+  const selectedRef = useRef(null)
 
+  // Solo se hace scroll cuando la estacion llega por la URL (desde la
+  // busqueda); si se elige en el minimapa, la lista no salta.
   useEffect(() => {
-    highlightedRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-  }, [stations, highlightedId])
-
-  const showMapLinks = MODES_ON_MAP.includes(line.mode)
+    if (selected.fromUrl) {
+      selectedRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }, [stations, selected])
 
   return (
     <div className="panel">
@@ -34,20 +35,18 @@ function BranchStations({ branch, line, highlightedId }) {
       {stations && (
         <ol className="station-list" style={{ '--line-color': line.colorHex }}>
           {stations.map((station) => {
-            const highlighted = station.id === highlightedId
+            const isSelected = station.id === selected.id
+            const located = locatedIds.has(station.id)
+            const classes = ['station-item', isSelected && 'highlighted', located && 'selectable'].filter(Boolean)
             return (
               <li
                 key={station.id}
-                ref={highlighted ? highlightedRef : undefined}
-                className={highlighted ? 'station-item highlighted' : 'station-item'}
+                ref={isSelected ? selectedRef : undefined}
+                className={classes.join(' ')}
+                onClick={located ? () => onSelect(station.id) : undefined}
               >
                 <span className="station-dot"></span>
                 <span className="station-name">{station.name}</span>
-                {showMapLinks && station.latitude != null && (
-                  <Link className="station-map-link" to={`/mapa?estacion=${station.id}`}>
-                    Ver en el mapa
-                  </Link>
-                )}
               </li>
             )
           })}
@@ -60,22 +59,32 @@ function BranchStations({ branch, line, highlightedId }) {
 export default function LinePage() {
   const { lineId } = useParams()
   const [searchParams] = useSearchParams()
-  const highlightedId = Number(searchParams.get('estacion')) || null
+  const urlStationId = Number(searchParams.get('estacion')) || null
+  const [selected, setSelected] = useState({ id: urlStationId, fromUrl: true })
+
+  useEffect(() => {
+    setSelected({ id: urlStationId, fromUrl: true })
+  }, [urlStationId, lineId])
 
   const lineState = useApi(`/api/v1/lines/${lineId}`)
   const branchesState = useApi(`/api/v1/lines/${lineId}/branches`)
   const alertsState = useApi(`/api/v1/lines/${lineId}/alerts`, { refreshMs: 60_000 })
 
   const line = lineState.data
+  // Estaciones del mismo modo con coordenadas: las de esta linea van al
+  // minimapa y el resto sirve para mostrar combinaciones en el popup.
+  const modeStationsState = useApi(line ? `/api/v1/map/stations?mode=${line.mode}` : null)
+  const modeStations = modeStationsState.data ?? []
+  const lineStations = useMemo(
+    () => modeStations.filter((s) => String(s.lineId) === String(lineId)),
+    [modeStations, lineId],
+  )
+  const locatedIds = useMemo(() => new Set(lineStations.map((s) => s.stationId)), [lineStations])
+  const hasMap = lineStations.length > 0
 
   return (
     <div className="wrap content">
-      <Link to="/" className="back-button">
-        <svg viewBox="0 0 16 16" aria-hidden="true">
-          <path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-        Volver al inicio
-      </Link>
+      <BackButton />
 
       {lineState.loading && <div className="loading-text">Cargando línea...</div>}
       {lineState.error && <ErrorMessage what="la línea" error={lineState.error} />}
@@ -103,7 +112,7 @@ export default function LinePage() {
             </div>
           </div>
 
-          {alertsState.data && (
+          {alertsState.data && alertsState.data.length > 0 && (
             <div className="line-section">
               <AlertsPanel alerts={alertsState.data} lines={[line]} />
             </div>
@@ -114,10 +123,34 @@ export default function LinePage() {
           {branchesState.data && branchesState.data.length === 0 && (
             <div className="loading-text">Esta línea todavía no tiene estaciones cargadas.</div>
           )}
-          <div className="branches">
-            {branchesState.data?.map((branch) => (
-              <BranchStations key={branch.id} branch={branch} line={line} highlightedId={highlightedId} />
-            ))}
+
+          <div className={hasMap ? 'line-layout' : 'line-layout no-map'}>
+            <div className="branches">
+              {branchesState.data?.map((branch) => (
+                <BranchStations
+                  key={branch.id}
+                  branch={branch}
+                  line={line}
+                  selected={selected}
+                  onSelect={(id) => setSelected({ id, fromUrl: false })}
+                  locatedIds={locatedIds}
+                />
+              ))}
+            </div>
+
+            {hasMap && (
+              <div className="line-map-column">
+                <NetworkMap
+                  className="line-minimap"
+                  stations={lineStations}
+                  allStations={modeStations}
+                  alerts={alertsState.data ?? []}
+                  focusId={selected.id}
+                  onSelect={(id) => setSelected({ id, fromUrl: false })}
+                />
+                <p className="line-minimap-hint">Tocá una estación de la lista o del mapa para ubicarla.</p>
+              </div>
+            )}
           </div>
         </>
       )}

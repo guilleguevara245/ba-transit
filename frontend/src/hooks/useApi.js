@@ -10,7 +10,8 @@ const INITIAL_STATE = { data: null, loading: true, error: null, updatedAt: null 
  * (por ejemplo, las alertas, que el backend sincroniza cada 5 minutos).
  * En los refrescos no vuelve a mostrar "cargando": si fallan, se
  * conservan los ultimos datos y solo se informa el error. Mientras la
- * pestaña del navegador esta oculta no se hacen pedidos.
+ * pestaña del navegador esta oculta no se hacen pedidos. Con path null
+ * no se pide nada (sirve para pedidos que dependen de otro dato).
  */
 export function useApi(path, { refreshMs } = {}) {
   const [state, setState] = useState(INITIAL_STATE)
@@ -21,6 +22,12 @@ export function useApi(path, { refreshMs } = {}) {
     let hasLoaded = false
 
     setState(INITIAL_STATE)
+
+    // Sin path (por ejemplo, mientras falta un dato previo) no se pide nada.
+    if (!path) {
+      setState({ ...INITIAL_STATE, loading: false })
+      return undefined
+    }
 
     function scheduleNext() {
       if (!cancelled && refreshMs) {

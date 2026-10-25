@@ -1,36 +1,3 @@
-/* Boton para volver: con borde, para que se vea como accion y no
-   como texto suelto. */
-.back-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 18px;
-  padding: 7px 14px 7px 10px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--surface);
-  color: var(--text-dim);
-  font-size: 13px;
-  font-weight: 500;
-  text-decoration: none;
-  transition: border-color 0.15s ease, color 0.15s ease;
-}
-
-.back-button svg {
-  width: 14px;
-  height: 14px;
-}
-
-.back-button:hover {
-  border-color: var(--yellow);
-  color: var(--text);
-}
-
-.back-button:focus-visible {
-  outline: 2px solid var(--yellow);
-  outline-offset: 2px;
-}
-
 /* Encabezado de la linea: tarjeta con una franja del color de la linea. */
 .line-hero {
   display: flex;
@@ -133,14 +100,13 @@
   color: var(--text);
 }
 
-.station-map-link {
-  font-size: 12px;
-  color: var(--text-faint);
-  text-decoration: none;
+/* Estaciones con ubicacion: se pueden tocar para verlas en el minimapa. */
+.station-item.selectable {
+  cursor: pointer;
 }
 
-.station-map-link:hover {
-  color: var(--accent-text);
+.station-item.selectable:hover {
+  background: var(--bg);
 }
 
 .station-item.highlighted {
@@ -150,4 +116,52 @@
 
 .station-item.highlighted .station-dot {
   background: var(--line-color);
+}
+
+/* ---- Lista de estaciones + minimapa ---- */
+
+.line-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 20px;
+  align-items: start;
+  margin-bottom: 40px;
+}
+
+.line-layout.no-map {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.line-layout .branches {
+  grid-template-columns: minmax(0, 1fr);
+  margin-bottom: 0;
+}
+
+.line-minimap {
+  position: sticky;
+  top: 20px;
+  height: 560px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.line-minimap-hint {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+@media (max-width: 900px) {
+  .line-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .line-map-column {
+    order: -1;
+  }
+
+  .line-minimap {
+    position: static;
+    height: 320px;
+  }
 }
