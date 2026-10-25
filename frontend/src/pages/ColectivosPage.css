@@ -148,3 +148,12 @@
     height: 360px;
   }
 }
+
+.bus-live {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: var(--text-dim);
+}

@@ -15,7 +15,7 @@ function FitToRoute({ positions }) {
  * Mapa del recorrido de un colectivo: el sentido elegido resaltado, el
  * otro sentido mas tenue y las paradas del sentido elegido.
  */
-export default function BusRouteMap({ route, directionIndex, className }) {
+export default function BusRouteMap({ route, directionIndex, className, vehicles = [] }) {
   const color = route.color ?? '#17171a'
   const active = route.directions[directionIndex]
   const positions = useMemo(() => active?.shape ?? [], [active])
@@ -55,6 +55,20 @@ export default function BusRouteMap({ route, directionIndex, className }) {
           })}
         </>
       )}
+
+      {vehicles.map((v) => (
+        <CircleMarker
+          key={v.id}
+          center={[v.latitude, v.longitude]}
+          radius={8}
+          pathOptions={{ color: '#17171a', weight: 2, fillColor: '#f4c11b', fillOpacity: 1 }}
+        >
+          <Tooltip>
+            Colectivo en vivo{v.headsign ? ` · ${v.headsign}` : ''}
+            {v.ageSeconds > 60 ? ` · hace ${Math.round(v.ageSeconds / 60)} min` : ''}
+          </Tooltip>
+        </CircleMarker>
+      ))}
 
       <FitToRoute positions={positions} />
     </MapContainer>

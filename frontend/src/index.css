@@ -205,3 +205,21 @@ body {
   color: var(--delayed);
   margin-bottom: 14px;
 }
+
+/* Punto verde que late: indica un dato en vivo. */
+.live-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-left: 4px;
+  border-radius: 50%;
+  background: var(--normal);
+  vertical-align: middle;
+  animation: live-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+  50% {
+    opacity: 0.3;
+  }
+}

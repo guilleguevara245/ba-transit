@@ -11,6 +11,9 @@ import { busDescription, busTitle } from '../utils/busNames.js'
 import './ModePage.css'
 import './ColectivosPage.css'
 
+// Las posiciones se actualizan cada pocos segundos; el backend las guarda 20.
+const LIVE_REFRESH_MS = 20_000
+
 function BusNumber({ route, large = false }) {
   return (
     <span
@@ -25,6 +28,7 @@ function BusNumber({ route, large = false }) {
 function RouteDetail({ routeId }) {
   const { data: route, loading, error } = useApi(`/api/v1/colectivos/${encodeURIComponent(routeId)}`)
   const [directionIndex, setDirectionIndex] = useState(0)
+  const live = useApi(`/api/v1/colectivos/${encodeURIComponent(routeId)}/vivo`, { refreshMs: LIVE_REFRESH_MS })
 
   useEffect(() => setDirectionIndex(0), [routeId])
 
@@ -33,6 +37,8 @@ function RouteDetail({ routeId }) {
   if (!route) return null
 
   const direction = route.directions[directionIndex]
+  // Solo los colectivos del sentido elegido (el feed usa el mismo direction_id que el GTFS).
+  const vehicles = (live.data?.vehicles ?? []).filter((v) => !direction || v.direction === direction.directionId)
 
   return (
     <section className="bus-detail">
@@ -61,8 +67,17 @@ function RouteDetail({ routeId }) {
         </div>
       )}
 
+      {live.data?.available && (
+        <div className="bus-live" role="status">
+          <span className="live-dot" aria-hidden="true" />
+          {vehicles.length === 0
+            ? 'Sin colectivos en vivo en este sentido ahora.'
+            : `${vehicles.length} ${vehicles.length === 1 ? 'colectivo' : 'colectivos'} en vivo en este sentido`}
+        </div>
+      )}
+
       <div className="bus-layout">
-        <BusRouteMap className="bus-map" route={route} directionIndex={directionIndex} />
+        <BusRouteMap className="bus-map" route={route} directionIndex={directionIndex} vehicles={vehicles} />
         {direction && (
           <div className="panel bus-stops">
             <div className="panel-title">
