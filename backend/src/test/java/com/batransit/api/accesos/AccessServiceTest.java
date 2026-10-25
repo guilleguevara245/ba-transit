@@ -93,6 +93,54 @@ class AccessServiceTest {
     }
 
     @Test
+    void distingueLaAutopistaDeUnaCalleCercana() {
+        assertThat(AccessService.isHighway(flow(60, 95, "FRC0"))).isTrue();
+        assertThat(AccessService.isHighway(flow(90, 98, "FRC3"))).isTrue();
+        assertThat(AccessService.isHighway(flow(30, 39, "FRC2"))).isFalse();
+        assertThat(AccessService.isHighway(flow(30, 41, "FRC4"))).isFalse();
+    }
+
+    @Test
+    void siElPuntoCaeEnUnaCalleBuscaLaAutopistaCercaYLaRecuerda() {
+        AtomicInteger calls = new AtomicInteger();
+        // Solo los puntos al norte del original dan la autopista.
+        TomTomTrafficClient client = new TomTomTrafficClient("clave") {
+            @Override
+            public Optional<FlowData> flowAt(double lat, double lon) {
+                calls.incrementAndGet();
+                return Optional.of(lat > -34.5 ? flow(80, 100, "FRC0") : flow(30, 39, "FRC4"));
+            }
+        };
+        MutableClock clock = new MutableClock(Instant.parse("2026-10-25T12:00:00Z"));
+        AccessService service = new AccessService(ONE_ACCESS, client, clock);
+
+        SegmentReport segment = service.report().accesses().get(0).segments().get(0);
+        assertThat(segment.status()).isEqualTo(TrafficStatus.FLUIDO);
+        assertThat(segment.checkLocation()).isFalse();
+        int firstRound = calls.get();
+        assertThat(firstRound).isGreaterThan(1);
+
+        // En la siguiente medicion va directo al punto encontrado.
+        clock.now = clock.now.plusSeconds(21 * 60);
+        service.report();
+        assertThat(calls.get()).isEqualTo(firstRound + 1);
+    }
+
+    @Test
+    void siNoEncuentraLaAutopistaNoVuelveABuscarHastaElOtroDia() {
+        FakeClient client = new FakeClient("clave", flow(30, 39, "FRC4"));
+        MutableClock clock = new MutableClock(Instant.parse("2026-10-25T12:00:00Z"));
+        AccessService service = new AccessService(ONE_ACCESS, client, clock);
+
+        service.report();
+        assertThat(client.calls).hasValue(1 + AccessService.SEARCH_OFFSETS.size());
+
+        clock.now = clock.now.plusSeconds(21 * 60);
+        service.report();
+        assertThat(client.calls).hasValue(2 + AccessService.SEARCH_OFFSETS.size());
+    }
+
+    @Test
     void siTomTomFallaElTramoQuedaSinDatos() {
         FakeClient client = new FakeClient("clave", null);
         SegmentReport segment = new AccessService(ONE_ACCESS, client, Clock.systemUTC())

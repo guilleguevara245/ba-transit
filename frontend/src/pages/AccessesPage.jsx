@@ -35,13 +35,13 @@ function SegmentRow({ segment, configured }) {
       {configured && (
         <>
           <div className="speed-bar" aria-hidden="true">
-            <span style={{ width: `${percent ?? 0}%`, background: color }} />
+            <span style={{ width: `${segment.checkLocation ? 0 : (percent ?? 0)}%`, background: color }} />
           </div>
           <div className="access-segment-speed">
-            {segment.currentSpeed != null
-              ? `${segment.currentSpeed} km/h · normal ${segment.freeFlowSpeed} km/h`
-              : segment.checkLocation
-                ? 'El punto de medición no cae sobre la autopista: hay que revisarlo.'
+            {segment.checkLocation
+              ? 'El punto de medición no cae sobre la autopista: hay que revisarlo.'
+              : segment.currentSpeed != null
+                ? `${segment.currentSpeed} km/h · normal ${segment.freeFlowSpeed} km/h`
                 : 'Sin medición en este momento.'}
           </div>
         </>
