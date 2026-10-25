@@ -5,9 +5,8 @@ import { formatClock, formatShortDate } from '../utils/format.js'
 import './Header.css'
 
 const TABS = [
-  { to: '/', label: 'Dashboard', end: true },
+  { to: '/', label: 'Inicio', end: true },
   { to: '/mapa', label: 'Mapa' },
-  { to: '/estadisticas', label: 'Estadísticas' },
 ]
 
 function tabClass({ isActive }) {

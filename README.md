@@ -28,9 +28,9 @@ El backend sincroniza automáticamente las alertas de subte desde la API Transpo
 - Alertas de servicio por línea, con sincronización automática desde la API Transporte de Buenos Aires (cada 5 minutos, solo subte por ahora — ver limitaciones en [`backend/README.md`](./backend/README.md))
 - Tarifas vigentes por modo y tramo de distancia (subte, colectivos y trenes)
 - Búsqueda combinada de líneas y estaciones, sin distinguir tildes ni mayúsculas, con resultados navegables con teclado
-- Dashboard en React con estado en vivo por modo, panel de alertas y panel de tarifas, que se actualiza solo cada minuto
-- Mapa interactivo (Leaflet + OpenStreetMap) de las 90 estaciones de subte con coordenadas reales y el recorrido de cada línea
-- Estadísticas de alertas por línea (total histórico, activas, tipo más frecuente), calculadas con agregación SQL en el backend
+- Página de inicio en React con estado en vivo por modo, panel de alertas y panel de tarifas, que se actualiza sola cada minuto
+- Mapa interactivo (Leaflet + OpenStreetMap) de las 90 estaciones de subte con coordenadas reales y el recorrido de cada línea; cada estación muestra su posición en el recorrido, sus combinaciones y las alertas de la línea
+- Endpoint de estadísticas de alertas por línea (total histórico, activas, tipo más frecuente), calculadas con agregación SQL en el backend
 - Base de datos versionada con migraciones Flyway, sin pérdida de datos entre cambios de esquema
 - Endpoints de escritura protegidos con API key y errores con formato estándar (Problem Details, RFC 9457)
 - Documentación interactiva de la API con Swagger UI
@@ -48,7 +48,7 @@ El backend sincroniza automáticamente las alertas de subte desde la API Transpo
 
 **Frontend**
 - **React** + **Vite**
-- **React Router** para la navegación entre Dashboard, Mapa y Estadísticas
+- **React Router** para la navegación entre Inicio, Mapa y el detalle de cada línea
 - **Leaflet** + **React Leaflet** para el mapa interactivo
 - Hooks propios para consumo de API con refresco periódico, debounce de búsqueda y reloj
 - **ESLint** + **Vitest**
@@ -70,7 +70,7 @@ ba-transit/
 │   └── src/main/resources/db/migration/   # Migraciones Flyway
 ├── frontend/                # Cliente web (React + Vite)
 │   └── src/
-│       ├── pages/           # Dashboard, Mapa, Estadísticas y detalle de línea
+│       ├── pages/           # Inicio, Mapa y detalle de línea
 │       ├── components/      # Header, navegación, búsqueda, paneles
 │       ├── hooks/           # useApi, useDebounce, useNow
 │       └── utils/           # Lógica pura (con tests): resumen por modo, mapa, búsqueda, formatos
@@ -111,7 +111,7 @@ En desarrollo, el proxy de Vite reenvía `/api` al backend en `http://localhost:
 
 ## Uso
 
-Con el backend y el frontend corriendo, el dashboard queda disponible en `http://localhost:5173` (puerto por defecto de Vite). Desde ahí se puede buscar una línea o estación, ver el estado en vivo por modo de transporte, consultar alertas y tarifas activas, explorar el mapa de estaciones de subte en la pestaña "Mapa", y ver estadísticas de alertas por línea en la pestaña "Estadísticas". Al elegir un resultado de búsqueda se abre el detalle de la línea, con sus ramales, estaciones y alertas.
+Con el backend y el frontend corriendo, la página de inicio queda disponible en `http://localhost:5173` (puerto por defecto de Vite). Desde ahí se puede buscar una línea o estación, ver el estado en vivo por modo de transporte, consultar alertas y tarifas activas y explorar el mapa de estaciones de subte en la pestaña "Mapa". Al elegir un resultado de búsqueda se abre el detalle de la línea, con sus ramales, estaciones y alertas.
 
 La documentación interactiva de la API está en `http://localhost:8080/swagger-ui.html`.
 
@@ -154,7 +154,7 @@ Un workflow de GitHub Actions corre en cada `push` y `pull request` a `main`, co
 - [x] Fase 4 — Actualización automática: job programado que sincroniza alertas de subte desde la API Transporte oficial (ver limitaciones en [`backend/README.md`](./backend/README.md))
 - [x] Fase 5 — Frontend: dashboard en React con estado en vivo por modo, panel de alertas, panel de tarifas y búsqueda, todo conectado a la API real
 - [x] Fase 6 — Mapa: mapa interactivo con Leaflet de las 90 estaciones de subte con coordenadas reales, coloreadas por línea
-- [x] Fase 7 — Estadísticas: endpoint de estadísticas de alertas por línea, página de estadísticas en el frontend con gráfico de barras
+- [x] Fase 7 — Estadísticas: endpoint de estadísticas de alertas por línea, página de estadísticas en el frontend con gráfico de barras (la página se retiró después; el endpoint sigue disponible)
 - [x] Ronda de calidad — correcciones de sincronización y seguridad, API key para escrituras, errores estándar, DTOs, búsqueda sin tildes, tarifas vigentes, tests de backend y frontend, CI del frontend, detalle de línea, recorridos en el mapa y Swagger UI
 - [ ] Fase 8 — Presentación final
 
