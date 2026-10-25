@@ -67,6 +67,9 @@ class RepositoryIntegrationTest {
         assertThat(stations).filteredOn(s -> s.stationName().equals("Plaza de Mayo"))
                 .extracting(MapStation::openedOn)
                 .containsExactly(java.time.LocalDate.of(1913, 12, 1));
+        assertThat(stations).filteredOn(s -> s.stationName().equals("Facultad de Medicina"))
+                .extracting(MapStation::landmarks)
+                .containsExactly("Hospital de Clínicas; Facultad de Medicina (UBA)");
     }
 
     @Test

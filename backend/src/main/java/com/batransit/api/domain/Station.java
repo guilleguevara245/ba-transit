@@ -61,6 +61,10 @@ public class Station {
     @Column(name = "opened_on")
     private LocalDate openedOn;
 
+    /** Lugares importantes cercanos, separados por "; " (ver V33). */
+    @Column(length = 300)
+    private String landmarks;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
@@ -128,5 +132,9 @@ public class Station {
 
     public LocalDate getOpenedOn() {
         return openedOn;
+    }
+
+    public String getLandmarks() {
+        return landmarks;
     }
 }

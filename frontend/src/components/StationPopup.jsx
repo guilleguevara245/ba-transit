@@ -58,6 +58,17 @@ export default function StationPopup({ station, stations, alerts, mode }) {
         </div>
       )}
 
+      {station.landmarks && (
+        <div className="station-popup-section">
+          <div className="station-popup-label">Cerca</div>
+          <ul className="station-popup-landmarks">
+            {station.landmarks.split(';').map((place) => place.trim()).filter(Boolean).map((place) => (
+              <li key={place}>{place}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <div className="station-popup-section">
         {lineAlerts.length === 0 ? (
           <div className="station-popup-ok">Sin alertas en la línea</div>
