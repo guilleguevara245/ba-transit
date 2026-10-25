@@ -2,6 +2,7 @@ import Skeleton from '../components/Skeleton.jsx'
 import SearchBar from '../components/SearchBar.jsx'
 import ModeGrid from '../components/ModeGrid.jsx'
 import MyLines from '../components/MyLines.jsx'
+import SpecialServices from '../components/SpecialServices.jsx'
 import AlertsPanel from '../components/AlertsPanel.jsx'
 import FaresPanel from '../components/FaresPanel.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
@@ -31,6 +32,7 @@ export default function DashboardPage() {
   return (
     <div className="wrap content">
       <SearchBar />
+      <SpecialServices />
       {ready && <MyLines lines={lines} alerts={alerts} />}
       <div className="section-label section-label-row">
         <span>Estado de la red</span>

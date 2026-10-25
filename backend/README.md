@@ -168,6 +168,7 @@ Endpoints principales:
 - `GET /api/v1/colectivos?q=152` - busqueda de lineas de colectivo
 - `GET /api/v1/colectivos/{routeId}` - recorrido y paradas de cada sentido
 - `GET /api/v1/accesos` - estado del transito en los cuatro accesos principales
+- `GET /api/v1/servicios-especiales?lineId=` - servicios especiales vigentes hoy
 - `GET /api/v1/stats/alerts` - estadisticas de alertas por linea (total,
   activas, tipo mas frecuente)
 
@@ -238,3 +239,24 @@ sin estado en vivo. Para probar la clave (sin pegarla en la terminal):
 read -rs TOMTOM_API_KEY && export TOMTOM_API_KEY
 curl -sS "https://api.tomtom.com/traffic/services/4/flowSegmentData/absolute/10/json?point=-34.7005,-58.2775&unit=KMPH&key=$TOMTOM_API_KEY"
 ```
+
+## Servicios especiales de trenes
+
+Trenes rapidos, diferenciales, servicios por eventos o cambios de
+recorrido. No hay una fuente publica con estos datos, asi que se cargan
+a mano y se muestran en el inicio y en la pagina de la linea solo
+mientras estan vigentes (fechas en hora de Buenos Aires):
+
+```bash
+read -rs ADMIN_API_KEY && export ADMIN_API_KEY
+curl -sS -X POST https://ba-transit-api.onrender.com/api/v1/servicios-especiales \
+  -H "X-API-Key: $ADMIN_API_KEY" -H "Content-Type: application/json" \
+  -d '{"lineId": 3, "title": "Tren rapido", "description": "Once - Moreno sin paradas entre Liniers y Castelar",
+       "days": "Lunes a viernes", "schedule": "Salidas de Once 17:30 y 18:30",
+       "validFrom": "2026-11-02", "validUntil": "2026-12-18"}'
+```
+
+`validUntil` es opcional (sin fecha de fin). Para darlo de baja:
+`DELETE /api/v1/servicios-especiales/{id}` con el mismo header. El
+`lineId` de cada linea sale de `GET /api/v1/lines`.
+

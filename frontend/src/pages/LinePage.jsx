@@ -1,3 +1,4 @@
+import SpecialServices from '../components/SpecialServices.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
@@ -130,6 +131,7 @@ export default function LinePage() {
             </div>
           )}
 
+          <SpecialServices lineId={line.id} />
           <div className="section-label">Ramales y estaciones</div>
           {branchesState.error && <ErrorMessage what="los ramales" error={branchesState.error} />}
           {branchesState.data && branchesState.data.length === 0 && (
