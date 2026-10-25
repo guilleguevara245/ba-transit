@@ -6,7 +6,8 @@ export const TRAFFIC_STATUS = {
   FLUIDO: { label: 'Fluido', color: '#2f8a3c' },
   DEMORADO: { label: 'Demorado', color: '#d08a0a' },
   CONGESTIONADO: { label: 'Congestionado', color: '#c23b34' },
-  CORTADO: { label: 'Cortado', color: '#17171a' },
+  // Variable CSS: negro en el tema claro, casi blanco en el oscuro.
+  CORTADO: { label: 'Cortado', color: 'var(--traffic-closed)' },
   SIN_DATOS: { label: 'Sin datos', color: '#a3a097' },
 }
 

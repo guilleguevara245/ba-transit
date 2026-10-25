@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>BA Transit</title>
+    <script>
+      // Tema antes de que cargue la app, para que no parpadee: lo guardado
+      // en este navegador o, si no hay nada, la preferencia del sistema.
+      try {
+        var tema = localStorage.getItem('ba-transit-tema')
+        if (!tema && window.matchMedia('(prefers-color-scheme: dark)').matches) tema = 'dark'
+        document.documentElement.dataset.theme = tema === 'dark' ? 'dark' : 'light'
+      } catch (e) {
+        document.documentElement.dataset.theme = 'light'
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

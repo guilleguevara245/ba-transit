@@ -45,8 +45,8 @@
 }
 
 .map-filter.active {
-  background: #17171a;
-  border-color: #17171a;
+  background: var(--ink);
+  border-color: var(--ink);
   color: var(--yellow);
 }
 
@@ -105,7 +105,7 @@
 .station-popup {
   font-family: 'Inter', sans-serif;
   font-size: 13px;
-  color: #17171a;
+  color: var(--text);
 }
 
 .station-popup-line {

@@ -17,7 +17,7 @@
   height: 32px;
   padding: 0 8px;
   border-radius: 6px;
-  background: #17171a;
+  background: var(--ink);
   color: #fff;
   font-family: 'Barlow Condensed', sans-serif;
   font-weight: 700;

@@ -41,7 +41,7 @@
 }
 
 .mode-card:hover {
-  background: #fbfaf6;
+  background: var(--surface-hover);
 }
 
 .mode-card:hover .mode-arrow {

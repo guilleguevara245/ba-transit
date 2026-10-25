@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import Logo from './Logo.jsx'
+import ThemeToggle from './ThemeToggle.jsx'
 import { useNow } from '../hooks/useNow.js'
 import { formatClock, formatShortDate } from '../utils/format.js'
 import './Header.css'
@@ -75,6 +76,7 @@ export default function Header() {
             <strong>{formatClock(now)}</strong>
             <small>{formatShortDate(now)}</small>
           </time>
+          <ThemeToggle />
         </div>
       </div>
     </header>
