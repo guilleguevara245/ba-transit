@@ -3,6 +3,7 @@ import { useParams, useSearchParams } from 'react-router-dom'
 import AlertsPanel from '../components/AlertsPanel.jsx'
 import BackButton from '../components/BackButton.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
+import FavoriteButton from '../components/FavoriteButton.jsx'
 import LineBadge from '../components/LineBadge.jsx'
 import LineInfoCard from '../components/LineInfoCard.jsx'
 import NetworkMap from '../components/NetworkMap.jsx'
@@ -117,6 +118,7 @@ export default function LinePage() {
                 </div>
               )}
             </div>
+            <FavoriteButton lineId={line.id} lineName={line.name} />
           </div>
 
           {alertsState.data && alertsState.data.length > 0 && (

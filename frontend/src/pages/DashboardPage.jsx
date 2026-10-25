@@ -1,5 +1,6 @@
 import SearchBar from '../components/SearchBar.jsx'
 import ModeGrid from '../components/ModeGrid.jsx'
+import MyLines from '../components/MyLines.jsx'
 import AlertsPanel from '../components/AlertsPanel.jsx'
 import FaresPanel from '../components/FaresPanel.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
@@ -29,6 +30,7 @@ export default function DashboardPage() {
   return (
     <div className="wrap content">
       <SearchBar />
+      {ready && <MyLines lines={lines} alerts={alerts} />}
       <div className="section-label section-label-row">
         <span>Estado de la red</span>
         {alertsState.updatedAt && (

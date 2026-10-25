@@ -29,6 +29,11 @@
   color: var(--text);
 }
 
+.line-hero-text {
+  flex: 1;
+  min-width: 0;
+}
+
 .line-facts {
   font-size: 13px;
   color: var(--text-dim);
@@ -164,5 +169,11 @@
 
   .line-minimap {
     height: 320px;
+  }
+}
+
+@media (max-width: 600px) {
+  .line-hero {
+    flex-wrap: wrap;
   }
 }

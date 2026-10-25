@@ -1,0 +1,56 @@
+.favorite-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-dim);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+}
+
+.favorite-button svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linejoin: round;
+}
+
+.favorite-button:hover {
+  border-color: var(--yellow);
+  color: var(--text);
+}
+
+.favorite-button.active {
+  border-color: var(--yellow);
+  background: rgba(244, 193, 27, 0.14);
+  color: var(--text);
+}
+
+.favorite-button.active svg {
+  fill: var(--yellow);
+  stroke: var(--yellow-deep);
+}
+
+.favorite-button.compact {
+  padding: 6px;
+  border-color: transparent;
+  background: transparent;
+}
+
+.favorite-button.compact:hover {
+  border-color: var(--line);
+}
+
+.favorite-button:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+}

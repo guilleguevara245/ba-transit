@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom'
 import BackButton from '../components/BackButton.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
+import FavoriteButton from '../components/FavoriteButton.jsx'
 import LineBadge from '../components/LineBadge.jsx'
 import NetworkMap from '../components/NetworkMap.jsx'
 import { useApi } from '../hooks/useApi.js'
@@ -59,6 +60,7 @@ export default function ModePage() {
                 <span className="dot"></span>
                 {lineAlerts.length > 1 ? `${status.label} (${lineAlerts.length})` : status.label}
               </span>
+              <FavoriteButton lineId={line.id} lineName={line.name} compact />
             </Link>
           )
         })}
