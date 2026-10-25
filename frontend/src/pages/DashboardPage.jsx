@@ -1,4 +1,5 @@
 import Skeleton from '../components/Skeleton.jsx'
+import Greeting from '../components/Greeting.jsx'
 import SearchBar from '../components/SearchBar.jsx'
 import ModeGrid from '../components/ModeGrid.jsx'
 import MyLines from '../components/MyLines.jsx'
@@ -31,6 +32,7 @@ export default function DashboardPage() {
 
   return (
     <div className="wrap content">
+      <Greeting />
       <SearchBar />
       <SpecialServices />
       {ready && <MyLines lines={lines} alerts={alerts} />}

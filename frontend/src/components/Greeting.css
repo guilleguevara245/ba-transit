@@ -1,0 +1,124 @@
+.greeting {
+  margin-bottom: 18px;
+}
+
+.greeting-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 34px;
+  line-height: 1.1;
+  color: var(--text);
+}
+
+.greeting-edit {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+}
+
+.greeting-edit svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.greeting-edit:hover {
+  color: var(--accent-text);
+  border-color: var(--yellow);
+}
+
+.greeting-ask {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent-text);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.greeting-ask:hover {
+  text-decoration: underline;
+}
+
+.greeting-sub {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.greeting-sub::first-letter {
+  text-transform: uppercase;
+}
+
+.greeting-private {
+  color: var(--text-faint);
+}
+
+.greeting-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.greeting-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  color: var(--text);
+}
+
+.greeting-form input {
+  width: 220px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+}
+
+.greeting-form input:focus {
+  outline: 2px solid var(--yellow);
+  outline-offset: 1px;
+}
+
+.greeting-save,
+.greeting-cancel {
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.greeting-save {
+  background: var(--yellow);
+  border-color: var(--yellow);
+  color: #17171a;
+}
+
+@media (max-width: 520px) {
+  .greeting-title {
+    font-size: 28px;
+  }
+}
