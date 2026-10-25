@@ -1,5 +1,13 @@
 .app {
-  padding-bottom: 40px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* El contenido ocupa el alto libre: el pie queda abajo aunque la pagina sea corta. */
+.app-main {
+  flex: 1;
+  padding-bottom: 16px;
 }
 
 /* Doble clase: con .content sola, el "padding: 0 32px" de .wrap
