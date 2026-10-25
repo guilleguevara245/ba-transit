@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import Logo from './Logo.jsx'
 import { useNow } from '../hooks/useNow.js'
-import { formatClock } from '../utils/format.js'
+import { formatClock, formatShortDate } from '../utils/format.js'
 import './Header.css'
 
 const TABS = [
@@ -32,9 +32,16 @@ export default function Header() {
           ))}
         </nav>
 
-        <div className="header-meta">
-          <span className="dot"></span>
-          <time dateTime={now.toISOString()}>{formatClock(now)}</time>
+        <div className="clock">
+          <span className="clock-live">
+            <span className="clock-live-dot"></span>
+            En vivo
+          </span>
+          <span className="clock-sep" aria-hidden="true"></span>
+          <time className="clock-time" dateTime={now.toISOString()}>
+            <strong>{formatClock(now)}</strong>
+            <small>{formatShortDate(now)}</small>
+          </time>
         </div>
       </div>
     </header>

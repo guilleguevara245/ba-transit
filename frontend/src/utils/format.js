@@ -27,6 +27,13 @@ export function formatClock(date) {
   })
 }
 
+/** sáb 24 oct */
+export function formatShortDate(date) {
+  return date
+    .toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'short', timeZone: TIME_ZONE })
+    .replace(/[.,]/g, '')
+}
+
 export function formatCurrency(value) {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(value)
 }

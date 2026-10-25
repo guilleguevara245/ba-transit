@@ -80,22 +80,72 @@
 
 /* ---- Reloj ---- */
 
-.header-meta {
+.clock {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: var(--text-dim);
-  font-variant-numeric: tabular-nums;
+  gap: 14px;
 }
 
-.header-meta .dot {
+.clock-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--normal);
+}
+
+.clock-live-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
   background: var(--normal);
-  display: inline-block;
+  box-shadow: 0 0 0 3px rgba(111, 191, 115, 0.18);
+  animation: clock-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes clock-pulse {
+  50% {
+    box-shadow: 0 0 0 5px rgba(111, 191, 115, 0.05);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clock-live-dot {
+    animation: none;
+  }
+}
+
+.clock-sep {
+  width: 1px;
+  height: 28px;
+  background: var(--line);
+}
+
+.clock-time {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1;
+}
+
+.clock-time strong {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  letter-spacing: 0.5px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.clock-time small {
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--text-faint);
 }
 
 /* ---- Celular: las pestañas pasan debajo del logo ---- */
@@ -127,5 +177,16 @@
 
   .nav-tab {
     flex-shrink: 0;
+  }
+
+  /* En pantallas chicas queda solo la hora. */
+  .clock-live,
+  .clock-sep,
+  .clock-time small {
+    display: none;
+  }
+
+  .clock-time strong {
+    font-size: 20px;
   }
 }
