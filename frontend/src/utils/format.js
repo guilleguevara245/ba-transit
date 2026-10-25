@@ -1,6 +1,6 @@
-export function formatRelativeTime(isoString) {
+export function formatRelativeTime(isoString, now = new Date()) {
   const then = new Date(isoString)
-  const diffMs = Date.now() - then.getTime()
+  const diffMs = now.getTime() - then.getTime()
   const diffMin = Math.round(diffMs / 60_000)
 
   if (diffMin < 1) return 'hace un momento'

@@ -1,18 +1,6 @@
 import './FaresPanel.css'
 import { formatCurrency } from '../utils/format.js'
-import { MODE_LABELS } from '../constants.js'
-
-function fareLabel(fare) {
-  const modeLabel = MODE_LABELS[fare.mode] ?? fare.mode
-
-  if (fare.minKm == null && fare.maxKm == null) {
-    return `${modeLabel}, tarifa plana`
-  }
-  if (fare.maxKm == null) {
-    return `${modeLabel}, más de ${fare.minKm} km`
-  }
-  return `${modeLabel}, ${fare.minKm}-${fare.maxKm} km`
-}
+import { fareLabel } from '../utils/fares.js'
 
 export default function FaresPanel({ fares }) {
   return (
