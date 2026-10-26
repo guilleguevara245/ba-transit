@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatClock, formatLongDate, formatRelativeTime, formatShortDate, yearsSince } from './format.js'
+import { formatClock, formatDayDate, formatLongDate, formatRelativeTime, formatShortDate, yearsSince } from './format.js'
 
 const NOW = new Date('2026-10-23T15:00:00Z')
 
@@ -27,7 +27,14 @@ describe('formatClock', () => {
 describe('formatShortDate', () => {
   it('dia, numero y mes abreviados, en hora de Buenos Aires', () => {
     // 01:50 UTC del 25/10 todavia es sabado 24 en Buenos Aires.
-    expect(formatShortDate(new Date('2026-10-25T01:50:00Z'))).toBe('sáb 24 oct')
+    expect(formatShortDate(new Date('2026-10-25T01:50:00Z'))).toBe('Sáb 24 oct')
+  })
+})
+
+describe('formatDayDate', () => {
+  it('fecha completa en castellano, en hora de Buenos Aires', () => {
+    expect(formatDayDate(new Date('2026-10-25T01:50:00Z'))).toBe('Sábado 24 de octubre')
+    expect(formatDayDate(new Date('2026-11-23T15:00:00Z'))).toBe('Lunes 23 de noviembre')
   })
 })
 

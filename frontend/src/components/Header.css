@@ -117,46 +117,6 @@
   gap: 14px;
 }
 
-.clock-live {
-  display: inline-flex;
-  white-space: nowrap;
-  align-items: center;
-  gap: 6px;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 600;
-  font-size: 12px;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  color: var(--normal);
-}
-
-.clock-live-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--normal);
-  box-shadow: 0 0 0 3px rgba(111, 191, 115, 0.18);
-  animation: clock-pulse 2.4s ease-in-out infinite;
-}
-
-@keyframes clock-pulse {
-  50% {
-    box-shadow: 0 0 0 5px rgba(111, 191, 115, 0.05);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .clock-live-dot {
-    animation: none;
-  }
-}
-
-.clock-sep {
-  width: 1px;
-  height: 28px;
-  background: var(--line);
-}
-
 .clock-time {
   white-space: nowrap;
   display: flex;
@@ -186,18 +146,26 @@
   font-weight: 600;
 }
 
-/* Pantallas medianas: la navegacion entra justa al lado del logo, asi
-   que se achica el espaciado antes de pasar al formato de celular. */
-/* Sin lugar para el "En vivo" junto al reloj: queda solo la hora y la fecha. */
-@media (max-width: 1480px) {
-  .clock-live,
-  .clock-sep {
+/* Fecha completa ("Domingo 25 de octubre") en pantallas grandes; abreviada
+   ("Dom 25 oct") cuando la navegacion queda justa. */
+.clock-date-short {
+  display: none;
+}
+
+@media (max-width: 1360px) {
+  .clock-date-long {
     display: none;
+  }
+
+  .clock-date-short {
+    display: inline;
   }
 }
 
-/* Con 7 secciones, por debajo de 1240 px las pestañas quedan solo con texto. */
-@media (max-width: 1240px) {
+/* Pantallas medianas: la navegacion entra justa al lado del logo, asi
+   que se achica el espaciado antes de pasar al formato de celular. */
+/* Con 7 secciones, por debajo de 1260 px las pestañas quedan solo con texto. */
+@media (max-width: 1260px) {
   .nav-tab .nav-icon {
     display: none;
   }
@@ -253,8 +221,6 @@
   }
 
   /* En pantallas chicas queda solo la hora. */
-  .clock-live,
-  .clock-sep,
   .clock-time small {
     display: none;
   }

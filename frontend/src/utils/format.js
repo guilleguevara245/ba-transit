@@ -28,10 +28,25 @@ export function formatClock(date) {
 }
 
 /** sáb 24 oct */
+const capitalize = (text) => text.charAt(0).toUpperCase() + text.slice(1)
+
+/** "Sáb 24 oct": dia y mes abreviados, en hora de Buenos Aires. */
 export function formatShortDate(date) {
-  return date
-    .toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'short', timeZone: TIME_ZONE })
-    .replace(/[.,]/g, '')
+  return capitalize(
+    date
+      .toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'short', timeZone: TIME_ZONE })
+      .replace(/[.,]/g, ''),
+  )
+}
+
+/** "Sábado 24 de octubre": la fecha completa, como se escribe en castellano. */
+export function formatDayDate(date) {
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat('es-AR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: TIME_ZONE })
+      .formatToParts(date)
+      .map((part) => [part.type, part.value]),
+  )
+  return `${capitalize(parts.weekday)} ${parts.day} de ${parts.month}`
 }
 
 export function formatCurrency(value) {

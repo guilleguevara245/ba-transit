@@ -3,7 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom'
 import Logo from './Logo.jsx'
 import ThemeToggle from './ThemeToggle.jsx'
 import { useNow } from '../hooks/useNow.js'
-import { formatClock, formatShortDate } from '../utils/format.js'
+import { formatClock, formatDayDate, formatShortDate } from '../utils/format.js'
 import { holidayOn } from '../utils/holidays.js'
 import './Header.css'
 
@@ -73,11 +73,6 @@ export default function Header() {
         </nav>
 
         <div className="clock">
-          <span className="clock-live">
-            <span className="clock-live-dot"></span>
-            En vivo
-          </span>
-          <span className="clock-sep" aria-hidden="true"></span>
           <time
             className={holiday ? 'clock-time holiday' : 'clock-time'}
             dateTime={now.toISOString()}
@@ -85,7 +80,8 @@ export default function Header() {
           >
             <strong>{formatClock(now)}</strong>
             <small>
-              {formatShortDate(now)}
+              <span className="clock-date-long">{formatDayDate(now)}</span>
+              <span className="clock-date-short">{formatShortDate(now)}</span>
               {holiday && <span className="clock-holiday"> · Feriado</span>}
             </small>
           </time>
