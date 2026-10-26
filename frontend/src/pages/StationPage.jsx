@@ -12,9 +12,12 @@ import { useApi } from '../hooks/useApi.js'
 import { MODE_LABELS } from '../constants.js'
 import { formatLongDate, yearsSince } from '../utils/format.js'
 import { findTransfers, routeInfo } from '../utils/map.js'
+import { lastTrainsAt, serviceDayType } from '../utils/lastTrain.js'
 import './LinePage.css'
 import './MapPage.css'
 import './StationPage.css'
+
+const DAY_NAMES = ['días hábiles', 'sábados', 'domingos y feriados']
 
 const asLine = (s) => ({ mode: s.lineMode, code: s.lineCode, name: s.lineName, colorHex: s.lineColorHex })
 
@@ -115,6 +118,10 @@ export default function StationPage() {
   const landmarks = (station.landmarks ?? '').split(';').map((p) => p.trim()).filter(Boolean)
   const alerts = alertsState.data ?? []
   const years = yearsSince(station.openedOn)
+  const branch = allStations
+    .filter((s) => s.branchId === station.branchId)
+    .sort((a, b) => a.sequenceOrder - b.sequenceOrder)
+  const lastTrains = station.lineMode === 'SUBTE' ? lastTrainsAt(station.lineCode, branch, station) : null
 
   return (
     <div className="wrap content">
@@ -144,6 +151,23 @@ export default function StationPage() {
           {station.lineMode === 'SUBTE' && (
             <section className="station-card">
               <NextTrains lineCode={station.lineCode} stationName={station.stationName} />
+            </section>
+          )}
+
+          {lastTrains?.length > 0 && (
+            <section className="station-card">
+              <h2 className="station-card-title">Último tren de hoy</h2>
+              <ul className="station-last-trains">
+                {lastTrains.map((t) => (
+                  <li key={t.towards}>
+                    <span>Hacia {t.towards}</span>
+                    <strong>≈ {t.time}</strong>
+                  </li>
+                ))}
+              </ul>
+              <p className="station-dim station-last-note">
+                Horario de {DAY_NAMES[serviceDayType()]} según Emova, estimado para esta estación (±5 min).
+              </p>
             </section>
           )}
 

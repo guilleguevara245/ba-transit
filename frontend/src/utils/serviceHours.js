@@ -56,6 +56,11 @@ export const OPERATOR_SITES = {
   'Emova Movilidad': 'https://emova.com.ar/',
 }
 
+/** Ultimos trenes de una linea desde cada cabecera, o null. */
+export function lastTrainsFor(lineCode) {
+  return LAST_TRAINS[lineCode]?.map(([from, ...times]) => ({ from, times })) ?? null
+}
+
 /**
  * Horario de una linea de subte o premetro, o null si no hay datos
  * (por ejemplo, los trenes).

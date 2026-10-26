@@ -148,3 +148,25 @@
 .station-history-line strong {
   color: var(--text);
 }
+
+.station-last-trains {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.station-last-trains li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.station-last-trains strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.station-last-note {
+  margin-top: 8px;
+  font-size: 12px;
+}
