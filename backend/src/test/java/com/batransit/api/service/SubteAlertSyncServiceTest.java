@@ -100,6 +100,17 @@ class SubteAlertSyncServiceTest {
     }
 
     @Test
+    void noTocaLasAlertasDeOtrasFuentes() {
+        Alert deTrenes = new Alert(lineaA, AlertType.OBRA, "Aviso de trenes", "Trenes Argentinos", "trenes-ar:x", null, null);
+        when(alertRepository.findByActiveTrueAndExternalIdIsNotNull()).thenReturn(List.of(deTrenes));
+        when(apiClient.fetchSubteAlerts()).thenReturn(feed(entity("alerta-1", 3, "Sigue", "LineaA")));
+
+        service.sync();
+
+        assertThat(deTrenes.isActive()).isTrue();
+    }
+
+    @Test
     void noDesactivaUnaAlertaVigenteSiFallaSuProcesamiento() {
         Alert vigente = new Alert(lineaA, AlertType.DEMORA, "Sigue", "API Transporte", "alerta-rota", null, null);
         when(alertRepository.findByActiveTrueAndExternalIdIsNotNull()).thenReturn(List.of(vigente));

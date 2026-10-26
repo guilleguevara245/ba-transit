@@ -16,6 +16,12 @@ describe('mentionsStation', () => {
     expect(mentionsStation('Estación Floridablanca cerrada', 'Florida')).toBe(false)
   })
 
+  it('con "estacion" en el texto, cuenta lo que viene despues', () => {
+    const text = 'Ramales Plaza Constitución – Ezeiza, A. Korn y Bosques vía Temperley: La estación Hipólito Yrigoyen se encuentra cerrada.'
+    expect(mentionsStation(text, 'Plaza Constitución')).toBe(false)
+    expect(mentionsStation(text, 'Hipólito Yrigoyen')).toBe(true)
+  })
+
   it('separa los nombres dobles', () => {
     expect(stationAliases('Plaza de los Virreyes - Eva Perón')).toContain('eva peron')
   })

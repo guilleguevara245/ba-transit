@@ -155,7 +155,10 @@ public class SubteAlertSyncService {
     }
 
     private int deactivateNoLongerPresent(Set<String> feedEntityIds) {
+        // Solo las alertas que vinieron de este feed: las de otras fuentes
+        // (por ejemplo, los avisos de Trenes Argentinos) tienen su propia sincronizacion.
         List<Alert> toDeactivate = alertRepository.findByActiveTrueAndExternalIdIsNotNull().stream()
+                .filter(a -> SOURCE_NAME.equals(a.getSource()))
                 .filter(a -> !feedEntityIds.contains(feedEntityIdOf(a.getExternalId())))
                 .toList();
         toDeactivate.forEach(a -> a.setActive(false));

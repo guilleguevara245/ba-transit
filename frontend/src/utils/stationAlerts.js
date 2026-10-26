@@ -20,9 +20,17 @@ export function stationAliases(name) {
 
 const escape = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
-/** Si el texto de la alerta nombra a la estacion (como palabra completa). */
+/**
+ * Si el texto de la alerta nombra a la estacion (como palabra completa).
+ * Cuando el texto dice "estacion" o "estaciones", solo cuenta lo que viene
+ * despues: en "Ramales Plaza Constitucion - Ezeiza: La estacion Hipolito
+ * Yrigoyen se encuentra cerrada" la cerrada es Hipolito Yrigoyen, no
+ * Plaza Constitucion.
+ */
 export function mentionsStation(text, stationName) {
-  const haystack = normalizeText(text)
+  const full = normalizeText(text)
+  const marker = full.search(/\bestacion(es)?\b/)
+  const haystack = marker >= 0 ? full.slice(marker) : full
   return stationAliases(stationName).some((alias) => new RegExp(`(^|[^\\p{L}\\d])${escape(alias)}($|[^\\p{L}\\d])`, 'u').test(haystack))
 }
 

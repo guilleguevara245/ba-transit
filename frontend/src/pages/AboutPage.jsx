@@ -71,6 +71,12 @@ const SOURCES = [
     detail: 'Temperatura, viento y estado del cielo actuales.',
   },
   {
+    what: 'Avisos de los trenes',
+    source: 'Trenes Argentinos, modificaciones en el servicio y novedades',
+    url: 'https://www.argentina.gob.ar/transporte/trenes-argentinos/modificaciones-en-el-servicio-y-novedades',
+    detail: 'Obras, recorridos limitados, interrupciones y estaciones cerradas de Roca, Mitre, Sarmiento, San Martín, Belgrano Sur y Tren de la Costa, revisados cada 15 minutos.',
+  },
+  {
     what: 'Alertas meteorológicas',
     source: 'Servicio Meteorológico Nacional (feed CAP)',
     url: 'https://www.smn.gob.ar/alertas',
