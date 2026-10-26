@@ -6,7 +6,8 @@ import ErrorMessage from '../components/ErrorMessage.jsx'
 import { useApi } from '../hooks/useApi.js'
 import EventCard from '../components/EventCard.jsx'
 import { eventsOnAccesses } from '../utils/events.js'
-import { TOLLS, formatToll } from '../data/tolls.js'
+import { PEAK_HOURS, TOLLS, formatToll, peakNow } from '../data/tolls.js'
+import { holidayOn } from '../utils/holidays.js'
 import { useNow } from '../hooks/useNow.js'
 import { formatLongDate, formatRelativeTime } from '../utils/format.js'
 import { speedPercent, trafficStatus, worstStatus } from '../utils/traffic.js'
@@ -55,7 +56,14 @@ function SegmentRow({ segment, configured }) {
   )
 }
 
-function TollTable({ toll }) {
+function TollTable({ toll, accessId }) {
+  const now = useNow(60_000)
+  const { peak, towards } = peakNow(accessId, now, Boolean(holidayOn(now)))
+  const rules = PEAK_HOURS[accessId]
+  // Columna que rige ahora: 0 no pico, 1 pico.
+  const current = peak ? 1 : 0
+  const cell = (index) => (index === current ? 'now' : undefined)
+
   return (
     <div className="toll">
       <div className="toll-title">Peaje para autos</div>
@@ -65,25 +73,31 @@ function TollTable({ toll }) {
           <thead>
             <tr>
               <th scope="col" />
-              <th scope="col">No pico</th>
-              <th scope="col">Pico</th>
+              <th scope="col" className={cell(0)}>
+                No pico{current === 0 && <span className="toll-now">ahora</span>}
+              </th>
+              <th scope="col" className={cell(1)}>
+                Pico{current === 1 && <span className="toll-now">ahora</span>}
+              </th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <th scope="row">TelePASE</th>
-              <td>{formatToll(plaza.telepase[0])}</td>
-              <td>{formatToll(plaza.telepase[1])}</td>
+              <td className={cell(0)}>{formatToll(plaza.telepase[0])}</td>
+              <td className={cell(1)}>{formatToll(plaza.telepase[1])}</td>
             </tr>
             <tr>
               <th scope="row">Sin TelePASE</th>
-              <td>{formatToll(plaza.manual[0])}</td>
-              <td>{formatToll(plaza.manual[1])}</td>
+              <td className={cell(0)}>{formatToll(plaza.manual[0])}</td>
+              <td className={cell(1)}>{formatToll(plaza.manual[1])}</td>
             </tr>
           </tbody>
         </table>
       ))}
+      {towards && <div className="toll-direction">Ahora es hora pico solo hacia {towards}.</div>}
       <div className="toll-source">
+        {rules && <span className="toll-note">{rules.text}</span>}
         Vigente desde el {formatLongDate(toll.since)} ·{' '}
         <a href={toll.source} target="_blank" rel="noreferrer">
           fuente ↗
@@ -111,7 +125,7 @@ function AccessCard({ access, configured }) {
           <SegmentRow key={segment.name} segment={segment} configured={configured} />
         ))}
       </ul>
-      {TOLLS[access.id] && <TollTable toll={TOLLS[access.id]} />}
+      {TOLLS[access.id] && <TollTable toll={TOLLS[access.id]} accessId={access.id} />}
       <footer className="access-operator">Concesionaria: {access.operator}</footer>
     </article>
   )

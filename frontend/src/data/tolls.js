@@ -39,6 +39,61 @@ export const TOLLS = {
   },
 }
 
+/**
+ * Horas pico de cada acceso. "weekdays" son los dias habiles (lunes a
+ * viernes sin feriados); en Panamericana y Acceso Oeste los fines de semana
+ * y feriados tambien hay pico, pero en un solo sentido por franja.
+ *  - Norte y Oeste: lun a vie de 7 a 11 y de 16 a 20 (ambos sentidos); sab,
+ *    dom y feriados de 11 a 15 hacia Provincia y de 17 a 21 hacia CABA
+ *    (Pilar a Diario, cuadro de Autopistas del Sol).
+ *  - Buenos Aires - La Plata: dias habiles de 7 a 10 y de 17 a 20 (0221,
+ *    cuadro de AUBASA).
+ *  - Riccheri: lun a vie de 7 a 11 y de 16 a 20, ambos sentidos
+ *    (Res. 78-E/2018 de Vialidad Nacional).
+ */
+const NORTE_OESTE = {
+  weekdays: [[7, 11], [16, 20]],
+  weekends: [
+    { from: 11, to: 15, towards: 'Provincia' },
+    { from: 17, to: 21, towards: 'CABA' },
+  ],
+  text: 'Pico: lun a vie de 7 a 11 y de 16 a 20; sáb, dom y feriados de 11 a 15 hacia Provincia y de 17 a 21 hacia CABA.',
+}
+
+export const PEAK_HOURS = {
+  'la-plata': {
+    weekdays: [[7, 10], [17, 20]],
+    weekends: [],
+    text: 'Pico: días hábiles de 7 a 10 y de 17 a 20.',
+  },
+  norte: NORTE_OESTE,
+  oeste: NORTE_OESTE,
+  riccheri: {
+    weekdays: [[7, 11], [16, 20]],
+    weekends: [],
+    text: 'Pico: lun a vie de 7 a 11 y de 16 a 20.',
+  },
+}
+
+/**
+ * Si ahora es hora pico en ese acceso: { peak, towards }. towards es el
+ * sentido cuando el pico rige en uno solo (fines de semana en Norte y
+ * Oeste); null si rige en ambos. isHoliday dice si la fecha es feriado.
+ */
+export function peakNow(accessId, date, isHoliday = false) {
+  const rules = PEAK_HOURS[accessId]
+  if (!rules) return { peak: false, towards: null }
+  const day = date.getDay()
+  const hour = date.getHours() + date.getMinutes() / 60
+  const businessDay = day >= 1 && day <= 5 && !isHoliday
+  if (businessDay) {
+    const peak = rules.weekdays.some(([from, to]) => hour >= from && hour < to)
+    return { peak, towards: null }
+  }
+  const band = rules.weekends.find((b) => hour >= b.from && hour < b.to)
+  return band ? { peak: true, towards: band.towards } : { peak: false, towards: null }
+}
+
 /** $ 994,15 -> "$994" (los centavos no le sirven a quien mira el cartel). */
 export function formatToll(value) {
   return `$${Math.round(value).toLocaleString('es-AR')}`

@@ -211,9 +211,47 @@
   width: 26%;
 }
 
+.toll-table .now {
+  background: var(--mode-icon-bg);
+  color: var(--text);
+}
+
+.toll-table thead th.now {
+  color: var(--accent-text);
+}
+
+.toll-table th,
+.toll-table td {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.toll-table tr > :first-child {
+  padding-left: 0;
+}
+
+.toll-now {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.toll-direction {
+  margin: -4px 0 8px;
+  font-size: 12px;
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
 .toll-source {
   font-size: 11px;
   color: var(--text-faint);
+}
+
+.toll-source .toll-note:first-child {
+  margin: 0 0 2px;
 }
 
 .toll-source a {
