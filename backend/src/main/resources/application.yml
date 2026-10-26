@@ -57,6 +57,10 @@ app:
     # mismas credenciales que las alertas. Se puede apuntar a otra URL.
     gtfs-url: ${COLECTIVOS_GTFS_URL:}
     gtfs-path: ${COLECTIVOS_GTFS_PATH:/colectivos/feed-gtfs}
+  eventos:
+    # Ruta /transito/v1/eventos de la API Transporte: no esta documentada y
+    # responde HTTP 500, asi que va apagada. true para volver a probarla.
+    api-enabled: ${EVENTOS_API_ENABLED:false}
   tomtom:
     # Clave de la API de trafico de TomTom (plan gratuito). Vacia = el
     # apartado Accesos muestra la informacion fija sin estado en vivo.

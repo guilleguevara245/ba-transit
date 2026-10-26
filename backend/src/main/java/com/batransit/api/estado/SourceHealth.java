@@ -27,6 +27,10 @@ public class SourceHealth {
         @Override
         public void fail(Source source, String reason) {
         }
+
+        @Override
+        public void disable(Source source) {
+        }
     };
 
     public enum Status { OK, ERROR, SIN_DATOS }
@@ -77,6 +81,12 @@ public class SourceHealth {
 
     private final Clock clock;
     private final Map<Source, Entry> entries = new ConcurrentHashMap<>();
+    /** Fuentes que no se consultan (apagadas por configuracion): no se muestran. */
+    private final java.util.Set<Source> disabled = ConcurrentHashMap.newKeySet();
+
+    public void disable(Source source) {
+        disabled.add(source);
+    }
 
     public SourceHealth() {
         this(Clock.systemUTC());
@@ -103,6 +113,9 @@ public class SourceHealth {
         List<Check> result = new ArrayList<>();
         Map<Source, Entry> snapshot = new LinkedHashMap<>(entries);
         for (Source source : Source.values()) {
+            if (disabled.contains(source)) {
+                continue;
+            }
             Entry e = snapshot.get(source);
             Status status;
             if (e == null) {

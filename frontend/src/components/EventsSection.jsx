@@ -7,7 +7,7 @@ const MAX_EVENTS = 5
 
 /**
  * Eventos y cortes del inicio: eventos masivos, manifestaciones y obras
- * grandes que cortan calles (API Transporte y cargados a mano). Siempre
+ * grandes que cortan calles (cargados a mano). Siempre
  * visible, debajo de las tarifas: si no hay ninguno lo dice, asi se sabe
  * que la seccion existe.
  */
@@ -55,7 +55,7 @@ export default function EventsSection() {
       )}
       {events.length > MAX_EVENTS && <p className="events-more">Y {events.length - MAX_EVENTS} más.</p>}
 
-      <p className="events-source">Cortes programados de la Ciudad (API Transporte) y eventos masivos destacados.</p>
+      <p className="events-source">Eventos masivos y cortes destacados, cargados a partir de anuncios oficiales.</p>
     </section>
   )
 }

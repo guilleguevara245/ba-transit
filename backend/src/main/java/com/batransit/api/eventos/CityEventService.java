@@ -24,9 +24,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Eventos masivos y cortes de transito: los que publica la API
- * Transporte (/transito/v1/eventos, mes actual y siguiente) mas los
- * cargados a mano. Los de la API se actualizan cada 15 minutos.
+ * Eventos masivos y cortes de transito cargados a mano.
+ *
+ * La API Transporte tenia una ruta /transito/v1/eventos, pero no figura en
+ * su documentacion (en /transito/v1 solo estan estacionamientos y
+ * semaforos) y responde siempre HTTP 500. Queda apagada por defecto; se
+ * puede volver a probar con app.eventos.api-enabled=true (variable
+ * EVENTOS_API_ENABLED) sin cambiar codigo.
  */
 @Service
 public class CityEventService {
@@ -39,6 +43,9 @@ public class CityEventService {
     @Autowired(required = false)
     void setHealth(SourceHealth health) {
         this.health = health;
+        if (!apiEnabled) {
+            health.disable(SourceHealth.Source.EVENTOS);
+        }
     }
     private static final ZoneId BUENOS_AIRES = ZoneId.of("America/Argentina/Buenos_Aires");
     /** Como mucho se muestran estos (los mas proximos). */
@@ -50,9 +57,15 @@ public class CityEventService {
     private volatile Instant apiUpdatedAt;
     private boolean loggedSample;
 
-    public CityEventService(PublicEventRepository repository, TransporteLiveClient client) {
+    private final boolean apiEnabled;
+
+    @Autowired
+    public CityEventService(PublicEventRepository repository, TransporteLiveClient client,
+                            @org.springframework.beans.factory.annotation.Value("${app.eventos.api-enabled:false}")
+                            boolean apiEnabled) {
         this.repository = repository;
         this.client = client;
+        this.apiEnabled = apiEnabled;
     }
 
     /** Cada cuanto se actualiza si todo anda, y cuanto se espera para reintentar si fallo. */
@@ -68,7 +81,7 @@ public class CityEventService {
      */
     @Scheduled(initialDelay = 30_000, fixedDelay = 60_000)
     public void tick() {
-        if (Instant.now().isBefore(nextRefresh)) {
+        if (!apiEnabled || Instant.now().isBefore(nextRefresh)) {
             return;
         }
         if (refresh()) {
