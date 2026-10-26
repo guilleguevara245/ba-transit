@@ -188,6 +188,35 @@ class AccessServiceTest {
     }
 
     @Test
+    void respetaElTopeDiarioDeConsultas() {
+        // 300 puntos por medicion: entran dos mediciones (600) y la tercera pasaria el tope.
+        List<DirectionDefinition> points = new java.util.ArrayList<>();
+        for (int i = 0; i < 300; i++) {
+            points.add(new DirectionDefinition(i % 2 == 0 ? "CABA" : "Provincia", -34.5, -58.5));
+        }
+        List<AccessDefinition> access = List.of(new AccessDefinition("norte", "Acceso Norte", "RN 9", "", "",
+                List.of(new SegmentDefinition("Tramo 1", -34.5, -58.5, points))));
+        FakeClient client = new FakeClient("clave", flow(80, 90, "FRC0"));
+        MutableClock clock = new MutableClock(Instant.parse("2026-10-26T12:00:00Z"));
+        AccessService service = new AccessService(access, client, clock);
+
+        service.report();
+        clock.now = clock.now.plusSeconds(21 * 60);
+        service.report();
+        assertThat(client.calls).hasValue(600);
+
+        clock.now = clock.now.plusSeconds(21 * 60);
+        AccessesResponse kept = service.report();
+        assertThat(client.calls).hasValue(600);
+        assertThat(kept.updatedAt()).isEqualTo(Instant.parse("2026-10-26T12:21:00Z"));
+
+        // Al dia siguiente (hora de Buenos Aires) vuelve a medir.
+        clock.now = Instant.parse("2026-10-27T04:00:00Z");
+        service.report();
+        assertThat(client.calls).hasValue(900);
+    }
+
+    @Test
     void siUnaManoNoTieneDatosSeUsaLaOtra() {
         TomTomTrafficClient client = new TomTomTrafficClient("clave") {
             @Override

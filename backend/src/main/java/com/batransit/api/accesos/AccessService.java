@@ -35,9 +35,11 @@ import java.util.Set;
  * Estado del transito en los accesos a la Ciudad.
  *
  * Se mide con TomTom en dos tramos por acceso, cada uno en sus dos manos
- * (hacia CABA y hacia Provincia). Para respetar el plan gratuito (2.500
- * consultas por dia) el resultado se guarda CACHE_TTL: como mucho
- * 16 puntos x 72 veces por dia = 1.152 consultas diarias.
+ * (hacia CABA y hacia Provincia). El plan gratuito de Traffic Flow da
+ * 20.000 consultas por mes: el resultado se guarda CACHE_TTL y, ademas,
+ * hay un tope de DAILY_BUDGET consultas por dia (unas 19.200 por mes).
+ * Con poco uso se mide cada 20 minutos; si la pagina se consulta todo el
+ * dia, al llegar al tope se sigue mostrando la ultima medicion.
  * Las consultas se hacen solo cuando alguien pide la pagina. Si un punto
  * cae fuera de la autopista se buscan puntos cercanos una sola vez (como
  * mucho 16 consultas por tramo) y se recuerda el que funciono.
@@ -48,6 +50,12 @@ public class AccessService {
     private static final Logger log = LoggerFactory.getLogger(AccessService.class);
 
     static final Duration CACHE_TTL = Duration.ofMinutes(20);
+
+    /** Consultas a TomTom por dia (hora de Buenos Aires): 640 x 30 = 19.200, debajo de las 20.000 gratis. */
+    static final int DAILY_BUDGET = 640;
+    private static final java.time.ZoneId BUENOS_AIRES = java.time.ZoneId.of("America/Argentina/Buenos_Aires");
+    private java.time.LocalDate budgetDay;
+    private int callsToday;
 
     /** Clases de ruta de TomTom que corresponden a autopistas y rutas principales. */
     private static final Set<String> HIGHWAY_CLASSES = Set.of("FRC0", "FRC1", "FRC2");
@@ -106,6 +114,10 @@ public class AccessService {
         if (cached != null && cachedAt.plus(CACHE_TTL).isAfter(now)) {
             return cached;
         }
+        if (cached != null && callsToday(now) + pointCount() > DAILY_BUDGET) {
+            // Tope diario alcanzado: se mantiene la ultima medicion hasta mañana.
+            return cached;
+        }
 
         List<AccessReport> accesses = definitions.stream()
                 .map(a -> toReport(a, a.segments().stream().map(this::measure).toList()))
@@ -121,7 +133,7 @@ public class AccessService {
         }
         double[] point = resolvedPoints.getOrDefault(segment.name(),
                 new double[] {segment.lat(), segment.lon()});
-        Optional<FlowData> flow = client.flowAt(point[0], point[1]);
+        Optional<FlowData> flow = flowAt(point[0], point[1]);
         if (flow.isEmpty()) {
             return unknown(segment.name());
         }
@@ -142,6 +154,34 @@ public class AccessService {
                 data.geometry());
     }
 
+    /** Consulta a TomTom contando la consulta para el tope diario. */
+    private Optional<FlowData> flowAt(double lat, double lon) {
+        callsToday(clock.instant());
+        callsToday++;
+        return client.flowAt(lat, lon);
+    }
+
+    /** Consultas hechas hoy (reinicia el contador al cambiar el dia). */
+    private int callsToday(Instant now) {
+        java.time.LocalDate today = now.atZone(BUENOS_AIRES).toLocalDate();
+        if (!today.equals(budgetDay)) {
+            budgetDay = today;
+            callsToday = 0;
+        }
+        return callsToday;
+    }
+
+    /** Consultas que hace una medicion completa. */
+    private int pointCount() {
+        int count = 0;
+        for (AccessDefinition access : definitions) {
+            for (SegmentDefinition segment : access.segments()) {
+                count += segment.directions().isEmpty() ? 1 : segment.directions().size();
+            }
+        }
+        return count;
+    }
+
     /**
      * Mide cada mano en su punto (puntos tomados del trazado de OpenStreetMap,
      * sobre cada calzada) y resume el tramo con la mano mas complicada.
@@ -157,7 +197,7 @@ public class AccessService {
     }
 
     private DirectionReport measureDirection(DirectionDefinition direction) {
-        Optional<FlowData> flow = client.flowAt(direction.lat(), direction.lon());
+        Optional<FlowData> flow = flowAt(direction.lat(), direction.lon());
         if (flow.isEmpty() || !isHighway(flow.get())) {
             return new DirectionReport(direction.towards(), TrafficStatus.SIN_DATOS, null, null, List.of());
         }
@@ -208,7 +248,7 @@ public class AccessService {
         for (double[] offset : SEARCH_OFFSETS) {
             double lat = segment.lat() + offset[0];
             double lon = segment.lon() + offset[1];
-            Optional<FlowData> flow = client.flowAt(lat, lon);
+            Optional<FlowData> flow = flowAt(lat, lon);
             if (flow.isPresent() && isHighway(flow.get())) {
                 resolvedPoints.put(segment.name(), new double[] {lat, lon});
                 failedSearches.remove(segment.name());
