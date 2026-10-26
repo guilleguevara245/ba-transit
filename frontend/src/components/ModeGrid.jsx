@@ -18,7 +18,7 @@ const ACCESS_PILL = {
 
 /** Tarjeta de Accesos: el peor estado entre todas las autopistas medidas. */
 function AccessesCard() {
-  const { data } = useApi('/api/v1/accesos', { refreshMs: 5 * 60_000 })
+  const { data } = useApi('/api/v1/accesos?resumen=true', { refreshMs: 5 * 60_000 })
   const events = useApi('/api/v1/eventos', { refreshMs: 10 * 60_000 })
   const accesses = data?.accesses ?? []
   const pill = data?.configured ? ACCESS_PILL[worstStatus(accesses.flatMap((a) => a.segments))] : null

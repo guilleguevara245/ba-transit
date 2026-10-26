@@ -4,6 +4,21 @@ import { apiGet } from '../api.js'
 const INITIAL_STATE = { data: null, loading: true, error: null, updatedAt: null }
 
 /**
+ * Pedidos en curso por path: si dos componentes piden lo mismo a la vez
+ * (en el inicio, eventos y alertas), se hace un solo pedido y los dos
+ * esperan la misma respuesta. Al terminar se olvida: no es una cache.
+ */
+const inFlight = new Map()
+
+function sharedGet(path) {
+  if (!inFlight.has(path)) {
+    const request = apiGet(path).finally(() => inFlight.delete(path))
+    inFlight.set(path, request)
+  }
+  return inFlight.get(path)
+}
+
+/**
  * Pide un endpoint GET y devuelve { data, loading, error, updatedAt }.
  *
  * Con { refreshMs } vuelve a pedir el dato cada refreshMs milisegundos
@@ -42,7 +57,7 @@ export function useApi(path, { refreshMs } = {}) {
         return
       }
       try {
-        const result = await apiGet(path)
+        const result = await sharedGet(path)
         if (!cancelled) {
           hasLoaded = true
           setState({ data: result, loading: false, error: null, updatedAt: new Date() })
