@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import BackButton from '../components/BackButton.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
 import LineBadge from '../components/LineBadge.jsx'
@@ -64,20 +64,60 @@ function Leg({ leg }) {
  */
 export default function TripPlannerPage() {
   const { data: stations, loading, error } = useApi('/api/v1/map/stations')
+  const [searchParams, setSearchParams] = useSearchParams()
   const [origin, setOrigin] = useState(null)
   const [destination, setDestination] = useState(null)
+  const [accessibleOnly, setAccessibleOnly] = useState(searchParams.get('accesible') === '1')
   const [fromAddress, setFromAddress] = useState('')
   const [toAddress, setToAddress] = useState('')
+  const [copied, setCopied] = useState(false)
+  const restored = useRef(false)
 
   // Un lugar por estacion: Retiro aparece una vez aunque tenga cinco
   // lineas, y el viaje sale o llega por la que mas convenga.
   const options = useMemo(() => buildPlaces(stations), [stations])
 
+  // Un enlace compartido (?desde=...&hasta=...) carga el viaje al abrirlo.
+  useEffect(() => {
+    if (restored.current || options.length === 0) return
+    restored.current = true
+    const find = (key) => options.find((p) => p.stationId === key) ?? null
+    setOrigin(find(searchParams.get('desde')))
+    setDestination(find(searchParams.get('hasta')))
+  }, [options, searchParams])
+
+  // Y al revés: el viaje elegido queda en la URL, listo para compartir.
+  useEffect(() => {
+    if (!restored.current) return
+    const params = {}
+    if (origin) params.desde = origin.stationId
+    if (destination) params.hasta = destination.stationId
+    if (accessibleOnly) params.accesible = '1'
+    setSearchParams(params, { replace: true })
+  }, [origin, destination, accessibleOnly, setSearchParams])
+
   const sameStation = origin && destination && origin.stationId === destination.stationId
-  const plan = useMemo(
-    () => (origin && destination && !sameStation ? planTrip(stations, origin, destination) : null),
-    [stations, origin, destination, sameStation],
+  const result = useMemo(
+    () => (origin && destination && !sameStation ? planTrip(stations, origin, destination, { accessibleOnly }) : null),
+    [stations, origin, destination, sameStation, accessibleOnly],
   )
+  const plan = result?.legs ? result : null
+
+  async function share() {
+    const url = window.location.href
+    const title = `Cómo llegar de ${origin.stationName} a ${destination.stationName}`
+    try {
+      if (window.navigator.share) {
+        await window.navigator.share({ title, url })
+        return
+      }
+      await window.navigator.clipboard.writeText(url)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // El usuario cerro el menu o no hay permiso para copiar.
+    }
+  }
 
   function swap() {
     setOrigin(destination)
@@ -112,9 +152,25 @@ export default function TripPlannerPage() {
             />
           </div>
 
+          <label className="planner-accessible">
+            <input type="checkbox" checked={accessibleOnly} onChange={(e) => setAccessibleOnly(e.target.checked)} />
+            <span>
+              Solo estaciones accesibles <small>(con ascensor o rampa; hoy hay datos del subte)</small>
+            </span>
+          </label>
+
           {sameStation && <p className="planner-empty">Elegí dos estaciones distintas.</p>}
-          {origin && destination && !sameStation && !plan && (
-            <p className="planner-empty">No encontramos un viaje entre esas estaciones.</p>
+          {result?.inaccessible && (
+            <p className="planner-empty">
+              {result.inaccessible === 'origin' ? 'La estación de origen' : 'La estación de destino'} no figura como
+              accesible. Elegí otra o desactivá la opción.
+            </p>
+          )}
+          {origin && destination && !sameStation && !result && (
+            <p className="planner-empty">
+              No encontramos un viaje entre esas estaciones
+              {accessibleOnly ? ' combinando solo en estaciones accesibles' : ''}.
+            </p>
           )}
 
           {plan && (
@@ -137,6 +193,12 @@ export default function TripPlannerPage() {
                 inicial.{' '}
                 <Link to={`/estaciones/${plan.legs[plan.legs.length - 1].to.stationId}`}>Ver la estación de destino</Link>
               </p>
+              <button type="button" className="share-button planner-share" onClick={share}>
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v13" />
+                </svg>
+                {copied ? 'Enlace copiado' : 'Compartir viaje'}
+              </button>
               <a className="planner-maps" href={googleMapsUrl(origin, destination)} target="_blank" rel="noreferrer">
                 Ver este viaje en Google Maps ↗
               </a>

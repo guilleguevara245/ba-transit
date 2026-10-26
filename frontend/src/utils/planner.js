@@ -15,7 +15,10 @@ const key = (s) => `${s.lineCode}:${s.stationName}`
  * estacion y combinar caminando con otras lineas (combinaciones oficiales
  * del subte o estaciones a menos de MAX_WALK_KM).
  */
-export function buildGraph(stations) {
+export function buildGraph(stations, { accessibleOnly = false } = {}) {
+  // Con accessibleOnly, solo se combina (caminando o de ramal) entre
+  // estaciones accesibles; viajar a bordo pasando por otras no importa.
+  const canTransfer = (a, b) => !accessibleOnly || (a.accessible === true && b.accessible === true)
   const edges = new Map(stations.map((s) => [s.stationId, []]))
   const add = (from, to, minutes, type) => edges.get(from.stationId).push({ to: to.stationId, minutes, type })
 
@@ -40,7 +43,7 @@ export function buildGraph(stations) {
       const a = stations[i]
       const b = stations[j]
       if (a.lineId === b.lineId) {
-        if (a.stationName === b.stationName && a.branchId !== b.branchId) {
+        if (a.stationName === b.stationName && a.branchId !== b.branchId && canTransfer(a, b)) {
           add(a, b, WAIT_MINUTES, 'branch')
           add(b, a, WAIT_MINUTES, 'branch')
         }
@@ -48,7 +51,7 @@ export function buildGraph(stations) {
       }
       const official = SUBTE_TRANSFERS.some((g) => g.includes(key(a)) && g.includes(key(b)))
       const km = distanceKm(a, b)
-      if (official || km <= MAX_WALK_KM) {
+      if ((official || km <= MAX_WALK_KM) && canTransfer(a, b)) {
         const minutes = Math.max(2, (km / WALK_KMH) * 60) + WAIT_MINUTES
         add(a, b, minutes, 'walk')
         add(b, a, minutes, 'walk')
@@ -135,11 +138,20 @@ function idsOf(stations, ref) {
   return stations.filter((s) => s.lineId === ref.lineId && s.stationName === ref.stationName).map((s) => s.stationId)
 }
 
-/** Planifica entre dos estaciones o lugares elegidos. */
-export function planTrip(stations, origin, destination) {
-  const originIds = idsOf(stations, origin)
-  const targetIds = idsOf(stations, destination)
-  const result = shortestPath(buildGraph(stations), originIds, targetIds)
+/**
+ * Planifica entre dos estaciones o lugares elegidos. Con
+ * { accessibleOnly: true } se sube, se baja y se combina solo en
+ * estaciones accesibles; si el origen o el destino no tienen ninguna,
+ * devuelve { inaccessible: 'origin' | 'destination' }.
+ */
+export function planTrip(stations, origin, destination, { accessibleOnly = false } = {}) {
+  const byId = new Map(stations.map((s) => [s.stationId, s]))
+  const allowed = (id) => !accessibleOnly || byId.get(id)?.accessible === true
+  const originIds = idsOf(stations, origin).filter(allowed)
+  const targetIds = idsOf(stations, destination).filter(allowed)
+  if (originIds.length === 0) return { inaccessible: 'origin' }
+  if (targetIds.length === 0) return { inaccessible: 'destination' }
+  const result = shortestPath(buildGraph(stations, { accessibleOnly }), originIds, targetIds)
   if (!result) return null
   const legs = toLegs(result, stations)
   return {

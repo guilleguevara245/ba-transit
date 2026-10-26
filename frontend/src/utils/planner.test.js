@@ -60,6 +60,21 @@ describe('planTrip con lugares', () => {
   })
 })
 
+describe('planTrip solo accesible', () => {
+  const ACC = STATIONS.map((s) => ({ ...s, accessible: s.stationName !== 'Catedral' }))
+
+  it('no combina en estaciones sin accesibilidad', () => {
+    // Plaza de Mayo -> Tribunales necesita combinar en Peru <-> Catedral, y Catedral no es accesible.
+    expect(planTrip(ACC, ACC[0], ACC[5], { accessibleOnly: true })).toBeNull()
+    expect(planTrip(ACC, ACC[0], ACC[5]).transfers).toBe(1)
+  })
+
+  it('avisa si el origen o el destino no son accesibles', () => {
+    expect(planTrip(ACC, ACC[3], ACC[5], { accessibleOnly: true })).toEqual({ inaccessible: 'origin' })
+    expect(planTrip(ACC, ACC[0], ACC[3], { accessibleOnly: true })).toEqual({ inaccessible: 'destination' })
+  })
+})
+
 describe('googleMapsUrl', () => {
   it('arma el enlace en modo transporte publico', () => {
     const url = googleMapsUrl({ latitude: -34.6, longitude: -58.4 }, 'Obelisco')
