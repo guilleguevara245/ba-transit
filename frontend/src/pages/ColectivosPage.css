@@ -224,3 +224,27 @@
   border-color: var(--yellow);
   color: var(--text);
 }
+
+.bus-total {
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.bus-total span {
+  color: var(--text-faint);
+  font-size: 12px;
+}
+
+.bus-stop-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.bus-stop-minutes {
+  color: var(--text-faint);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

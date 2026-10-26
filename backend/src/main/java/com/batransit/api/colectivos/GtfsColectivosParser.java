@@ -71,13 +71,21 @@ public class GtfsColectivosParser {
                 }
             });
 
-            // 3. Paradas de los viajes candidatos
+            // 3. Paradas (y horarios) de los viajes candidatos
             Map<String, TreeMap<Integer, String>> stopsByTrip = new HashMap<>();
+            Map<String, Map<Integer, Integer>> secondsByTrip = new HashMap<>();
             read(zip, "stop_times.txt", row -> {
                 String tripId = row.get("trip_id");
                 if (candidates.containsKey(tripId)) {
-                    stopsByTrip.computeIfAbsent(tripId, k -> new TreeMap<>())
-                            .put(parseIntOr(row.get("stop_sequence"), 0), row.get("stop_id"));
+                    int sequence = parseIntOr(row.get("stop_sequence"), 0);
+                    stopsByTrip.computeIfAbsent(tripId, k -> new TreeMap<>()).put(sequence, row.get("stop_id"));
+                    Integer seconds = parseTime(row.get("arrival_time"));
+                    if (seconds == null) {
+                        seconds = parseTime(row.get("departure_time"));
+                    }
+                    if (seconds != null) {
+                        secondsByTrip.computeIfAbsent(tripId, k -> new HashMap<>()).put(sequence, seconds);
+                    }
                 }
             });
 
@@ -129,17 +137,24 @@ public class GtfsColectivosParser {
                         continue;
                     }
                     TripInfo trip = candidates.get(tripId);
-                    List<BusStop> tripStops = stopsByTrip.getOrDefault(tripId, new TreeMap<>()).values().stream()
-                            .map(stops::get)
-                            .filter(s -> s != null)
-                            .toList();
+                    List<BusStop> tripStops = new ArrayList<>();
+                    List<Integer> tripSeconds = new ArrayList<>();
+                    Map<Integer, Integer> seconds = secondsByTrip.getOrDefault(tripId, Map.of());
+                    stopsByTrip.getOrDefault(tripId, new TreeMap<>()).forEach((sequence, stopId) -> {
+                        BusStop stop = stops.get(stopId);
+                        if (stop != null) {
+                            tripStops.add(stop);
+                            tripSeconds.add(seconds.get(sequence));
+                        }
+                    });
                     List<double[]> shape = shapes.containsKey(trip.shapeId())
                             ? simplify(new ArrayList<>(shapes.get(trip.shapeId()).values()))
                             : tripStops.stream().map(s -> new double[] {s.latitude(), s.longitude()}).toList();
                     String headsign = trip.headsign().isEmpty() && !tripStops.isEmpty()
                             ? tripStops.get(tripStops.size() - 1).name()
                             : trip.headsign();
-                    directions.add(new BusDirection(direction, headsign, shape, tripStops));
+                    directions.add(new BusDirection(direction, headsign, shape, List.copyOf(tripStops),
+                            minutesFromStart(tripSeconds)));
                 }
                 result.put(routeId, new BusRoute(routeId, r[0], r[1], r[2], normalizeColor(r[3]), directions));
             });
@@ -165,6 +180,55 @@ public class GtfsColectivosParser {
         try (InputStream input = zip.getInputStream(entry)) {
             GtfsCsv.forEachRow(input, consumer);
         }
+    }
+
+    /** "08:05:30" -> 29130 segundos. Admite horas mayores a 23 (viajes despues de medianoche). */
+    static Integer parseTime(String text) {
+        if (text == null || text.isBlank()) {
+            return null;
+        }
+        String[] parts = text.trim().split(":");
+        if (parts.length != 3) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(parts[0]) * 3600 + Integer.parseInt(parts[1]) * 60 + Integer.parseInt(parts[2]);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Minutos desde la primera parada. Las paradas sin horario (el feed solo
+     * trae algunos puntos de control) se interpolan entre las vecinas que si
+     * lo tienen. null si el viaje no tiene al menos dos horarios.
+     */
+    static List<Integer> minutesFromStart(List<Integer> seconds) {
+        List<Integer> known = new ArrayList<>();
+        for (int i = 0; i < seconds.size(); i++) {
+            if (seconds.get(i) != null) {
+                known.add(i);
+            }
+        }
+        if (known.size() < 2) {
+            return null;
+        }
+        int first = known.get(0);
+        int last = known.get(known.size() - 1);
+        double[] filled = new double[seconds.size()];
+        for (int k = 0; k < known.size() - 1; k++) {
+            int a = known.get(k);
+            int b = known.get(k + 1);
+            for (int i = a; i <= b; i++) {
+                filled[i] = seconds.get(a) + (seconds.get(b) - seconds.get(a)) * (double) (i - a) / (b - a);
+            }
+        }
+        List<Integer> result = new ArrayList<>(seconds.size());
+        for (int i = 0; i < seconds.size(); i++) {
+            // Antes del primer horario o despues del ultimo no se puede estimar.
+            result.add(i < first || i > last ? null : (int) Math.round((filled[i] - seconds.get(first)) / 60));
+        }
+        return result;
     }
 
     /** Se queda con como mucho MAX_SHAPE_POINTS puntos, conservando el primero y el ultimo. */

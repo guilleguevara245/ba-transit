@@ -1,3 +1,4 @@
+import TravelTimeCard from '../components/TravelTimeCard.jsx'
 import Chevrons from '../components/Chevrons.jsx'
 import SpecialServices from '../components/SpecialServices.jsx'
 import Skeleton from '../components/Skeleton.jsx'
@@ -179,6 +180,7 @@ export default function LinePage() {
                 </>
               )}
               <LineInfoCard line={line} stations={lineStations} allLines={allLines ?? []} />
+              <TravelTimeCard line={line} stations={lineStations} />
             </aside>
           </div>
         </>

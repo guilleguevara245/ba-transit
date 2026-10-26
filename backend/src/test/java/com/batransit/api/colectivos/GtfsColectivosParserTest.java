@@ -74,6 +74,7 @@ class GtfsColectivosParserTest {
         var ida = route.directions().get(0);
         assertThat(ida.headsign()).isEqualTo("A La Boca");
         assertThat(ida.stops()).extracting(s -> s.name()).containsExactly("Olivos", "Plaza Italia", "La Boca");
+        assertThat(ida.minutes()).containsExactly(0, 10, 20);
         assertThat(ida.shape()).hasSize(3);
 
         // Las paradas se ordenan por stop_sequence aunque vengan desordenadas.
@@ -109,5 +110,15 @@ class GtfsColectivosParserTest {
     void parseaCamposEntreComillas() {
         assertThat(GtfsCsv.parseLine("1,\"Santa Fe, S.A.\",\"dice \"\"hola\"\"\",")).containsExactly(
                 "1", "Santa Fe, S.A.", "dice \"hola\"", "");
+    }
+
+    @Test
+    void interpolaLasParadasSinHorario() {
+        java.util.List<Integer> seconds = java.util.Arrays.asList(null, 28800, null, null, 29400, null);
+
+        assertThat(GtfsColectivosParser.minutesFromStart(seconds)).containsExactly(null, 0, 3, 7, 10, null);
+        assertThat(GtfsColectivosParser.minutesFromStart(java.util.Arrays.asList(28800, null))).isNull();
+        assertThat(GtfsColectivosParser.parseTime("25:10:00")).isEqualTo(90600);
+        assertThat(GtfsColectivosParser.parseTime("")).isNull();
     }
 }

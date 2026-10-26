@@ -16,8 +16,13 @@ public final class BusModels {
     public record BusStop(String id, String name, double latitude, double longitude) {
     }
 
-    /** Un sentido de la linea: recorrido simplificado y paradas en orden. */
-    public record BusDirection(int directionId, String headsign, List<double[]> shape, List<BusStop> stops) {
+    /**
+     * Un sentido de la linea: recorrido simplificado, paradas en orden y,
+     * para cada parada, los minutos desde la primera segun los horarios del
+     * feed (null si el feed no trae horarios para ese viaje).
+     */
+    public record BusDirection(int directionId, String headsign, List<double[]> shape, List<BusStop> stops,
+                               List<Integer> minutes) {
     }
 
     public record BusRoute(String id, String shortName, String longName, String agency, String color,

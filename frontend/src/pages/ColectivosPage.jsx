@@ -9,6 +9,7 @@ import ErrorMessage from '../components/ErrorMessage.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { useDebounce } from '../hooks/useDebounce.js'
 import { busDescription, busTitle } from '../utils/busNames.js'
+import { formatDuration } from '../utils/travelTime.js'
 import './ModePage.css'
 import './ColectivosPage.css'
 
@@ -39,6 +40,8 @@ function RouteDetail({ routeId }) {
 
   const direction = route.directions[directionIndex]
   // Solo los colectivos del sentido elegido (el feed usa el mismo direction_id que el GTFS).
+  const knownMinutes = (direction?.minutes ?? []).filter((m) => m != null)
+  const totalMinutes = knownMinutes.length > 1 ? Math.max(...knownMinutes) : null
   const vehicles = (live.data?.vehicles ?? []).filter((v) => !direction || v.direction === direction.directionId)
 
   return (
@@ -85,9 +88,20 @@ function RouteDetail({ routeId }) {
               Paradas
               <span className="count">{direction.stops.length}</span>
             </div>
+            {totalMinutes != null && (
+              <div className="bus-total">
+                Recorrido completo: <strong>≈ {formatDuration(totalMinutes)}</strong>
+                <span> según el horario del feed</span>
+              </div>
+            )}
             <ol className="bus-stop-list" style={{ '--bus-color': route.color ?? '#17171a' }}>
               {direction.stops.map((stop, index) => (
-                <li key={`${stop.id}-${index}`}>{stop.name}</li>
+                <li key={`${stop.id}-${index}`}>
+                  <span>{stop.name}</span>
+                  {direction.minutes?.[index] != null && index > 0 && (
+                    <span className="bus-stop-minutes">+{direction.minutes[index]} min</span>
+                  )}
+                </li>
               ))}
             </ol>
           </div>

@@ -25,9 +25,10 @@ public class ColectivoController {
         }
     }
 
-    public record Direction(int directionId, String headsign, List<double[]> shape, List<BusStop> stops) {
+    public record Direction(int directionId, String headsign, List<double[]> shape, List<BusStop> stops,
+                            List<Integer> minutes) {
         static Direction from(BusDirection d) {
-            return new Direction(d.directionId(), d.headsign(), d.shape(), d.stops());
+            return new Direction(d.directionId(), d.headsign(), d.shape(), d.stops(), d.minutes());
         }
     }
 
