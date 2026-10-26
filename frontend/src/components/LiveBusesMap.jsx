@@ -63,6 +63,7 @@ export default function LiveBusesMap({ onSelectRoute }) {
               <Marker
                 key={bus.id || index}
                 position={[bus.latitude, bus.longitude]}
+                title={`Línea ${bus.line || '?'}`}
                 icon={badgeIcon('bus', { ...BUS_BADGE, active: selected?.id === bus.id })}
                 eventHandlers={{ click: () => setSelected(bus) }}
               />

@@ -207,6 +207,7 @@
 }
 
 .map-card-status {
+  color: color-mix(in srgb, var(--status-color, currentColor) 70%, var(--text));
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -216,6 +217,7 @@
 }
 
 .map-card-status i {
+  background: var(--status-color, currentColor);
   width: 9px;
   height: 9px;
   border-radius: 50%;

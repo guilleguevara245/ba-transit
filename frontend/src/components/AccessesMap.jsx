@@ -46,8 +46,8 @@ export default function AccessesMap({ accesses, className }) {
           pathOptions={{ color: trafficStatus(segment.status).color, weight: 7, opacity: 0.85 }}
         >
           <MapCard badge={<MapCardIcon path={ACCESS_ICON} />} kicker={segment.access.name} title={segment.name}>
-            <div className="map-card-status" style={{ color: trafficStatus(segment.status).color }}>
-              <i style={{ background: trafficStatus(segment.status).color }} />
+            <div className="map-card-status" style={{ '--status-color': trafficStatus(segment.status).color }}>
+              <i />
               {trafficStatus(segment.status).label}
             </div>
             {segment.currentSpeed != null && (

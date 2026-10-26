@@ -94,7 +94,8 @@
   padding: 3px 9px;
   border-radius: 999px;
   background: color-mix(in srgb, var(--status-color) 12%, transparent);
-  color: var(--status-color);
+  /* El color del estado, oscurecido (o aclarado en el tema oscuro) para que se lea. */
+  color: color-mix(in srgb, var(--status-color) 70%, var(--text));
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;

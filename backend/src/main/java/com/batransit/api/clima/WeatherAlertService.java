@@ -1,8 +1,10 @@
 package com.batransit.api.clima;
 
+import com.batransit.api.estado.SourceHealth;
 import com.batransit.api.clima.CapParser.CapAlert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -36,6 +38,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public class WeatherAlertService {
 
     private static final Logger log = LoggerFactory.getLogger(WeatherAlertService.class);
+
+    private SourceHealth health = SourceHealth.NOOP;
+
+    /** Registro del estado de la fuente (pagina "Estado de los datos"); opcional para los tests. */
+    @Autowired(required = false)
+    void setHealth(SourceHealth health) {
+        this.health = health;
+    }
 
     /** Como mucho estos documentos nuevos por corrida (el SMN responde 429 si se piden muchos juntos). */
     static final int MAX_NEW_DOCUMENTS = 40;
@@ -91,6 +101,7 @@ public class WeatherAlertService {
         try {
             String index = fetch(indexUrl);
             if (index == null) {
+                health.fail(SourceHealth.Source.SMN, "sin respuesta");
                 return;
             }
             List<String> links = CapParser.parseIndex(index);
@@ -111,7 +122,9 @@ public class WeatherAlertService {
             updatedAt = Instant.now();
             log.info("Alertas SMN: {} documentos en el indice, {} nuevos, {} alertas para el AMBA",
                     links.size(), downloaded, current.size());
+            health.ok(SourceHealth.Source.SMN);
         } catch (Exception e) {
+            health.fail(SourceHealth.Source.SMN, e.getClass().getSimpleName());
             log.warn("No se pudieron actualizar las alertas del SMN ({})", e.getClass().getSimpleName());
         }
     }

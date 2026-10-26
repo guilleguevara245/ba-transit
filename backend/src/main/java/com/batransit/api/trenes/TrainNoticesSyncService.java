@@ -1,5 +1,6 @@
 package com.batransit.api.trenes;
 
+import com.batransit.api.estado.SourceHealth;
 import com.batransit.api.domain.Alert;
 import com.batransit.api.domain.TransportLine;
 import com.batransit.api.domain.TransportMode;
@@ -9,6 +10,7 @@ import com.batransit.api.trenes.TrainNoticesParser.Result;
 import com.batransit.api.trenes.TrainNoticesParser.TrainNotice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -41,6 +43,14 @@ import java.util.Set;
 public class TrainNoticesSyncService {
 
     private static final Logger log = LoggerFactory.getLogger(TrainNoticesSyncService.class);
+
+    private SourceHealth health = SourceHealth.NOOP;
+
+    /** Registro del estado de la fuente (pagina "Estado de los datos"); opcional para los tests. */
+    @Autowired(required = false)
+    void setHealth(SourceHealth health) {
+        this.health = health;
+    }
     static final String SOURCE_NAME = "Trenes Argentinos";
     static final String ID_PREFIX = "trenes-ar:";
 
@@ -75,17 +85,21 @@ public class TrainNoticesSyncService {
             String reason = e instanceof RestClientResponseException r
                     ? "HTTP " + r.getStatusCode().value()
                     : e.getMostSpecificCause().getClass().getSimpleName();
+            health.fail(SourceHealth.Source.TRENES_AVISOS, reason);
             log.warn("Avisos de Trenes Argentinos: la pagina no respondio ({}); no se toca nada.", reason);
             return;
         }
         Result result = TrainNoticesParser.parse(html);
         if (result.sectionsFound() == 0) {
+            health.fail(SourceHealth.Source.TRENES_AVISOS, "la página cambió de formato");
             log.warn("Avisos de Trenes Argentinos: no se reconocio ninguna linea (cambio la pagina?); no se toca nada.");
             return;
         }
         try {
             transactionTemplate.executeWithoutResult(status -> apply(result.notices()));
+            health.ok(SourceHealth.Source.TRENES_AVISOS);
         } catch (Exception e) {
+            health.fail(SourceHealth.Source.TRENES_AVISOS, "error al guardar");
             log.error("Avisos de Trenes Argentinos: error al guardar ({})", e.getClass().getSimpleName());
         }
     }

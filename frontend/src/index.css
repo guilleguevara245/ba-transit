@@ -17,9 +17,10 @@
   --accent-text: #8a6400;
   --text: #17171a;
   --text-dim: #55534e;
-  --text-faint: #85827a;
-  --normal: #2f8a3c;
-  --delayed: #b5650a;
+  /* Tenue, pero con contraste 4.5:1 sobre el fondo (WCAG AA). */
+  --text-faint: #6b6862;
+  --normal: #26732f;
+  --delayed: #975406;
   --interrupted: #c23b34;
   --normal-tint: rgba(47, 138, 60, 0.1);
   --delayed-tint: rgba(181, 101, 10, 0.1);
@@ -49,7 +50,7 @@
   --accent-text: #f4c11b;
   --text: #f1f0ea;
   --text-dim: #aeaca5;
-  --text-faint: #7f7d77;
+  --text-faint: #9a978f;
   --normal: #6fbf73;
   --delayed: #e3a24a;
   --interrupted: #ef6b62;
@@ -353,4 +354,17 @@ body {
   height: 18px;
   margin-right: 6px;
   vertical-align: -5px;
+}
+
+/* Texto solo para lectores de pantalla. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }

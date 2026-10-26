@@ -1,9 +1,11 @@
 package com.batransit.api.accesos;
 
+import com.batransit.api.estado.SourceHealth;
 import com.batransit.api.accesos.AccessModels.FlowData;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
@@ -26,6 +28,14 @@ import java.util.Optional;
 public class TomTomTrafficClient {
 
     private static final Logger log = LoggerFactory.getLogger(TomTomTrafficClient.class);
+
+    private SourceHealth health = SourceHealth.NOOP;
+
+    /** Registro del estado de la fuente (pagina "Estado de los datos"); opcional para los tests. */
+    @Autowired(required = false)
+    void setHealth(SourceHealth health) {
+        this.health = health;
+    }
     private static final String URL = "https://api.tomtom.com/traffic/services/4/flowSegmentData/absolute/10/json"
             + "?point={point}&unit=KMPH&key={key}";
 
@@ -48,12 +58,14 @@ public class TomTomTrafficClient {
         String point = String.format(Locale.ROOT, "%.6f,%.6f", lat, lon);
         try {
             JsonNode body = restClient.get().uri(URL, point, apiKey).retrieve().body(JsonNode.class);
+            health.ok(SourceHealth.Source.TOMTOM);
             return Optional.ofNullable(parse(body));
         } catch (RestClientException e) {
             String reason = e instanceof RestClientResponseException r
                     ? "HTTP " + r.getStatusCode().value()
                     : e.getMostSpecificCause().getClass().getSimpleName();
             log.warn("TomTom no respondio para el punto {} ({})", point, reason);
+            health.fail(SourceHealth.Source.TOMTOM, reason);
             return Optional.empty();
         }
     }

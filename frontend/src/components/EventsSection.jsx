@@ -1,28 +1,61 @@
 import { useApi } from '../hooks/useApi.js'
-import EventCard from './EventCard.jsx'
+import { EVENT_KINDS, eventWhen, prettyStreets } from '../utils/events.js'
 import './EventCard.css'
 
 const REFRESH_MS = 10 * 60_000
+const MAX_EVENTS = 5
 
 /**
- * Eventos y cortes: eventos masivos, manifestaciones y obras grandes que
- * cortan calles, de la API Transporte y cargados a mano. Si no hay
- * ninguno, la seccion no aparece.
+ * Eventos y cortes del inicio: eventos masivos, manifestaciones y obras
+ * grandes que cortan calles (API Transporte y cargados a mano). Siempre
+ * visible, debajo de las tarifas: si no hay ninguno lo dice, asi se sabe
+ * que la seccion existe.
  */
 export default function EventsSection() {
-  const { data } = useApi('/api/v1/eventos', { refreshMs: REFRESH_MS })
+  const { data, loading } = useApi('/api/v1/eventos', { refreshMs: REFRESH_MS })
   const events = data?.events ?? []
-  if (events.length === 0) return null
+  const shown = events.slice(0, MAX_EVENTS)
 
   return (
-    <section className="events-section" aria-label="Eventos y cortes">
-      <div className="section-label">Eventos y cortes</div>
-      <div className="events-grid">
-        {events.slice(0, 6).map((event) => (
-          <EventCard key={event.id} event={event} />
-        ))}
+    <section className="panel events-panel" aria-label="Eventos y cortes">
+      <div className="panel-title">
+        Eventos y cortes
+        {events.length > 0 && <span className="count">{events.length}</span>}
       </div>
-      <p className="events-source">Cortes programados del Gobierno de la Ciudad (API Transporte) y eventos destacados.</p>
+
+      {!loading && events.length === 0 && (
+        <p className="events-empty">Sin cortes ni eventos programados por ahora.</p>
+      )}
+
+      {shown.length > 0 && (
+        <ul className="events-list">
+          {shown.map((event) => {
+            const kind = EVENT_KINDS[event.kind] ?? EVENT_KINDS.CORTE
+            const streets = prettyStreets(event.streets)
+            return (
+              <li key={event.id}>
+                <div className="event-card-head">
+                  <span className={`event-kind ${kind.className}`}>{kind.label}</span>
+                  <span className="event-when">{eventWhen(event)}</span>
+                </div>
+                <div className="events-list-title">
+                  {event.url ? (
+                    <a href={event.url} target="_blank" rel="noreferrer">
+                      {event.title} ↗
+                    </a>
+                  ) : (
+                    event.title
+                  )}
+                </div>
+                {streets && <div className="event-streets">{streets}</div>}
+              </li>
+            )
+          })}
+        </ul>
+      )}
+      {events.length > MAX_EVENTS && <p className="events-more">Y {events.length - MAX_EVENTS} más.</p>}
+
+      <p className="events-source">Cortes programados de la Ciudad (API Transporte) y eventos masivos destacados.</p>
     </section>
   )
 }

@@ -151,8 +151,8 @@ export default function EcobiciPage() {
                   kicker="Estación EcoBici"
                   title={stationLabel(s.name)}
                 >
-                  <div className="map-card-status" style={{ color: level.color }}>
-                    <i style={{ background: level.color }} />
+                  <div className="map-card-status" style={{ '--status-color': level.color }}>
+                    <i />
                     {level.label}
                   </div>
                   {s.renting && (
@@ -173,6 +173,7 @@ export default function EcobiciPage() {
                 <Marker
                   key={s.id}
                   position={[s.latitude, s.longitude]}
+                  title={`${stationLabel(s.name)}: ${level.label}`}
                   icon={badgeIcon(badge.glyph, { ...badge, size: 22, active })}
                   eventHandlers={{ click: () => setSelectedId(s.id) }}
                 >

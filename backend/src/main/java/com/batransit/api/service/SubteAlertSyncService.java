@@ -1,5 +1,6 @@
 package com.batransit.api.service;
 
+import com.batransit.api.estado.SourceHealth;
 import com.batransit.api.client.SubteAlertsFeed;
 import com.batransit.api.client.TransporteApiClient;
 import com.batransit.api.client.TransporteApiException;
@@ -11,6 +12,7 @@ import com.batransit.api.repository.AlertRepository;
 import com.batransit.api.repository.TransportLineRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -39,6 +41,14 @@ import java.util.Set;
 public class SubteAlertSyncService {
 
     private static final Logger log = LoggerFactory.getLogger(SubteAlertSyncService.class);
+
+    private SourceHealth health = SourceHealth.NOOP;
+
+    /** Registro del estado de la fuente (pagina "Estado de los datos"); opcional para los tests. */
+    @Autowired(required = false)
+    void setHealth(SourceHealth health) {
+        this.health = health;
+    }
     private static final String SOURCE_NAME = "API Transporte";
 
     /**
@@ -69,16 +79,19 @@ public class SubteAlertSyncService {
         try {
             feed = apiClient.fetchSubteAlerts();
         } catch (TransporteApiException e) {
+            health.fail(SourceHealth.Source.SUBTE_ALERTAS, "sin respuesta");
             log.error("Sincronizacion de alertas de subte omitida esta vez: {}", e.getMessage());
             return;
         }
 
         if (feed == null || feed.entity() == null) {
+            health.fail(SourceHealth.Source.SUBTE_ALERTAS, "respuesta vacía");
             log.warn("La API Transporte devolvio una respuesta vacia o invalida; no se toca nada.");
             return;
         }
 
         transactionTemplate.executeWithoutResult(status -> applyFeed(feed));
+        health.ok(SourceHealth.Source.SUBTE_ALERTAS);
     }
 
     private void applyFeed(SubteAlertsFeed feed) {

@@ -59,12 +59,13 @@ export default function DashboardPage() {
           <ModeGrid lines={lines} alerts={alerts} />
           <div className="grid-main">
             <AlertsPanel alerts={alerts} lines={lines} />
-            <FaresPanel fares={fares} />
+            <div className="panel-stack">
+              <FaresPanel fares={fares} />
+              <EventsSection />
+            </div>
           </div>
         </>
       )}
-
-      <EventsSection />
     </div>
   )
 }

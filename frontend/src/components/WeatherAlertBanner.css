@@ -44,7 +44,7 @@
 }
 
 .weather-alert-text > strong {
-  color: var(--level);
+  color: color-mix(in srgb, var(--level) 65%, var(--text));
 }
 
 .weather-alert-period {
@@ -83,7 +83,7 @@
 }
 
 .weather-alert-more {
-  color: var(--accent-text);
+  color: color-mix(in srgb, var(--accent-text) 80%, var(--text));
   font-weight: 600;
 }
 
@@ -96,7 +96,7 @@
   height: 24px;
   margin-top: -2px;
   border-radius: 50%;
-  color: var(--text-faint);
+  color: var(--text-dim);
   font-size: 18px;
   line-height: 1;
 }

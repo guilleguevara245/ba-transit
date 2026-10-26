@@ -41,3 +41,22 @@
 .footer-link:hover {
   text-decoration: underline;
 }
+
+.footer-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.footer-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--normal);
+  box-shadow: 0 0 0 3px var(--normal-tint);
+}
+
+.footer-dot.failing {
+  background: var(--delayed);
+  box-shadow: 0 0 0 3px var(--delayed-tint);
+}

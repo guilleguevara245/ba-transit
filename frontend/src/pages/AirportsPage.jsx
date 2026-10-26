@@ -93,6 +93,7 @@ export default function AirportsPage() {
           <Marker
             key={airport.code}
             position={[airport.latitude, airport.longitude]}
+            title={airport.name}
             icon={badgeIcon('plane', { bg: '#f4c11b', fg: '#17171a', border: '#17171a', size: 30 })}
           >
             <Tooltip permanent direction="right" offset={[6, 0]} className="airport-map-label">

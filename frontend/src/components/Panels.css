@@ -8,6 +8,18 @@
   margin-bottom: 40px;
 }
 
+/* Columna derecha con mas de un panel: el ultimo se estira hasta el final. */
+.panel-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--line);
+}
+
+.panel-stack > :last-child {
+  flex: 1;
+}
+
 .panel {
   background: var(--surface);
   padding: 22px 24px;

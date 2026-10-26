@@ -34,7 +34,7 @@ export default function MapPage() {
   return (
     <div className="wrap content">
       <div className="map-toolbar">
-        <div className="section-label">Mapa de la red</div>
+        <h1 className="section-label">Mapa de la red</h1>
         {modes.length > 1 && (
           <div className="map-filters" role="group" aria-label="Filtrar por modo">
             {['TODOS', ...modes].map((mode) => (

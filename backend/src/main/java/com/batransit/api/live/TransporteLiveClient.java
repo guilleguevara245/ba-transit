@@ -1,9 +1,11 @@
 package com.batransit.api.live;
 
+import com.batransit.api.estado.SourceHealth;
 import com.batransit.api.config.TransporteApiProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -29,6 +31,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TransporteLiveClient {
 
     private static final Logger log = LoggerFactory.getLogger(TransporteLiveClient.class);
+
+    private SourceHealth health = SourceHealth.NOOP;
+
+    /** Registro del estado de la fuente (pagina "Estado de los datos"); opcional para los tests. */
+    @Autowired(required = false)
+    void setHealth(SourceHealth health) {
+        this.health = health;
+    }
 
     private record Cached(JsonNode body, Instant fetchedAt) {
     }
@@ -78,12 +88,14 @@ public class TransporteLiveClient {
                 return Optional.ofNullable(cached).map(c -> new Fetched(c.body(), c.fetchedAt()));
             }
             cache.put(path, new Cached(body, now));
+            health.ok(SourceHealth.Source.TRANSPORTE_VIVO);
             return Optional.of(new Fetched(body, now));
         } catch (RestClientException e) {
             String reason = e instanceof RestClientResponseException r
                     ? "HTTP " + r.getStatusCode().value()
                     : e.getMostSpecificCause().getClass().getSimpleName();
             log.warn("API Transporte {} no respondio ({})", path, reason);
+            health.fail(SourceHealth.Source.TRANSPORTE_VIVO, reason);
             return Optional.ofNullable(cached).map(c -> new Fetched(c.body(), c.fetchedAt()));
         }
     }

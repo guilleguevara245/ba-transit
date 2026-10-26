@@ -1,7 +1,9 @@
 package com.batransit.api.live;
 
+import com.batransit.api.estado.SourceHealth;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,14 @@ import java.util.Optional;
 public class SubteScheduleService {
 
     private static final Logger log = LoggerFactory.getLogger(SubteScheduleService.class);
+
+    private SourceHealth health = SourceHealth.NOOP;
+
+    /** Registro del estado de la fuente (pagina "Estado de los datos"); opcional para los tests. */
+    @Autowired(required = false)
+    void setHealth(SourceHealth health) {
+        this.health = health;
+    }
     static final ZoneId BUENOS_AIRES = ZoneId.of("America/Argentina/Buenos_Aires");
 
     private final TransporteLiveClient client;
@@ -46,6 +56,7 @@ public class SubteScheduleService {
     public void refresh() {
         Optional<byte[]> zip = client.getBytes("/subtes/feed-gtfs");
         if (zip.isEmpty()) {
+            health.fail(SourceHealth.Source.SUBTE_HORARIO, "sin respuesta (se usa la copia incluida)");
             return;
         }
         try {
@@ -56,7 +67,9 @@ public class SubteScheduleService {
             }
             schedule = fresh;
             log.info("Horario del subte: GTFS actualizado ({} viajes modelo).", fresh.tripCount());
+            health.ok(SourceHealth.Source.SUBTE_HORARIO);
         } catch (IOException | RuntimeException e) {
+            health.fail(SourceHealth.Source.SUBTE_HORARIO, e.getClass().getSimpleName());
             log.warn("Horario del subte: el GTFS descargado no se pudo leer ({}); se mantiene el anterior.",
                     e.getClass().getSimpleName());
         }

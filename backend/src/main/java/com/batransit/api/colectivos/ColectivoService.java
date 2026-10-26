@@ -1,5 +1,6 @@
 package com.batransit.api.colectivos;
 
+import com.batransit.api.estado.SourceHealth;
 import com.batransit.api.colectivos.BusModels.BusRoute;
 import com.batransit.api.colectivos.BusModels.Catalog;
 import com.batransit.api.config.TransporteApiProperties;
@@ -43,6 +44,14 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ColectivoService {
 
     private static final Logger log = LoggerFactory.getLogger(ColectivoService.class);
+
+    private SourceHealth health = SourceHealth.NOOP;
+
+    /** Registro del estado de la fuente (pagina "Estado de los datos"); opcional para los tests. */
+    @Autowired(required = false)
+    void setHealth(SourceHealth health) {
+        this.health = health;
+    }
     static final int MAX_RESULTS = 30;
 
     private final TransporteApiProperties apiProperties;
@@ -88,11 +97,13 @@ public class ColectivoService {
             Catalog loaded = parser.parse(file);
             catalog.set(loaded);
             log.info("Colectivos: {} lineas cargadas desde el feed GTFS.", loaded.routes().size());
+            health.ok(SourceHealth.Source.COLECTIVOS_RECORRIDOS);
             if (snapshotStore != null) {
                 snapshotStore.save(loaded);
             }
         } catch (Exception e) {
             // Nunca se loguea la URL: puede llevar las credenciales.
+            health.fail(SourceHealth.Source.COLECTIVOS_RECORRIDOS, e.getClass().getSimpleName());
             log.error("No se pudieron cargar los colectivos ({}). Se conserva la version anterior.",
                     e.getClass().getSimpleName());
         } finally {

@@ -1,5 +1,6 @@
 package com.batransit.api.trenes;
 
+import com.batransit.api.estado.SourceHealth;
 import com.batransit.api.domain.Alert;
 import com.batransit.api.domain.TransportLine;
 import com.batransit.api.domain.TransportMode;
@@ -8,6 +9,7 @@ import com.batransit.api.repository.TransportLineRepository;
 import com.batransit.api.trenes.MetroviasStatusParser.LineStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -30,6 +32,14 @@ import java.util.Optional;
 public class MetroviasStatusSyncService {
 
     private static final Logger log = LoggerFactory.getLogger(MetroviasStatusSyncService.class);
+
+    private SourceHealth health = SourceHealth.NOOP;
+
+    /** Registro del estado de la fuente (pagina "Estado de los datos"); opcional para los tests. */
+    @Autowired(required = false)
+    void setHealth(SourceHealth health) {
+        this.health = health;
+    }
     static final String SOURCE_NAME = "Metrovías";
     static final String ID_PREFIX = "metrovias:";
 
@@ -51,16 +61,20 @@ public class MetroviasStatusSyncService {
     public void sync() {
         Optional<String> html = client.fetchStatusHtml();
         if (html.isEmpty()) {
+            health.fail(SourceHealth.Source.METROVIAS, "sin respuesta");
             return;
         }
         Optional<LineStatus> status = MetroviasStatusParser.parse(html.get());
         if (status.isEmpty()) {
+            health.fail(SourceHealth.Source.METROVIAS, "formato inesperado");
             log.warn("Estado de Metrovias: el mensaje no tiene el formato esperado; no se toca nada.");
             return;
         }
         try {
             transactionTemplate.executeWithoutResult(s -> apply(status.get()));
+            health.ok(SourceHealth.Source.METROVIAS);
         } catch (Exception e) {
+            health.fail(SourceHealth.Source.METROVIAS, "error al guardar");
             log.error("Estado de Metrovias: error al guardar ({})", e.getClass().getSimpleName());
         }
     }

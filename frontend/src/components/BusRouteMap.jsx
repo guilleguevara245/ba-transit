@@ -91,6 +91,7 @@ export default function BusRouteMap({ route, directionIndex, className, vehicles
         <Marker
           key={v.id}
           position={[v.latitude, v.longitude]}
+          title={`Colectivo de la línea ${route.shortName || '?'}`}
           icon={badgeIcon('bus', { bg: '#f4c11b', fg: '#17171a', border: '#17171a', shape: 'square', size: 28 })}
         >
           <MapCard

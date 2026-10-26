@@ -1,8 +1,10 @@
 package com.batransit.api.trenes;
 
+import com.batransit.api.estado.SourceHealth;
 import com.batransit.api.trenes.FerroviasArrivals.Direction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -28,6 +30,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public class FerroviasArrivalsClient {
 
     private static final Logger log = LoggerFactory.getLogger(FerroviasArrivalsClient.class);
+
+    private SourceHealth health = SourceHealth.NOOP;
+
+    /** Registro del estado de la fuente (pagina "Estado de los datos"); opcional para los tests. */
+    @Autowired(required = false)
+    void setHealth(SourceHealth health) {
+        this.health = health;
+    }
     static final Duration MAX_AGE = Duration.ofSeconds(30);
     /** Si fallo, no reintentar enseguida (evita insistir si el sitio esta caido). */
     static final Duration FAILURE_BACKOFF = Duration.ofSeconds(60);
@@ -79,11 +89,14 @@ public class FerroviasArrivalsClient {
             // El sitio responde en ISO-8859-1 (lo dice su Content-Type).
             String html = new String(body, StandardCharsets.ISO_8859_1);
             if (!html.contains("table_title")) {
+                health.fail(SourceHealth.Source.FERROVIAS, "formato inesperado");
                 log.warn("Ferrovias: la respuesta de la estacion {} no tiene el formato esperado.", stationId);
                 return null;
             }
+            health.ok(SourceHealth.Source.FERROVIAS);
             return new Snapshot(now, FerroviasArrivals.parse(html));
         } catch (RestClientException e) {
+            health.fail(SourceHealth.Source.FERROVIAS, e.getMostSpecificCause().getClass().getSimpleName());
             log.warn("Ferrovias no respondio para la estacion {} ({}).", stationId,
                     e.getMostSpecificCause().getClass().getSimpleName());
             return null;

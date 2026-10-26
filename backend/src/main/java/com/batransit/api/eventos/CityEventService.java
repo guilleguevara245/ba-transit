@@ -1,11 +1,13 @@
 package com.batransit.api.eventos;
 
+import com.batransit.api.estado.SourceHealth;
 import com.batransit.api.exception.BadRequestException;
 import com.batransit.api.exception.NotFoundException;
 import com.batransit.api.live.TransporteLiveClient;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +32,14 @@ import java.util.Map;
 public class CityEventService {
 
     private static final Logger log = LoggerFactory.getLogger(CityEventService.class);
+
+    private SourceHealth health = SourceHealth.NOOP;
+
+    /** Registro del estado de la fuente (pagina "Estado de los datos"); opcional para los tests. */
+    @Autowired(required = false)
+    void setHealth(SourceHealth health) {
+        this.health = health;
+    }
     private static final ZoneId BUENOS_AIRES = ZoneId.of("America/Argentina/Buenos_Aires");
     /** Como mucho se muestran estos (los mas proximos). */
     static final int MAX_EVENTS = 12;
@@ -71,8 +81,12 @@ public class CityEventService {
                 fromApi = List.copyOf(events.values());
                 apiUpdatedAt = now;
                 log.info("Eventos API Transporte: {} relevantes", fromApi.size());
+                health.ok(SourceHealth.Source.EVENTOS);
+            } else {
+                health.fail(SourceHealth.Source.EVENTOS, "sin respuesta");
             }
         } catch (Exception e) {
+            health.fail(SourceHealth.Source.EVENTOS, e.getClass().getSimpleName());
             log.warn("No se pudieron actualizar los eventos de transito ({})", e.getClass().getSimpleName());
         }
     }
