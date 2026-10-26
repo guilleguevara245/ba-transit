@@ -125,11 +125,20 @@ export function toLegs(result, stations) {
   return legs.map((leg) => ({ ...leg, minutes: Math.round(leg.minutes) }))
 }
 
-/** Planifica entre dos estaciones elegidas (por linea y nombre). */
+/**
+ * Ids de estaciones de un punto elegido: un lugar (buildPlaces) aporta
+ * todas sus estaciones, asi el viaje sale por la linea que mas conviene;
+ * una estacion suelta aporta sus ramales (mismo nombre y linea).
+ */
+function idsOf(stations, ref) {
+  if (Array.isArray(ref.stations)) return ref.stations.map((s) => s.stationId)
+  return stations.filter((s) => s.lineId === ref.lineId && s.stationName === ref.stationName).map((s) => s.stationId)
+}
+
+/** Planifica entre dos estaciones o lugares elegidos. */
 export function planTrip(stations, origin, destination) {
-  const same = (s, ref) => s.lineId === ref.lineId && s.stationName === ref.stationName
-  const originIds = stations.filter((s) => same(s, origin)).map((s) => s.stationId)
-  const targetIds = stations.filter((s) => same(s, destination)).map((s) => s.stationId)
+  const originIds = idsOf(stations, origin)
+  const targetIds = idsOf(stations, destination)
   const result = shortestPath(buildGraph(stations), originIds, targetIds)
   if (!result) return null
   const legs = toLegs(result, stations)

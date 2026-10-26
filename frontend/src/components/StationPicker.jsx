@@ -4,6 +4,17 @@ import { matchStations, normalizeText } from '../utils/stationSearch.js'
 import './SearchBar.css'
 import './StationPicker.css'
 
+/** Un punto de color por linea (Retiro tiene cinco). */
+function Dots({ colors }) {
+  return (
+    <span className="station-picker-dots" aria-hidden="true">
+      {colors.map((color, index) => (
+        <span key={`${color}-${index}`} className="result-dot" style={{ background: color }} />
+      ))}
+    </span>
+  )
+}
+
 /**
  * Campo para elegir una estacion, con el mismo desplegable que el
  * buscador del inicio (flechas, Enter y Escape). Reemplaza al
@@ -67,7 +78,7 @@ export default function StationPicker({ id, title, stations, value, onChange }) 
     <div className="planner-field station-picker" ref={containerRef}>
       <label htmlFor={id}>{title}</label>
       <div className={value ? 'station-picker-box chosen' : 'station-picker-box'}>
-        {value && <span className="result-dot" style={{ background: value.lineColorHex }} aria-hidden="true" />}
+        {value && <Dots colors={value.colors ?? [value.lineColorHex]} />}
         <input
           id={id}
           type="text"
@@ -114,7 +125,7 @@ export default function StationPicker({ id, title, stations, value, onChange }) 
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => choose(station)}
                 >
-                  <span className="result-dot" style={{ background: station.lineColorHex }}></span>
+                  <Dots colors={station.colors ?? [station.lineColorHex]} />
                   <span className="result-name">{station.stationName}</span>
                   <span className="result-meta">{station.lineName}</span>
                 </div>

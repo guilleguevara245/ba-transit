@@ -7,6 +7,7 @@ import ModeIcon from '../components/ModeIcon.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import StationPicker from '../components/StationPicker.jsx'
 import { useApi } from '../hooks/useApi.js'
+import { buildPlaces } from '../utils/places.js'
 import { googleMapsUrl, planTrip } from '../utils/planner.js'
 import { formatDuration } from '../utils/travelTime.js'
 import './ModePage.css'
@@ -68,19 +69,11 @@ export default function TripPlannerPage() {
   const [fromAddress, setFromAddress] = useState('')
   const [toAddress, setToAddress] = useState('')
 
-  // Una opcion por estacion y linea (en el Mitre la misma estacion esta en varios ramales).
-  const options = useMemo(() => {
-    const seen = new Set()
-    return (stations ?? []).filter((s) => {
-      const key = `${s.lineId}|${s.stationName}`
-      if (seen.has(key)) return false
-      seen.add(key)
-      return true
-    })
-  }, [stations])
+  // Un lugar por estacion: Retiro aparece una vez aunque tenga cinco
+  // lineas, y el viaje sale o llega por la que mas convenga.
+  const options = useMemo(() => buildPlaces(stations), [stations])
 
-  const sameStation =
-    origin && destination && origin.lineId === destination.lineId && origin.stationName === destination.stationName
+  const sameStation = origin && destination && origin.stationId === destination.stationId
   const plan = useMemo(
     () => (origin && destination && !sameStation ? planTrip(stations, origin, destination) : null),
     [stations, origin, destination, sameStation],
@@ -142,7 +135,7 @@ export default function TripPlannerPage() {
               <p className="planner-note">
                 Tiempo estimado por distancia, más unos minutos de espera en cada combinación. No incluye la espera
                 inicial.{' '}
-                <Link to={`/estaciones/${destination.stationId}`}>Ver la estación de destino</Link>
+                <Link to={`/estaciones/${plan.legs[plan.legs.length - 1].to.stationId}`}>Ver la estación de destino</Link>
               </p>
               <a className="planner-maps" href={googleMapsUrl(origin, destination)} target="_blank" rel="noreferrer">
                 Ver este viaje en Google Maps ↗

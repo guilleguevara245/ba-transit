@@ -48,3 +48,13 @@
   top: calc(100% + 4px);
   max-height: 320px;
 }
+
+.station-picker-dots {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.station-picker-dots .result-dot + .result-dot {
+  margin-left: -3px;
+  box-shadow: 0 0 0 1.5px var(--surface-raised);
+}

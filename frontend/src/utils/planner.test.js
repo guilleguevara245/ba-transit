@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { googleMapsUrl, planTrip } from './planner.js'
+import { buildPlaces } from './places.js'
 
 // Dos lineas que se cruzan: A (oeste-este) y D (norte-sur), con una
 // combinacion oficial A:Peru <-> D:Catedral (a ~150 m).
@@ -31,6 +32,31 @@ describe('planTrip', () => {
     expect(plan.legs[1].to.stationName).toBe('Catedral')
     expect(plan.legs[2].towards.stationName).toBe('Tribunales')
     expect(plan.transfers).toBe(1)
+  })
+})
+
+describe('planTrip con lugares', () => {
+  // Retiro con dos lineas: C (va al sur) y Mitre (otra direccion).
+  const RETIRO = [
+    st(10, 3, 'C', 3, 1, 'Retiro', -34.5915, -58.3746),
+    st(11, 3, 'C', 3, 2, 'General San Martín', -34.5954, -58.3779),
+    st(20, 9, 'MITRE', 9, 1, 'Retiro', -34.5910, -58.3740, 'TREN'),
+    st(21, 9, 'MITRE', 9, 2, 'Lisandro de la Torre', -34.5600, -58.4100, 'TREN'),
+  ]
+
+  it('agrupa estaciones con el mismo nombre y cercanas', () => {
+    const places = buildPlaces(RETIRO)
+    const retiro = places.find((p) => p.stationName === 'Retiro')
+    expect(retiro.stations).toHaveLength(2)
+    expect(retiro.lineName).toBe('Líneas C y MITRE')
+  })
+
+  it('sale por la linea que conviene sin caminar al principio', () => {
+    const places = buildPlaces(RETIRO)
+    const retiro = places.find((p) => p.stationName === 'Retiro')
+    const plan = planTrip(RETIRO, retiro, RETIRO[3])
+    expect(plan.legs.map((l) => l.type)).toEqual(['ride'])
+    expect(plan.legs[0].from.lineCode).toBe('MITRE')
   })
 })
 
