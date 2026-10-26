@@ -12,7 +12,7 @@ import java.util.List;
 /** GET /api/v1/estado: como respondio cada fuente de datos la ultima vez. */
 @RestController
 @RequestMapping("/api/v1/estado")
-public class StatusController {
+public class DataSourceStatusController {
 
     /** overall: OK si ninguna fuente esta fallando ahora; ERROR si alguna falla. */
     public record StatusResponse(Status overall, Instant startedAt, Instant checkedAt, List<Check> sources) {
@@ -21,7 +21,7 @@ public class StatusController {
     private final SourceHealth health;
     private final Instant startedAt = Instant.now();
 
-    public StatusController(SourceHealth health) {
+    public DataSourceStatusController(SourceHealth health) {
         this.health = health;
     }
 
