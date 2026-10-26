@@ -77,6 +77,12 @@ const SOURCES = [
     detail: 'Obras, recorridos limitados, interrupciones y estaciones cerradas de Roca, Mitre, Sarmiento, San Martín, Belgrano Sur y Tren de la Costa, revisados cada 15 minutos.',
   },
   {
+    what: 'Próximos trenes del Belgrano Norte',
+    source: 'Ferrovías, pantalla de próximos trenes',
+    url: 'http://proximostrenes.ferrovias.com.ar/',
+    detail: 'Tiempo estimado y destino de los próximos trenes de cada estación, actualizado cada 30 segundos.',
+  },
+  {
     what: 'Alertas meteorológicas',
     source: 'Servicio Meteorológico Nacional (feed CAP)',
     url: 'https://www.smn.gob.ar/alertas',

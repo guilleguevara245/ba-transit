@@ -1,20 +1,16 @@
 import { useApi } from '../hooks/useApi.js'
+import { formatArrival, nextTrainsPath } from '../utils/nextTrains.js'
 
 const REFRESH_MS = 30_000
 
-function formatMinutes({ minutes, estimated }) {
-  const text = minutes < 1 ? 'llegando' : `${minutes} min`
-  return estimated ? `~${text}` : text
-}
-
 /**
- * Proximos trenes de una estacion de subte, segun el pronostico en vivo
- * de la API Transporte. Si el servidor no tiene datos, no muestra nada
+ * Proximos trenes en vivo de una estacion: subte (pronostico de la API
+ * Transporte) o Belgrano Norte (Ferrovias). Si el servidor no tiene datos, no muestra nada
  * (tampoco la tarjeta: con asCard el contenedor lo pone este componente,
  * asi no queda un cuadro vacio en la pagina de la estacion).
  */
-export default function NextTrains({ lineCode, stationName, asCard = false }) {
-  const path = `/api/v1/subte/proximos?linea=${encodeURIComponent(lineCode)}&estacion=${encodeURIComponent(stationName)}`
+export default function NextTrains({ mode = 'SUBTE', lineCode, stationName, asCard = false }) {
+  const path = nextTrainsPath(mode, lineCode, stationName)
   const { data } = useApi(path, { refreshMs: REFRESH_MS })
   if (!data?.available) return null
 
@@ -30,7 +26,17 @@ export default function NextTrains({ lineCode, stationName, asCard = false }) {
           {data.directions.map((d) => (
             <li key={d.directionId}>
               <span className="next-trains-towards">Hacia {d.towards}</span>
-              <span className="next-trains-times">{d.arrivals.map(formatMinutes).join(' · ')}</span>
+              <span className="next-trains-times">
+                {d.arrivals.map((a, i) => (
+                  <span key={i}>
+                    {i > 0 && ' · '}
+                    {formatArrival(a)}
+                    {a.destination && a.destination !== d.towards && (
+                      <span className="next-trains-dest"> (a {a.destination})</span>
+                    )}
+                  </span>
+                ))}
+              </span>
             </li>
           ))}
         </ul>
@@ -38,6 +44,7 @@ export default function NextTrains({ lineCode, stationName, asCard = false }) {
       {data.directions.some((d) => d.arrivals.some((a) => a.estimated)) && (
         <div className="next-trains-note">~ estimado</div>
       )}
+      {data.source && <div className="next-trains-note">Fuente: {data.source}</div>}
     </div>
   )
   return asCard ? <section className="station-card">{content}</section> : content

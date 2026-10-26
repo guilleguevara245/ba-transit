@@ -112,6 +112,11 @@
   white-space: nowrap;
 }
 
+.next-trains-dest {
+  font-weight: 400;
+  color: var(--text-dim);
+}
+
 .next-trains-empty,
 .next-trains-note {
   font-size: 12px;

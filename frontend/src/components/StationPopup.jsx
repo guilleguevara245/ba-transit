@@ -52,7 +52,7 @@ export default function StationPopup({ station, stations, alerts, mode }) {
         </div>
       )}
 
-      {mode === 'SUBTE' && <NextTrains lineCode={station.lineCode} stationName={station.stationName} />}
+      <NextTrains mode={mode} lineCode={station.lineCode} stationName={station.stationName} />
 
       {transfers.length > 0 && (
         <div className="station-popup-section">

@@ -186,9 +186,7 @@ export default function StationPage() {
             </section>
           )}
 
-          {station.lineMode === 'SUBTE' && (
-            <NextTrains lineCode={station.lineCode} stationName={station.stationName} asCard />
-          )}
+          <NextTrains mode={station.lineMode} lineCode={station.lineCode} stationName={station.stationName} asCard />
 
           {nearbyEvents.length > 0 && (
             <section className="station-card station-events">
