@@ -245,7 +245,7 @@ export default function StationPage() {
                   <li key={t.stationId}>
                     <Link to={`/estaciones/${t.stationId}`} className="chevrons-host">
                       <LineBadge line={asLine(t)} size="sm" />
-                      <span>
+                      <span className="station-transfer-name">
                         {t.stationName} <span className="station-dim">· {t.lineName}</span>
                       </span>
                       <Chevrons />

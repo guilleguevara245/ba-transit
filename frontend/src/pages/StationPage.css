@@ -56,7 +56,9 @@
   text-decoration: none;
 }
 
-.station-transfers a span {
+/* Solo el nombre ocupa el espacio libre: con "a span" tambien se estiraba
+   el circulo de la linea (LineBadge es un span). */
+.station-transfer-name {
   flex: 1;
 }
 
