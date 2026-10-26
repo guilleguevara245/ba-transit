@@ -19,6 +19,11 @@ import java.time.LocalDate;
  * nulos, la tarifa es plana (no depende de la distancia), como el
  * subte. maxKm nulo con minKm cargado significa "de minKm en
  * adelante, sin techo" (ej: "mas de 24 km").
+ *
+ * Desde V39 tambien guarda el cuadro completo del AMBA: jurisdiccion
+ * del colectivo (NACIONAL, CABA, PROVINCIA), seccion del tren, rango
+ * de viajes mensuales del subte y el precio con SUBE sin registrar.
+ * Todos son opcionales.
  */
 @Entity
 @Table(name = "fare")
@@ -40,6 +45,21 @@ public class Fare {
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
+
+    @Column(length = 20)
+    private String jurisdiction;
+
+    @Column(name = "section")
+    private Short section;
+
+    @Column(name = "trips_from")
+    private Short tripsFrom;
+
+    @Column(name = "trips_to")
+    private Short tripsTo;
+
+    @Column(name = "price_unregistered", precision = 10, scale = 2)
+    private BigDecimal priceUnregistered;
 
     @Column(name = "effective_from", nullable = false)
     private LocalDate effectiveFrom;
@@ -82,6 +102,26 @@ public class Fare {
 
     public BigDecimal getPrice() {
         return price;
+    }
+
+    public String getJurisdiction() {
+        return jurisdiction;
+    }
+
+    public Short getSection() {
+        return section;
+    }
+
+    public Short getTripsFrom() {
+        return tripsFrom;
+    }
+
+    public Short getTripsTo() {
+        return tripsTo;
+    }
+
+    public BigDecimal getPriceUnregistered() {
+        return priceUnregistered;
     }
 
     public LocalDate getEffectiveFrom() {

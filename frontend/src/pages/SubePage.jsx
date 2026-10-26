@@ -1,27 +1,21 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import BackButton from '../components/BackButton.jsx'
 import FaresPanel from '../components/FaresPanel.jsx'
+import FareTable from '../components/FareTable.jsx'
 import ModeIcon from '../components/ModeIcon.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { MODE_LABELS } from '../constants.js'
 import { formatCurrency } from '../utils/format.js'
+import { basePrices } from '../utils/fares.js'
 import { simulateRedSube } from '../utils/redSube.js'
 import '../components/Panels.css'
 import './ModePage.css'
 import './AirportsPage.css'
 import './SubePage.css'
 
-const SIM_MODES = ['COLECTIVO', 'SUBTE', 'TREN']
+const SIM_MODES = ['COLECTIVO', 'SUBTE', 'TREN', 'PREMETRO']
 const MAP_URL = 'https://tarjetasube.sube.gob.ar/subeweb/WebForms/admin/views/mapa-sube.aspx'
-
-/** Tarifa mas baja cargada para un modo (la del primer tramo), para el simulador. */
-function basePrices(fares) {
-  const prices = {}
-  for (const fare of fares ?? []) {
-    if (prices[fare.mode] == null || fare.price < prices[fare.mode]) prices[fare.mode] = Number(fare.price)
-  }
-  return prices
-}
 
 function Simulator({ fares }) {
   const prices = useMemo(() => basePrices(fares), [fares])
@@ -35,7 +29,10 @@ function Simulator({ fares }) {
   return (
     <section className="sube-card">
       <h2 className="sube-heading">Simulá tu combinación</h2>
-      <p className="sube-dim">Elegí los viajes en orden (tarifa del primer tramo de cada modo).</p>
+      <p className="sube-dim">
+        Elegí los viajes en orden. Usa la tarifa base: colectivo nacional hasta 3 km, subte de 1 a 20 viajes en el mes
+        y tren sección 1.
+      </p>
       <ol className="sube-trips">
         {trips.map((mode, index) => (
           <li key={index}>
@@ -87,7 +84,7 @@ function Simulator({ fares }) {
       </div>
       <p className="sube-note">
         Orientativo: algunos colectivos (por ejemplo, los de jurisdicción provincial como segundo viaje) no tienen
-        descuento, y las tarifas de colectivo y tren dependen de la distancia.
+        descuento, y las tarifas de colectivo y tren dependen de la distancia. Mirá el cuadro tarifario más abajo.
       </p>
     </section>
   )
@@ -96,6 +93,15 @@ function Simulator({ fares }) {
 /** SUBE: como funciona el descuento Red SUBE, simulador, tarifas y donde cargar. */
 export default function SubePage() {
   const { data: fares } = useApi('/api/v1/fares')
+  const { hash } = useLocation()
+
+  // Desde el panel de inicio se llega con /sube#tarifas: el router no
+  // baja solo hasta el ancla, y el cuadro aparece recien con los datos.
+  useEffect(() => {
+    if (hash === '#tarifas' && fares) {
+      window.document.getElementById('tarifas')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [hash, fares])
 
   return (
     <div className="wrap content">
@@ -155,6 +161,8 @@ export default function SubePage() {
 
           <Simulator fares={fares} />
 
+          {fares && <FareTable fares={fares} />}
+
           <section className="sube-card">
             <h2 className="sube-heading">Dónde cargar y hacer trámites</h2>
             <div className="sube-links">
@@ -197,7 +205,7 @@ export default function SubePage() {
           </section>
         </div>
 
-        <aside className="sube-side">{fares && <FaresPanel fares={fares} />}</aside>
+        <aside className="sube-side">{fares && <FaresPanel fares={fares} showMore={false} />}</aside>
       </div>
     </div>
   )

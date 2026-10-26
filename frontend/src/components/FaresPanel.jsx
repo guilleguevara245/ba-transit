@@ -2,25 +2,41 @@ import { Link } from 'react-router-dom'
 import Chevrons from './Chevrons.jsx'
 import './FaresPanel.css'
 import { formatCurrency } from '../utils/format.js'
-import { fareLabel } from '../utils/fares.js'
+import { fareSummary } from '../utils/fares.js'
 
-export default function FaresPanel({ fares }) {
+/**
+ * Resumen de tarifas: una fila por modo con el precio base (SUBE
+ * registrada). El cuadro completo, por tramo y jurisdiccion, esta en /sube.
+ */
+export default function FaresPanel({ fares, showMore = true }) {
+  const summary = fareSummary(fares)
+
   return (
     <div className="panel side-panel">
       <div className="panel-title">Tarifas vigentes</div>
 
-      {fares.length === 0 && <div className="loading-text">Todavía no hay tarifas cargadas.</div>}
+      {summary.length === 0 && <div className="loading-text">Todavía no hay tarifas cargadas.</div>}
 
-      {fares.map((fare) => (
-        <div className="fare-row" key={fare.id}>
-          <span className="name">{fareLabel(fare)}</span>
-          <span className="value">{formatCurrency(fare.price)}</span>
+      {summary.map((row) => (
+        <div className="fare-row" key={row.mode}>
+          <span className="name">
+            {row.label}
+            {row.hint && <small>{row.hint}</small>}
+          </span>
+          <span className="value">
+            {row.from && <small>desde</small>}
+            {formatCurrency(row.price)}
+          </span>
         </div>
       ))}
 
-      <Link className="fares-more chevrons-host" to="/sube">
-        Cómo funciona el descuento Red SUBE <Chevrons />
-      </Link>
+      {summary.length > 0 && <p className="fares-note">Con SUBE registrada. Sin registrar cuesta más.</p>}
+
+      {showMore && (
+        <Link className="fares-more chevrons-host" to="/sube#tarifas">
+          Cuadro completo y descuento Red SUBE <Chevrons />
+        </Link>
+      )}
     </div>
   )
 }
