@@ -8,6 +8,7 @@ import com.batransit.api.exception.BadRequestException;
 import com.batransit.api.exception.NotFoundException;
 import com.batransit.api.repository.SpecialServiceRepository;
 import com.batransit.api.repository.TransportLineRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +27,11 @@ public class SpecialServiceService {
     private final TransportLineRepository lineRepository;
     private final Clock clock;
 
+    /**
+     * Con dos constructores, Spring necesita saber cual usar: sin @Autowired
+     * busca uno sin parametros, no lo encuentra y la aplicacion no arranca.
+     */
+    @Autowired
     public SpecialServiceService(SpecialServiceRepository repository, TransportLineRepository lineRepository) {
         this(repository, lineRepository, Clock.system(BUENOS_AIRES));
     }
