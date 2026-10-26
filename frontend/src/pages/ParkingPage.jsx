@@ -332,33 +332,27 @@ export default function ParkingPage() {
         <FlyTo target={selected} />
       </MapContainer>
 
-      <details className="parking-coverage">
-        <summary>Cobertura en el conurbano</summary>
-        <p>
-          Los municipios del conurbano no publican datos abiertos de estacionamiento. Los lugares de esa zona salen de
-          OpenStreetMap, un mapa colaborativo: están las playas y garajes que alguien cargó, así que en algunos
-          partidos falta mucho.
+      <section className="panel parking-coverage" aria-label="Cobertura en el conurbano">
+        <div className="panel-title">
+          Cobertura en el conurbano <span className="count">{coverage.length} partidos</span>
+        </div>
+        <p className="parking-coverage-note">
+          Los municipios no publican datos abiertos de estacionamiento: los lugares del conurbano salen de
+          OpenStreetMap, un mapa colaborativo, y en algunos partidos falta mucho.
         </p>
-        {withoutData.length > 0 && (
-          <p>
-            <strong>Sin datos:</strong> {withoutData.join(', ')}.
-          </p>
-        )}
-        {lowData.length > 0 && (
-          <p>
-            <strong>Muy pocos datos:</strong> {lowData.join(', ')}.
-          </p>
-        )}
         <ul className="parking-coverage-list">
-          {coverage
-            .filter((c) => c.count >= LOW_COVERAGE)
-            .map((c) => (
-              <li key={c.partido}>
-                {c.partido} <span>{c.count}</span>
-              </li>
-            ))}
+          {coverage.map((c) => (
+            <li key={c.partido} className={c.count < LOW_COVERAGE ? 'low' : undefined}>
+              {c.partido} <strong>{c.count}</strong>
+            </li>
+          ))}
         </ul>
-      </details>
+        {(lowData.length > 0 || withoutData.length > 0) && (
+          <div className="parking-coverage-legend">
+            <i aria-hidden="true" /> Pocos datos: conviene confirmar en el lugar.
+          </div>
+        )}
+      </section>
 
       <p className="airports-source parking-source">
         Datos del Gobierno de la Ciudad (Buenos Aires Data):{' '}

@@ -14,8 +14,7 @@ function currentTheme() {
 export function useTheme() {
   const [theme, setTheme] = useState(currentTheme)
 
-  const toggle = useCallback(() => {
-    const next = currentTheme() === 'dark' ? 'light' : 'dark'
+  const choose = useCallback((next) => {
     document.documentElement.dataset.theme = next
     try {
       window.localStorage.setItem(THEME_KEY, next)
@@ -25,5 +24,7 @@ export function useTheme() {
     setTheme(next)
   }, [])
 
-  return { theme, toggle }
+  const toggle = useCallback(() => choose(currentTheme() === 'dark' ? 'light' : 'dark'), [choose])
+
+  return { theme, toggle, choose }
 }
