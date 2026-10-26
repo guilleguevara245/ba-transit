@@ -1,5 +1,6 @@
 import ModeIcon from '../components/ModeIcon.jsx'
-import { CircleMarker, MapContainer, TileLayer, Tooltip } from 'react-leaflet'
+import { MapContainer, Marker, TileLayer, Tooltip } from 'react-leaflet'
+import { badgeIcon } from '../utils/mapIcons.js'
 import MapCard, { MapCardIcon } from '../components/MapCard.jsx'
 import BackButton from '../components/BackButton.jsx'
 import { AIRPORTS, FLIGHTS_URL } from '../data/airports.js'
@@ -89,13 +90,12 @@ export default function AirportsPage() {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         {AIRPORTS.map((airport) => (
-          <CircleMarker
+          <Marker
             key={airport.code}
-            center={[airport.latitude, airport.longitude]}
-            radius={10}
-            pathOptions={{ color: '#17171a', fillColor: '#f4c11b', fillOpacity: 1, weight: 2 }}
+            position={[airport.latitude, airport.longitude]}
+            icon={badgeIcon('plane', { bg: '#f4c11b', fg: '#17171a', border: '#17171a', size: 30 })}
           >
-            <Tooltip permanent direction="right" offset={[10, 0]} className="airport-map-label">
+            <Tooltip permanent direction="right" offset={[6, 0]} className="airport-map-label">
               <strong>{airport.code}</strong> {airport.name}
             </Tooltip>
             <MapCard
@@ -120,7 +120,7 @@ export default function AirportsPage() {
                 </div>
               </div>
             </MapCard>
-          </CircleMarker>
+          </Marker>
         ))}
       </MapContainer>
 

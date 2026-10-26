@@ -9,6 +9,17 @@ export function stationLabel(name) {
 }
 
 /** Nivel de disponibilidad de bicis para colorear el mapa. */
+/**
+ * Como se dibuja cada estado en el mapa: una bici con el color del estado
+ * (verde con bicis, amarillo con pocas, rojo sin bicis, gris fuera de servicio).
+ */
+export const AVAILABILITY_BADGES = {
+  ok: { glyph: 'bike', bg: '#2f8a3c', fg: '#ffffff', border: '#ffffff' },
+  low: { glyph: 'bike', bg: '#f4c11b', fg: '#17171a', border: '#17171a' },
+  empty: { glyph: 'bike', bg: '#c23b34', fg: '#ffffff', border: '#ffffff' },
+  off: { glyph: 'bike', bg: '#a3a097', fg: '#ffffff', border: '#ffffff' },
+}
+
 export function availability(station) {
   if (!station.renting) return { key: 'off', label: 'Fuera de servicio', color: '#a3a097' }
   if (station.bikes === 0) return { key: 'empty', label: 'Sin bicis', color: '#c23b34' }

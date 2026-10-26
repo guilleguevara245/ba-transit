@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react'
-import { CircleMarker, MapContainer, Polyline, TileLayer, useMap } from 'react-leaflet'
+import { CircleMarker, MapContainer, Marker, Polyline, TileLayer, useMap } from 'react-leaflet'
+import { badgeIcon } from '../utils/mapIcons.js'
 import MapCard from './MapCard.jsx'
 import { parseBusShortName, stopName } from '../utils/busNames.js'
 
@@ -74,11 +75,10 @@ export default function BusRouteMap({ route, directionIndex, className, vehicles
       )}
 
       {vehicles.map((v) => (
-        <CircleMarker
+        <Marker
           key={v.id}
-          center={[v.latitude, v.longitude]}
-          radius={8}
-          pathOptions={{ color: '#17171a', weight: 2, fillColor: '#f4c11b', fillOpacity: 1 }}
+          position={[v.latitude, v.longitude]}
+          icon={badgeIcon('bus', { bg: '#f4c11b', fg: '#17171a', border: '#17171a', shape: 'square', size: 28 })}
         >
           <MapCard
             badge={busBadge}
@@ -91,7 +91,7 @@ export default function BusRouteMap({ route, directionIndex, className, vehicles
               .filter(Boolean)
               .join(' · ')}
           />
-        </CircleMarker>
+        </Marker>
       ))}
 
       <FitToRoute positions={positions} />

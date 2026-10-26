@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { CircleMarker, MapContainer, TileLayer } from 'react-leaflet'
+import { CircleMarker, MapContainer, Marker, TileLayer, useMapEvents } from 'react-leaflet'
+import { badgeIcon } from '../utils/mapIcons.js'
 import Chevrons from './Chevrons.jsx'
 import MapCard from './MapCard.jsx'
 import { useApi } from '../hooks/useApi.js'
@@ -8,6 +9,19 @@ import { formatRelativeTime } from '../utils/format.js'
 import Skeleton from './Skeleton.jsx'
 
 const REFRESH_MS = 30_000
+const ZOOM = 11
+// Son miles: con el mapa lejos van como puntos en un canvas (livianos); desde
+// este zoom, con el dibujo de un colectivo, y solo los que estan a la vista.
+const ICON_ZOOM = 14
+const BUS_BADGE = { bg: '#f4c11b', fg: '#17171a', border: '#17171a', shape: 'square', size: 24 }
+
+function ViewTracker({ onChange }) {
+  const map = useMapEvents({
+    zoomend: () => onChange({ zoom: map.getZoom(), bounds: map.getBounds().pad(0.2) }),
+    moveend: () => onChange({ zoom: map.getZoom(), bounds: map.getBounds().pad(0.2) }),
+  })
+  return null
+}
 
 /**
  * Mapa con todos los colectivos que se estan moviendo ahora. Son miles
@@ -19,6 +33,8 @@ export default function LiveBusesMap({ onSelectRoute }) {
   const { data, loading } = useApi('/api/v1/colectivos/vivo', { refreshMs: REFRESH_MS })
   const now = useNow()
   const [selected, setSelected] = useState(null)
+  const [view, setView] = useState({ zoom: ZOOM, bounds: null })
+  const showIcons = view.zoom >= ICON_ZOOM && view.bounds
 
   if (loading) return <Skeleton variant="map" label="Cargando colectivos en vivo…" />
   if (!data?.available) return null
@@ -34,20 +50,34 @@ export default function LiveBusesMap({ onSelectRoute }) {
           {data.updatedAt && ` · actualizado ${formatRelativeTime(data.updatedAt, now)}`}
         </span>
       </div>
-      <MapContainer className="live-buses-map" center={[-34.62, -58.45]} zoom={11} scrollWheelZoom preferCanvas>
+      <MapContainer className="live-buses-map" center={[-34.62, -58.45]} zoom={ZOOM} scrollWheelZoom preferCanvas>
         <TileLayer
           url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
-        {data.buses.map((bus, index) => (
-          <CircleMarker
-            key={bus.id || index}
-            center={[bus.latitude, bus.longitude]}
-            radius={3.5}
-            pathOptions={{ color: '#17171a', weight: 1, fillColor: '#f4c11b', fillOpacity: 0.95 }}
-            eventHandlers={{ click: () => setSelected(bus) }}
-          />
-        ))}
+        <ViewTracker onChange={setView} />
+        {data.buses.map((bus, index) => {
+          if (showIcons) {
+            if (!view.bounds.contains([bus.latitude, bus.longitude])) return null
+            return (
+              <Marker
+                key={bus.id || index}
+                position={[bus.latitude, bus.longitude]}
+                icon={badgeIcon('bus', { ...BUS_BADGE, active: selected?.id === bus.id })}
+                eventHandlers={{ click: () => setSelected(bus) }}
+              />
+            )
+          }
+          return (
+            <CircleMarker
+              key={bus.id || index}
+              center={[bus.latitude, bus.longitude]}
+              radius={3.5}
+              pathOptions={{ color: '#17171a', weight: 1, fillColor: '#f4c11b', fillOpacity: 0.95 }}
+              eventHandlers={{ click: () => setSelected(bus) }}
+            />
+          )
+        })}
         {selected && (
           <MapCard
             key={selected.id}
@@ -67,7 +97,10 @@ export default function LiveBusesMap({ onSelectRoute }) {
           />
         )}
       </MapContainer>
-      <p className="live-buses-hint">Tocá un colectivo para ver su línea y su recorrido.</p>
+      <p className="live-buses-hint">
+        Tocá un colectivo para ver su línea y su recorrido.
+        {!showIcons && ' Acercá el mapa para verlos con su dibujo.'}
+      </p>
     </section>
   )
 }

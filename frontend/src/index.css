@@ -300,3 +300,57 @@ body {
   font-size: 12px;
   color: var(--text-faint);
 }
+
+/* ---- Distintivos de los mapas (utils/mapIcons.js) ---- */
+
+.map-badge-icon {
+  background: none;
+  border: none;
+}
+
+.map-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border: 1.5px solid transparent;
+  box-sizing: border-box;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+.map-badge-circle {
+  border-radius: 50%;
+}
+
+.map-badge-square {
+  border-radius: 5px;
+}
+
+.map-badge svg {
+  width: 78%;
+  height: 78%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.map-badge-filled svg {
+  fill: currentColor;
+  stroke: none;
+}
+
+.map-badge-icon.active .map-badge {
+  box-shadow: 0 0 0 3px rgba(244, 193, 27, 0.55), 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+/* En las referencias del mapa, el mismo distintivo en chico. */
+.legend-badge {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  margin-right: 6px;
+  vertical-align: -5px;
+}

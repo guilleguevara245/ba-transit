@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { divIcon } from 'leaflet'
+import MapBadge from '../components/MapBadge.jsx'
+import { GLYPHS, badgeIcon } from '../utils/mapIcons.js'
 import { CircleMarker, MapContainer, Marker, TileLayer, useMap, useMapEvents } from 'react-leaflet'
 import MapCard, { MapCardIcon } from '../components/MapCard.jsx'
 import BackButton from '../components/BackButton.jsx'
@@ -15,19 +17,28 @@ import './ParkingPage.css'
 
 const CENTER = [-34.612, -58.43]
 const ZOOM = 13
-const PARKING_ICON = 'M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm5 14V7h3.5a3 3 0 0 1 0 6H10'
-const MOTO_ICON = 'M5 17a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm14 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM5 14h4l3-5h4l3 5M14 6h3l-1 3'
+// Distintivo de cada capa: garaje (casa con porton), playa (la P de los
+// carteles), cochera para motos (moto bajo techo) y moto en la calle.
+const BADGES = {
+  car: { glyph: 'garage', bg: '#f4c11b', fg: '#17171a', border: '#17171a', shape: 'circle' },
+  lot: { glyph: 'lot', bg: '#f4c11b', fg: '#17171a', border: '#17171a', shape: 'square' },
+  garage: { glyph: 'motoGarage', bg: '#17171a', fg: '#f4c11b', border: '#f4c11b', shape: 'square' },
+  street: { glyph: 'moto', bg: '#17171a', fg: '#f4c11b', border: '#f4c11b', shape: 'circle' },
+}
+const SIZES = { car: 22, lot: 26, garage: 24, street: 22 }
+const iconFor = (layer, active) => badgeIcon(BADGES[layer].glyph, { ...BADGES[layer], size: SIZES[layer], active })
 
-const pinIcon = (kind, letter, active) =>
-  divIcon({
-    className: `parking-pin parking-pin-${kind}${active ? ' active' : ''}`,
-    html: `<span>${letter}</span>`,
-    iconSize: active ? [26, 26] : [20, 20],
-    iconAnchor: active ? [13, 13] : [10, 10],
-    popupAnchor: [0, -10],
+// Los garajes son miles: con el mapa lejos van como puntos (canvas, livianos);
+// desde este zoom, con su icono, y solo los que estan a la vista.
+const GARAGE_ICON_ZOOM = 15
+
+function ViewTracker({ onChange }) {
+  const map = useMapEvents({
+    zoomend: () => onChange({ zoom: map.getZoom(), bounds: map.getBounds().pad(0.2) }),
+    moveend: () => onChange({ zoom: map.getZoom(), bounds: map.getBounds().pad(0.2) }),
   })
-
-const SWATCH_LETTER = { lot: 'P', garage: 'M' }
+  return null
+}
 
 const pointIcon = divIcon({ className: 'parking-here', html: '<span></span>', iconSize: [18, 18], iconAnchor: [9, 9] })
 
@@ -68,6 +79,7 @@ export default function ParkingPage() {
   const [selectedId, setSelectedId] = useState(null)
   const [locating, setLocating] = useState(false)
   const [locateError, setLocateError] = useState(null)
+  const [view, setView] = useState({ zoom: ZOOM, bounds: null })
 
   const visible = layer === 'all' ? places : places.filter((p) => p.layer === layer)
   const nearest = nearestPlaces(visible, point)
@@ -159,9 +171,7 @@ export default function ParkingPage() {
                   className={p.id === selectedId ? 'ecobici-result active' : 'ecobici-result'}
                   onClick={() => setSelectedId(p.id)}
                 >
-                  <span className={`parking-swatch parking-swatch-${p.layer}`} aria-hidden="true">
-                    {SWATCH_LETTER[p.layer]}
-                  </span>
+                  <MapBadge {...BADGES[p.layer]} className="parking-list-badge" />
                   <span className="ecobici-result-name">
                     {p.title}
                     <small>{placeDetail(p)}</small>
@@ -176,19 +186,19 @@ export default function ParkingPage() {
 
       <div className="ecobici-legend" aria-label="Referencias">
         <span>
-          <i className="parking-swatch parking-swatch-car" />
+          <MapBadge {...BADGES.car} />
           Garaje
         </span>
         <span>
-          <i className="parking-swatch parking-swatch-lot">P</i>
+          <MapBadge {...BADGES.lot} />
           Playa de la Ciudad
         </span>
         <span>
-          <i className="parking-swatch parking-swatch-garage">M</i>
+          <MapBadge {...BADGES.garage} />
           Cochera para motos
         </span>
         <span>
-          <i className="parking-swatch parking-swatch-street" />
+          <MapBadge {...BADGES.street} />
           Motos en la calle
         </span>
       </div>
@@ -199,12 +209,17 @@ export default function ParkingPage() {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         <PickPoint onPick={setPoint} />
+        <ViewTracker onChange={setView} />
         {point && <Marker position={[point.latitude, point.longitude]} icon={pointIcon} interactive={false} />}
         {visible.map((p) => {
           const active = p.id === selectedId
           const select = { click: () => setSelectedId(p.id) }
           if (p.layer === 'car') {
             // Son miles: sin tarjeta propia; se abre una sola, compartida (abajo).
+            if (view.zoom >= GARAGE_ICON_ZOOM) {
+              if (!active && !view.bounds?.contains([p.lat, p.lon])) return null
+              return <Marker key={p.id} position={[p.lat, p.lon]} icon={iconFor('car', active)} eventHandlers={select} />
+            }
             return (
               <CircleMarker
                 key={p.id}
@@ -217,9 +232,9 @@ export default function ParkingPage() {
           }
           if (p.layer === 'lot') {
             return (
-              <Marker key={p.id} position={[p.lat, p.lon]} icon={pinIcon('lot', 'P', active)} eventHandlers={select}>
+              <Marker key={p.id} position={[p.lat, p.lon]} icon={iconFor('lot', active)} eventHandlers={select}>
                 <MapCard
-                  badge={<MapCardIcon path={PARKING_ICON} />}
+                  badge={<MapCardIcon path={GLYPHS.lot} />}
                   kicker={p.underground ? 'Playa subterránea de la Ciudad' : 'Playa de la Ciudad'}
                   title={p.name}
                   subtitle={p.address !== p.name ? p.address : null}
@@ -231,8 +246,8 @@ export default function ParkingPage() {
           }
           if (p.layer === 'garage') {
             return (
-              <Marker key={p.id} position={[p.lat, p.lon]} icon={pinIcon('moto', 'M', active)} eventHandlers={select}>
-                <MapCard badge={<MapCardIcon path={MOTO_ICON} />} kicker="Cochera para motos" title={p.address}>
+              <Marker key={p.id} position={[p.lat, p.lon]} icon={iconFor('garage', active)} eventHandlers={select}>
+                <MapCard badge={<MapCardIcon path={GLYPHS.motoGarage} />} kicker="Cochera para motos" title={p.address}>
                   <div className="map-card-stats">
                     <div className="map-card-stat">
                       <strong>{p.capacity}</strong>
@@ -252,17 +267,11 @@ export default function ParkingPage() {
             )
           }
           return (
-            <CircleMarker
-              key={p.id}
-              center={[p.lat, p.lon]}
-              radius={active ? 8 : 5}
-              pathOptions={{ color: '#f4c11b', weight: 2, fillColor: '#17171a', fillOpacity: 1 }}
-              eventHandlers={select}
-            >
-              <MapCard badge={<MapCardIcon path={MOTO_ICON} />} kicker="Motos en la calle" title={p.street} subtitle={placeDetail(p)}>
+            <Marker key={p.id} position={[p.lat, p.lon]} icon={iconFor('street', active)} eventHandlers={select}>
+              <MapCard badge={<MapCardIcon path={GLYPHS.moto} />} kicker="Motos en la calle" title={p.street} subtitle={placeDetail(p)}>
                 {p.barrio && <div className="station-popup-opened">{p.barrio}</div>}
               </MapCard>
-            </CircleMarker>
+            </Marker>
           )
         })}
         {selected?.layer === 'car' && (
@@ -270,7 +279,7 @@ export default function ParkingPage() {
             key={selected.id}
             position={[selected.lat, selected.lon]}
             onClose={() => setSelectedId(null)}
-            badge={<MapCardIcon path={PARKING_ICON} />}
+            badge={<MapCardIcon path={GLYPHS.garage} />}
             kicker="Garaje"
             title={selected.name || selected.address}
             subtitle={selected.name ? selected.address : null}

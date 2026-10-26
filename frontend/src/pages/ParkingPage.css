@@ -47,89 +47,12 @@
   margin-top: 6px;
 }
 
-/* Muestra de color de cada capa (lista y referencias). */
-.parking-swatch {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+/* Distintivo de cada lugar en la lista de los mas cercanos. */
+.parking-list-badge {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
   flex-shrink: 0;
-  font-style: normal;
-}
-
-.ecobici-legend .parking-swatch {
-  margin-right: 6px;
-  vertical-align: -3px;
-}
-
-.parking-swatch-lot,
-.parking-swatch-garage {
-  width: 16px;
-  height: 16px;
-  border-radius: 3px;
-  background: var(--yellow);
-  color: #17171a;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 700;
-  font-size: 12px;
-  line-height: 1;
-}
-
-.parking-swatch-garage {
-  background: var(--ink);
-  color: var(--yellow);
-  border: 1px solid var(--yellow);
-  box-sizing: border-box;
-}
-
-.parking-swatch-car {
-  width: 9px;
-  height: 9px;
-  margin: 0 3px;
-  border-radius: 50%;
-  background: var(--yellow);
-  border: 1px solid #17171a;
-  box-sizing: content-box;
-}
-
-.parking-swatch-street {
-  width: 10px;
-  height: 10px;
-  margin: 0 3px;
-  border-radius: 50%;
-  background: var(--ink);
-  border: 2px solid var(--yellow);
-  box-sizing: content-box;
-}
-
-/* Marcadores: playa de la Ciudad (cuadro amarillo con P, como el icono de
-   la seccion) y cochera para motos (cuadro oscuro con M). */
-.parking-pin span {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  border-radius: 4px;
-  background: var(--yellow);
-  border: 1.5px solid #17171a;
-  color: #17171a;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 700;
-  font-size: 13px;
-  line-height: 1;
-  box-sizing: border-box;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-}
-
-.parking-pin-moto span {
-  background: #17171a;
-  border-color: #f4c11b;
-  color: #f4c11b;
-}
-
-.parking-pin.active span {
-  font-size: 16px;
-  border-width: 2px;
 }
 
 /* Punto marcado (tu ubicacion o donde tocaste el mapa). */
@@ -151,23 +74,4 @@
 /* Cuatro filtros: en celular pasan a dos renglones. */
 .parking-toolbar .map-filters {
   flex-wrap: wrap;
-}
-
-/* Las referencias usan las mismas muestras que la lista (le gana al
-   circulo de 10 px de las referencias de EcoBici). */
-.ecobici-legend i.parking-swatch-lot,
-.ecobici-legend i.parking-swatch-garage {
-  width: 16px;
-  height: 16px;
-  border-radius: 3px;
-}
-
-.ecobici-legend i.parking-swatch-car {
-  width: 9px;
-  height: 9px;
-}
-
-.ecobici-legend i.parking-swatch-street {
-  width: 10px;
-  height: 10px;
 }

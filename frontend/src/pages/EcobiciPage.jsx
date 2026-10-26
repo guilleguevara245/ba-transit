@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { CircleMarker, MapContainer, TileLayer, useMap } from 'react-leaflet'
+import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet'
 import MapCard, { MapCardIcon } from '../components/MapCard.jsx'
 import BackButton from '../components/BackButton.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
@@ -8,7 +8,9 @@ import Skeleton from '../components/Skeleton.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { useNow } from '../hooks/useNow.js'
 import { formatRelativeTime } from '../utils/format.js'
-import { availability, normalizeText, stationLabel } from '../utils/ecobici.js'
+import { AVAILABILITY_BADGES, availability, normalizeText, stationLabel } from '../utils/ecobici.js'
+import { badgeIcon } from '../utils/mapIcons.js'
+import MapBadge from '../components/MapBadge.jsx'
 import './ModePage.css'
 import './EcobiciPage.css'
 
@@ -106,7 +108,7 @@ export default function EcobiciPage() {
                       className={s.id === selectedId ? 'ecobici-result active' : 'ecobici-result'}
                       onClick={() => setSelectedId(s.id)}
                     >
-                      <span className="ecobici-dot" style={{ background: level.color }} />
+                      <MapBadge {...AVAILABILITY_BADGES[level.key]} />
                       <span className="ecobici-result-name">
                         {stationLabel(s.name)}
                         {s.address && <small>{s.address}</small>}
@@ -127,7 +129,7 @@ export default function EcobiciPage() {
               const level = availability(sample)
               return (
                 <span key={key}>
-                  <i style={{ background: level.color }} />
+                  <MapBadge {...AVAILABILITY_BADGES[key]} />
                   {level.label}
                 </span>
               )
@@ -141,37 +143,41 @@ export default function EcobiciPage() {
             />
             {stations.map((s) => {
               const level = availability(s)
+              const badge = AVAILABILITY_BADGES[level.key]
+              const active = s.id === selectedId
+              const card = (
+                <MapCard
+                  badge={<MapCardIcon path={ECOBICI_ICON} />}
+                  kicker="Estación EcoBici"
+                  title={stationLabel(s.name)}
+                >
+                  <div className="map-card-status" style={{ color: level.color }}>
+                    <i style={{ background: level.color }} />
+                    {level.label}
+                  </div>
+                  {s.renting && (
+                    <div className="map-card-stats">
+                      <div className="map-card-stat">
+                        <strong>{s.bikes}</strong>
+                        <span>{s.bikes === 1 ? 'bici disponible' : 'bicis disponibles'}</span>
+                      </div>
+                      <div className="map-card-stat">
+                        <strong>{s.docks}</strong>
+                        <span>{s.docks === 1 ? 'anclaje libre' : 'anclajes libres'}</span>
+                      </div>
+                    </div>
+                  )}
+                </MapCard>
+              )
               return (
-                <CircleMarker
+                <Marker
                   key={s.id}
-                  center={[s.latitude, s.longitude]}
-                  radius={s.id === selectedId ? 9 : 5}
-                  pathOptions={{ color: '#fff', weight: 1, fillColor: level.color, fillOpacity: 0.95 }}
+                  position={[s.latitude, s.longitude]}
+                  icon={badgeIcon(badge.glyph, { ...badge, size: 22, active })}
                   eventHandlers={{ click: () => setSelectedId(s.id) }}
                 >
-                  <MapCard
-                    badge={<MapCardIcon path={ECOBICI_ICON} />}
-                    kicker="Estación EcoBici"
-                    title={stationLabel(s.name)}
-                  >
-                    <div className="map-card-status" style={{ color: level.color }}>
-                      <i style={{ background: level.color }} />
-                      {level.label}
-                    </div>
-                    {s.renting && (
-                      <div className="map-card-stats">
-                        <div className="map-card-stat">
-                          <strong>{s.bikes}</strong>
-                          <span>{s.bikes === 1 ? 'bici disponible' : 'bicis disponibles'}</span>
-                        </div>
-                        <div className="map-card-stat">
-                          <strong>{s.docks}</strong>
-                          <span>{s.docks === 1 ? 'anclaje libre' : 'anclajes libres'}</span>
-                        </div>
-                      </div>
-                    )}
-                  </MapCard>
-                </CircleMarker>
+                  {card}
+                </Marker>
               )
             })}
             <FlyTo station={selected} />
