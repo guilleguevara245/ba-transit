@@ -65,8 +65,15 @@ public class SourceHealth {
                         Instant lastFailure, String lastError) {
     }
 
-    private record Entry(Instant lastSuccess, Instant lastFailure, String lastError) {
+    /** failures: fallas seguidas desde el ultimo exito. */
+    private record Entry(Instant lastSuccess, Instant lastFailure, String lastError, int failures) {
     }
+
+    /**
+     * Fallas seguidas para considerar caida una fuente que ya respondio: una
+     * sola (un timeout aislado) no alcanza, porque se reintenta enseguida.
+     */
+    static final int FAILURES_FOR_ERROR = 2;
 
     private final Clock clock;
     private final Map<Source, Entry> entries = new ConcurrentHashMap<>();
@@ -81,15 +88,15 @@ public class SourceHealth {
 
     public void ok(Source source) {
         Instant now = clock.instant();
-        entries.merge(source, new Entry(now, null, null),
-                (old, fresh) -> new Entry(now, old.lastFailure(), old.lastError()));
+        entries.merge(source, new Entry(now, null, null, 0),
+                (old, fresh) -> new Entry(now, old.lastFailure(), old.lastError(), 0));
     }
 
     /** reason: motivo corto y sin datos sensibles ("HTTP 503", "SocketTimeoutException"). */
     public void fail(Source source, String reason) {
         Instant now = clock.instant();
-        entries.merge(source, new Entry(null, now, reason),
-                (old, fresh) -> new Entry(old.lastSuccess(), now, reason));
+        entries.merge(source, new Entry(null, now, reason, 1),
+                (old, fresh) -> new Entry(old.lastSuccess(), now, reason, old.failures() + 1));
     }
 
     public List<Check> checks() {
@@ -100,7 +107,7 @@ public class SourceHealth {
             Status status;
             if (e == null) {
                 status = Status.SIN_DATOS;
-            } else if (e.lastFailure() != null && (e.lastSuccess() == null || e.lastFailure().isAfter(e.lastSuccess()))) {
+            } else if (e.failures() > 0 && (e.lastSuccess() == null || e.failures() >= FAILURES_FOR_ERROR)) {
                 status = Status.ERROR;
             } else {
                 status = Status.OK;

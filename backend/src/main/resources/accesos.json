@@ -1,5 +1,5 @@
 {
-  "nota": "Puntos donde se mide el transito de cada acceso (TomTom toma el tramo de ruta mas cercano a cada punto). Si en el mapa de /accesos un tramo aparece fuera de la autopista, corregir aca su latitud y longitud.",
+  "nota": "Puntos donde se mide el transito de cada acceso (TomTom toma el tramo de ruta mas cercano a cada punto). Las manos son un punto sobre cada calzada, tomado del trazado de OpenStreetMap. Si en el mapa de /accesos un tramo aparece fuera de la autopista, corregir aca su latitud y longitud.",
   "accesos": [
     {
       "id": "la-plata",
@@ -8,8 +8,16 @@
       "conecta": "CABA ↔ Avellaneda, Quilmes, Berazategui, La Plata",
       "concesionaria": "AUBASA",
       "tramos": [
-        { "nombre": "Avellaneda – Quilmes", "lat": -34.7005, "lon": -58.2775 },
-        { "nombre": "Berazategui – Hudson", "lat": -34.79255, "lon": -58.16310 }
+        { "nombre": "Avellaneda – Quilmes", "lat": -34.7005, "lon": -58.2775,
+          "manos": [
+            { "hacia": "CABA", "lat": -34.699564, "lon": -58.275776 },
+            { "hacia": "Provincia", "lat": -34.699644, "lon": -58.27591 }
+          ] },
+        { "nombre": "Berazategui – Hudson", "lat": -34.79255, "lon": -58.16310,
+          "manos": [
+            { "hacia": "CABA", "lat": -34.782192, "lon": -58.152615 },
+            { "hacia": "Provincia", "lat": -34.782097, "lon": -58.152948 }
+          ] }
       ]
     },
     {
@@ -19,8 +27,16 @@
       "conecta": "CABA ↔ Vicente López, San Isidro, Tigre, Pilar, Escobar",
       "concesionaria": "Autopistas del Sol",
       "tramos": [
-        { "nombre": "General Paz – Márquez", "lat": -34.5180, "lon": -58.5100 },
-        { "nombre": "Ramal Pilar", "lat": -34.4500, "lon": -58.7700 }
+        { "nombre": "General Paz – Márquez", "lat": -34.5180, "lon": -58.5100,
+          "manos": [
+            { "hacia": "CABA", "lat": -34.520466, "lon": -58.51364 },
+            { "hacia": "Provincia", "lat": -34.520341, "lon": -58.513432 }
+          ] },
+        { "nombre": "Ramal Pilar", "lat": -34.4500, "lon": -58.7700,
+          "manos": [
+            { "hacia": "CABA", "lat": -34.443393, "lon": -58.768377 },
+            { "hacia": "Provincia", "lat": -34.443264, "lon": -58.768237 }
+          ] }
       ]
     },
     {
@@ -30,8 +46,16 @@
       "conecta": "CABA ↔ Haedo, Morón, Moreno, Luján",
       "concesionaria": "Grupo Concesionario del Oeste",
       "tramos": [
-        { "nombre": "General Paz – Morón", "lat": -34.63280, "lon": -58.59500 },
-        { "nombre": "Ituzaingó – Moreno", "lat": -34.628277, "lon": -58.702412 }
+        { "nombre": "General Paz – Morón", "lat": -34.63280, "lon": -58.59500,
+          "manos": [
+            { "hacia": "CABA", "lat": -34.632323, "lon": -58.594441 },
+            { "hacia": "Provincia", "lat": -34.632103, "lon": -58.594516 }
+          ] },
+        { "nombre": "Ituzaingó – Moreno", "lat": -34.628277, "lon": -58.702412,
+          "manos": [
+            { "hacia": "CABA", "lat": -34.628294, "lon": -58.702413 },
+            { "hacia": "Provincia", "lat": -34.628078, "lon": -58.702363 }
+          ] }
       ]
     },
     {
@@ -41,8 +65,16 @@
       "conecta": "CABA ↔ Aeropuerto de Ezeiza, Cañuelas",
       "concesionaria": "Corredores Viales",
       "tramos": [
-        { "nombre": "Autopista Riccheri", "lat": -34.72255, "lon": -58.51310 },
-        { "nombre": "Autopista Ezeiza–Cañuelas", "lat": -34.8700, "lon": -58.5600 }
+        { "nombre": "Autopista Riccheri", "lat": -34.72255, "lon": -58.51310,
+          "manos": [
+            { "hacia": "CABA", "lat": -34.722456, "lon": -58.51334 },
+            { "hacia": "Provincia", "lat": -34.722406, "lon": -58.513468 }
+          ] },
+        { "nombre": "Autopista Ezeiza–Cañuelas", "lat": -34.8700, "lon": -58.5600,
+          "manos": [
+            { "hacia": "CABA", "lat": -34.861488, "lon": -58.56606 },
+            { "hacia": "Provincia", "lat": -34.861411, "lon": -58.566243 }
+          ] }
       ]
     }
   ]

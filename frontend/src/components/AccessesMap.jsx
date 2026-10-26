@@ -26,7 +26,13 @@ export default function AccessesMap({ accesses, className }) {
     () =>
       accesses.flatMap((access) =>
         access.segments
-          .filter((segment) => segment.geometry.length > 1)
+          // Con las dos manos medidas se dibuja cada una con su estado.
+          .flatMap((segment) =>
+            segment.directions?.length
+              ? segment.directions.map((d) => ({ ...d, name: segment.name }))
+              : [segment],
+          )
+          .filter((segment) => segment.geometry?.length > 1)
           .map((segment) => ({ ...segment, access })),
       ),
     [accesses],
@@ -41,11 +47,11 @@ export default function AccessesMap({ accesses, className }) {
       />
       {segments.map((segment) => (
         <Polyline
-          key={`${segment.access.id}-${segment.name}`}
+          key={`${segment.access.id}-${segment.name}-${segment.towards ?? ''}`}
           positions={segment.geometry}
           pathOptions={{ color: trafficStatus(segment.status).color, weight: 7, opacity: 0.85 }}
         >
-          <MapCard badge={<MapCardIcon path={ACCESS_ICON} />} kicker={segment.access.name} title={segment.name}>
+          <MapCard badge={<MapCardIcon path={ACCESS_ICON} />} kicker={segment.access.name} title={segment.name} subtitle={segment.towards ? `Hacia ${segment.towards}` : undefined}>
             <div className="map-card-status" style={{ '--status-color': trafficStatus(segment.status).color }}>
               <i />
               {trafficStatus(segment.status).label}

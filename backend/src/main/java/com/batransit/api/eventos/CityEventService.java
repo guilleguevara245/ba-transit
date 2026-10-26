@@ -55,10 +55,28 @@ public class CityEventService {
         this.client = client;
     }
 
-    @Scheduled(initialDelay = 30_000, fixedDelay = 15 * 60 * 1000L)
-    public void refresh() {
-        if (!client.isConfigured()) {
+    /** Cada cuanto se actualiza si todo anda, y cuanto se espera para reintentar si fallo. */
+    private static final Duration REFRESH_EVERY = Duration.ofMinutes(15);
+    private static final Duration RETRY_AFTER = Duration.ofMinutes(2);
+    private volatile Instant nextRefresh = Instant.EPOCH;
+
+    /**
+     * Se revisa cada minuto, pero solo se consulta cuando toca: cada 15
+     * minutos, o a los 2 si la consulta anterior fallo (la API a veces no
+     * responde, sobre todo justo despues de un reinicio).
+     */
+    @Scheduled(initialDelay = 30_000, fixedDelay = 60_000)
+    public void tick() {
+        if (Instant.now().isBefore(nextRefresh)) {
             return;
+        }
+        nextRefresh = Instant.now().plus(refresh() ? REFRESH_EVERY : RETRY_AFTER);
+    }
+
+    /** true si la API respondio. */
+    public boolean refresh() {
+        if (!client.isConfigured()) {
+            return true;
         }
         try {
             Instant now = Instant.now();
@@ -82,12 +100,14 @@ public class CityEventService {
                 apiUpdatedAt = now;
                 log.info("Eventos API Transporte: {} relevantes", fromApi.size());
                 health.ok(SourceHealth.Source.EVENTOS);
-            } else {
-                health.fail(SourceHealth.Source.EVENTOS, "sin respuesta");
+                return true;
             }
+            health.fail(SourceHealth.Source.EVENTOS, "sin respuesta");
+            return false;
         } catch (Exception e) {
             health.fail(SourceHealth.Source.EVENTOS, e.getClass().getSimpleName());
             log.warn("No se pudieron actualizar los eventos de transito ({})", e.getClass().getSimpleName());
+            return false;
         }
     }
 

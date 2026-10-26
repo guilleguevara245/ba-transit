@@ -124,3 +124,7 @@
     text-align: left;
   }
 }
+
+.status-item-retry {
+  color: var(--text-faint);
+}

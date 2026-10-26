@@ -145,6 +145,37 @@
   transition: width 0.4s ease;
 }
 
+.access-directions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 8px;
+}
+
+.access-direction-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.access-direction-status {
+  font-weight: 600;
+  color: color-mix(in srgb, var(--status-color) 70%, var(--text));
+}
+
+.access-direction .speed-bar {
+  margin: 5px 0 4px;
+}
+
+@media (max-width: 420px) {
+  .access-directions {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
 .access-segment-speed {
   font-size: 12px;
   color: var(--text-dim);

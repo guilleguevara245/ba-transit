@@ -67,6 +67,15 @@ function PickPoint({ onPick }) {
 // Cerca de un punto se buscan lugares hasta este zoom; despues el mapa se acerca al punto.
 const POINT_ZOOM = 16
 
+/** Al cambiar de filtro se cierra la tarjeta abierta (puede ser de un lugar que ya no se muestra). */
+function ClosePopupOnChange({ value }) {
+  const map = useMap()
+  useEffect(() => {
+    map.closePopup()
+  }, [map, value])
+  return null
+}
+
 function FlyToPoint({ point }) {
   const map = useMap()
   useEffect(() => {
@@ -162,7 +171,10 @@ export default function ParkingPage() {
               type="button"
               className={l.key === layer ? 'map-filter active' : 'map-filter'}
               aria-pressed={l.key === layer}
-              onClick={() => setLayer(l.key)}
+              onClick={() => {
+                setLayer(l.key)
+                setSelectedId(null)
+              }}
             >
               {l.label}
             </button>
@@ -310,7 +322,7 @@ export default function ParkingPage() {
             title={selected.title}
             subtitle={placeDetail(selected) || null}
           >
-            <div className="station-popup-opened">Dato de OpenStreetMap (no oficial)</div>
+            <div className="station-popup-opened">Cargado por usuarios de OpenStreetMap: puede estar desactualizado</div>
           </MapCard>
         )}
         {selected?.layer === 'car' && (
@@ -330,6 +342,7 @@ export default function ParkingPage() {
         )}
         <FlyToPoint point={point} />
         <FlyTo target={selected} />
+        <ClosePopupOnChange value={layer} />
       </MapContainer>
 
       <section className="panel parking-coverage" aria-label="Cobertura en el conurbano">

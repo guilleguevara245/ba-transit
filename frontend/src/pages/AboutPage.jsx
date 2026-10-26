@@ -86,7 +86,7 @@ const SOURCES = [
     what: 'Tránsito en los accesos',
     source: 'TomTom Traffic',
     url: 'https://www.tomtom.com/products/traffic-apis/',
-    detail: 'Velocidad actual y normal de cada tramo, medida cada 20 minutos.',
+    detail: 'Velocidad actual y normal de cada tramo, en cada mano (hacia CABA y hacia Provincia), medida cada 20 minutos.',
   },
   {
     what: 'Clima en los aeropuertos',

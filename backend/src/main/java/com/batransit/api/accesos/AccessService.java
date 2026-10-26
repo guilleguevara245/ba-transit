@@ -4,6 +4,8 @@ import com.batransit.api.accesos.AccessModels.AccessDefinition;
 import com.batransit.api.accesos.AccessModels.AccessReport;
 import com.batransit.api.accesos.AccessModels.AccessesResponse;
 import com.batransit.api.accesos.AccessModels.Definitions;
+import com.batransit.api.accesos.AccessModels.DirectionDefinition;
+import com.batransit.api.accesos.AccessModels.DirectionReport;
 import com.batransit.api.accesos.AccessModels.FlowData;
 import com.batransit.api.accesos.AccessModels.SegmentDefinition;
 import com.batransit.api.accesos.AccessModels.SegmentReport;
@@ -32,9 +34,10 @@ import java.util.Set;
 /**
  * Estado del transito en los accesos a la Ciudad.
  *
- * Se mide con TomTom en dos tramos por acceso. Para respetar el plan
- * gratuito (20.000 consultas por mes) el resultado se guarda CACHE_TTL:
- * como mucho 8 puntos x 72 veces por dia = 576 consultas diarias.
+ * Se mide con TomTom en dos tramos por acceso, cada uno en sus dos manos
+ * (hacia CABA y hacia Provincia). Para respetar el plan gratuito (2.500
+ * consultas por dia) el resultado se guarda CACHE_TTL: como mucho
+ * 16 puntos x 72 veces por dia = 1.152 consultas diarias.
  * Las consultas se hacen solo cuando alguien pide la pagina. Si un punto
  * cae fuera de la autopista se buscan puntos cercanos una sola vez (como
  * mucho 16 consultas por tramo) y se recuerda el que funciono.
@@ -113,6 +116,9 @@ public class AccessService {
     }
 
     private SegmentReport measure(SegmentDefinition segment) {
+        if (!segment.directions().isEmpty()) {
+            return measureDirections(segment);
+        }
         double[] point = resolvedPoints.getOrDefault(segment.name(),
                 new double[] {segment.lat(), segment.lon()});
         Optional<FlowData> flow = client.flowAt(point[0], point[1]);
@@ -134,6 +140,54 @@ public class AccessService {
                 (int) Math.round(data.freeFlowSpeed()),
                 !onHighway,
                 data.geometry());
+    }
+
+    /**
+     * Mide cada mano en su punto (puntos tomados del trazado de OpenStreetMap,
+     * sobre cada calzada) y resume el tramo con la mano mas complicada.
+     */
+    private SegmentReport measureDirections(SegmentDefinition segment) {
+        List<DirectionReport> directions = segment.directions().stream().map(this::measureDirection).toList();
+        DirectionReport worst = worst(directions);
+        if (worst == null) {
+            return new SegmentReport(segment.name(), TrafficStatus.SIN_DATOS, null, null, false, List.of(), directions);
+        }
+        return new SegmentReport(segment.name(), worst.status(), worst.currentSpeed(), worst.freeFlowSpeed(),
+                false, worst.geometry(), directions);
+    }
+
+    private DirectionReport measureDirection(DirectionDefinition direction) {
+        Optional<FlowData> flow = client.flowAt(direction.lat(), direction.lon());
+        if (flow.isEmpty() || !isHighway(flow.get())) {
+            return new DirectionReport(direction.towards(), TrafficStatus.SIN_DATOS, null, null, List.of());
+        }
+        FlowData data = flow.get();
+        return new DirectionReport(direction.towards(), classify(data),
+                (int) Math.round(data.currentSpeed()), (int) Math.round(data.freeFlowSpeed()), data.geometry());
+    }
+
+    /** La mano en peor estado (cortado, congestionado, demorado, fluido); null si ninguna tiene datos. */
+    static DirectionReport worst(List<DirectionReport> directions) {
+        DirectionReport worst = null;
+        for (DirectionReport d : directions) {
+            if (d.status() == TrafficStatus.SIN_DATOS) {
+                continue;
+            }
+            if (worst == null || severity(d.status()) > severity(worst.status())) {
+                worst = d;
+            }
+        }
+        return worst;
+    }
+
+    private static int severity(TrafficStatus status) {
+        return switch (status) {
+            case CORTADO -> 4;
+            case CONGESTIONADO -> 3;
+            case DEMORADO -> 2;
+            case FLUIDO -> 1;
+            case SIN_DATOS -> 0;
+        };
     }
 
     /**

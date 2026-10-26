@@ -57,6 +57,10 @@ class SourceHealthTest {
         health.ok(Source.FERROVIAS);
         assertEquals(Status.OK, check(health, Source.FERROVIAS).status());
 
+        // Una falla aislada despues de responder bien no la marca caida.
+        health.fail(Source.FERROVIAS, "SocketTimeoutException");
+        assertEquals(Status.OK, check(health, Source.FERROVIAS).status());
+
         health.fail(Source.FERROVIAS, "HTTP 503");
         Check failed = check(health, Source.FERROVIAS);
         assertEquals(Status.ERROR, failed.status());

@@ -28,8 +28,26 @@ public final class AccessModels {
             @JsonProperty("tramos") List<SegmentDefinition> segments) {
     }
 
+    /**
+     * Un tramo. lat/lon es un punto de referencia; si tiene "manos", se mide
+     * cada calzada por separado (TomTom devuelve una sola mano por punto).
+     */
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record SegmentDefinition(@JsonProperty("nombre") String name, double lat, double lon) {
+    public record SegmentDefinition(@JsonProperty("nombre") String name, double lat, double lon,
+                                    @JsonProperty("manos") List<DirectionDefinition> directions) {
+
+        public SegmentDefinition {
+            directions = directions == null ? List.of() : List.copyOf(directions);
+        }
+
+        public SegmentDefinition(String name, double lat, double lon) {
+            this(name, lat, lon, List.of());
+        }
+    }
+
+    /** Un punto sobre una de las calzadas; towards: "CABA" o "Provincia". */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record DirectionDefinition(@JsonProperty("hacia") String towards, double lat, double lon) {
     }
 
     // ---- Datos de TomTom ----
@@ -43,8 +61,21 @@ public final class AccessModels {
 
     public enum TrafficStatus { FLUIDO, DEMORADO, CONGESTIONADO, CORTADO, SIN_DATOS }
 
+    /**
+     * Estado del tramo. Si se miden las dos manos, status y velocidades son
+     * los de la mano mas complicada, y directions trae el detalle de cada una.
+     */
     public record SegmentReport(String name, TrafficStatus status, Integer currentSpeed, Integer freeFlowSpeed,
-                                boolean checkLocation, List<double[]> geometry) {
+                                boolean checkLocation, List<double[]> geometry, List<DirectionReport> directions) {
+
+        public SegmentReport(String name, TrafficStatus status, Integer currentSpeed, Integer freeFlowSpeed,
+                             boolean checkLocation, List<double[]> geometry) {
+            this(name, status, currentSpeed, freeFlowSpeed, checkLocation, geometry, List.of());
+        }
+    }
+
+    public record DirectionReport(String towards, TrafficStatus status, Integer currentSpeed, Integer freeFlowSpeed,
+                                  List<double[]> geometry) {
     }
 
     public record AccessReport(String id, String name, String road, String connects, String operator,

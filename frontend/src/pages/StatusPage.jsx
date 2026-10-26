@@ -4,7 +4,7 @@ import Skeleton from '../components/Skeleton.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { useNow } from '../hooks/useNow.js'
 import { formatRelativeTime } from '../utils/format.js'
-import { statusSummary, STATUS_LABELS } from '../utils/status.js'
+import { errorLabel, lastAttemptFailed, statusSummary, STATUS_LABELS } from '../utils/status.js'
 import '../components/Panels.css'
 import './StatusPage.css'
 
@@ -53,10 +53,16 @@ export default function StatusPage() {
                     <div className="status-item-detail">
                       <strong>{label.text}</strong>
                       {s.status === 'OK' && s.lastSuccess && <span>Respondió {formatRelativeTime(s.lastSuccess, now)}</span>}
+                      {lastAttemptFailed(s) && (
+                        <span className="status-item-retry">
+                          Un intento falló {formatRelativeTime(s.lastFailure, now)}
+                          {s.lastError && ` (${errorLabel(s.lastError)})`}; se reintenta solo
+                        </span>
+                      )}
                       {s.status === 'ERROR' && (
                         <span>
                           Falló {formatRelativeTime(s.lastFailure, now)}
-                          {s.lastError && ` (${s.lastError})`}
+                          {s.lastError && ` (${errorLabel(s.lastError)})`}
                           {s.lastSuccess && ` · último dato bueno ${formatRelativeTime(s.lastSuccess, now)}`}
                         </span>
                       )}

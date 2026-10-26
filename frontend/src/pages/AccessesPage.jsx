@@ -28,9 +28,47 @@ function StatusPill({ status }) {
   )
 }
 
+/** Una mano del tramo: hacia donde va, su estado y la barra de velocidad. */
+function DirectionRow({ direction }) {
+  const percent = speedPercent(direction)
+  const { label, color } = trafficStatus(direction.status)
+  return (
+    <div className="access-direction" style={{ '--status-color': color }}>
+      <div className="access-direction-head">
+        <span>Hacia {direction.towards}</span>
+        <span className="access-direction-status">{label}</span>
+      </div>
+      <div className="speed-bar" aria-hidden="true">
+        <span style={{ width: `${percent ?? 0}%`, background: color }} />
+      </div>
+      <div className="access-segment-speed">
+        {direction.currentSpeed != null
+          ? `${direction.currentSpeed} km/h · normal ${direction.freeFlowSpeed} km/h`
+          : 'Sin medición en este momento.'}
+      </div>
+    </div>
+  )
+}
+
 function SegmentRow({ segment, configured }) {
   const percent = speedPercent(segment)
   const { color } = trafficStatus(segment.status)
+
+  if (configured && segment.directions?.length) {
+    return (
+      <li className="access-segment">
+        <div className="access-segment-head">
+          <span className="access-segment-name">{segment.name}</span>
+          <StatusPill status={segment.status} />
+        </div>
+        <div className="access-directions">
+          {segment.directions.map((d) => (
+            <DirectionRow key={d.towards} direction={d} />
+          ))}
+        </div>
+      </li>
+    )
+  }
 
   return (
     <li className="access-segment">

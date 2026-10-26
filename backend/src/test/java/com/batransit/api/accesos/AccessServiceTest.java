@@ -2,6 +2,7 @@ package com.batransit.api.accesos;
 
 import com.batransit.api.accesos.AccessModels.AccessDefinition;
 import com.batransit.api.accesos.AccessModels.AccessesResponse;
+import com.batransit.api.accesos.AccessModels.DirectionDefinition;
 import com.batransit.api.accesos.AccessModels.FlowData;
 import com.batransit.api.accesos.AccessModels.SegmentDefinition;
 import com.batransit.api.accesos.AccessModels.SegmentReport;
@@ -157,6 +158,53 @@ class AccessServiceTest {
         assertThat(definitions).extracting(AccessDefinition::id)
                 .containsExactly("la-plata", "norte", "oeste", "riccheri");
         assertThat(definitions).allSatisfy(a -> assertThat(a.segments()).hasSize(2));
+        // Cada tramo se mide en sus dos manos.
+        assertThat(definitions).flatExtracting(AccessDefinition::segments).allSatisfy(s ->
+                assertThat(s.directions()).extracting(DirectionDefinition::towards)
+                        .containsExactly("CABA", "Provincia"));
+    }
+
+    @Test
+    void conDosManosElTramoTomaLaMasComplicada() {
+        // Hacia Provincia (lat mas al sur en este caso de prueba) esta congestionado.
+        TomTomTrafficClient client = new TomTomTrafficClient("clave") {
+            @Override
+            public Optional<FlowData> flowAt(double lat, double lon) {
+                return Optional.of(lat < -34.501 ? flow(25, 90, "FRC0") : flow(88, 90, "FRC0"));
+            }
+        };
+        List<AccessDefinition> access = List.of(new AccessDefinition("norte", "Acceso Norte", "RN 9", "", "",
+                List.of(new SegmentDefinition("Tramo 1", -34.5, -58.5, List.of(
+                        new DirectionDefinition("CABA", -34.5, -58.5),
+                        new DirectionDefinition("Provincia", -34.502, -58.5))))));
+
+        SegmentReport segment = new AccessService(access, client, Clock.systemUTC())
+                .report().accesses().get(0).segments().get(0);
+
+        assertThat(segment.status()).isEqualTo(TrafficStatus.CONGESTIONADO);
+        assertThat(segment.currentSpeed()).isEqualTo(25);
+        assertThat(segment.directions()).extracting(d -> d.towards() + ":" + d.status())
+                .containsExactly("CABA:FLUIDO", "Provincia:CONGESTIONADO");
+    }
+
+    @Test
+    void siUnaManoNoTieneDatosSeUsaLaOtra() {
+        TomTomTrafficClient client = new TomTomTrafficClient("clave") {
+            @Override
+            public Optional<FlowData> flowAt(double lat, double lon) {
+                return lat < -34.501 ? Optional.empty() : Optional.of(flow(70, 90, "FRC0"));
+            }
+        };
+        List<AccessDefinition> access = List.of(new AccessDefinition("norte", "Acceso Norte", "RN 9", "", "",
+                List.of(new SegmentDefinition("Tramo 1", -34.5, -58.5, List.of(
+                        new DirectionDefinition("CABA", -34.5, -58.5),
+                        new DirectionDefinition("Provincia", -34.502, -58.5))))));
+
+        SegmentReport segment = new AccessService(access, client, Clock.systemUTC())
+                .report().accesses().get(0).segments().get(0);
+
+        assertThat(segment.status()).isEqualTo(TrafficStatus.FLUIDO);
+        assertThat(segment.directions().get(1).status()).isEqualTo(TrafficStatus.SIN_DATOS);
     }
 
     @Test
