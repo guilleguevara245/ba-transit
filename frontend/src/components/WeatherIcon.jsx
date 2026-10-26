@@ -125,6 +125,14 @@ const SHAPES = {
       ))}
     </>
   ),
+  heat: () => (
+    <>
+      <Sun cx={21} cy={10} r={3.5} />
+      <rect x="8.5" y="4" width="6" height="17" rx="3" fill="#fff" stroke={STROKE} strokeWidth="1.2" />
+      <circle cx="11.5" cy="23.5" r="5" fill="#e0573a" stroke={STROKE} strokeWidth="1.2" />
+      <rect x="10.2" y="9" width="2.6" height="13" rx="1.3" fill="#e0573a" />
+    </>
+  ),
   storm: () => (
     <>
       <Cloud dx={0} dy={-3} fill={CLOUD_DARK} />

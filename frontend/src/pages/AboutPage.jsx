@@ -74,7 +74,7 @@ const SOURCES = [
     what: 'Alertas meteorológicas',
     source: 'Servicio Meteorológico Nacional (feed CAP)',
     url: 'https://www.smn.gob.ar/alertas',
-    detail: 'Alertas amarillas, naranjas y rojas por tormentas, lluvias, calor y viento que afectan al AMBA, revisadas cada 10 minutos.',
+    detail: 'Alertas amarillas, naranjas y rojas por tormentas, lluvias y calor que afectan al AMBA, revisadas cada 10 minutos.',
   },
   {
     what: 'Horario del último tren',

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useApi } from '../hooks/useApi.js'
-import { ALERT_LEVELS, alertTitle, periodText } from '../utils/weatherAlerts.js'
+import WeatherIcon from './WeatherIcon.jsx'
+import { ALERT_ICONS, ALERT_LEVELS, alertTitle, periodText, travelTip } from '../utils/weatherAlerts.js'
 import './WeatherAlertBanner.css'
 
 const REFRESH_MS = 10 * 60_000
@@ -16,7 +17,7 @@ function readDismissed() {
 
 /**
  * Franja con las alertas meteorologicas del SMN vigentes para el AMBA
- * (tormentas, lluvias, calor, viento). Solo aparece cuando hay alguna;
+ * (tormentas, lluvias y calor). Solo aparece cuando hay alguna;
  * cada una se puede cerrar y no vuelve a mostrarse (si cambia de nivel
  * llega con otro id y se ve de nuevo).
  */
@@ -47,18 +48,16 @@ export default function WeatherAlertBanner() {
         return (
           <div key={alert.id} className={`weather-alert ${level.className}`}>
             <div className="wrap weather-alert-row">
-              <span className="weather-alert-tag">{level.tag}</span>
+              <WeatherIcon kind={ALERT_ICONS[alert.kind] ?? 'storm'} className="weather-alert-icon" />
               <div className="weather-alert-text">
-                <strong>{alertTitle(alert, false)}</strong>
-                <span>
-                  {' '}
-                  en el AMBA{periodText(alert) ? ` · ${periodText(alert)}` : ''} · SMN
-                </span>
+                <strong>{alertTitle(alert)}</strong>
+                {periodText(alert) && <span className="weather-alert-period">: {periodText(alert)}.</span>}
+                {travelTip(alert) && <span className="weather-alert-tip"> {travelTip(alert)}</span>}
                 {expanded && (
                   <div className="weather-alert-detail">
                     {alert.description && <p>{alert.description}</p>}
                     {alert.instruction && <p className="weather-alert-instruction">{alert.instruction}</p>}
-                    {alert.areas?.length > 0 && <p className="weather-alert-areas">Zonas: {alert.areas.join(', ')}</p>}
+                    <p className="weather-alert-source">Fuente: Servicio Meteorológico Nacional (SMN).</p>
                   </div>
                 )}
               </div>
@@ -68,7 +67,7 @@ export default function WeatherAlertBanner() {
                 aria-expanded={expanded}
                 onClick={() => setOpen(expanded ? null : alert.id)}
               >
-                {expanded ? 'Menos' : 'Detalles'}
+                {expanded ? 'Ocultar' : 'Ver detalles'}
               </button>
               <button
                 type="button"

@@ -22,7 +22,7 @@ public class WeatherAlertController {
         this.service = service;
     }
 
-    /** GET /api/v1/clima/alertas: alertas del SMN vigentes para el AMBA (tormentas, lluvias, calor, viento). */
+    /** GET /api/v1/clima/alertas: alertas del SMN vigentes para el AMBA (tormentas, lluvias y calor). */
     @GetMapping("/alertas")
     public AlertsResponse alerts() {
         return new AlertsResponse(service.updatedAt() != null, service.updatedAt(), service.current());

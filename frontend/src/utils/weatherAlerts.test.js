@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { alertTitle, periodText, untilText } from './weatherAlerts.js'
+import { alertTitle, periodText, travelTip, untilText } from './weatherAlerts.js'
 
 describe('alertTitle', () => {
   it('arma el titulo con nivel y fenomeno', () => {
@@ -29,5 +29,16 @@ describe('periodText', () => {
     expect(periodText({ onset: '2026-10-25T18:00:00-03:00', expires: '2026-10-26T06:00:00-03:00' }, now)).toBe(
       'hasta mañana a las 06:00',
     )
+  })
+})
+
+describe('travelTip', () => {
+  const now = new Date('2026-10-25T22:00:00-03:00')
+  it('adapta el consejo al tipo y al dia', () => {
+    expect(travelTip({ kind: 'TORMENTAS', onset: '2026-10-26T21:00:00-03:00' }, now)).toBe(
+      'Si viajás mañana, llevá paraguas y salí con tiempo: puede haber demoras.',
+    )
+    expect(travelTip({ kind: 'CALOR', onset: '2026-10-25T10:00:00-03:00' }, now)).toMatch(/^Si vas a viajar, llevá agua/)
+    expect(travelTip({ kind: 'OTRO' }, now)).toBeNull()
   })
 })

@@ -39,8 +39,12 @@ public class WeatherAlertService {
 
     /** Como mucho estos documentos nuevos por corrida (el SMN responde 429 si se piden muchos juntos). */
     static final int MAX_NEW_DOCUMENTS = 40;
-    /** Tipos que se muestran en el sitio. */
-    static final Set<String> KINDS = Set.of("TORMENTAS", "LLUVIAS", "CALOR", "VIENTO");
+    /**
+     * Tipos que se muestran en el sitio. El viento solo no se muestra: rara
+     * vez afecta al transporte, y cuando viene con tormentas ya esta la
+     * alerta por tormentas.
+     */
+    static final Set<String> KINDS = Set.of("TORMENTAS", "LLUVIAS", "CALOR");
 
     /** Puntos de referencia: Ciudad y cuatro zonas del conurbano. */
     static final double[][] AMBA_POINTS = {
