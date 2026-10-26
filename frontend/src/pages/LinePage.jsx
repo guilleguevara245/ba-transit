@@ -93,14 +93,23 @@ export default function LinePage() {
   const urlStationId = Number(searchParams.get('estacion')) || null
   const [selected, setSelected] = useState({ id: urlStationId, fromUrl: true })
   const mapRef = useRef(null)
+  // Posicion de la lista antes de subir al mapa, para el boton "Volver a la lista".
+  const [listScroll, setListScroll] = useState(null)
 
   // Al tocar una estacion de la lista: en pantallas angostas el mapa queda
-  // arriba de la lista, asi que se sube hasta el para verla.
+  // arriba de la lista, asi que se sube hasta el para verla (y se recuerda
+  // donde estaba la lista, para poder volver).
   function selectFromList(id) {
     setSelected({ id, fromUrl: false })
     if (mapRef.current && window.matchMedia('(max-width: 900px)').matches) {
+      setListScroll(window.scrollY)
       mapRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
+  }
+
+  function backToList() {
+    window.scrollTo({ top: listScroll ?? 0, behavior: 'smooth' })
+    setListScroll(null)
   }
 
   useEffect(() => {
@@ -197,9 +206,20 @@ export default function LinePage() {
                     allStations={modeStations}
                     alerts={alertsState.data ?? []}
                     focusId={selected.id}
-                    onSelect={(id) => setSelected({ id, fromUrl: false })}
+                    onSelect={(id) => {
+                      setSelected({ id, fromUrl: false })
+                      setListScroll(null)
+                    }}
                   />
                   <p className="line-minimap-hint">Tocá una estación de la lista o del mapa para ubicarla.</p>
+                  {listScroll != null && (
+                    <button type="button" className="line-back-to-list" onClick={backToList}>
+                      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M12 5v14m-6-6 6 6 6-6" />
+                      </svg>
+                      Volver a la lista
+                    </button>
+                  )}
                 </div>
               )}
               <LineInfoCard line={line} stations={lineStations} branches={branchesState.data ?? []} allLines={allLines ?? []} />
