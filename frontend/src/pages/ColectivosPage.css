@@ -255,3 +255,7 @@
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
+
+.bus-live-note {
+  color: var(--text-faint);
+}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { CircleMarker, MapContainer, Marker, Polyline, TileLayer, useMap } from 'react-leaflet'
 import { badgeIcon } from '../utils/mapIcons.js'
 import MapCard from './MapCard.jsx'
@@ -21,7 +21,20 @@ function FitToRoute({ positions }) {
 export default function BusRouteMap({ route, directionIndex, className, vehicles = [] }) {
   const color = route.color ?? '#17171a'
   const active = route.directions[directionIndex]
-  const positions = useMemo(() => active?.shape ?? [], [active])
+  // El encuadre incluye los colectivos en vivo: si el feed usa un recorrido
+  // distinto del que tiene el GTFS (ramales, ids nuevos), los colectivos
+  // pueden estar fuera del trazado y quedaban afuera del mapa. Se recalcula
+  // solo cuando aparecen o cambia el sentido, no en cada actualizacion.
+  const hasVehicles = vehicles.length > 0
+  const vehiclesRef = useRef(vehicles)
+  vehiclesRef.current = vehicles
+  const positions = useMemo(
+    () => [
+      ...(active?.shape ?? []),
+      ...(hasVehicles ? vehiclesRef.current.map((v) => [v.latitude, v.longitude]) : []),
+    ],
+    [active, hasVehicles],
+  )
   const busBadge = (
     <span className="map-card-bus" style={route.color ? { background: route.color } : undefined}>
       {parseBusShortName(route.shortName).number || '?'}

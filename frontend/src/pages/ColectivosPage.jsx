@@ -113,6 +113,9 @@ function RouteDetail({ routeId, line, headsign, initialDirection }) {
           {vehicles.length > 0 &&
             `${vehicles.length} ${vehicles.length === 1 ? 'colectivo' : 'colectivos'} en vivo${matchesGtfs ? ' en este sentido' : ''}`}
           {vehicles.length === 0 && otherCount === 0 && 'Sin colectivos en vivo de esta línea ahora.'}
+          {vehicles.length > 0 && route.id !== routeId && (
+            <span className="bus-live-note"> · pueden ir por un ramal distinto del recorrido dibujado</span>
+          )}
           {vehicles.length === 0 && otherCount > 0 && (
             <>
               Ninguno en este sentido ahora, pero hay {otherCount} en vivo{' '}

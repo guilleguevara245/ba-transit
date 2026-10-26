@@ -1,4 +1,10 @@
 spring:
+  # Varias tareas programadas (alertas, colectivos, Metrovias, clima...): con un
+  # solo hilo, una lenta (el feed de colectivos) demoraba a todas las demas.
+  task:
+    scheduling:
+      pool:
+        size: 3
   application:
     name: ba-transit-backend
   datasource:
@@ -29,6 +35,11 @@ server:
   # Render inyecta la variable PORT automaticamente. En local no existe,
   # asi que cae a SERVER_PORT (si la seteaste) y despues a 8080.
   port: ${PORT:${SERVER_PORT:8080}}
+  # Menos hilos de Tomcat (200 por defecto): cada uno reserva memoria para
+  # su pila, y para el trafico del sitio con 40 sobra.
+  tomcat:
+    threads:
+      max: 40
 
 transporte:
   api:
