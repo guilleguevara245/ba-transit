@@ -1,0 +1,219 @@
+.sube-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+  margin-bottom: 32px;
+}
+
+.sube-main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sube-card {
+  padding: 18px 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-dim);
+}
+
+.sube-card strong {
+  color: var(--text);
+}
+
+.sube-heading {
+  margin-bottom: 8px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--text);
+}
+
+.sube-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.sube-steps div {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 12px;
+  background: var(--bg);
+  border-top: 3px solid var(--yellow);
+}
+
+.sube-steps span {
+  font-size: 13px;
+}
+
+.sube-list {
+  padding-left: 18px;
+}
+
+.sube-list li + li {
+  margin-top: 4px;
+}
+
+.sube-card a {
+  color: var(--accent-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.sube-card a:hover {
+  text-decoration: underline;
+}
+
+.sube-source,
+.sube-note,
+.sube-dim {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.sube-trips {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.sube-trips li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sube-trip-number {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--mode-icon-bg);
+  color: var(--mode-icon-fg);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.sube-trips select {
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+}
+
+.sube-trip-price {
+  display: flex;
+  flex-direction: column;
+  margin-left: auto;
+  text-align: right;
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.sube-trip-price small {
+  font-weight: 400;
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+.sube-remove,
+.sube-add {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text-dim);
+  font: inherit;
+  cursor: pointer;
+}
+
+.sube-remove {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  line-height: 1;
+}
+
+.sube-add {
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.sube-add:hover,
+.sube-remove:hover {
+  border-color: var(--yellow);
+  color: var(--text);
+}
+
+.sube-total {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.sube-total strong {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 26px;
+}
+
+.sube-saving {
+  color: var(--normal);
+  font-weight: 600;
+}
+
+.sube-links {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.sube-links a {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  text-decoration: none;
+}
+
+.sube-links a:hover {
+  border-color: var(--yellow);
+  text-decoration: none;
+}
+
+.sube-links span {
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+@media (max-width: 900px) {
+  .sube-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .sube-steps,
+  .sube-links {
+    grid-template-columns: 1fr;
+  }
+}

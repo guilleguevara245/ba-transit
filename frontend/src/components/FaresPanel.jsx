@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+import Chevrons from './Chevrons.jsx'
 import './FaresPanel.css'
 import { formatCurrency } from '../utils/format.js'
 import { fareLabel } from '../utils/fares.js'
@@ -15,6 +17,10 @@ export default function FaresPanel({ fares }) {
           <span className="value">{formatCurrency(fare.price)}</span>
         </div>
       ))}
+
+      <Link className="fares-more chevrons-host" to="/sube">
+        Cómo funciona el descuento Red SUBE <Chevrons />
+      </Link>
     </div>
   )
 }

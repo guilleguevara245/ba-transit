@@ -11,6 +11,7 @@ import AboutPage from './pages/AboutPage.jsx'
 import EcobiciPage from './pages/EcobiciPage.jsx'
 import TrainNoticesPage from './pages/TrainNoticesPage.jsx'
 import StationPage from './pages/StationPage.jsx'
+import SubePage from './pages/SubePage.jsx'
 import NotFoundPage from './pages/NotFoundPage.jsx'
 import './App.css'
 
@@ -28,6 +29,7 @@ export default function App() {
           <Route path="/colectivos" element={<ColectivosPage />} />
           <Route path="/accesos" element={<AccessesPage />} />
           <Route path="/ecobici" element={<EcobiciPage />} />
+          <Route path="/sube" element={<SubePage />} />
           <Route path="/trenes/avisos" element={<TrainNoticesPage />} />
           <Route path="/acerca" element={<AboutPage />} />
           <Route path="*" element={<NotFoundPage />} />
