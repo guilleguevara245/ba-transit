@@ -40,7 +40,7 @@ export default function LiveBusesMap({ onSelectRoute }) {
             center={[bus.latitude, bus.longitude]}
             radius={3.5}
             pathOptions={{ color: '#17171a', weight: 1, fillColor: '#f4c11b', fillOpacity: 0.95 }}
-            eventHandlers={{ click: () => bus.routeId && onSelectRoute(bus.routeId) }}
+            eventHandlers={{ click: () => bus.routeId && onSelectRoute(bus) }}
           >
             <Tooltip>
               <strong>Línea {bus.line || '?'}</strong>

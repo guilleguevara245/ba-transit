@@ -27,14 +27,31 @@ function BusNumber({ route, large = false }) {
   )
 }
 
-function RouteDetail({ routeId }) {
-  const { data: route, loading, error } = useApi(`/api/v1/colectivos/${encodeURIComponent(routeId)}`)
+/** Parametros extra por si el id del feed en vivo no esta en el GTFS del dia (ver ColectivoService.find). */
+function detailPath(routeId, line, headsign) {
+  const params = new URLSearchParams()
+  if (line) params.set('numero', line)
+  if (headsign) params.set('destino', headsign)
+  const query = params.toString()
+  return `/api/v1/colectivos/${encodeURIComponent(routeId)}${query ? `?${query}` : ''}`
+}
+
+function RouteDetail({ routeId, line, headsign }) {
+  const { data: route, loading, error } = useApi(detailPath(routeId, line, headsign))
   const [directionIndex, setDirectionIndex] = useState(0)
   const live = useApi(`/api/v1/colectivos/${encodeURIComponent(routeId)}/vivo`, { refreshMs: LIVE_REFRESH_MS })
 
   useEffect(() => setDirectionIndex(0), [routeId])
 
   if (loading) return <Skeleton variant="map" label="Cargando recorrido…" />
+  if (String(error ?? '').includes('respondió 404')) {
+    return (
+      <div className="bus-unavailable">
+        No encontramos el recorrido {line ? `de la línea ${line}` : 'de esta línea'} en los datos de hoy. Probá
+        buscarla por número.
+      </div>
+    )
+  }
   if (error) return <ErrorMessage what="el recorrido" error={error} />
   if (!route) return null
 
@@ -188,10 +205,22 @@ export default function ColectivosPage() {
               <button type="button" className="bus-show-all chevrons-host" onClick={() => setSearchParams({})}>
                 <span className="live-dot" aria-hidden="true" /> Ver todos los colectivos en vivo
               </button>
-              <RouteDetail routeId={selectedId} />
+              <RouteDetail
+                routeId={selectedId}
+                line={searchParams.get('numero')}
+                headsign={searchParams.get('destino')}
+              />
             </>
           ) : (
-            <LiveBusesMap onSelectRoute={(routeId) => setSearchParams({ linea: routeId })} />
+            <LiveBusesMap
+              onSelectRoute={(bus) =>
+                setSearchParams({
+                  linea: bus.routeId,
+                  ...(bus.line ? { numero: bus.line } : {}),
+                  ...(bus.headsign ? { destino: bus.headsign } : {}),
+                })
+              }
+            />
           )}
 
           <p className="airports-source">

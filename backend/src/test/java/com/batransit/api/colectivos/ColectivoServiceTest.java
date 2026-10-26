@@ -62,4 +62,14 @@ class ColectivoServiceTest {
         assertThatThrownBy(() -> service.find("NOPE")).isInstanceOf(NotFoundException.class);
         assertThat(service.find("R8").shortName()).isEqualTo("8");
     }
+
+    @Test
+    void siElIdDelFeedEnVivoNoEstaBuscaPorNumero() throws IOException {
+        ColectivoService service = loadedService();
+
+        assertThat(service.find("ID_VIEJO", "152", null).id()).isEqualTo("R152");
+        assertThat(service.find("ID_VIEJO", "8A", null).id()).isEqualTo("R8");
+        assertThatThrownBy(() -> service.find("ID_VIEJO", "999", null)).isInstanceOf(NotFoundException.class);
+        assertThatThrownBy(() -> service.find("ID_VIEJO", null, null)).isInstanceOf(NotFoundException.class);
+    }
 }

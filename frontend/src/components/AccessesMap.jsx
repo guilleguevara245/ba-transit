@@ -30,7 +30,7 @@ export default function AccessesMap({ accesses, className }) {
   const positions = useMemo(() => segments.flatMap((segment) => segment.geometry), [segments])
 
   return (
-    <MapContainer className={className} center={[-34.65, -58.5]} zoom={10} scrollWheelZoom={false}>
+    <MapContainer className={className} center={[-34.65, -58.5]} zoom={10} scrollWheelZoom>
       <TileLayer
         url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

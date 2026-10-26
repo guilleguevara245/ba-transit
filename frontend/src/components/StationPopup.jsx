@@ -91,9 +91,6 @@ export default function StationPopup({ station, stations, alerts, mode }) {
         <Link className="station-popup-link chevrons-host" to={`/estaciones/${station.stationId}`}>
           Ver la estación <Chevrons />
         </Link>
-        <Link className="station-popup-link chevrons-host" to={`/lineas/${station.lineId}?estacion=${station.stationId}`}>
-          Ver la línea <Chevrons />
-        </Link>
       </div>
     </div>
   )

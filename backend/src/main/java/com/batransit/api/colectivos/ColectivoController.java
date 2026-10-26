@@ -60,8 +60,15 @@ public class ColectivoController {
         return service.search(query).stream().map(RouteSummary::from).toList();
     }
 
+    /**
+     * GET /api/v1/colectivos/{routeId}. Desde el mapa en vivo llegan
+     * tambien el numero (?numero=53) y el destino (?destino=...), por si
+     * el id del feed en vivo no esta en el GTFS del dia.
+     */
     @GetMapping("/{routeId}")
-    public RouteDetail detail(@PathVariable String routeId) {
-        return RouteDetail.from(service.find(routeId));
+    public RouteDetail detail(@PathVariable String routeId,
+                              @RequestParam(value = "numero", required = false) String line,
+                              @RequestParam(value = "destino", required = false) String headsign) {
+        return RouteDetail.from(service.find(routeId, line, headsign));
     }
 }

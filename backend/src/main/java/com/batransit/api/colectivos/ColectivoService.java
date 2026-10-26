@@ -27,6 +27,7 @@ import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -184,11 +185,50 @@ public class ColectivoService {
     }
 
     public BusRoute find(String routeId) {
-        BusRoute route = requireCatalog().routes().get(routeId);
-        if (route == null) {
-            throw new NotFoundException("No existe la línea de colectivo " + routeId);
+        return find(routeId, null, null);
+    }
+
+    /**
+     * Busca una linea por id y, si no esta, por su numero. El feed en
+     * vivo y el GTFS diario no siempre traen los mismos route_id (uno se
+     * actualiza antes que el otro), y tocar un colectivo del mapa en vivo
+     * terminaba en error. Con el numero ("53") y el destino del cartel se
+     * elige la linea equivalente del GTFS.
+     */
+    public BusRoute find(String routeId, String line, String headsign) {
+        Map<String, BusRoute> routes = requireCatalog().routes();
+        BusRoute route = routes.get(routeId);
+        if (route != null) {
+            return route;
         }
-        return route;
+        String wanted = normalize(line).replaceAll("\\s+", "");
+        if (!wanted.isEmpty()) {
+            String sign = normalize(headsign);
+            Optional<BusRoute> match = routes.values().stream()
+                    .filter(r -> normalize(r.shortName()).replaceAll("\\s+", "").equals(wanted))
+                    .max(Comparator.comparingInt(r -> headsignScore(r, sign)));
+            if (match.isEmpty()) {
+                // "53A" en vivo y "53" en el GTFS (o al reves): se compara solo el numero.
+                String digits = wanted.replaceAll("\\D.*", "");
+                match = digits.isEmpty() ? Optional.empty() : routes.values().stream()
+                        .filter(r -> normalize(r.shortName()).replaceAll("\\D.*", "").equals(digits))
+                        .max(Comparator.comparingInt(r -> headsignScore(r, sign)));
+            }
+            if (match.isPresent()) {
+                return match.get();
+            }
+        }
+        throw new NotFoundException("No existe la línea de colectivo " + (line == null || line.isBlank() ? routeId : line));
+    }
+
+    /** 1 si algun sentido de la linea va hacia ese destino, 0 si no. */
+    private static int headsignScore(BusRoute route, String sign) {
+        if (sign.isEmpty()) {
+            return 0;
+        }
+        return route.directions().stream()
+                .map(d -> normalize(d.headsign()))
+                .anyMatch(h -> !h.isEmpty() && (h.contains(sign) || sign.contains(h))) ? 1 : 0;
     }
 
     private Catalog requireCatalog() {
