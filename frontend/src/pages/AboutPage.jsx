@@ -83,6 +83,12 @@ const SOURCES = [
     detail: 'Obras, recorridos limitados, interrupciones y estaciones cerradas de Roca, Mitre, Sarmiento, San Martín, Belgrano Sur y Tren de la Costa, revisados cada 15 minutos.',
   },
   {
+    what: 'Estado del Urquiza',
+    source: 'Metrovías, estado de las líneas',
+    url: 'https://info.metrovias.com.ar/EstadoLineas/Desktop.html',
+    detail: 'Estado del servicio informado por Metrovías, revisado cada 5 minutos.',
+  },
+  {
     what: 'Próximos trenes del Belgrano Norte',
     source: 'Ferrovías, pantalla de próximos trenes',
     url: 'http://proximostrenes.ferrovias.com.ar/',
