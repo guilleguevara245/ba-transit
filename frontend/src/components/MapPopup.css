@@ -239,3 +239,15 @@ button.station-popup-link {
   cursor: pointer;
 }
 
+
+.station-popup-alert-here strong {
+  color: var(--interrupted);
+}
+
+.station-popup-elsewhere {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-faint);
+}

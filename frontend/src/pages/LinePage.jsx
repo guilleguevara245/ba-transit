@@ -13,10 +13,11 @@ import LineInfoCard from '../components/LineInfoCard.jsx'
 import NetworkMap from '../components/NetworkMap.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { MODE_LABELS } from '../constants.js'
+import { mentionsStation } from '../utils/stationAlerts.js'
 import '../components/Panels.css'
 import './LinePage.css'
 
-function BranchStations({ branch, line, selected, onSelect, locatedIds }) {
+function BranchStations({ branch, line, selected, onSelect, locatedIds, alerts = [] }) {
   const { data: stations, loading, error } = useApi(`/api/v1/branches/${branch.id}/stations`)
   const selectedRef = useRef(null)
 
@@ -57,6 +58,17 @@ function BranchStations({ branch, line, selected, onSelect, locatedIds }) {
               >
                 <span className="station-dot"></span>
                 <span className="station-name">{station.name}</span>
+                {(() => {
+                  // Aviso que nombra a esta estacion (por ejemplo, "Estacion Medrano cerrada").
+                  const notice = alerts.find((a) => mentionsStation(`${a.title ?? ''} ${a.description ?? ''}`, station.name))
+                  if (!notice) return null
+                  const closed = /cerrad/i.test(notice.description ?? '')
+                  return (
+                    <span className={closed ? 'station-flag-mini closed' : 'station-flag-mini'} title={notice.description}>
+                      {closed ? 'Cerrada' : 'Aviso'}
+                    </span>
+                  )
+                })()}
                 {isSelected && located && (
                   <Link
                     className="station-item-link chevrons-host"
@@ -159,6 +171,7 @@ export default function LinePage() {
                   selected={selected}
                   onSelect={(id) => setSelected({ id, fromUrl: false })}
                   locatedIds={locatedIds}
+                  alerts={alertsState.data ?? []}
                 />
               ))}
             </div>

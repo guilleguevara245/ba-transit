@@ -14,6 +14,7 @@ import { formatLongDate, yearsSince } from '../utils/format.js'
 import { findTransfers, routeInfo } from '../utils/map.js'
 import { lastTrainsAt, serviceDayType } from '../utils/lastTrain.js'
 import { eventsNear } from '../utils/events.js'
+import { splitAlertsForStation } from '../utils/stationAlerts.js'
 import { readableTextColor } from '../utils/color.js'
 import EventCard from '../components/EventCard.jsx'
 import './ModePage.css'
@@ -128,6 +129,10 @@ export default function StationPage() {
   const transfers = findTransfers(allStations, station)
   const landmarks = (station.landmarks ?? '').split(';').map((p) => p.trim()).filter(Boolean)
   const alerts = alertsState.data ?? []
+  // Las alertas que nombran una estacion (por ejemplo "Estacion Medrano
+  // cerrada") se muestran como aviso de esa estacion, no de toda la linea.
+  const alertSplit = splitAlertsForStation(alerts, station, lineStations.map((s) => s.stationName))
+  const closed = alertSplit.here.some((a) => /cerrad/i.test(a.description ?? ''))
   const years = yearsSince(station.openedOn)
   const branch = allStations
     .filter((s) => s.branchId === station.branchId)
@@ -154,9 +159,14 @@ export default function StationPage() {
           <div className="line-facts">
             Estación {route.position} de {route.total} · {route.from} ↔ {route.to}
           </div>
-          {station.accessible && (
+          {(station.accessible || alertSplit.here.length > 0) && (
             <div className="station-accessible">
-              <AccessibleBadge />
+              {alertSplit.here.length > 0 && (
+                <span className={closed ? 'station-flag closed' : 'station-flag'}>
+                  {closed ? 'Estación cerrada' : 'Aviso en esta estación'}
+                </span>
+              )}
+              {station.accessible && <AccessibleBadge />}
             </div>
           )}
         </div>
@@ -165,6 +175,17 @@ export default function StationPage() {
 
       <div className="station-layout">
         <div className="station-info">
+          {alertSplit.here.length > 0 && (
+            <section className="station-card station-here-alert">
+              <h2 className="station-card-title">Aviso en esta estación</h2>
+              <ul className="station-alerts">
+                {alertSplit.here.map((a) => (
+                  <li key={a.id}>{a.description}</li>
+                ))}
+              </ul>
+            </section>
+          )}
+
           {station.lineMode === 'SUBTE' && (
             <NextTrains lineCode={station.lineCode} stationName={station.stationName} asCard />
           )}
@@ -269,14 +290,28 @@ export default function StationPage() {
 
           <section className="station-card">
             <h2 className="station-card-title">Estado de la línea</h2>
-            {alerts.length === 0 ? (
-              <p className="station-ok">Sin alertas activas en la {station.lineName}.</p>
+            {alertSplit.line.length === 0 ? (
+              <p className="station-ok">
+                {alertSplit.here.length > 0 || alertSplit.elsewhere.length > 0
+                  ? `El resto de la ${station.lineName} funciona con normalidad.`
+                  : `Sin alertas activas en la ${station.lineName}.`}
+              </p>
             ) : (
               <ul className="station-alerts">
-                {alerts.map((a) => (
+                {alertSplit.line.map((a) => (
                   <li key={a.id}>{a.description}</li>
                 ))}
               </ul>
+            )}
+            {alertSplit.elsewhere.length > 0 && (
+              <div className="station-elsewhere">
+                <span>En otras estaciones de la línea</span>
+                <ul>
+                  {alertSplit.elsewhere.map((a) => (
+                    <li key={a.id}>{a.description}</li>
+                  ))}
+                </ul>
+              </div>
             )}
           </section>
         </div>

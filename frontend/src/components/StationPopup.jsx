@@ -4,6 +4,7 @@ import Chevrons from './Chevrons.jsx'
 import LineBadge from './LineBadge.jsx'
 import NextTrains from './NextTrains.jsx'
 import { findTransfers, routeInfo } from '../utils/map.js'
+import { splitAlertsForStation } from '../utils/stationAlerts.js'
 import { formatLongDate, yearsSince } from '../utils/format.js'
 import './MapPopup.css'
 
@@ -26,6 +27,9 @@ export default function StationPopup({ station, stations, alerts, mode }) {
   const route = routeInfo(stations, station)
   const transfers = findTransfers(stations, station)
   const lineAlerts = alerts.filter((alert) => alert.transportLineId === station.lineId)
+  // Una alerta que nombra una estacion ("Estacion Medrano cerrada") solo afecta a esa estacion.
+  const lineNames = stations.filter((s) => s.lineId === station.lineId).map((s) => s.stationName)
+  const split = splitAlertsForStation(lineAlerts, station, lineNames)
 
   return (
     <div className="station-popup">
@@ -76,14 +80,27 @@ export default function StationPopup({ station, stations, alerts, mode }) {
       )}
 
       <div className="station-popup-section">
-        {lineAlerts.length === 0 ? (
-          <div className="station-popup-ok">Sin alertas en la línea</div>
-        ) : (
+        {split.here.length > 0 ? (
+          <div className="station-popup-alert station-popup-alert-here">
+            <strong>Aviso en esta estación</strong>
+            {shorten(split.here[0].description)}
+          </div>
+        ) : split.line.length > 0 ? (
           <div className="station-popup-alert">
             <strong>
-              {lineAlerts.length === 1 ? '1 alerta activa' : `${lineAlerts.length} alertas activas`} en la línea
+              {split.line.length === 1 ? '1 alerta activa' : `${split.line.length} alertas activas`} en la línea
             </strong>
-            {shorten(lineAlerts[0].description)}
+            {shorten(split.line[0].description)}
+          </div>
+        ) : (
+          <div className="station-popup-ok">
+            Sin alertas en esta estación
+            {split.elsewhere.length > 0 && (
+              <span className="station-popup-elsewhere">
+                {split.elsewhere.length === 1 ? '1 aviso' : `${split.elsewhere.length} avisos`} en otras estaciones de la
+                línea
+              </span>
+            )}
           </div>
         )}
       </div>

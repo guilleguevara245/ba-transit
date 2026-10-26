@@ -193,3 +193,19 @@
 .station-item-link .chevrons {
   font-size: 10px;
 }
+
+/* Estacion con un aviso propio en la lista del ramal. */
+.station-flag-mini {
+  margin-left: 8px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--delayed-tint);
+  color: var(--delayed);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.station-flag-mini.closed {
+  background: var(--interrupted-tint);
+  color: var(--interrupted);
+}
