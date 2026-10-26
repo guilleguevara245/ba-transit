@@ -36,12 +36,17 @@ function detailPath(routeId, line, headsign) {
   return `/api/v1/colectivos/${encodeURIComponent(routeId)}${query ? `?${query}` : ''}`
 }
 
-function RouteDetail({ routeId, line, headsign }) {
+function RouteDetail({ routeId, line, headsign, initialDirection }) {
   const { data: route, loading, error } = useApi(detailPath(routeId, line, headsign))
   const [directionIndex, setDirectionIndex] = useState(0)
   const live = useApi(`/api/v1/colectivos/${encodeURIComponent(routeId)}/vivo`, { refreshMs: LIVE_REFRESH_MS })
 
-  useEffect(() => setDirectionIndex(0), [routeId])
+  // Si se llego tocando un colectivo del mapa en vivo, se abre el sentido
+  // en el que iba ese colectivo (si no, el primero).
+  useEffect(() => {
+    const index = route?.directions.findIndex((d) => d.directionId === initialDirection) ?? -1
+    setDirectionIndex(index >= 0 ? index : 0)
+  }, [route, initialDirection])
 
   if (loading) return <Skeleton variant="map" label="Cargando recorrido…" />
   if (String(error ?? '').includes('respondió 404')) {
@@ -59,7 +64,20 @@ function RouteDetail({ routeId, line, headsign }) {
   // Solo los colectivos del sentido elegido (el feed usa el mismo direction_id que el GTFS).
   const knownMinutes = (direction?.minutes ?? []).filter((m) => m != null)
   const totalMinutes = knownMinutes.length > 1 ? Math.max(...knownMinutes) : null
-  const vehicles = (live.data?.vehicles ?? []).filter((v) => !direction || v.direction === direction.directionId)
+  const allVehicles = live.data?.vehicles ?? []
+  // Si el feed en vivo usa sentidos que el GTFS no tiene (o la linea tiene
+  // uno solo), se muestran todos en vez de decir que no hay ninguno.
+  const knownDirections = new Set(route.directions.map((d) => d.directionId))
+  const matchesGtfs = route.directions.length > 1 && allVehicles.some((v) => knownDirections.has(v.direction))
+  const vehicles = matchesGtfs ? allVehicles.filter((v) => v.direction === direction.directionId) : allVehicles
+  // Colectivos en vivo del otro sentido, para no decir "sin colectivos" si los hay.
+  const otherIndex = matchesGtfs
+    ? route.directions.findIndex(
+        (d, index) => index !== directionIndex && allVehicles.some((v) => v.direction === d.directionId),
+      )
+    : -1
+  const otherCount =
+    otherIndex >= 0 ? allVehicles.filter((v) => v.direction === route.directions[otherIndex].directionId).length : 0
 
   return (
     <section className="bus-detail">
@@ -91,9 +109,17 @@ function RouteDetail({ routeId, line, headsign }) {
       {live.data?.available && (
         <div className="bus-live" role="status">
           <span className="live-dot" aria-hidden="true" />
-          {vehicles.length === 0
-            ? 'Sin colectivos en vivo en este sentido ahora.'
-            : `${vehicles.length} ${vehicles.length === 1 ? 'colectivo' : 'colectivos'} en vivo en este sentido`}
+          {vehicles.length > 0 &&
+            `${vehicles.length} ${vehicles.length === 1 ? 'colectivo' : 'colectivos'} en vivo${matchesGtfs ? ' en este sentido' : ''}`}
+          {vehicles.length === 0 && otherCount === 0 && 'Sin colectivos en vivo de esta línea ahora.'}
+          {vehicles.length === 0 && otherCount > 0 && (
+            <>
+              Ninguno en este sentido ahora, pero hay {otherCount} en vivo{' '}
+              <button type="button" className="bus-live-switch" onClick={() => setDirectionIndex(otherIndex)}>
+                hacia {route.directions[otherIndex].headsign || 'el otro sentido'}
+              </button>
+            </>
+          )}
         </div>
       )}
 
@@ -209,6 +235,7 @@ export default function ColectivosPage() {
                 routeId={selectedId}
                 line={searchParams.get('numero')}
                 headsign={searchParams.get('destino')}
+                initialDirection={searchParams.has('sentido') ? Number(searchParams.get('sentido')) : null}
               />
             </>
           ) : (
@@ -218,6 +245,7 @@ export default function ColectivosPage() {
                   linea: bus.routeId,
                   ...(bus.line ? { numero: bus.line } : {}),
                   ...(bus.headsign ? { destino: bus.headsign } : {}),
+                  ...(Number.isInteger(bus.direction) ? { sentido: String(bus.direction) } : {}),
                 })
               }
             />

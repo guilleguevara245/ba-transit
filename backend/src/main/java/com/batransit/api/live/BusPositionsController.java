@@ -36,7 +36,8 @@ public class BusPositionsController {
     }
 
     /** Version liviana para el mapa general (son ~3000 colectivos): solo lo que se dibuja. */
-    public record MovingBus(String id, String routeId, String line, double latitude, double longitude, String headsign) {
+    public record MovingBus(String id, String routeId, String line, double latitude, double longitude, String headsign,
+                            int direction) {
     }
 
     public record MovingResponse(boolean available, Instant updatedAt, List<MovingBus> buses) {
@@ -74,7 +75,8 @@ public class BusPositionsController {
             }
             // Se redondea a 5 decimales (~1 m): alcanza para el mapa y achica la respuesta.
             result.add(new MovingBus(v.path("id").asText(""), v.path("route_id").asText(""), v.path("route_short_name").asText(""),
-                    Math.round(lat * 1e5) / 1e5, Math.round(lon * 1e5) / 1e5, v.path("trip_headsign").asText("")));
+                    Math.round(lat * 1e5) / 1e5, Math.round(lon * 1e5) / 1e5, v.path("trip_headsign").asText(""),
+                    v.path("direction").asInt(0)));
         }
         return result;
     }
