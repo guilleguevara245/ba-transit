@@ -1,0 +1,23 @@
+/* Senal de precaucion en lugar del punto de las estaciones con un aviso propio. */
+.station-warning {
+  background: none;
+  border: none;
+  filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.4));
+  cursor: pointer;
+}
+
+.station-warning svg {
+  width: 100%;
+  height: 100%;
+  fill: #f4c11b;
+  stroke: #17171a;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.station-warning svg .mark {
+  fill: none;
+  stroke: #17171a;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
