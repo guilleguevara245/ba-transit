@@ -1,7 +1,8 @@
+import Chevrons from '../components/Chevrons.jsx'
 import SpecialServices from '../components/SpecialServices.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useParams, useSearchParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import AlertsPanel from '../components/AlertsPanel.jsx'
 import BackButton from '../components/BackButton.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
@@ -55,6 +56,15 @@ function BranchStations({ branch, line, selected, onSelect, locatedIds }) {
               >
                 <span className="station-dot"></span>
                 <span className="station-name">{station.name}</span>
+                {isSelected && located && (
+                  <Link
+                    className="station-item-link chevrons-host"
+                    to={`/estaciones/${station.id}`}
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    Ver estación <Chevrons />
+                  </Link>
+                )}
               </li>
             )
           })}

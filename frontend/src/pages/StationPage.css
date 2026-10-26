@@ -1,0 +1,123 @@
+.station-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 20px;
+  align-items: start;
+  margin-bottom: 32px;
+}
+
+.station-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.station-card {
+  padding: 16px 18px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  font-size: 14px;
+  color: var(--text);
+}
+
+.station-card .station-popup-section {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.station-card-title {
+  margin-bottom: 8px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.station-dim {
+  color: var(--text-faint);
+}
+
+.station-transfers {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.station-transfers a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.station-transfers a span {
+  flex: 1;
+}
+
+.station-transfers .chevrons {
+  color: var(--text-faint);
+  font-size: 11px;
+}
+
+.station-ok {
+  color: var(--normal);
+}
+
+.station-alerts {
+  padding-left: 18px;
+  color: var(--text-dim);
+}
+
+.station-map {
+  height: 520px;
+  border: 1px solid var(--line);
+  position: sticky;
+  top: 16px;
+}
+
+.share-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.share-button svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.share-button:hover {
+  border-color: var(--yellow);
+}
+
+@media (max-width: 900px) {
+  .station-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .station-map {
+    position: static;
+    height: 380px;
+  }
+}

@@ -177,3 +177,19 @@
     flex-wrap: wrap;
   }
 }
+
+.station-item-link {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--accent-text);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.station-item-link .chevrons {
+  font-size: 10px;
+}

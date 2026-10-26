@@ -23,7 +23,7 @@ function FitToStations({ positions, skip }) {
 }
 
 /** Centra el mapa en la estacion enfocada y abre su popup. */
-function FocusOnStation({ station, markers }) {
+function FocusOnStation({ station, markers, openPopup }) {
   const map = useMap()
 
   useEffect(() => {
@@ -31,8 +31,8 @@ function FocusOnStation({ station, markers }) {
     // Sin animacion: si no, el popup se abre antes de que termine el
     // movimiento y el ajuste automatico lo deja cortado arriba.
     map.setView(toLatLng(station), Math.max(map.getZoom(), FOCUS_ZOOM), { animate: false })
-    markers.current[station.stationId]?.openPopup()
-  }, [map, station, markers])
+    if (openPopup) markers.current[station.stationId]?.openPopup()
+  }, [map, station, markers, openPopup])
 
   return null
 }
@@ -44,10 +44,19 @@ function FocusOnStation({ station, markers }) {
  * - stations: estaciones a dibujar (con coordenadas).
  * - allStations: todas las estaciones conocidas, para calcular
  *   combinaciones en el popup (por defecto, las mismas).
- * - focusId: estacion a centrar y resaltar.
+ * - focusId: estacion a centrar y resaltar (y abrir su popup, salvo
+ *   openFocusedPopup = false).
  * - onSelect: se llama con el id de la estacion al hacer click.
  */
-export default function NetworkMap({ stations, allStations = stations, alerts = [], focusId = null, onSelect, className }) {
+export default function NetworkMap({
+  stations,
+  allStations = stations,
+  alerts = [],
+  focusId = null,
+  openFocusedPopup = true,
+  onSelect,
+  className,
+}) {
   const markers = useRef({})
   const routes = useMemo(() => buildRoutes(stations), [stations])
   const positions = useMemo(() => stations.map(toLatLng), [stations])
@@ -94,7 +103,7 @@ export default function NetworkMap({ stations, allStations = stations, alerts = 
       })}
 
       <FitToStations positions={positions} skip={Boolean(focused)} />
-      <FocusOnStation station={focused} markers={markers} />
+      <FocusOnStation station={focused} markers={markers} openPopup={openFocusedPopup} />
     </MapContainer>
   )
 }
