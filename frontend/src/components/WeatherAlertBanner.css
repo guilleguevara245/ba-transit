@@ -1,0 +1,131 @@
+/*
+ * Franja de alertas del SMN con la estetica del sitio: fondo de
+ * superficie, borde izquierdo y etiqueta del color de la alerta (como
+ * las etiquetas DEMORA de las alertas de las lineas).
+ */
+.weather-alert {
+  --level: var(--yellow-deep);
+  --level-tint: rgba(244, 193, 27, 0.16);
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  box-shadow: inset 4px 0 0 var(--level);
+  color: var(--text);
+  font-size: 13px;
+}
+
+.weather-alert-orange {
+  --level: var(--delayed);
+  --level-tint: var(--delayed-tint);
+}
+
+.weather-alert-red {
+  --level: var(--interrupted);
+  --level-tint: var(--interrupted-tint);
+}
+
+.weather-alert-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.weather-alert-tag {
+  flex-shrink: 0;
+  padding: 3px 8px;
+  border-radius: 2px;
+  background: var(--level-tint);
+  color: var(--level);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.weather-alert-text {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.5;
+}
+
+.weather-alert-text span {
+  color: var(--text-faint);
+}
+
+.weather-alert-detail {
+  margin-top: 6px;
+  color: var(--text-dim);
+}
+
+.weather-alert-detail p + p {
+  margin-top: 4px;
+}
+
+.weather-alert-instruction {
+  color: var(--text);
+}
+
+.weather-alert-areas {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.weather-alert-more,
+.weather-alert-close {
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.weather-alert-more {
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+.weather-alert-more:hover {
+  text-decoration: underline;
+}
+
+.weather-alert-close {
+  width: 24px;
+  height: 24px;
+  margin-top: -1px;
+  border-radius: 50%;
+  color: var(--text-faint);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.weather-alert-close:hover {
+  background: var(--bg);
+  color: var(--text);
+}
+
+@media (max-width: 600px) {
+  .weather-alert-row {
+    flex-wrap: wrap;
+    gap: 6px 10px;
+  }
+
+  .weather-alert-text {
+    flex-basis: calc(100% - 40px);
+    order: 2;
+  }
+
+  .weather-alert-tag {
+    order: 0;
+  }
+
+  .weather-alert-more {
+    order: 3;
+    margin-left: 0;
+  }
+
+  .weather-alert-close {
+    order: 1;
+    margin-left: auto;
+  }
+}

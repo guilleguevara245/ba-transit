@@ -71,6 +71,18 @@ const SOURCES = [
     detail: 'Temperatura, viento y estado del cielo actuales.',
   },
   {
+    what: 'Alertas meteorológicas',
+    source: 'Servicio Meteorológico Nacional (feed CAP)',
+    url: 'https://www.smn.gob.ar/alertas',
+    detail: 'Alertas amarillas, naranjas y rojas por tormentas, lluvias, calor y viento que afectan al AMBA, revisadas cada 10 minutos.',
+  },
+  {
+    what: 'Horario del último tren',
+    source: 'Emova, horarios del servicio',
+    url: 'https://emova.com.ar/',
+    detail: 'Salida del último tren desde cada cabecera; la hora en cada estación es estimada (±5 min).',
+  },
+  {
     what: 'Mapas',
     source: 'OpenStreetMap',
     url: 'https://www.openstreetmap.org/copyright',
