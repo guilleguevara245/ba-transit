@@ -13,6 +13,8 @@ import { MODE_LABELS } from '../constants.js'
 import { formatLongDate, yearsSince } from '../utils/format.js'
 import { findTransfers, routeInfo } from '../utils/map.js'
 import { lastTrainsAt, serviceDayType } from '../utils/lastTrain.js'
+import { eventsNear } from '../utils/events.js'
+import EventCard from '../components/EventCard.jsx'
 import './LinePage.css'
 import './MapPage.css'
 import './StationPage.css'
@@ -82,6 +84,7 @@ export default function StationPage() {
   const station = allStations?.find((s) => s.stationId === stationId)
   const alertsState = useApi(station ? `/api/v1/lines/${station.lineId}/alerts` : null, { refreshMs: 60_000 })
   const history = useStationHistory(station?.lineCode, station?.stationName)
+  const eventsState = useApi(station ? '/api/v1/eventos' : null, { refreshMs: 10 * 60_000 })
 
   const lineStations = useMemo(
     () => (station ? allStations.filter((s) => s.lineId === station.lineId) : []),
@@ -121,6 +124,7 @@ export default function StationPage() {
   const branch = allStations
     .filter((s) => s.branchId === station.branchId)
     .sort((a, b) => a.sequenceOrder - b.sequenceOrder)
+  const nearbyEvents = eventsNear(eventsState.data?.events, station)
   const lastTrains = station.lineMode === 'SUBTE' ? lastTrainsAt(station.lineCode, branch, station) : null
 
   return (
@@ -149,8 +153,20 @@ export default function StationPage() {
       <div className="station-layout">
         <div className="station-info">
           {station.lineMode === 'SUBTE' && (
-            <section className="station-card">
-              <NextTrains lineCode={station.lineCode} stationName={station.stationName} />
+            <NextTrains lineCode={station.lineCode} stationName={station.stationName} asCard />
+          )}
+
+          {nearbyEvents.length > 0 && (
+            <section className="station-card station-events">
+              <h2 className="station-card-title">Eventos y cortes cerca</h2>
+              {nearbyEvents.slice(0, 3).map((event) => (
+                <EventCard
+                  key={event.id}
+                  event={event}
+                  compact
+                  extra={`A unos ${Math.round(event.distanceKm * 10) * 100} m de la estación · puede haber más gente o cambios de servicio`}
+                />
+              ))}
             </section>
           )}
 

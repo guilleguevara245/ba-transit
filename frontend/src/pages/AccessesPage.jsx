@@ -4,6 +4,8 @@ import AccessesMap from '../components/AccessesMap.jsx'
 import BackButton from '../components/BackButton.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
 import { useApi } from '../hooks/useApi.js'
+import EventCard from '../components/EventCard.jsx'
+import { eventsOnAccesses } from '../utils/events.js'
 import { TOLLS, formatToll } from '../data/tolls.js'
 import { useNow } from '../hooks/useNow.js'
 import { formatLongDate, formatRelativeTime } from '../utils/format.js'
@@ -121,6 +123,8 @@ function AccessCard({ access, configured }) {
  */
 export default function AccessesPage() {
   const { data, loading, error } = useApi('/api/v1/accesos', { refreshMs: REFRESH_MS })
+  const eventsState = useApi('/api/v1/eventos', { refreshMs: REFRESH_MS })
+  const closures = data ? eventsOnAccesses(eventsState.data?.events, data.accesses) : []
   const now = useNow()
   const hasGeometry = data?.accesses.some((a) => a.segments.some((s) => s.geometry.length > 1))
 
@@ -162,6 +166,17 @@ export default function AccessesPage() {
               <AccessCard key={access.id} access={access} configured={data.configured} />
             ))}
           </div>
+
+          {closures.length > 0 && (
+            <>
+              <div className="section-label">Cortes y eventos cerca de los accesos</div>
+              <div className="events-grid access-closures">
+                {closures.map(({ event, access }) => (
+                  <EventCard key={event.id} event={event} extra={access ? `Cerca de ${access}` : null} />
+                ))}
+              </div>
+            </>
+          )}
 
           {hasGeometry && (
             <>

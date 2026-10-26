@@ -6,6 +6,7 @@ import { MODE_LABELS_PLURAL, MODE_SLUGS } from '../constants.js'
 import { MODE_ORDER, statusFor, summarizeByMode } from '../utils/network.js'
 import { useApi } from '../hooks/useApi.js'
 import { worstStatus } from '../utils/traffic.js'
+import { eventsOnAccesses } from '../utils/events.js'
 
 // Estado de la red de accesos, con las mismas etiquetas que los modos.
 const ACCESS_PILL = {
@@ -18,8 +19,10 @@ const ACCESS_PILL = {
 /** Tarjeta de Accesos: el peor estado entre todas las autopistas medidas. */
 function AccessesCard() {
   const { data } = useApi('/api/v1/accesos', { refreshMs: 5 * 60_000 })
+  const events = useApi('/api/v1/eventos', { refreshMs: 10 * 60_000 })
   const accesses = data?.accesses ?? []
   const pill = data?.configured ? ACCESS_PILL[worstStatus(accesses.flatMap((a) => a.segments))] : null
+  const closures = eventsOnAccesses(events.data?.events, accesses).length
   const withDelays = accesses.filter((a) => ['DEMORADO', 'CONGESTIONADO', 'CORTADO'].includes(worstStatus(a.segments))).length
 
   return (
@@ -41,6 +44,7 @@ function AccessesCard() {
         {pill
           ? `${accesses.length} autopistas · ${withDelays} con demoras`
           : 'Tránsito en las autopistas de acceso'}
+        {closures > 0 && ` · ${closures} ${closures === 1 ? 'corte' : 'cortes'}`}
       </div>
     </Link>
   )

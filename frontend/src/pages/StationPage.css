@@ -170,3 +170,8 @@
   margin-top: 8px;
   font-size: 12px;
 }
+
+.station-events .event-card.compact:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}

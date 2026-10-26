@@ -9,14 +9,16 @@ function formatMinutes({ minutes, estimated }) {
 
 /**
  * Proximos trenes de una estacion de subte, segun el pronostico en vivo
- * de la API Transporte. Si el servidor no tiene datos, no muestra nada.
+ * de la API Transporte. Si el servidor no tiene datos, no muestra nada
+ * (tampoco la tarjeta: con asCard el contenedor lo pone este componente,
+ * asi no queda un cuadro vacio en la pagina de la estacion).
  */
-export default function NextTrains({ lineCode, stationName }) {
+export default function NextTrains({ lineCode, stationName, asCard = false }) {
   const path = `/api/v1/subte/proximos?linea=${encodeURIComponent(lineCode)}&estacion=${encodeURIComponent(stationName)}`
   const { data } = useApi(path, { refreshMs: REFRESH_MS })
   if (!data?.available) return null
 
-  return (
+  const content = (
     <div className="station-popup-section next-trains">
       <div className="station-popup-label">
         Próximos trenes <span className="live-dot" aria-hidden="true" />
@@ -38,4 +40,5 @@ export default function NextTrains({ lineCode, stationName }) {
       )}
     </div>
   )
+  return asCard ? <section className="station-card">{content}</section> : content
 }
