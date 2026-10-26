@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import AccessibleBadge from '../components/AccessibleBadge.jsx'
 import BackButton from '../components/BackButton.jsx'
@@ -48,6 +48,28 @@ function ShareButton({ title }) {
 }
 
 /**
+ * Historia de la estacion y de su linea. Los textos se cargan aparte
+ * (import dinamico) para no sumar peso al resto del sitio.
+ */
+function useStationHistory(lineCode, stationName) {
+  const [history, setHistory] = useState(null)
+  useEffect(() => {
+    let cancelled = false
+    setHistory(null)
+    if (!lineCode) return undefined
+    import('../data/stationHistory.js')
+      .then((module) => {
+        if (!cancelled) setHistory(module.historyFor(lineCode, stationName))
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [lineCode, stationName])
+  return history
+}
+
+/**
  * Pagina de una estacion: proximos trenes (subte), combinaciones, lugares
  * cercanos, inauguracion, alertas de la linea y su ubicacion en el mapa.
  */
@@ -56,6 +78,7 @@ export default function StationPage() {
   const { data: allStations, loading, error } = useApi('/api/v1/map/stations')
   const station = allStations?.find((s) => s.stationId === stationId)
   const alertsState = useApi(station ? `/api/v1/lines/${station.lineId}/alerts` : null, { refreshMs: 60_000 })
+  const history = useStationHistory(station?.lineCode, station?.stationName)
 
   const lineStations = useMemo(
     () => (station ? allStations.filter((s) => s.lineId === station.lineId) : []),
@@ -124,13 +147,21 @@ export default function StationPage() {
             </section>
           )}
 
-          {station.openedOn && (
-            <section className="station-card">
-              <h2 className="station-card-title">Inauguración</h2>
-              <p>
-                {formatLongDate(station.openedOn)}
-                {years > 0 && <span className="station-dim"> · hace {years} años</span>}
-              </p>
+          {(station.openedOn || history?.station || history?.line) && (
+            <section className="station-card station-history">
+              <h2 className="station-card-title">Historia</h2>
+              {station.openedOn && (
+                <p className="station-opened">
+                  Inaugurada el {formatLongDate(station.openedOn)}
+                  {years > 0 && <span className="station-dim"> · hace {years} años</span>}
+                </p>
+              )}
+              {history?.station && <p>{history.station}</p>}
+              {history?.line && (
+                <p className="station-history-line">
+                  <strong>La {station.lineName}.</strong> {history.line}
+                </p>
+              )}
             </section>
           )}
 

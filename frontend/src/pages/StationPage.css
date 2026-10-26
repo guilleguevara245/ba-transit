@@ -125,3 +125,26 @@
 .station-accessible {
   margin-top: 8px;
 }
+
+.station-history p {
+  line-height: 1.55;
+}
+
+.station-history p + p {
+  margin-top: 8px;
+}
+
+.station-opened {
+  font-weight: 600;
+}
+
+.station-history-line {
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.station-history-line strong {
+  color: var(--text);
+}
