@@ -104,8 +104,8 @@ export default function AboutPage() {
           a la Ciudad y los aeropuertos: alertas de servicio, recorridos, estaciones, horarios, tarifas y tránsito.
         </p>
         <p>
-          Es un proyecto de <strong>Guillermo Guevara</strong>, estudiante de la Universidad Nacional de Hurlingham
-          (UNAHUR), hecho con Java 21, Spring Boot, PostgreSQL, React y Leaflet.
+          Es un proyecto personal de <strong>Guillermo Guevara</strong>, hecho con Java 21, Spring Boot, PostgreSQL,
+          React y Leaflet.
         </p>
       </section>
 

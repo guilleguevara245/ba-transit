@@ -75,7 +75,7 @@ public class WeatherAlertService {
         requestFactory.setConnectTimeout(5_000);
         requestFactory.setReadTimeout(15_000);
         this.restClient = RestClient.builder().requestFactory(requestFactory)
-                .defaultHeader("User-Agent", "BA-Transit/1.0 (proyecto UNAHUR)").build();
+                .defaultHeader("User-Agent", "BA-Transit/1.0 (https://ba-transit.onrender.com)").build();
     }
 
     public List<WeatherAlert> current() {

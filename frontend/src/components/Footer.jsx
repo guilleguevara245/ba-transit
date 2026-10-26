@@ -12,7 +12,7 @@ export default function Footer() {
           <LogoMark className="footer-mark" />
           BA Transit
         </span>
-        <span className="footer-text">Proyecto de Guillermo Guevara · UNAHUR · Información orientativa</span>
+        <span className="footer-text">Proyecto de Guillermo Guevara · Información orientativa</span>
         <InstallApp />
         <Link className="footer-link" to="/acerca">
           Acerca de y fuentes de datos
