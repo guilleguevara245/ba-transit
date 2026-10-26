@@ -65,6 +65,12 @@ const SOURCES = [
     detail: 'Se cargan a mano a partir de los avisos oficiales.',
   },
   {
+    what: 'Estacionamiento',
+    source: 'Buenos Aires Data — Garajes Comerciales, Estacionamientos concesionados y Estacionamientos de Motos',
+    url: 'https://data.buenosaires.gob.ar/dataset/garajes-comerciales',
+    detail: 'Garajes y playas de estacionamiento de toda la Ciudad, y cocheras y lugares en la calle para motos del microcentro (actualizados el 22/06/2026).',
+  },
+  {
     what: 'Peajes',
     source: 'Resoluciones de Vialidad Nacional y de la Provincia (vía La Nación y Ámbito)',
     url: 'https://www.argentina.gob.ar/obras-publicas/vialidad-nacional',

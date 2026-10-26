@@ -14,6 +14,7 @@ const ColectivosPage = lazy(() => import('./pages/ColectivosPage.jsx'))
 const AccessesPage = lazy(() => import('./pages/AccessesPage.jsx'))
 const AboutPage = lazy(() => import('./pages/AboutPage.jsx'))
 const EcobiciPage = lazy(() => import('./pages/EcobiciPage.jsx'))
+const ParkingPage = lazy(() => import('./pages/ParkingPage.jsx'))
 const TrainNoticesPage = lazy(() => import('./pages/TrainNoticesPage.jsx'))
 const StationPage = lazy(() => import('./pages/StationPage.jsx'))
 const SubePage = lazy(() => import('./pages/SubePage.jsx'))
@@ -34,6 +35,7 @@ export default function App() {
           <Route path="/colectivos" element={<ColectivosPage />} />
           <Route path="/accesos" element={<AccessesPage />} />
           <Route path="/ecobici" element={<EcobiciPage />} />
+          <Route path="/estacionamiento" element={<ParkingPage />} />
           <Route path="/sube" element={<SubePage />} />
           <Route path="/como-llegar" element={<TripPlannerPage />} />
           <Route path="/trenes/avisos" element={<TrainNoticesPage />} />
