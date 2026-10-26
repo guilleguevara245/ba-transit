@@ -36,7 +36,16 @@ public class TomTomTrafficClient {
     void setHealth(SourceHealth health) {
         this.health = health;
     }
-    private static final String URL = "https://api.tomtom.com/traffic/services/4/flowSegmentData/absolute/10/json"
+    /**
+     * Nivel de zoom de la consulta (0-22). Con 10 TomTom devolvia tramos
+     * generalizados muy largos: los dos puntos del Acceso Oeste (General
+     * Paz y Moreno, a 10 km) caian en el mismo tramo y daban el mismo dato.
+     * Con un zoom mas alto los tramos son mas cortos y la geometria cae
+     * mejor sobre la autopista.
+     */
+    static final int ZOOM = 16;
+
+    private static final String URL = "https://api.tomtom.com/traffic/services/4/flowSegmentData/absolute/" + ZOOM + "/json"
             + "?point={point}&unit=KMPH&key={key}";
 
     private final String apiKey;
