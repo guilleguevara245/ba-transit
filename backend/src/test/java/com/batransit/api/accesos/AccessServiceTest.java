@@ -188,6 +188,28 @@ class AccessServiceTest {
     }
 
     @Test
+    void dosTramosEnElMismoTramoDeTomTomSeMuestranComoUno() {
+        // TomTom devuelve el mismo tramo largo para los dos puntos (como en el Acceso Oeste).
+        TomTomTrafficClient client = new TomTomTrafficClient("clave") {
+            @Override
+            public Optional<FlowData> flowAt(double lat, double lon) {
+                return Optional.of(new FlowData(68, 92, false, "FRC0", 1,
+                        List.of(new double[] {-34.63, -58.53}, new double[] {-34.62, -58.79})));
+            }
+        };
+        List<DirectionDefinition> manos = List.of(new DirectionDefinition("CABA", -34.63, -58.6),
+                new DirectionDefinition("Provincia", -34.631, -58.6));
+        List<AccessDefinition> access = List.of(new AccessDefinition("oeste", "Acceso Oeste", "RN 7", "", "",
+                List.of(new SegmentDefinition("General Paz – Morón", -34.63, -58.6, manos),
+                        new SegmentDefinition("Ituzaingó – Moreno", -34.63, -58.7, manos))));
+
+        List<SegmentReport> segments = new AccessService(access, client, Clock.systemUTC())
+                .report().accesses().get(0).segments();
+
+        assertThat(segments).extracting(SegmentReport::name).containsExactly("General Paz – Moreno");
+    }
+
+    @Test
     void respetaElTopeDiarioDeConsultas() {
         // 300 puntos por medicion: entran dos mediciones (600) y la tercera pasaria el tope.
         List<DirectionDefinition> points = new java.util.ArrayList<>();

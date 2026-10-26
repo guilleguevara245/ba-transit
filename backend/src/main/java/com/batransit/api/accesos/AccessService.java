@@ -120,7 +120,7 @@ public class AccessService {
         }
 
         List<AccessReport> accesses = definitions.stream()
-                .map(a -> toReport(a, a.segments().stream().map(this::measure).toList()))
+                .map(a -> toReport(a, mergeSameSegment(a.segments().stream().map(this::measure).toList())))
                 .toList();
         cached = new AccessesResponse(true, now, accesses);
         cachedAt = now;
@@ -152,6 +152,58 @@ public class AccessService {
                 (int) Math.round(data.freeFlowSpeed()),
                 !onHighway,
                 data.geometry());
+    }
+
+    /**
+     * Si dos tramos seguidos del mismo acceso caen en el mismo tramo de
+     * TomTom (pasa en el Acceso Oeste: TomTom informa un unico promedio
+     * entre Moreno y la General Paz), se muestran como uno solo
+     * ("General Paz – Moreno") en vez de repetir el mismo dato dos veces.
+     */
+    static List<SegmentReport> mergeSameSegment(List<SegmentReport> segments) {
+        List<SegmentReport> result = new ArrayList<>();
+        for (SegmentReport segment : segments) {
+            SegmentReport last = result.isEmpty() ? null : result.get(result.size() - 1);
+            if (last != null && sameTomTomSegment(last, segment)) {
+                result.set(result.size() - 1, new SegmentReport(joinNames(last.name(), segment.name()), last.status(),
+                        last.currentSpeed(), last.freeFlowSpeed(), last.checkLocation(), last.geometry(),
+                        last.directions()));
+            } else {
+                result.add(segment);
+            }
+        }
+        return result;
+    }
+
+    private static boolean sameTomTomSegment(SegmentReport a, SegmentReport b) {
+        if (a.directions().isEmpty() || a.directions().size() != b.directions().size()) {
+            return false;
+        }
+        for (int i = 0; i < a.directions().size(); i++) {
+            DirectionReport x = a.directions().get(i);
+            DirectionReport y = b.directions().get(i);
+            if (x.geometry().size() < 2 || y.geometry().size() < 2
+                    || !near(x.geometry().get(0), y.geometry().get(0))
+                    || !near(x.geometry().get(x.geometry().size() - 1), y.geometry().get(y.geometry().size() - 1))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Menos de ~50 m entre dos puntos. */
+    private static boolean near(double[] p, double[] q) {
+        return Math.abs(p[0] - q[0]) < 0.0005 && Math.abs(p[1] - q[1]) < 0.0006;
+    }
+
+    /** "General Paz – Morón" + "Ituzaingó – Moreno" = "General Paz – Moreno". */
+    static String joinNames(String first, String second) {
+        String[] a = first.split(" – ");
+        String[] b = second.split(" – ");
+        if (a.length < 2 || b.length < 2) {
+            return first + " / " + second;
+        }
+        return a[0] + " – " + b[b.length - 1];
     }
 
     /** Consulta a TomTom contando la consulta para el tope diario. */
