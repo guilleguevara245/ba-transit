@@ -5,6 +5,7 @@ import LineBadge from './LineBadge.jsx'
 import NextTrains from './NextTrains.jsx'
 import { findTransfers, routeInfo } from '../utils/map.js'
 import { formatLongDate, yearsSince } from '../utils/format.js'
+import './MapPopup.css'
 
 const MAX_ALERT_CHARS = 110
 

@@ -1,6 +1,10 @@
 import { useEffect, useMemo } from 'react'
-import { MapContainer, Polyline, TileLayer, Tooltip, useMap } from 'react-leaflet'
-import { trafficStatus } from '../utils/traffic.js'
+import { MapContainer, Polyline, TileLayer, useMap } from 'react-leaflet'
+import MapCard, { MapCardIcon } from './MapCard.jsx'
+import { speedPercent, trafficStatus } from '../utils/traffic.js'
+
+// Mismo trazo que el icono de Accesos.
+const ACCESS_ICON = 'M8 3 5 21m11-18 3 18M12 4v3m0 4v3m0 4v3'
 
 function FitToSegments({ positions }) {
   const map = useMap()
@@ -41,12 +45,32 @@ export default function AccessesMap({ accesses, className }) {
           positions={segment.geometry}
           pathOptions={{ color: trafficStatus(segment.status).color, weight: 7, opacity: 0.85 }}
         >
-          <Tooltip sticky>
-            <strong>{segment.access.name}</strong>
-            <br />
-            {segment.name} · {trafficStatus(segment.status).label}
-            {segment.currentSpeed != null && ` · ${segment.currentSpeed} km/h`}
-          </Tooltip>
+          <MapCard badge={<MapCardIcon path={ACCESS_ICON} />} kicker={segment.access.name} title={segment.name}>
+            <div className="map-card-status" style={{ color: trafficStatus(segment.status).color }}>
+              <i style={{ background: trafficStatus(segment.status).color }} />
+              {trafficStatus(segment.status).label}
+            </div>
+            {segment.currentSpeed != null && (
+              <div className="map-card-stats">
+                <div className="map-card-stat">
+                  <strong>{segment.currentSpeed}</strong>
+                  <span>km/h ahora</span>
+                </div>
+                {segment.freeFlowSpeed != null && (
+                  <div className="map-card-stat">
+                    <strong>{segment.freeFlowSpeed}</strong>
+                    <span>km/h sin tránsito</span>
+                  </div>
+                )}
+                {speedPercent(segment) != null && (
+                  <div className="map-card-stat">
+                    <strong>{speedPercent(segment)}%</strong>
+                    <span>de lo normal</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </MapCard>
         </Polyline>
       ))}
       <FitToSegments positions={positions} />

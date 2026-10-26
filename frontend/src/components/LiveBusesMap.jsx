@@ -1,4 +1,7 @@
-import { CircleMarker, MapContainer, TileLayer, Tooltip } from 'react-leaflet'
+import { useState } from 'react'
+import { CircleMarker, MapContainer, TileLayer } from 'react-leaflet'
+import Chevrons from './Chevrons.jsx'
+import MapCard from './MapCard.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { useNow } from '../hooks/useNow.js'
 import { formatRelativeTime } from '../utils/format.js'
@@ -9,11 +12,13 @@ const REFRESH_MS = 30_000
 /**
  * Mapa con todos los colectivos que se estan moviendo ahora. Son miles
  * de puntos: se dibujan en un canvas (preferCanvas) en vez de un
- * elemento SVG por colectivo. Tocar uno abre su linea.
+ * elemento SVG por colectivo. Tocar uno abre su tarjeta, con un enlace
+ * al recorrido de la linea.
  */
 export default function LiveBusesMap({ onSelectRoute }) {
   const { data, loading } = useApi('/api/v1/colectivos/vivo', { refreshMs: REFRESH_MS })
   const now = useNow()
+  const [selected, setSelected] = useState(null)
 
   if (loading) return <Skeleton variant="map" label="Cargando colectivos en vivo…" />
   if (!data?.available) return null
@@ -40,16 +45,29 @@ export default function LiveBusesMap({ onSelectRoute }) {
             center={[bus.latitude, bus.longitude]}
             radius={3.5}
             pathOptions={{ color: '#17171a', weight: 1, fillColor: '#f4c11b', fillOpacity: 0.95 }}
-            eventHandlers={{ click: () => bus.routeId && onSelectRoute(bus) }}
-          >
-            <Tooltip>
-              <strong>Línea {bus.line || '?'}</strong>
-              {bus.headsign && ` · ${bus.headsign}`}
-            </Tooltip>
-          </CircleMarker>
+            eventHandlers={{ click: () => setSelected(bus) }}
+          />
         ))}
+        {selected && (
+          <MapCard
+            key={selected.id}
+            position={[selected.latitude, selected.longitude]}
+            onClose={() => setSelected(null)}
+            badge={<span className="map-card-bus">{selected.line || '?'}</span>}
+            kicker="Colectivo en vivo"
+            title={`Línea ${selected.line || '?'}`}
+            subtitle={selected.headsign ? `Hacia ${selected.headsign.replace(/^a\s+/i, '')}` : null}
+            actions={
+              selected.routeId && (
+                <button type="button" className="station-popup-link chevrons-host" onClick={() => onSelectRoute(selected)}>
+                  Ver el recorrido <Chevrons />
+                </button>
+              )
+            }
+          />
+        )}
       </MapContainer>
-      <p className="live-buses-hint">Tocá un colectivo para ver el recorrido de su línea.</p>
+      <p className="live-buses-hint">Tocá un colectivo para ver su línea y su recorrido.</p>
     </section>
   )
 }

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { CircleMarker, MapContainer, TileLayer, Tooltip, useMap } from 'react-leaflet'
+import { CircleMarker, MapContainer, TileLayer, useMap } from 'react-leaflet'
+import MapCard, { MapCardIcon } from '../components/MapCard.jsx'
 import BackButton from '../components/BackButton.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
 import ModeIcon from '../components/ModeIcon.jsx'
@@ -12,6 +13,9 @@ import './ModePage.css'
 import './EcobiciPage.css'
 
 const REFRESH_MS = 60_000
+// Mismo trazo que el icono de EcoBici de la barra de navegacion.
+const ECOBICI_ICON =
+  'M5.5 18a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zm13 0a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM5.5 14.5 9 8h6l3.5 6.5M9 8l3 6.5h-1M14 5h2.5'
 const MAX_RESULTS = 12
 const LEGEND = ['ok', 'low', 'empty', 'off']
 
@@ -145,11 +149,28 @@ export default function EcobiciPage() {
                   pathOptions={{ color: '#fff', weight: 1, fillColor: level.color, fillOpacity: 0.95 }}
                   eventHandlers={{ click: () => setSelectedId(s.id) }}
                 >
-                  <Tooltip>
-                    <strong>{stationLabel(s.name)}</strong>
-                    <br />
-                    {s.renting ? `${s.bikes} bicis · ${s.docks} anclajes libres` : 'Fuera de servicio'}
-                  </Tooltip>
+                  <MapCard
+                    badge={<MapCardIcon path={ECOBICI_ICON} />}
+                    kicker="Estación EcoBici"
+                    title={stationLabel(s.name)}
+                  >
+                    <div className="map-card-status" style={{ color: level.color }}>
+                      <i style={{ background: level.color }} />
+                      {level.label}
+                    </div>
+                    {s.renting && (
+                      <div className="map-card-stats">
+                        <div className="map-card-stat">
+                          <strong>{s.bikes}</strong>
+                          <span>{s.bikes === 1 ? 'bici disponible' : 'bicis disponibles'}</span>
+                        </div>
+                        <div className="map-card-stat">
+                          <strong>{s.docks}</strong>
+                          <span>{s.docks === 1 ? 'anclaje libre' : 'anclajes libres'}</span>
+                        </div>
+                      </div>
+                    )}
+                  </MapCard>
                 </CircleMarker>
               )
             })}

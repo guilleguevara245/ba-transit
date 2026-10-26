@@ -86,6 +86,36 @@
   border-bottom-color: var(--line);
 }
 
+/* ---- Etiquetas al pasar el mouse (tooltips de Leaflet) ---- */
+
+.leaflet-container .leaflet-tooltip {
+  padding: 5px 9px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-raised);
+  color: var(--text);
+  box-shadow: 0 4px 14px rgba(23, 23, 26, 0.14);
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.leaflet-container .leaflet-tooltip-left::before {
+  border-left-color: var(--line);
+}
+
+.leaflet-container .leaflet-tooltip-right::before {
+  border-right-color: var(--line);
+}
+
+.leaflet-container .leaflet-tooltip-top::before {
+  border-top-color: var(--line);
+}
+
+.leaflet-container .leaflet-tooltip-bottom::before {
+  border-bottom-color: var(--line);
+}
+
 :root[data-theme='dark'] .leaflet-control-attribution a {
   color: var(--accent-text);
 }
