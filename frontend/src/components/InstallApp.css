@@ -1,0 +1,52 @@
+.install-app {
+  position: relative;
+  display: inline-flex;
+}
+
+.install-app-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.install-app-button:hover {
+  border-color: var(--yellow);
+}
+
+.install-app-button svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.install-app-help {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  z-index: 30;
+  width: 240px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-dim);
+}
+
+.install-app-help strong {
+  color: var(--text);
+}

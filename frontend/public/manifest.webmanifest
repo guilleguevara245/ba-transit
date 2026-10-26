@@ -1,7 +1,7 @@
 {
   "name": "BA Transit",
   "short_name": "BA Transit",
-  "description": "Estado del transporte de Buenos Aires: subte, Premetro, trenes, colectivos, accesos y aeropuertos.",
+  "description": "Estado del transporte de Buenos Aires: subte, Premetro, trenes, colectivos, accesos, EcoBici y aeropuertos.",
   "lang": "es-AR",
   "start_url": "/",
   "scope": "/",
@@ -9,8 +9,65 @@
   "background_color": "#0c0c0d",
   "theme_color": "#0c0c0d",
   "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "id": "/",
+  "orientation": "portrait-primary",
+  "categories": [
+    "travel",
+    "navigation"
+  ],
+  "shortcuts": [
+    {
+      "name": "Cómo llegar",
+      "short_name": "Cómo llegar",
+      "url": "/como-llegar",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Mapa de la red",
+      "short_name": "Mapa",
+      "url": "/mapa",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Colectivos",
+      "short_name": "Colectivos",
+      "url": "/colectivos",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
   ]
 }

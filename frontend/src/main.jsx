@@ -9,3 +9,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <App />
   </React.StrictMode>,
 )
+
+// Service worker (instalable y aviso sin conexion). Solo en produccion:
+// en desarrollo guardaria archivos viejos en cache.
+if (import.meta.env.PROD && 'serviceWorker' in window.navigator) {
+  window.addEventListener('load', () => {
+    window.navigator.serviceWorker.register('/sw.js').catch(() => {})
+  })
+}
