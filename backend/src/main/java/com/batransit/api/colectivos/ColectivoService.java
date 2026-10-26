@@ -184,6 +184,41 @@ public class ColectivoService {
                 .toList();
     }
 
+    /** Linea con parada cerca de un punto y a cuantos metros esta su parada mas cercana. */
+    public record NearbyRoute(BusRoute route, int meters) {
+    }
+
+    /**
+     * Lineas con alguna parada a menos de radiusMeters del punto, de la mas
+     * cercana a la mas lejana. Se recorren las paradas de los recorridos ya
+     * cargados en memoria (unas pocas centenas de miles de cuentas: milisegundos).
+     */
+    public List<NearbyRoute> near(double lat, double lon, int radiusMeters) {
+        List<NearbyRoute> result = new java.util.ArrayList<>();
+        for (BusRoute route : requireCatalog().routes().values()) {
+            double best = Double.MAX_VALUE;
+            for (var direction : route.directions()) {
+                for (var stop : direction.stops()) {
+                    best = Math.min(best, distanceMeters(lat, lon, stop.latitude(), stop.longitude()));
+                }
+            }
+            if (best <= radiusMeters) {
+                result.add(new NearbyRoute(route, (int) Math.round(best)));
+            }
+        }
+        result.sort(Comparator.comparingInt(NearbyRoute::meters)
+                .thenComparing(n -> naturalKey(n.route().shortName())));
+        return result;
+    }
+
+    static double distanceMeters(double lat1, double lon1, double lat2, double lon2) {
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        return 6_371_000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
     public BusRoute find(String routeId) {
         return find(routeId, null, null);
     }

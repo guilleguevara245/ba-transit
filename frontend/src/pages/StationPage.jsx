@@ -14,10 +14,15 @@ import { formatLongDate, yearsSince } from '../utils/format.js'
 import { findTransfers, routeInfo } from '../utils/map.js'
 import { lastTrainsAt, serviceDayType } from '../utils/lastTrain.js'
 import { eventsNear } from '../utils/events.js'
+import { readableTextColor } from '../utils/color.js'
 import EventCard from '../components/EventCard.jsx'
+import './ModePage.css'
 import './LinePage.css'
 import './MapPage.css'
 import './StationPage.css'
+
+/** Paradas de colectivo a esta distancia cuentan como cerca de la estacion. */
+const BUS_RADIUS_M = 300
 
 const DAY_NAMES = ['días hábiles', 'sábados', 'domingos y feriados']
 
@@ -85,6 +90,9 @@ export default function StationPage() {
   const alertsState = useApi(station ? `/api/v1/lines/${station.lineId}/alerts` : null, { refreshMs: 60_000 })
   const history = useStationHistory(station?.lineCode, station?.stationName)
   const eventsState = useApi(station ? '/api/v1/eventos' : null, { refreshMs: 10 * 60_000 })
+  const busesState = useApi(
+    station ? `/api/v1/colectivos/cerca?lat=${station.latitude}&lon=${station.longitude}&radio=${BUS_RADIUS_M}` : null,
+  )
 
   const lineStations = useMemo(
     () => (station ? allStations.filter((s) => s.lineId === station.lineId) : []),
@@ -124,6 +132,11 @@ export default function StationPage() {
   const branch = allStations
     .filter((s) => s.branchId === station.branchId)
     .sort((a, b) => a.sequenceOrder - b.sequenceOrder)
+  // Una ficha por numero de linea ("53A" y "53B" quedan como dos carteles distintos).
+  const nearbyBuses = []
+  for (const bus of busesState.data ?? []) {
+    if (bus.shortName && !nearbyBuses.some((b) => b.shortName === bus.shortName)) nearbyBuses.push(bus)
+  }
   const nearbyEvents = eventsNear(eventsState.data?.events, station)
   const lastTrains = station.lineMode === 'SUBTE' ? lastTrainsAt(station.lineCode, branch, station) : null
 
@@ -221,6 +234,25 @@ export default function StationPage() {
                   </li>
                 ))}
               </ul>
+            </section>
+          )}
+
+          {nearbyBuses.length > 0 && (
+            <section className="station-card">
+              <h2 className="station-card-title">Colectivos a menos de {BUS_RADIUS_M} m</h2>
+              <div className="station-buses">
+                {nearbyBuses.map((bus) => (
+                  <Link
+                    key={bus.id}
+                    to={`/colectivos?linea=${encodeURIComponent(bus.id)}`}
+                    className="station-bus"
+                    style={bus.color ? { background: bus.color, color: readableTextColor(bus.color) } : undefined}
+                    title={`Línea ${bus.shortName} · parada a unos ${Math.max(50, Math.round(bus.meters / 50) * 50)} m`}
+                  >
+                    {bus.shortName}
+                  </Link>
+                ))}
+              </div>
             </section>
           )}
 

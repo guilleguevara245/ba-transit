@@ -253,3 +253,50 @@ body {
     opacity: 0.3;
   }
 }
+
+/* Boton redondeado de compartir (estaciones y Como llegar). */
+.share-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.share-button svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.share-button:hover {
+  border-color: var(--yellow);
+}
+
+/* Avisos y notas de fuente compartidos por varias paginas (cada pagina se
+   descarga por separado, asi que lo comun vive aca). */
+.bus-unavailable {
+  padding: 16px 18px;
+  border: 1px dashed var(--line);
+  color: var(--text-dim);
+  font-size: 14px;
+  max-width: 640px;
+}
+
+.airports-source {
+  margin: 8px 0 40px;
+  font-size: 12px;
+  color: var(--text-faint);
+}

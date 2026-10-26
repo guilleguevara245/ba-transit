@@ -2,14 +2,6 @@
   margin-bottom: 16px;
 }
 
-.bus-unavailable {
-  padding: 16px 18px;
-  border: 1px dashed var(--line);
-  color: var(--text-dim);
-  font-size: 14px;
-  max-width: 640px;
-}
-
 .bus-number {
   display: inline-grid;
   place-items: center;

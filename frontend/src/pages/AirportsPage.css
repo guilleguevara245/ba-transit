@@ -131,12 +131,6 @@
   box-shadow: var(--shadow);
 }
 
-.airports-source {
-  margin: 8px 0 40px;
-  font-size: 12px;
-  color: var(--text-faint);
-}
-
 /* Etiqueta fija de cada aeropuerto en el mapa. */
 .leaflet-container .airport-map-label strong {
   margin-right: 4px;

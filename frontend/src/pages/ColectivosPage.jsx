@@ -12,6 +12,7 @@ import { busDescription, busTitle } from '../utils/busNames.js'
 import { formatDuration } from '../utils/travelTime.js'
 import './ModePage.css'
 import './ColectivosPage.css'
+import './MapPage.css'
 
 // Las posiciones se actualizan cada pocos segundos; el backend las guarda 20.
 const LIVE_REFRESH_MS = 20_000

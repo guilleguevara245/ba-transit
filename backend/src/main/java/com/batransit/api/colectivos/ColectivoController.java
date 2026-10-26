@@ -54,6 +54,23 @@ public class ColectivoController {
                 .orElse(new Status(false, 0, null));
     }
 
+    public record NearbyRouteSummary(String id, String shortName, String longName, String color, int meters) {
+    }
+
+    /** Radio maximo aceptado, para que nadie pida "todas las lineas a 50 km". */
+    static final int MAX_RADIUS = 1000;
+
+    /** GET /api/v1/colectivos/cerca?lat=-34.6&lon=-58.4&radio=300: lineas con parada cerca. */
+    @GetMapping("/cerca")
+    public List<NearbyRouteSummary> near(@RequestParam double lat, @RequestParam double lon,
+                                         @RequestParam(value = "radio", defaultValue = "300") int radius) {
+        int r = Math.max(50, Math.min(radius, MAX_RADIUS));
+        return service.near(lat, lon, r).stream()
+                .map(n -> new NearbyRouteSummary(n.route().id(), n.route().shortName(), n.route().longName(),
+                        n.route().color(), n.meters()))
+                .toList();
+    }
+
     /** GET /api/v1/colectivos?q=152 */
     @GetMapping
     public List<RouteSummary> search(@RequestParam("q") String query) {

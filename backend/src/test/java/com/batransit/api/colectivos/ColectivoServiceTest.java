@@ -72,4 +72,15 @@ class ColectivoServiceTest {
         assertThatThrownBy(() -> service.find("ID_VIEJO", "999", null)).isInstanceOf(NotFoundException.class);
         assertThatThrownBy(() -> service.find("ID_VIEJO", null, null)).isInstanceOf(NotFoundException.class);
     }
+
+    @Test
+    void lineasConParadaCerca() throws IOException {
+        ColectivoService service = loadedService();
+        BusRoute r152 = service.find("R152");
+        var stop = r152.directions().get(0).stops().get(0);
+
+        assertThat(service.near(stop.latitude(), stop.longitude(), 300))
+                .extracting(n -> n.route().id()).contains("R152");
+        assertThat(service.near(-31.4, -64.2, 300)).isEmpty();
+    }
 }
