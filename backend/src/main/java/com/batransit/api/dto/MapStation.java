@@ -18,6 +18,7 @@ public record MapStation(
         String lineColorHex,
         Integer sequenceOrder,
         LocalDate openedOn,
-        String landmarks
+        String landmarks,
+        Boolean accessible
 ) {
 }

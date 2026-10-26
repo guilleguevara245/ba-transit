@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import AccessibleBadge from './AccessibleBadge.jsx'
 import Chevrons from './Chevrons.jsx'
 import LineBadge from './LineBadge.jsx'
 import NextTrains from './NextTrains.jsx'
@@ -33,6 +34,7 @@ export default function StationPopup({ station, stations, alerts, mode }) {
       </div>
 
       <h3 className="station-popup-name">{station.stationName}</h3>
+      {station.accessible && <AccessibleBadge />}
 
       <div className="station-popup-route">
         Estación {route.position} de {route.total} · {route.from} ↔ {route.to}

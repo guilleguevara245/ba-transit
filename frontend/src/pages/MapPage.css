@@ -245,3 +245,9 @@
 .station-popup-link:hover {
   text-decoration: underline;
 }
+
+.map-note {
+  margin: -6px 0 12px;
+  font-size: 12px;
+  color: var(--text-faint);
+}

@@ -29,6 +29,12 @@ const SOURCES = [
     detail: 'Primer y último tren de cada línea.',
   },
   {
+    what: 'Estaciones accesibles del subte',
+    source: 'Emova — Información de las estaciones',
+    url: 'https://emova.com.ar/index.php/informacion-de-las-estaciones/',
+    detail: 'Estaciones marcadas como accesibles por la operadora.',
+  },
+  {
     what: 'Fechas de inauguración y estaciones del Premetro',
     source: 'Wikipedia',
     url: 'https://en.wikipedia.org/wiki/List_of_Buenos_Aires_Underground_stations',

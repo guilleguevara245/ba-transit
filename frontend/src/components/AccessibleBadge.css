@@ -1,0 +1,27 @@
+.accessible-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(0, 92, 175, 0.1);
+  color: #1d5fa8;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+:root[data-theme='dark'] .accessible-badge {
+  background: rgba(110, 165, 230, 0.15);
+  color: #8dbcf0;
+}
+
+.accessible-badge svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

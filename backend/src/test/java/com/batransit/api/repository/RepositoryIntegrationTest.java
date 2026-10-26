@@ -70,6 +70,7 @@ class RepositoryIntegrationTest {
         assertThat(stations).filteredOn(s -> s.stationName().equals("Facultad de Medicina"))
                 .extracting(MapStation::landmarks)
                 .containsExactly("Hospital de Clínicas; Facultad de Medicina (UBA)");
+        assertThat(stations).filteredOn(s -> Boolean.TRUE.equals(s.accessible())).hasSize(30);
     }
 
     @Test

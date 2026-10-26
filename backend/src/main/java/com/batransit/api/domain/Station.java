@@ -65,6 +65,10 @@ public class Station {
     @Column(length = 300)
     private String landmarks;
 
+    /** true si Emova la informa como accesible; null = sin dato (ver V38). */
+    @Column
+    private Boolean accessible;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
@@ -136,5 +140,9 @@ public class Station {
 
     public String getLandmarks() {
         return landmarks;
+    }
+
+    public Boolean getAccessible() {
+        return accessible;
     }
 }

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import AccessibleBadge from '../components/AccessibleBadge.jsx'
 import BackButton from '../components/BackButton.jsx'
 import Chevrons from '../components/Chevrons.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
@@ -106,6 +107,11 @@ export default function StationPage() {
           <div className="line-facts">
             Estación {route.position} de {route.total} · {route.from} ↔ {route.to}
           </div>
+          {station.accessible && (
+            <div className="station-accessible">
+              <AccessibleBadge />
+            </div>
+          )}
         </div>
         <ShareButton title={`${station.stationName} · ${station.lineName}`} />
       </div>

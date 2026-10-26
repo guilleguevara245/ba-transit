@@ -42,6 +42,9 @@ function FocusOnStation({ station, markers, openPopup }) {
  * del mapa, la de cada modo y el minimapa del detalle de linea.
  *
  * - stations: estaciones a dibujar (con coordenadas).
+ * - routeStations: estaciones con las que se dibujan los recorridos (por
+ *   defecto, las mismas; sirve para mostrar solo algunas estaciones sin
+ *   cortar las lineas).
  * - allStations: todas las estaciones conocidas, para calcular
  *   combinaciones en el popup (por defecto, las mismas).
  * - focusId: estacion a centrar y resaltar (y abrir su popup, salvo
@@ -50,6 +53,7 @@ function FocusOnStation({ station, markers, openPopup }) {
  */
 export default function NetworkMap({
   stations,
+  routeStations = stations,
   allStations = stations,
   alerts = [],
   focusId = null,
@@ -58,7 +62,7 @@ export default function NetworkMap({
   className,
 }) {
   const markers = useRef({})
-  const routes = useMemo(() => buildRoutes(stations), [stations])
+  const routes = useMemo(() => buildRoutes(routeStations), [routeStations])
   const positions = useMemo(() => stations.map(toLatLng), [stations])
   const focused = stations.find((s) => s.stationId === focusId) ?? null
 

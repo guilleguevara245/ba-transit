@@ -16,6 +16,7 @@ export default function MapPage() {
   const { data: alerts } = useApi('/api/v1/alerts', { refreshMs: 60_000 })
   const [searchParams] = useSearchParams()
   const [modeFilter, setModeFilter] = useState('TODOS')
+  const [accessibleOnly, setAccessibleOnly] = useState(false)
 
   const focusId = Number(searchParams.get('estacion')) || null
 
@@ -23,10 +24,11 @@ export default function MapPage() {
     () => MODE_ORDER.filter((mode) => stations?.some((s) => s.lineMode === mode)),
     [stations],
   )
-  const visible = useMemo(
+  const byMode = useMemo(
     () => (stations ?? []).filter((s) => modeFilter === 'TODOS' || s.lineMode === modeFilter),
     [stations, modeFilter],
   )
+  const visible = useMemo(() => (accessibleOnly ? byMode.filter((s) => s.accessible) : byMode), [byMode, accessibleOnly])
   const focusMissing = focusId && stations && !stations.some((s) => s.stationId === focusId)
 
   return (
@@ -48,7 +50,18 @@ export default function MapPage() {
             ))}
           </div>
         )}
+        <button
+          type="button"
+          className={accessibleOnly ? 'map-filter active' : 'map-filter'}
+          aria-pressed={accessibleOnly}
+          onClick={() => setAccessibleOnly((value) => !value)}
+        >
+          Solo accesibles
+        </button>
       </div>
+      {accessibleOnly && (
+        <div className="map-note">Estaciones de subte que Emova informa como accesibles.</div>
+      )}
 
       {loading && <Skeleton variant="map" label="Cargando estaciones…" />}
       {error && <ErrorMessage what="el mapa" error={error} />}
@@ -59,6 +72,7 @@ export default function MapPage() {
           <NetworkMap
             className="map-container"
             stations={visible}
+            routeStations={byMode}
             allStations={stations}
             alerts={alerts ?? []}
             focusId={focusId}
