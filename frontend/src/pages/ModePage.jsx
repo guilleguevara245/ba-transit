@@ -1,6 +1,7 @@
 import Skeleton from '../components/Skeleton.jsx'
 import { Link, useParams } from 'react-router-dom'
 import ModeIcon from '../components/ModeIcon.jsx'
+import TrainNoticesLink from '../components/TrainNoticesLink.jsx'
 import BackButton from '../components/BackButton.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
 import FavoriteButton from '../components/FavoriteButton.jsx'
@@ -49,6 +50,8 @@ export default function ModePage() {
           {lines.length} {lines.length === 1 ? 'línea' : 'líneas'}
         </p>
       )}
+
+      {mode === 'TREN' && <TrainNoticesLink />}
 
       {linesState.loading && <Skeleton variant="cards" count={6} label="Cargando líneas…" />}
       {linesState.error && <ErrorMessage what="las líneas" error={linesState.error} />}
