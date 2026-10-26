@@ -164,8 +164,8 @@
 
 /* Pantallas medianas: la navegacion entra justa al lado del logo, asi
    que se achica el espaciado antes de pasar al formato de celular. */
-/* Con 7 secciones, por debajo de 1260 px las pestañas quedan solo con texto. */
-@media (max-width: 1260px) {
+/* Con 6 secciones, por debajo de 1150 px las pestañas quedan solo con texto. */
+@media (max-width: 1150px) {
   .nav-tab .nav-icon {
     display: none;
   }
@@ -183,7 +183,7 @@
 
 /* ---- Celular: las pestañas pasan debajo del logo ---- */
 
-@media (max-width: 1060px) {
+@media (max-width: 1000px) {
   /* Doble clase para ganarle al "padding: 0 32px" de .wrap (index.css se
      carga despues); solo se toca el vertical, el horizontal lo da .wrap. */
   .header .header-row {
