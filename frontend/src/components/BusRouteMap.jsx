@@ -1,5 +1,7 @@
 import { useEffect, useMemo } from 'react'
-import { CircleMarker, MapContainer, Polyline, TileLayer, Tooltip, useMap } from 'react-leaflet'
+import { CircleMarker, MapContainer, Polyline, TileLayer, useMap } from 'react-leaflet'
+import MapCard from './MapCard.jsx'
+import { parseBusShortName, stopName } from '../utils/busNames.js'
 
 function FitToRoute({ positions }) {
   const map = useMap()
@@ -19,6 +21,11 @@ export default function BusRouteMap({ route, directionIndex, className, vehicles
   const color = route.color ?? '#17171a'
   const active = route.directions[directionIndex]
   const positions = useMemo(() => active?.shape ?? [], [active])
+  const busBadge = (
+    <span className="map-card-bus" style={route.color ? { background: route.color } : undefined}>
+      {parseBusShortName(route.shortName).number || '?'}
+    </span>
+  )
 
   return (
     <MapContainer className={className} center={[-34.6083, -58.4]} zoom={12} scrollWheelZoom>
@@ -49,7 +56,17 @@ export default function BusRouteMap({ route, directionIndex, className, vehicles
                 radius={isEnd ? 7 : 4}
                 pathOptions={{ color, fillColor: '#ffffff', fillOpacity: 1, weight: isEnd ? 3 : 2 }}
               >
-                <Tooltip>{stop.name}</Tooltip>
+                <MapCard
+                  badge={busBadge}
+                  kicker={index === 0 ? 'Cabecera' : index === active.stops.length - 1 ? 'Última parada' : 'Parada'}
+                  title={stopName(stop.name)}
+                  subtitle={[
+                    `Parada ${index + 1} de ${active.stops.length}`,
+                    index > 0 && active.minutes?.[index] != null ? `+${active.minutes[index]} min desde la cabecera` : null,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                />
               </CircleMarker>
             )
           })}
@@ -63,10 +80,17 @@ export default function BusRouteMap({ route, directionIndex, className, vehicles
           radius={8}
           pathOptions={{ color: '#17171a', weight: 2, fillColor: '#f4c11b', fillOpacity: 1 }}
         >
-          <Tooltip>
-            Colectivo en vivo{v.headsign ? ` · ${v.headsign}` : ''}
-            {v.ageSeconds > 60 ? ` · hace ${Math.round(v.ageSeconds / 60)} min` : ''}
-          </Tooltip>
+          <MapCard
+            badge={busBadge}
+            kicker="Colectivo en vivo"
+            title={`Línea ${route.shortName || '?'}`}
+            subtitle={[
+              v.headsign ? `Hacia ${v.headsign.replace(/^a\s+/i, '')}` : null,
+              v.ageSeconds > 60 ? `posición de hace ${Math.round(v.ageSeconds / 60)} min` : 'posición actual',
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          />
         </CircleMarker>
       ))}
 

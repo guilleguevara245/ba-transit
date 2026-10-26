@@ -29,3 +29,21 @@ export function busDescription(route) {
   if (!name || INTERNAL_CODE.test(name.replace(/\s+/g, '')) || name === route.shortName) return null
   return name
 }
+
+const LOWER_WORDS = new Set(['de', 'del', 'la', 'las', 'el', 'los', 'y', 'e', 'a', 'al', 'en'])
+
+/**
+ * Nombre de parada legible: el feed los trae en mayusculas y con un
+ * numero interno adelante ("1302 ANTARTIDA ARGENTINA AV.").
+ */
+export function stopName(name) {
+  const clean = (name ?? '').replace(/^\s*\d+\s*[-–]?\s*/, '').trim()
+  if (!clean || clean !== clean.toUpperCase()) return clean || (name ?? '')
+  return clean
+    .toLowerCase()
+    .split(/\s+/)
+    .map((word, index) =>
+      index > 0 && LOWER_WORDS.has(word) ? word : word.replace(/^\p{L}/u, (c) => c.toUpperCase()),
+    )
+    .join(' ')
+}
