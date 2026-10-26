@@ -30,15 +30,6 @@
   color: var(--text-faint);
 }
 
-.travel-field select {
-  padding: 6px 8px;
-  border: 1px solid var(--line);
-  background: var(--bg);
-  color: var(--text);
-  font: inherit;
-  font-size: 13px;
-}
-
 .travel-result {
   display: flex;
   align-items: baseline;

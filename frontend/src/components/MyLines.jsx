@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import Select from './Select.jsx'
 import LineBadge from './LineBadge.jsx'
 import FavoriteButton from './FavoriteButton.jsx'
 import MiniNextTrains from './MiniNextTrains.jsx'
@@ -54,18 +55,16 @@ export default function MyLines({ lines, alerts }) {
 
                 {line.mode === 'SUBTE' && options.length > 0 && (
                   <div className="my-line-trains">
-                    <select
-                      aria-label={`Estación de la ${line.name} para ver los próximos trenes`}
-                      value={station ?? ''}
-                      onChange={(event) => setStation(line.id, event.target.value)}
-                    >
-                      <option value="">Elegí tu estación…</option>
-                      {options.map((s) => (
-                        <option key={s.stationId} value={s.stationName}>
-                          {s.stationName}
-                        </option>
-                      ))}
-                    </select>
+                    <Select
+                      label={`Estación de la ${line.name} para ver los próximos trenes`}
+                      placeholder="Elegí tu estación…"
+                      value={station ?? null}
+                      onChange={(name) => setStation(line.id, name)}
+                      options={[
+                        ...(station ? [{ value: '', label: 'Ninguna (ocultar próximos trenes)' }] : []),
+                        ...options.map((s) => ({ value: s.stationName, label: s.stationName, color: line.colorHex })),
+                      ]}
+                    />
                     {station && <MiniNextTrains lineCode={line.code} stationName={station} />}
                   </div>
                 )}

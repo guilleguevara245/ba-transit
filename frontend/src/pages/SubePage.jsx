@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom'
 import BackButton from '../components/BackButton.jsx'
 import FaresPanel from '../components/FaresPanel.jsx'
 import FareTable from '../components/FareTable.jsx'
+import Select from '../components/Select.jsx'
 import ModeIcon from '../components/ModeIcon.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { MODE_LABELS } from '../constants.js'
@@ -37,17 +38,13 @@ function Simulator({ fares }) {
         {trips.map((mode, index) => (
           <li key={index}>
             <span className="sube-trip-number">{index + 1}</span>
-            <select
+            <Select
+              className="sube-trip-select"
+              label={`Viaje ${index + 1}`}
               value={mode}
-              aria-label={`Viaje ${index + 1}`}
-              onChange={(e) => setTrips(trips.map((m, i) => (i === index ? e.target.value : m)))}
-            >
-              {available.map((m) => (
-                <option key={m} value={m}>
-                  {MODE_LABELS[m] ?? m}
-                </option>
-              ))}
-            </select>
+              onChange={(value) => setTrips(trips.map((m, i) => (i === index ? value : m)))}
+              options={available.map((m) => ({ value: m, label: MODE_LABELS[m] ?? m }))}
+            />
             {result.detail[index] && (
               <span className="sube-trip-price">
                 {formatCurrency(result.detail[index].paid)}

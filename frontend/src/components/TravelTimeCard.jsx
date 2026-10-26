@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useId, useMemo, useState } from 'react'
+import Select from './Select.jsx'
 import { estimateTrip, formatDuration } from '../utils/travelTime.js'
 import './TravelTimeCard.css'
 
@@ -17,6 +18,7 @@ export default function TravelTimeCard({ line, stations }) {
     return [...byBranch.values()].map((list) => [...list].sort((a, b) => a.sequenceOrder - b.sequenceOrder))
   }, [stations])
 
+  const ids = useId()
   const [branchIndex, setBranchIndex] = useState(0)
   const branch = branches[branchIndex] ?? []
   const [from, setFrom] = useState(0)
@@ -29,6 +31,7 @@ export default function TravelTimeCard({ line, stations }) {
   const safeFrom = clamp(from)
   const safeTo = clamp(to ?? safeFrom + 1)
   const trip = estimateTrip(branch, safeFrom, safeTo, line.mode)
+  const stationOptions = branch.map((s, i) => ({ value: i, label: s.stationName }))
 
   function changeBranch(index) {
     setBranchIndex(index)
@@ -41,39 +44,29 @@ export default function TravelTimeCard({ line, stations }) {
       <h2 className="travel-title">Tiempo de viaje</h2>
 
       {branches.length > 1 && (
-        <label className="travel-field">
-          <span>Ramal</span>
-          <select value={branchIndex} onChange={(e) => changeBranch(Number(e.target.value))}>
-            {branches.map((b, i) => (
-              <option key={b[0].branchId} value={i}>
-                {b[0].stationName} – {b[b.length - 1].stationName}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="travel-field">
+          <span id={`${ids}-ramal`}>Ramal</span>
+          <Select
+            labelledBy={`${ids}-ramal`}
+            value={branchIndex}
+            onChange={changeBranch}
+            options={branches.map((b, i) => ({
+              value: i,
+              label: `${b[0].stationName} – ${b[b.length - 1].stationName}`,
+            }))}
+          />
+        </div>
       )}
 
       <div className="travel-row">
-        <label className="travel-field">
-          <span>Desde</span>
-          <select value={safeFrom} onChange={(e) => setFrom(Number(e.target.value))}>
-            {branch.map((s, i) => (
-              <option key={s.stationId} value={i}>
-                {s.stationName}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="travel-field">
-          <span>Hasta</span>
-          <select value={safeTo} onChange={(e) => setTo(Number(e.target.value))}>
-            {branch.map((s, i) => (
-              <option key={s.stationId} value={i}>
-                {s.stationName}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="travel-field">
+          <span id={`${ids}-desde`}>Desde</span>
+          <Select labelledBy={`${ids}-desde`} value={safeFrom} onChange={setFrom} options={stationOptions} />
+        </div>
+        <div className="travel-field">
+          <span id={`${ids}-hasta`}>Hasta</span>
+          <Select labelledBy={`${ids}-hasta`} value={safeTo} onChange={setTo} options={stationOptions} />
+        </div>
       </div>
 
       {safeFrom === safeTo ? (

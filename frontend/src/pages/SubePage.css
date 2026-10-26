@@ -105,13 +105,9 @@
   font-weight: 700;
 }
 
-.sube-trips select {
-  padding: 6px 8px;
-  border: 1px solid var(--line);
-  background: var(--bg);
-  color: var(--text);
-  font: inherit;
-  font-size: 13px;
+
+.sube-trip-select {
+  width: 160px;
 }
 
 .sube-trip-price {

@@ -46,15 +46,6 @@
   border-top: 1px solid var(--line);
 }
 
-.my-line-trains select {
-  padding: 5px 8px;
-  border: 1px solid var(--line);
-  background: var(--bg);
-  color: var(--text);
-  font: inherit;
-  font-size: 13px;
-}
-
 .mini-trains {
   list-style: none;
   display: flex;
