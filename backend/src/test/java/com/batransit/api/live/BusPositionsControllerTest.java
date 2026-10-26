@@ -28,4 +28,22 @@ class BusPositionsControllerTest {
         assertThat(vehicles.get(0).headsign()).isEqualTo("a Est. Lanus");
         assertThat(vehicles.get(0).ageSeconds()).isEqualTo(28);
     }
+
+    @Test
+    void elMapaGeneralSoloIncluyeLosQueSeMueven() throws Exception {
+        String json = """
+                [{"route_id": "764", "route_short_name": "159C", "latitude": -34.786681, "longitude": -58.249,
+                  "speed": 9.72, "timestamp": 1776129272, "trip_headsign": "a Est. Lanus"},
+                 {"route_id": "764", "route_short_name": "159C", "latitude": -34.7, "longitude": -58.3,
+                  "speed": 0, "timestamp": 1776129280},
+                 {"route_id": "100", "route_short_name": "60A", "latitude": -34.6, "longitude": -58.4,
+                  "speed": 5, "timestamp": 1776120000}]
+                """;
+        List<BusPositionsController.MovingBus> buses =
+                BusPositionsController.movingOf(new ObjectMapper().readTree(json), NOW);
+
+        assertThat(buses).hasSize(1);
+        assertThat(buses.get(0).line()).isEqualTo("159C");
+        assertThat(buses.get(0).latitude()).isEqualTo(-34.78668);
+    }
 }

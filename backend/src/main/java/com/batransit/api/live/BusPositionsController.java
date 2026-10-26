@@ -35,10 +35,48 @@ public class BusPositionsController {
     public record VehiclesResponse(boolean available, Instant updatedAt, List<Vehicle> vehicles) {
     }
 
+    /** Version liviana para el mapa general (son ~3000 colectivos): solo lo que se dibuja. */
+    public record MovingBus(String id, String routeId, String line, double latitude, double longitude, String headsign) {
+    }
+
+    public record MovingResponse(boolean available, Instant updatedAt, List<MovingBus> buses) {
+    }
+
     private final TransporteLiveClient client;
 
     public BusPositionsController(TransporteLiveClient client) {
         this.client = client;
+    }
+
+    /**
+     * Todos los colectivos que se estan moviendo ahora (velocidad mayor a
+     * cero y posicion reciente), para el mapa de la seccion Colectivos.
+     */
+    @GetMapping("/vivo")
+    public MovingResponse moving() {
+        Optional<Fetched> feed = client.get("/colectivos/vehiclePositionsSimple", MAX_AGE);
+        if (feed.isEmpty()) {
+            return new MovingResponse(false, null, List.of());
+        }
+        return new MovingResponse(true, feed.get().fetchedAt(),
+                movingOf(feed.get().body(), Instant.now().getEpochSecond()));
+    }
+
+    static List<MovingBus> movingOf(JsonNode feed, long nowEpochSeconds) {
+        List<MovingBus> result = new ArrayList<>();
+        for (JsonNode v : feed) {
+            double lat = v.path("latitude").asDouble(0);
+            double lon = v.path("longitude").asDouble(0);
+            long timestamp = v.path("timestamp").asLong(0);
+            boolean recent = timestamp <= 0 || nowEpochSeconds - timestamp <= MAX_POSITION_AGE_SECONDS;
+            if (lat == 0 || lon == 0 || !recent || v.path("speed").asDouble(0) <= 0) {
+                continue;
+            }
+            // Se redondea a 5 decimales (~1 m): alcanza para el mapa y achica la respuesta.
+            result.add(new MovingBus(v.path("id").asText(""), v.path("route_id").asText(""), v.path("route_short_name").asText(""),
+                    Math.round(lat * 1e5) / 1e5, Math.round(lon * 1e5) / 1e5, v.path("trip_headsign").asText("")));
+        }
+        return result;
     }
 
     @GetMapping("/{routeId}/vivo")

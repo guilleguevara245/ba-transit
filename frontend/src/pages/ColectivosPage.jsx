@@ -1,3 +1,4 @@
+import LiveBusesMap from '../components/LiveBusesMap.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import ModeIcon from '../components/ModeIcon.jsx'
 import { useEffect, useState } from 'react'
@@ -168,7 +169,16 @@ export default function ColectivosPage() {
             </div>
           )}
 
-          {selectedId && <RouteDetail routeId={selectedId} />}
+          {selectedId ? (
+            <>
+              <button type="button" className="bus-show-all chevrons-host" onClick={() => setSearchParams({})}>
+                <span className="live-dot" aria-hidden="true" /> Ver todos los colectivos en vivo
+              </button>
+              <RouteDetail routeId={selectedId} />
+            </>
+          ) : (
+            <LiveBusesMap onSelectRoute={(routeId) => setSearchParams({ linea: routeId })} />
+          )}
 
           <p className="airports-source">
             Datos: feed GTFS de colectivos de la API Transporte de Buenos Aires. Se actualiza una vez por día.
