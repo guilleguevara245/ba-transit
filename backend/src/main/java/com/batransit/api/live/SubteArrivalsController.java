@@ -22,10 +22,25 @@ public class SubteArrivalsController {
     public record ArrivalsResponse(boolean available, Instant updatedAt, List<Direction> directions) {
     }
 
-    private final TransporteLiveClient client;
+    /** Proximas pasadas segun el horario programado (GTFS), para cuando no hay datos en vivo. */
+    public record ScheduleResponse(boolean available, List<SubteSchedule.Direction> directions) {
+    }
 
-    public SubteArrivalsController(TransporteLiveClient client) {
+    private final TransporteLiveClient client;
+    private final SubteScheduleService schedule;
+
+    public SubteArrivalsController(TransporteLiveClient client, SubteScheduleService schedule) {
         this.client = client;
+        this.schedule = schedule;
+    }
+
+    /** GET /api/v1/subte/horario?linea=D&estacion=Bulnes (tambien premetro: linea=P). */
+    @GetMapping("/horario")
+    public ScheduleResponse schedule(@RequestParam("linea") String line, @RequestParam("estacion") String station) {
+        if (!schedule.isAvailable()) {
+            return new ScheduleResponse(false, List.of());
+        }
+        return new ScheduleResponse(true, schedule.nextArrivals(line, station));
     }
 
     /** GET /api/v1/subte/proximos?linea=D&estacion=Bulnes */

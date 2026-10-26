@@ -18,3 +18,31 @@ export function formatArrival({ minutes, estimated }) {
   const text = minutes < 1 ? 'llegando' : `${minutes} min`
   return estimated ? `~${text}` : text
 }
+
+/** Horario programado (GTFS): subte y premetro. null para el resto. */
+export function schedulePath(mode, lineCode, stationName) {
+  if (!lineCode || !stationName || (mode !== 'SUBTE' && mode !== 'PREMETRO')) return null
+  return `/api/v1/subte/horario?linea=${encodeURIComponent(lineCode)}&estacion=${encodeURIComponent(stationName)}`
+}
+
+/** Hay datos en vivo utiles: al menos un sentido con algun tren. */
+export function hasLiveArrivals(data) {
+  return Boolean(data?.available && data.directions?.some((d) => d.arrivals?.length > 0))
+}
+
+/** "8:15": hora de reloj dentro de `minutes` minutos. */
+export function clockIn(minutes, now = new Date()) {
+  const at = new Date(now.getTime() + minutes * 60_000)
+  return `${at.getHours()}:${String(at.getMinutes()).padStart(2, '0')}`
+}
+
+/**
+ * Texto de un sentido segun el horario: proximas pasadas aproximadas, o
+ * el primer tren si todavia no empezo el servicio (o ya termino por hoy).
+ */
+export function scheduleLabel(direction, now = new Date()) {
+  const first = direction.arrivals[0]
+  if (!first) return 'Sin más trenes hoy'
+  if (direction.headwayMinutes == null) return `Primer tren ${clockIn(first.minutes, now)}`
+  return direction.arrivals.map(formatArrival).join(' · ')
+}

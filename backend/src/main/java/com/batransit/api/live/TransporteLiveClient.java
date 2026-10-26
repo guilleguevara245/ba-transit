@@ -88,6 +88,31 @@ public class TransporteLiveClient {
         }
     }
 
+    /**
+     * Archivo binario de la API (por ejemplo el GTFS estatico, un .zip), sin
+     * cache: se pide pocas veces. Vacio si no hay credenciales o si falla.
+     */
+    public Optional<byte[]> getBytes(String path) {
+        if (!isConfigured()) {
+            return Optional.empty();
+        }
+        try {
+            byte[] body = restClient.get()
+                    .uri(properties.getBaseUrl() + path + (path.contains("?") ? "&" : "?")
+                                    + "client_id={id}&client_secret={secret}",
+                            properties.getClientId(), properties.getClientSecret())
+                    .retrieve()
+                    .body(byte[].class);
+            return Optional.ofNullable(body);
+        } catch (RestClientException e) {
+            String reason = e instanceof RestClientResponseException r
+                    ? "HTTP " + r.getStatusCode().value()
+                    : e.getMostSpecificCause().getClass().getSimpleName();
+            log.warn("API Transporte {} no respondio ({})", path, reason);
+            return Optional.empty();
+        }
+    }
+
     /** Una respuesta de la API y cuando se obtuvo. */
     public record Fetched(JsonNode body, Instant fetchedAt) {
     }

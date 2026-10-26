@@ -35,6 +35,12 @@ const SOURCES = [
     detail: 'Primer y último tren de cada línea.',
   },
   {
+    what: 'Frecuencias programadas del subte y el Premetro',
+    source: 'API Transporte (Gobierno de la Ciudad), GTFS del subte',
+    url: 'https://www.buenosaires.gob.ar/desarrollourbano/transporte/apitransporte',
+    detail: 'Frecuencia por franja horaria y tiempo entre estaciones, para estimar las próximas pasadas cuando no hay datos en vivo.',
+  },
+  {
     what: 'Estaciones accesibles del subte',
     source: 'Emova — Información de las estaciones',
     url: 'https://emova.com.ar/index.php/informacion-de-las-estaciones/',
