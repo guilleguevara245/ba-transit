@@ -6,10 +6,16 @@ export const PARKING_LAYERS = [
   { key: 'lot', label: 'Playas de la Ciudad' },
   { key: 'garage', label: 'Cocheras para motos' },
   { key: 'street', label: 'Motos en la calle' },
+  { key: 'osm', label: 'Conurbano' },
 ]
 
+const OSM_KIND = { s: 'Playa subterránea', p: 'Playa de varios pisos', g: 'Garaje', a: 'Playa a cielo abierto' }
+
+/** Menos que esto en un partido: la cobertura de OpenStreetMap ahi es pobre. */
+export const LOW_COVERAGE = 5
+
 /** Une los datasets en una sola lista con la capa de cada lugar. */
-export function parkingPlaces({ cars = [], lots = [], garages = [], street = [] }) {
+export function parkingPlaces({ cars = [], lots = [], garages = [], street = [], osm = [], partidos = [] }) {
   return [
     // Garajes comerciales: [lat, lon, direccion, pisos, nombre, barrio].
     ...cars.map(([lat, lon, address, floors, name, barrio], i) => ({
@@ -26,6 +32,18 @@ export function parkingPlaces({ cars = [], lots = [], garages = [], street = [] 
     ...lots.map((l) => ({ ...l, layer: 'lot', title: l.name })),
     ...garages.map((g) => ({ ...g, layer: 'garage', title: g.address })),
     ...street.map((s) => ({ ...s, layer: 'street', title: s.street })),
+    // Conurbano (OpenStreetMap): [lat, lon, nombre, tipo, cobra, partido].
+    ...osm.map(([lat, lon, name, kind, fee, partido], i) => ({
+      id: `os${i}`,
+      lat,
+      lon,
+      name,
+      kind,
+      fee,
+      partido: partidos[partido] ?? '',
+      layer: 'osm',
+      title: name || OSM_KIND[kind] || 'Estacionamiento',
+    })),
   ]
 }
 
@@ -46,6 +64,11 @@ export function formatDistance(meters) {
 
 /** Detalle corto de un lugar para la lista y la tarjeta del mapa. */
 export function placeDetail(place) {
+  if (place.layer === 'osm') {
+    const kind = place.name ? OSM_KIND[place.kind] : null
+    const fee = place.fee === 1 ? 'pago' : place.fee === 0 ? 'gratis' : null
+    return [kind, fee, place.partido].filter(Boolean).join(' · ')
+  }
   if (place.layer === 'car') {
     const floors = place.floors > 1 ? `${place.floors} pisos` : null
     return ['Garaje', floors, place.barrio].filter(Boolean).join(' · ')
@@ -70,8 +93,23 @@ export function parkingTotals(places) {
   return {
     cars: places.filter((p) => p.layer === 'car').length,
     lots: places.filter((p) => p.layer === 'lot').length,
+    osm: places.filter((p) => p.layer === 'osm').length,
     garages: garages.length,
     garageSpots: garages.reduce((sum, g) => sum + (g.capacity ?? 0), 0),
     streetBlocks: places.filter((p) => p.layer === 'street').length,
   }
+}
+
+/**
+ * Cuantos lugares hay en cada partido del conurbano, de mayor a menor;
+ * los que no tienen ninguno van al final con 0.
+ */
+export function coverageByPartido(places, partidos) {
+  const counts = new Map(partidos.map((p) => [p, 0]))
+  for (const place of places) {
+    if (place.layer === 'osm' && counts.has(place.partido)) counts.set(place.partido, counts.get(place.partido) + 1)
+  }
+  return [...counts.entries()]
+    .map(([partido, count]) => ({ partido, count }))
+    .sort((a, b) => b.count - a.count || a.partido.localeCompare(b.partido, 'es'))
 }

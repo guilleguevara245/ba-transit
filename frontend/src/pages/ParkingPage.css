@@ -75,3 +75,50 @@
 .parking-toolbar .map-filters {
   flex-wrap: wrap;
 }
+
+/* Cobertura por partido del conurbano (desplegable). */
+.parking-coverage {
+  margin: 14px 0 0;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.parking-coverage summary {
+  cursor: pointer;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.parking-coverage p {
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+.parking-coverage strong {
+  color: var(--text);
+}
+
+.parking-coverage-list {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 4px 18px;
+  margin-top: 10px;
+}
+
+.parking-coverage-list li {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px dotted var(--line);
+  padding: 2px 0;
+}
+
+.parking-coverage-list span {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-faint);
+}

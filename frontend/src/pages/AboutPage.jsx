@@ -71,6 +71,12 @@ const SOURCES = [
     detail: 'Garajes y playas de estacionamiento de toda la Ciudad, y cocheras y lugares en la calle para motos del microcentro (actualizados el 22/06/2026).',
   },
   {
+    what: 'Estacionamiento en el conurbano',
+    source: 'OpenStreetMap (© colaboradores de OpenStreetMap, licencia ODbL)',
+    url: 'https://www.openstreetmap.org/copyright',
+    detail: 'Playas y garajes de los 40 partidos del AMBA, con el partido de cada uno. Son datos colaborativos, no oficiales: los municipios no publican datos abiertos de estacionamiento.',
+  },
+  {
     what: 'Peajes',
     source: 'Resoluciones de Vialidad Nacional y de la Provincia (vía La Nación y Ámbito)',
     url: 'https://www.argentina.gob.ar/obras-publicas/vialidad-nacional',

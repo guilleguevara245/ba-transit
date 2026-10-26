@@ -8,7 +8,8 @@ import BackButton from '../components/BackButton.jsx'
 import ModeIcon from '../components/ModeIcon.jsx'
 import { MOTO_GARAGES, MOTO_STREET, PARKING_SOURCE, PUBLIC_LOTS, PUBLIC_LOTS_SOURCE } from '../data/parking.js'
 import { GARAGES, GARAGES_SOURCE } from '../data/garages.js'
-import { PARKING_LAYERS, formatDistance, nearestPlaces, parkingPlaces, parkingTotals, placeDetail } from '../utils/parking.js'
+import { AMBA_PARTIDOS, OSM_PARKING } from '../data/parkingAmba.js'
+import { LOW_COVERAGE, PARKING_LAYERS, coverageByPartido, formatDistance, nearestPlaces, parkingPlaces, parkingTotals, placeDetail } from '../utils/parking.js'
 import '../components/MapPopup.css'
 import './MapPage.css'
 import './ModePage.css'
@@ -24,8 +25,15 @@ const BADGES = {
   lot: { glyph: 'lot', bg: '#f4c11b', fg: '#17171a', border: '#17171a', shape: 'square' },
   garage: { glyph: 'motoGarage', bg: '#17171a', fg: '#f4c11b', border: '#f4c11b', shape: 'square' },
   street: { glyph: 'moto', bg: '#17171a', fg: '#f4c11b', border: '#f4c11b', shape: 'circle' },
+  // Conurbano (OpenStreetMap, no oficial): mismo dibujo de playa, en blanco.
+  osm: { glyph: 'lot', bg: '#ffffff', fg: '#17171a', border: '#17171a', shape: 'circle' },
 }
-const SIZES = { car: 22, lot: 26, garage: 24, street: 22 }
+const SIZES = { car: 22, lot: 26, garage: 24, street: 22, osm: 22 }
+// Capas con muchos puntos: con el mapa lejos van como puntos en canvas.
+const DOT_STYLE = {
+  car: { color: '#17171a', weight: 1, fillColor: '#f4c11b', fillOpacity: 1 },
+  osm: { color: '#17171a', weight: 1, fillColor: '#ffffff', fillOpacity: 1 },
+}
 const iconFor = (layer, active) => badgeIcon(BADGES[layer].glyph, { ...BADGES[layer], size: SIZES[layer], active })
 
 // Los garajes son miles: con el mapa lejos van como puntos (canvas, livianos);
@@ -70,9 +78,20 @@ function FlyToPoint({ point }) {
 /** Estacionamiento: garajes y playas de la Ciudad, y lugares para motos, en un mapa. */
 export default function ParkingPage() {
   const places = useMemo(
-    () => parkingPlaces({ cars: GARAGES, lots: PUBLIC_LOTS, garages: MOTO_GARAGES, street: MOTO_STREET }),
+    () =>
+      parkingPlaces({
+        cars: GARAGES,
+        lots: PUBLIC_LOTS,
+        garages: MOTO_GARAGES,
+        street: MOTO_STREET,
+        osm: OSM_PARKING,
+        partidos: AMBA_PARTIDOS,
+      }),
     [],
   )
+  const coverage = useMemo(() => coverageByPartido(places, AMBA_PARTIDOS), [places])
+  const withoutData = coverage.filter((c) => c.count === 0).map((c) => c.partido)
+  const lowData = coverage.filter((c) => c.count > 0 && c.count < LOW_COVERAGE).map((c) => c.partido)
   const totals = useMemo(() => parkingTotals(places), [places])
   const [layer, setLayer] = useState('all')
   const [point, setPoint] = useState(null)
@@ -113,8 +132,8 @@ export default function ParkingPage() {
         Estacionamiento
       </h1>
       <p className="page-subtitle">
-        Garajes y playas de estacionamiento de toda la Ciudad, y para motos, cocheras y lugares en la calle del
-        microcentro.
+        Garajes y playas de estacionamiento de toda la Ciudad y del conurbano, y para motos, cocheras y lugares en
+        la calle del microcentro.
       </p>
 
       <div className="ecobici-summary">
@@ -129,6 +148,9 @@ export default function ParkingPage() {
         </span>
         <span>
           <strong>{totals.streetBlocks}</strong> cuadras con lugar para motos
+        </span>
+        <span>
+          <strong>{totals.osm.toLocaleString('es-AR')}</strong> en el conurbano
         </span>
       </div>
 
@@ -201,6 +223,10 @@ export default function ParkingPage() {
           <MapBadge {...BADGES.street} />
           Motos en la calle
         </span>
+        <span>
+          <MapBadge {...BADGES.osm} />
+          Conurbano (OpenStreetMap)
+        </span>
       </div>
 
       <MapContainer className="ecobici-map parking-map" center={CENTER} zoom={ZOOM} scrollWheelZoom preferCanvas>
@@ -214,18 +240,18 @@ export default function ParkingPage() {
         {visible.map((p) => {
           const active = p.id === selectedId
           const select = { click: () => setSelectedId(p.id) }
-          if (p.layer === 'car') {
+          if (p.layer === 'car' || p.layer === 'osm') {
             // Son miles: sin tarjeta propia; se abre una sola, compartida (abajo).
             if (view.zoom >= GARAGE_ICON_ZOOM) {
               if (!active && !view.bounds?.contains([p.lat, p.lon])) return null
-              return <Marker key={p.id} position={[p.lat, p.lon]} icon={iconFor('car', active)} eventHandlers={select} />
+              return <Marker key={p.id} position={[p.lat, p.lon]} icon={iconFor(p.layer, active)} eventHandlers={select} />
             }
             return (
               <CircleMarker
                 key={p.id}
                 center={[p.lat, p.lon]}
                 radius={active ? 8 : 4}
-                pathOptions={{ color: '#17171a', weight: 1, fillColor: '#f4c11b', fillOpacity: 1 }}
+                pathOptions={DOT_STYLE[p.layer]}
                 eventHandlers={select}
               />
             )
@@ -274,6 +300,19 @@ export default function ParkingPage() {
             </Marker>
           )
         })}
+        {selected?.layer === 'osm' && (
+          <MapCard
+            key={selected.id}
+            position={[selected.lat, selected.lon]}
+            onClose={() => setSelectedId(null)}
+            badge={<MapCardIcon path={GLYPHS.lot} />}
+            kicker="Estacionamiento en el conurbano"
+            title={selected.title}
+            subtitle={placeDetail(selected) || null}
+          >
+            <div className="station-popup-opened">Dato de OpenStreetMap (no oficial)</div>
+          </MapCard>
+        )}
         {selected?.layer === 'car' && (
           <MapCard
             key={selected.id}
@@ -293,12 +332,42 @@ export default function ParkingPage() {
         <FlyTo target={selected} />
       </MapContainer>
 
+      <details className="parking-coverage">
+        <summary>Cobertura en el conurbano</summary>
+        <p>
+          Los municipios del conurbano no publican datos abiertos de estacionamiento. Los lugares de esa zona salen de
+          OpenStreetMap, un mapa colaborativo: están las playas y garajes que alguien cargó, así que en algunos
+          partidos falta mucho.
+        </p>
+        {withoutData.length > 0 && (
+          <p>
+            <strong>Sin datos:</strong> {withoutData.join(', ')}.
+          </p>
+        )}
+        {lowData.length > 0 && (
+          <p>
+            <strong>Muy pocos datos:</strong> {lowData.join(', ')}.
+          </p>
+        )}
+        <ul className="parking-coverage-list">
+          {coverage
+            .filter((c) => c.count >= LOW_COVERAGE)
+            .map((c) => (
+              <li key={c.partido}>
+                {c.partido} <span>{c.count}</span>
+              </li>
+            ))}
+        </ul>
+      </details>
+
       <p className="airports-source parking-source">
         Datos del Gobierno de la Ciudad (Buenos Aires Data):{' '}
         <a href={GARAGES_SOURCE.url} target="_blank" rel="noreferrer">Garajes Comerciales</a>,{' '}
         <a href={PUBLIC_LOTS_SOURCE.url} target="_blank" rel="noreferrer">Estacionamientos concesionados</a> y{' '}
         <a href={PARKING_SOURCE.url} target="_blank" rel="noreferrer">Estacionamientos de Motos</a> (este último, solo
-        microcentro). Conviene confirmar horarios y tarifas en el lugar.
+        microcentro). Conurbano: ©{' '}
+        <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">colaboradores de OpenStreetMap</a>{' '}
+        (ODbL). Conviene confirmar horarios y tarifas en el lugar.
       </p>
     </div>
   )

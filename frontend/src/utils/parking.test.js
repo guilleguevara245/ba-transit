@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatDistance, nearestPlaces, parkingPlaces, parkingTotals, placeDetail } from './parking.js'
+import { coverageByPartido, formatDistance, nearestPlaces, parkingPlaces, parkingTotals, placeDetail } from './parking.js'
 
 const garages = [
   { id: 'mc1', lat: -34.6066, lon: -58.378, address: 'Esmeralda 142', capacity: 30, covered: true, exclusive: true, floors: 2 },
@@ -50,6 +50,29 @@ describe('parking', () => {
   })
 
   it('totales', () => {
-    expect(parkingTotals(places)).toEqual({ cars: 0, lots: 0, garages: 2, garageSpots: 80, streetBlocks: 1 })
+    expect(parkingTotals(places)).toEqual({ cars: 0, lots: 0, osm: 0, garages: 2, garageSpots: 80, streetBlocks: 1 })
+  })
+
+  it('conurbano (OpenStreetMap) y cobertura por partido', () => {
+    const partidos = ['Tigre', 'Zárate', 'Pilar']
+    const places = parkingPlaces({
+      osm: [
+        [-34.42, -58.58, 'Estacionamiento de la estación de trenes de Tigre', 'a', 1, 0],
+        [-34.43, -58.57, '', 's', -1, 0],
+        [-34.46, -58.91, '', '', 0, 2],
+      ],
+      partidos,
+    })
+    expect(places[0].title).toBe('Estacionamiento de la estación de trenes de Tigre')
+    expect(placeDetail(places[0])).toBe('Playa a cielo abierto · pago · Tigre')
+    expect(places[1].title).toBe('Playa subterránea')
+    expect(placeDetail(places[1])).toBe('Tigre')
+    expect(places[2].title).toBe('Estacionamiento')
+    expect(placeDetail(places[2])).toBe('gratis · Pilar')
+    expect(coverageByPartido(places, partidos)).toEqual([
+      { partido: 'Tigre', count: 2 },
+      { partido: 'Pilar', count: 1 },
+      { partido: 'Zárate', count: 0 },
+    ])
   })
 })
