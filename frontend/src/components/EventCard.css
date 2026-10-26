@@ -1,0 +1,108 @@
+.event-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.event-card.compact {
+  padding: 10px 0;
+  border: none;
+  border-top: 1px solid var(--line);
+  box-shadow: none;
+  background: transparent;
+}
+
+.event-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+}
+
+.event-kind {
+  --c: var(--accent-text);
+  --t: rgba(244, 193, 27, 0.16);
+  padding: 2px 8px;
+  border-radius: 2px;
+  background: var(--t);
+  color: var(--c);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.event-kind-protest,
+.event-kind-closure {
+  --c: var(--interrupted);
+  --t: var(--interrupted-tint);
+}
+
+.event-kind-works {
+  --c: var(--delayed);
+  --t: var(--delayed-tint);
+}
+
+.event-when {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.event-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 19px;
+  line-height: 1.15;
+  color: var(--text);
+}
+
+.event-card.compact .event-title {
+  font-size: 16px;
+}
+
+.event-streets {
+  font-weight: 500;
+}
+
+.event-description {
+  line-height: 1.45;
+}
+
+.event-extra {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.event-link {
+  margin-top: 4px;
+  color: var(--accent-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.event-link:hover {
+  text-decoration: underline;
+}
+
+.events-section {
+  margin-top: 28px;
+}
+
+.events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+.events-source {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--text-faint);
+}

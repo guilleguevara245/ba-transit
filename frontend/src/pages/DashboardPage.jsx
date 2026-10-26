@@ -6,6 +6,7 @@ import MyLines from '../components/MyLines.jsx'
 import AlertsPanel from '../components/AlertsPanel.jsx'
 import FaresPanel from '../components/FaresPanel.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
+import EventsSection from '../components/EventsSection.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { useNow } from '../hooks/useNow.js'
 import { formatRelativeTime } from '../utils/format.js'
@@ -62,6 +63,8 @@ export default function DashboardPage() {
           </div>
         </>
       )}
+
+      <EventsSection />
     </div>
   )
 }

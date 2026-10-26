@@ -68,7 +68,9 @@ public class TransporteLiveClient {
         }
         try {
             JsonNode body = restClient.get()
-                    .uri(properties.getBaseUrl() + path + "?client_id={id}&client_secret={secret}",
+                    // La ruta puede traer parametros propios (?month=...): las credenciales van con & en ese caso.
+                    .uri(properties.getBaseUrl() + path + (path.contains("?") ? "&" : "?")
+                                    + "client_id={id}&client_secret={secret}",
                             properties.getClientId(), properties.getClientSecret())
                     .retrieve()
                     .body(JsonNode.class);
