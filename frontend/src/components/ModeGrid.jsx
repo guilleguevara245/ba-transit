@@ -43,6 +43,24 @@ export default function ModeGrid({ lines, alerts }) {
         <span className="mode-extra">Buscá tu línea</span>
         <div className="mode-alerts">Recorrido y paradas en el mapa</div>
       </Link>
+      <Link className="mode-card chevrons-host" to="/como-llegar">
+        <div className="mode-name">
+          <ModeIcon mode="COMO_LLEGAR" />
+          <span className="mode-label">Cómo llegar</span>
+          <Chevrons className="mode-arrow" />
+        </div>
+        <span className="mode-extra">Planificá tu viaje</span>
+        <div className="mode-alerts">Subte, Premetro y tren con combinaciones</div>
+      </Link>
+      <Link className="mode-card chevrons-host" to="/sube">
+        <div className="mode-name">
+          <ModeIcon mode="SUBE" />
+          <span className="mode-label">SUBE</span>
+          <Chevrons className="mode-arrow" />
+        </div>
+        <span className="mode-extra">Red SUBE</span>
+        <div className="mode-alerts">Descuentos, tarifas y dónde cargar</div>
+      </Link>
       <Link className="mode-card chevrons-host" to="/accesos">
         <div className="mode-name">
           <ModeIcon mode="ACCESOS" />

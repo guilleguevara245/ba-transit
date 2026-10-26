@@ -1,7 +1,7 @@
 .modes {
   display: grid;
-  /* Seis tarjetas: 3 columnas en escritorio, 2 en tablet, 1 en celular. */
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* Ocho tarjetas: 4 columnas en escritorio, 2 en tablet, 1 en celular. */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1px;
   background: var(--line);
   border: 1px solid var(--line);
