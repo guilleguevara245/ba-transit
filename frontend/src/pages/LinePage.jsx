@@ -92,6 +92,16 @@ export default function LinePage() {
   const [searchParams] = useSearchParams()
   const urlStationId = Number(searchParams.get('estacion')) || null
   const [selected, setSelected] = useState({ id: urlStationId, fromUrl: true })
+  const mapRef = useRef(null)
+
+  // Al tocar una estacion de la lista: en pantallas angostas el mapa queda
+  // arriba de la lista, asi que se sube hasta el para verla.
+  function selectFromList(id) {
+    setSelected({ id, fromUrl: false })
+    if (mapRef.current && window.matchMedia('(max-width: 900px)').matches) {
+      mapRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
 
   useEffect(() => {
     setSelected({ id: urlStationId, fromUrl: true })
@@ -169,7 +179,7 @@ export default function LinePage() {
                   branch={branch}
                   line={line}
                   selected={selected}
-                  onSelect={(id) => setSelected({ id, fromUrl: false })}
+                  onSelect={selectFromList}
                   locatedIds={locatedIds}
                   alerts={alertsState.data ?? []}
                 />
@@ -180,7 +190,7 @@ export default function LinePage() {
                 (si hay coordenadas) y debajo la informacion de la linea. */}
             <aside className="line-side">
               {hasMap && (
-                <>
+                <div ref={mapRef} className="line-minimap-wrap">
                   <NetworkMap
                     className="line-minimap"
                     stations={lineStations}
@@ -190,7 +200,7 @@ export default function LinePage() {
                     onSelect={(id) => setSelected({ id, fromUrl: false })}
                   />
                   <p className="line-minimap-hint">Tocá una estación de la lista o del mapa para ubicarla.</p>
-                </>
+                </div>
               )}
               <LineInfoCard line={line} stations={lineStations} branches={branchesState.data ?? []} allLines={allLines ?? []} />
               <TravelTimeCard line={line} stations={lineStations} />

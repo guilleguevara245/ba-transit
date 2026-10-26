@@ -172,9 +172,27 @@
   }
 }
 
+/* Celular: el texto ocupa todo el ancho al lado del distintivo y el boton
+   de Mis lineas pasa abajo, a lo ancho (antes tapaba el nombre de la linea
+   y apretaba los datos a una palabra por renglon). */
 @media (max-width: 600px) {
   .line-hero {
     flex-wrap: wrap;
+    gap: 14px;
+    padding: 18px;
+  }
+
+  .line-hero-text {
+    flex: 1 1 0;
+  }
+
+  .line-title {
+    font-size: 28px;
+  }
+
+  .line-hero .favorite-button {
+    flex-basis: 100%;
+    justify-content: center;
   }
 }
 
@@ -208,4 +226,9 @@
 .station-flag-mini.closed {
   background: var(--interrupted-tint);
   color: var(--interrupted);
+}
+
+/* Margen arriba al subir hasta el mapa desde la lista (celular). */
+.line-minimap-wrap {
+  scroll-margin-top: 12px;
 }
