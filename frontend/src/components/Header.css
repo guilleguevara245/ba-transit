@@ -19,10 +19,10 @@
   min-height: 76px;
 }
 
-/* El header usa un poco mas de ancho que el contenido: con seis secciones,
+/* El header usa un poco mas de ancho que el contenido: con siete secciones,
    el reloj y el boton de tema no entran en 1180 px. */
 .header .wrap.header-row {
-  max-width: 1320px;
+  max-width: 1440px;
 }
 
 /* ---- Logo ---- */
@@ -119,6 +119,7 @@
 
 .clock-live {
   display: inline-flex;
+  white-space: nowrap;
   align-items: center;
   gap: 6px;
   font-family: 'Barlow Condensed', sans-serif;
@@ -179,12 +180,25 @@
   color: var(--text-faint);
 }
 
+/* Feriado: la fecha en rojo y la palabra "Feriado" (el nombre va en el title). */
+.clock-time.holiday small {
+  color: var(--interrupted);
+  font-weight: 600;
+}
+
 /* Pantallas medianas: la navegacion entra justa al lado del logo, asi
    que se achica el espaciado antes de pasar al formato de celular. */
 /* Sin lugar para el "En vivo" junto al reloj: queda solo la hora y la fecha. */
-@media (max-width: 1360px) {
+@media (max-width: 1480px) {
   .clock-live,
   .clock-sep {
+    display: none;
+  }
+}
+
+/* Con 7 secciones, por debajo de 1240 px las pestañas quedan solo con texto. */
+@media (max-width: 1240px) {
+  .nav-tab .nav-icon {
     display: none;
   }
 }
@@ -199,18 +213,9 @@
   }
 }
 
-/* Entre 901 y 1000 px se esconde la etiqueta "En vivo" y la fecha. */
-@media (max-width: 1000px) {
-  .clock-live,
-  .clock-sep,
-  .clock-time small {
-    display: none;
-  }
-}
-
 /* ---- Celular: las pestañas pasan debajo del logo ---- */
 
-@media (max-width: 900px) {
+@media (max-width: 1060px) {
   /* Doble clase para ganarle al "padding: 0 32px" de .wrap (index.css se
      carga despues); solo se toca el vertical, el horizontal lo da .wrap. */
   .header .header-row {
@@ -241,6 +246,10 @@
 
   .nav-tab {
     flex-shrink: 0;
+  }
+
+  .nav-tab .nav-icon {
+    display: block;
   }
 
   /* En pantallas chicas queda solo la hora. */

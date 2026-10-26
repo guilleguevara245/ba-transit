@@ -15,7 +15,7 @@ export function formatRelativeTime(isoString, now = new Date()) {
 
 // La app es del AMBA: la hora se muestra siempre en hora de Buenos Aires,
 // en formato 24 hs, aunque quien la mire este en otro huso horario.
-const TIME_ZONE = 'America/Buenos_Aires'
+export const TIME_ZONE = 'America/Buenos_Aires'
 
 /** 22:50 */
 export function formatClock(date) {

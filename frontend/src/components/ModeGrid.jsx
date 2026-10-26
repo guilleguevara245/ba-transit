@@ -4,6 +4,47 @@ import ModeIcon from './ModeIcon.jsx'
 import './ModeGrid.css'
 import { MODE_LABELS_PLURAL, MODE_SLUGS } from '../constants.js'
 import { MODE_ORDER, statusFor, summarizeByMode } from '../utils/network.js'
+import { useApi } from '../hooks/useApi.js'
+import { worstStatus } from '../utils/traffic.js'
+
+// Estado de la red de accesos, con las mismas etiquetas que los modos.
+const ACCESS_PILL = {
+  FLUIDO: { className: 'status-normal', label: 'Fluido' },
+  DEMORADO: { className: 'status-delayed', label: 'Demoras' },
+  CONGESTIONADO: { className: 'status-interrupted', label: 'Congestionado' },
+  CORTADO: { className: 'status-interrupted', label: 'Cortes' },
+}
+
+/** Tarjeta de Accesos: el peor estado entre todas las autopistas medidas. */
+function AccessesCard() {
+  const { data } = useApi('/api/v1/accesos', { refreshMs: 5 * 60_000 })
+  const accesses = data?.accesses ?? []
+  const pill = data?.configured ? ACCESS_PILL[worstStatus(accesses.flatMap((a) => a.segments))] : null
+  const withDelays = accesses.filter((a) => ['DEMORADO', 'CONGESTIONADO', 'CORTADO'].includes(worstStatus(a.segments))).length
+
+  return (
+    <Link className="mode-card chevrons-host" to="/accesos">
+      <div className="mode-name">
+        <ModeIcon mode="ACCESOS" />
+        <span className="mode-label">Accesos</span>
+        <Chevrons className="mode-arrow" />
+      </div>
+      {pill ? (
+        <span className={`status-pill ${pill.className}`}>
+          <span className="dot"></span>
+          {pill.label}
+        </span>
+      ) : (
+        <span className="mode-extra">Autopistas</span>
+      )}
+      <div className="mode-alerts">
+        {pill
+          ? `${accesses.length} autopistas · ${withDelays} con demoras`
+          : 'Tránsito en las autopistas de acceso'}
+      </div>
+    </Link>
+  )
+}
 
 export default function ModeGrid({ lines, alerts }) {
   const summary = summarizeByMode(lines, alerts)
@@ -33,52 +74,7 @@ export default function ModeGrid({ lines, alerts }) {
         )
       })}
 
-      {/* Accesos a secciones que no son modos con lineas propias. */}
-      <Link className="mode-card chevrons-host" to="/colectivos">
-        <div className="mode-name">
-          <ModeIcon mode="COLECTIVO" />
-          <span className="mode-label">Colectivos</span>
-          <Chevrons className="mode-arrow" />
-        </div>
-        <span className="mode-extra">Buscá tu línea</span>
-        <div className="mode-alerts">Recorrido y paradas en el mapa</div>
-      </Link>
-      <Link className="mode-card chevrons-host" to="/como-llegar">
-        <div className="mode-name">
-          <ModeIcon mode="COMO_LLEGAR" />
-          <span className="mode-label">Cómo llegar</span>
-          <Chevrons className="mode-arrow" />
-        </div>
-        <span className="mode-extra">Planificá tu viaje</span>
-        <div className="mode-alerts">Subte, Premetro y tren con combinaciones</div>
-      </Link>
-      <Link className="mode-card chevrons-host" to="/sube">
-        <div className="mode-name">
-          <ModeIcon mode="SUBE" />
-          <span className="mode-label">SUBE</span>
-          <Chevrons className="mode-arrow" />
-        </div>
-        <span className="mode-extra">Red SUBE</span>
-        <div className="mode-alerts">Descuentos, tarifas y dónde cargar</div>
-      </Link>
-      <Link className="mode-card chevrons-host" to="/accesos">
-        <div className="mode-name">
-          <ModeIcon mode="ACCESOS" />
-          <span className="mode-label">Accesos</span>
-          <Chevrons className="mode-arrow" />
-        </div>
-        <span className="mode-extra">Autopistas</span>
-        <div className="mode-alerts">Tránsito en vivo y concesionarias</div>
-      </Link>
-      <Link className="mode-card chevrons-host" to="/aeropuertos">
-        <div className="mode-name">
-          <ModeIcon mode="AEROPUERTO" />
-          <span className="mode-label">Aeropuertos</span>
-          <Chevrons className="mode-arrow" />
-        </div>
-        <span className="mode-extra">Aeroparque · Ezeiza</span>
-        <div className="mode-alerts">Clima y cómo llegar</div>
-      </Link>
+      <AccessesCard />
     </div>
   )
 }

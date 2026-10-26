@@ -4,6 +4,7 @@ import Logo from './Logo.jsx'
 import ThemeToggle from './ThemeToggle.jsx'
 import { useNow } from '../hooks/useNow.js'
 import { formatClock, formatShortDate } from '../utils/format.js'
+import { holidayOn } from '../utils/holidays.js'
 import './Header.css'
 
 // Iconos de trazo (24x24) de cada seccion.
@@ -13,12 +14,14 @@ const ICONS = {
   colectivos: 'M5 4h14v12H5zM5 11h14M8 19v-3m8 3v-3M7.5 13.5h.01M16.5 13.5h.01',
   aeropuertos: 'M2 13l9-2 4-8h2l-2 9 6 1 1 2-7 1-3 6h-2l1-7-9-2z',
   accesos: 'M8 3 5 21m11-18 3 18M12 4v3m0 4v3m0 4v3',
+  comoLlegar: 'M12 21s-6-5.5-6-10.5a6 6 0 0 1 12 0C18 15.5 12 21 12 21zm0-8.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4z',
   ecobici: 'M5.5 18a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zm13 0a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM5.5 14.5 9 8h6l3.5 6.5M9 8l3 6.5h-1M14 5h2.5',
 }
 
 const TABS = [
   { to: '/', label: 'Inicio', icon: ICONS.inicio, end: true },
   { to: '/mapa', label: 'Mapa', icon: ICONS.mapa },
+  { to: '/como-llegar', label: 'Cómo llegar', icon: ICONS.comoLlegar },
   { to: '/colectivos', label: 'Colectivos', icon: ICONS.colectivos },
   { to: '/accesos', label: 'Accesos', icon: ICONS.accesos },
   { to: '/ecobici', label: 'EcoBici', icon: ICONS.ecobici },
@@ -41,6 +44,7 @@ export default function Header() {
   const now = useNow(15_000)
   const navRef = useRef(null)
   const { pathname } = useLocation()
+  const holiday = holidayOn(now)
 
   // En pantallas angostas las pestañas se desplazan de costado: se
   // centra la activa para que no quede fuera de la vista.
@@ -74,9 +78,16 @@ export default function Header() {
             En vivo
           </span>
           <span className="clock-sep" aria-hidden="true"></span>
-          <time className="clock-time" dateTime={now.toISOString()}>
+          <time
+            className={holiday ? 'clock-time holiday' : 'clock-time'}
+            dateTime={now.toISOString()}
+            title={holiday ? `Feriado: ${holiday}` : undefined}
+          >
             <strong>{formatClock(now)}</strong>
-            <small>{formatShortDate(now)}</small>
+            <small>
+              {formatShortDate(now)}
+              {holiday && <span className="clock-holiday"> · Feriado</span>}
+            </small>
           </time>
           <ThemeToggle />
         </div>
