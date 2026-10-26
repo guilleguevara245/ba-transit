@@ -1,0 +1,50 @@
+.station-picker {
+  position: relative;
+}
+
+.station-picker-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.station-picker-box:focus-within {
+  outline: 2px solid var(--yellow);
+  outline-offset: 1px;
+}
+
+.planner-field .station-picker-box input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+}
+
+.planner-field .station-picker-box input:focus {
+  outline: none;
+}
+
+.station-picker-box input::placeholder {
+  color: var(--text-faint);
+}
+
+.station-picker-line {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+/* El desplegable del buscador, pegado debajo del campo. */
+.search-results.station-picker-results {
+  top: calc(100% + 4px);
+  max-height: 320px;
+}

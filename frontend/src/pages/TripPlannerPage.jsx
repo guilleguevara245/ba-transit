@@ -5,6 +5,7 @@ import ErrorMessage from '../components/ErrorMessage.jsx'
 import LineBadge from '../components/LineBadge.jsx'
 import ModeIcon from '../components/ModeIcon.jsx'
 import Skeleton from '../components/Skeleton.jsx'
+import StationPicker from '../components/StationPicker.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { googleMapsUrl, planTrip } from '../utils/planner.js'
 import { formatDuration } from '../utils/travelTime.js'
@@ -13,29 +14,6 @@ import './AirportsPage.css'
 import './TripPlannerPage.css'
 
 const asLine = (s) => ({ mode: s.lineMode, code: s.lineCode, name: s.lineName, colorHex: s.lineColorHex })
-const label = (s) => `${s.stationName} (${s.lineName})`
-
-/** Campo con autocompletado de estaciones (un <datalist> por campo). */
-function StationInput({ id, title, options, value, onChange }) {
-  return (
-    <label className="planner-field" htmlFor={id}>
-      <span>{title}</span>
-      <input
-        id={id}
-        list={`${id}-options`}
-        value={value}
-        placeholder="Escribí una estación"
-        autoComplete="off"
-        onChange={(event) => onChange(event.target.value)}
-      />
-      <datalist id={`${id}-options`}>
-        {options.map((o) => (
-          <option key={o} value={o} />
-        ))}
-      </datalist>
-    </label>
-  )
-}
 
 function Leg({ leg }) {
   if (leg.type === 'ride') {
@@ -85,30 +63,32 @@ function Leg({ leg }) {
  */
 export default function TripPlannerPage() {
   const { data: stations, loading, error } = useApi('/api/v1/map/stations')
-  const [originText, setOriginText] = useState('')
-  const [destinationText, setDestinationText] = useState('')
+  const [origin, setOrigin] = useState(null)
+  const [destination, setDestination] = useState(null)
   const [fromAddress, setFromAddress] = useState('')
   const [toAddress, setToAddress] = useState('')
 
   // Una opcion por estacion y linea (en el Mitre la misma estacion esta en varios ramales).
-  const byLabel = useMemo(() => {
-    const map = new Map()
-    for (const s of stations ?? []) if (!map.has(label(s))) map.set(label(s), s)
-    return map
+  const options = useMemo(() => {
+    const seen = new Set()
+    return (stations ?? []).filter((s) => {
+      const key = `${s.lineId}|${s.stationName}`
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
   }, [stations])
-  const options = useMemo(() => [...byLabel.keys()].sort((a, b) => a.localeCompare(b, 'es')), [byLabel])
 
-  const origin = byLabel.get(originText)
-  const destination = byLabel.get(destinationText)
-  const sameStation = origin && destination && label(origin) === label(destination)
+  const sameStation =
+    origin && destination && origin.lineId === destination.lineId && origin.stationName === destination.stationName
   const plan = useMemo(
     () => (origin && destination && !sameStation ? planTrip(stations, origin, destination) : null),
     [stations, origin, destination, sameStation],
   )
 
   function swap() {
-    setOriginText(destinationText)
-    setDestinationText(originText)
+    setOrigin(destination)
+    setDestination(origin)
   }
 
   return (
@@ -126,16 +106,16 @@ export default function TripPlannerPage() {
       {stations && (
         <section className="planner-card">
           <div className="planner-form">
-            <StationInput id="origen" title="Desde" options={options} value={originText} onChange={setOriginText} />
+            <StationPicker id="origen" title="Desde" stations={options} value={origin} onChange={setOrigin} />
             <button type="button" className="planner-swap" onClick={swap} aria-label="Invertir origen y destino">
               ⇅
             </button>
-            <StationInput
+            <StationPicker
               id="destino"
               title="Hasta"
-              options={options}
-              value={destinationText}
-              onChange={setDestinationText}
+              stations={options}
+              value={destination}
+              onChange={setDestination}
             />
           </div>
 
