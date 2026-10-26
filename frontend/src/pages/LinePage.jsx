@@ -192,7 +192,7 @@ export default function LinePage() {
                   <p className="line-minimap-hint">Tocá una estación de la lista o del mapa para ubicarla.</p>
                 </>
               )}
-              <LineInfoCard line={line} stations={lineStations} allLines={allLines ?? []} />
+              <LineInfoCard line={line} stations={lineStations} branches={branchesState.data ?? []} allLines={allLines ?? []} />
               <TravelTimeCard line={line} stations={lineStations} />
             </aside>
           </div>

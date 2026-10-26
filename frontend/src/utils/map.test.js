@@ -90,6 +90,15 @@ describe('lineSummary', () => {
     expect(summary.stationCount).toBe(3)
     expect(summary.branches.map((b) => `${b.from}-${b.to}`)).toEqual(['Retiro-Tigre', 'Retiro-Suárez'])
     expect(Math.round(summary.branches[0].km)).toBe(10)
+    expect(summary.branches[0].via).toBe(null)
+  })
+
+  it('toma el "vía" del nombre del ramal', () => {
+    const s = (branchId, seq, name, lat) => ({ branchId, sequenceOrder: seq, stationName: name, latitude: lat, longitude: -58.4 })
+    const names = new Map([[1, 'Plaza Constitución - Bosques (vía Quilmes)'], [2, 'Plaza Constitución - Bosques (vía Temperley)']])
+    const summary = lineSummary([s(1, 1, 'Plaza Constitución', -34.6), s(1, 2, 'Bosques', -34.8), s(2, 1, 'Plaza Constitución', -34.6), s(2, 2, 'Bosques', -34.8)], names)
+
+    expect(summary.branches.map((b) => b.via)).toEqual(['vía Quilmes', 'vía Temperley'])
   })
 })
 

@@ -101,18 +101,21 @@ export function distanceKm(a, b) {
  * aproximado (suma de tramos rectos entre estaciones, asi que es una
  * cota inferior del recorrido real).
  */
-export function lineSummary(stations) {
+export function lineSummary(stations, branchNames = new Map()) {
   const byBranch = new Map()
   for (const s of stations) {
     if (!byBranch.has(s.branchId)) byBranch.set(s.branchId, [])
     byBranch.get(s.branchId).push(s)
   }
 
-  const branches = Array.from(byBranch.values()).map((list) => {
+  const branches = Array.from(byBranch.entries()).map(([branchId, list]) => {
     const sorted = [...list].sort((a, b) => a.sequenceOrder - b.sequenceOrder)
     let km = 0
     for (let i = 1; i < sorted.length; i++) km += distanceKm(sorted[i - 1], sorted[i])
-    return { from: sorted[0].stationName, to: sorted[sorted.length - 1].stationName, km }
+    // "Plaza Constitucion - Bosques (via Quilmes)": el "via" distingue dos
+    // ramales con las mismas cabeceras.
+    const via = branchNames.get(branchId)?.match(/\((vía [^)]+)\)/)?.[1] ?? null
+    return { from: sorted[0].stationName, to: sorted[sorted.length - 1].stationName, km, via }
   })
 
   return {

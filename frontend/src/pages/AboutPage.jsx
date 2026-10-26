@@ -17,6 +17,12 @@ const SOURCES = [
     detail: 'Ubicación de las estaciones de las líneas metropolitanas.',
   },
   {
+    what: 'Ramales del Roca',
+    source: 'datos.gob.ar — Estaciones de trenes con servicios activos y red ferroviaria (ADIFSE, 2022)',
+    url: 'https://datos.gob.ar/dataset/transporte-estaciones-trenes-servicios-activos-2022',
+    detail: 'Estaciones y orden de cada ramal, a partir de la ubicación de las estaciones y el trazado de las vías.',
+  },
+  {
     what: 'Tarifas',
     source: 'Red SUBE (Argentina.gob.ar) y Gobierno de la Ciudad',
     url: 'https://www.argentina.gob.ar/redsube/tarifas-de-transporte-publico-amba',

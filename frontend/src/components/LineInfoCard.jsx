@@ -19,8 +19,9 @@ function Row({ label, children }) {
  * operadora, ferrocarril de origen, inauguracion, recorrido, cantidad de
  * estaciones y combinaciones. Muestra solo los datos disponibles.
  */
-export default function LineInfoCard({ line, stations, allLines = [] }) {
-  const summary = stations.length > 0 ? lineSummary(stations) : null
+export default function LineInfoCard({ line, stations, branches = [], allLines = [] }) {
+  const branchNames = new Map(branches.map((b) => [b.id, b.name]))
+  const summary = stations.length > 0 ? lineSummary(stations, branchNames) : null
   const isMetro = line.mode === 'SUBTE' || line.mode === 'PREMETRO'
   const connections = isMetro ? connectingLineCodes(line.code) : []
   const linesByCode = new Map(allLines.filter((l) => l.mode === 'SUBTE' || l.mode === 'PREMETRO').map((l) => [l.code, l]))
@@ -52,8 +53,9 @@ export default function LineInfoCard({ line, stations, allLines = [] }) {
         {summary && (
           <Row label="Recorrido">
             {summary.branches.map((b) => (
-              <span className="info-branch" key={`${b.from}-${b.to}`}>
+              <span className="info-branch" key={`${b.from}-${b.to}-${b.via}`}>
                 {b.from} ↔ {b.to}
+                {b.via && <span className="info-sub inline"> ({b.via})</span>}
                 <span className="info-sub inline"> · ≈ {Math.round(b.km)} km</span>
               </span>
             ))}
