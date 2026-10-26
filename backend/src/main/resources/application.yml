@@ -57,10 +57,6 @@ app:
     # mismas credenciales que las alertas. Se puede apuntar a otra URL.
     gtfs-url: ${COLECTIVOS_GTFS_URL:}
     gtfs-path: ${COLECTIVOS_GTFS_PATH:/colectivos/feed-gtfs}
-  muestras:
-    # Temporal: al arrancar deja en el log el comienzo de algunas respuestas
-    # de la API Transporte (buscar "MUESTRA API"). false para apagarlo.
-    enabled: ${MUESTRAS_API:true}
   eventos:
     # Ruta /transito/v1/eventos de la API Transporte: no esta documentada y
     # responde HTTP 500, asi que va apagada. true para volver a probarla.

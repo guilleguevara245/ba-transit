@@ -5,10 +5,10 @@ import './AboutPage.css'
 /** De donde sale cada dato del sitio. Mantener al dia si se suma una fuente. */
 const SOURCES = [
   {
-    what: 'Alertas del subte y recorridos de colectivos',
+    what: 'Alertas del subte y de colectivos, y recorridos de colectivos',
     source: 'API Transporte del Gobierno de la Ciudad de Buenos Aires',
     url: 'https://api-transporte.buenosaires.gob.ar/',
-    detail: 'Alertas de servicio en tiempo real y feed GTFS de colectivos (se actualiza una vez por día).',
+    detail: 'Alertas de servicio en tiempo real (en colectivos, por línea) y feed GTFS de colectivos (se actualiza una vez por día).',
   },
   {
     what: 'Estaciones de tren',

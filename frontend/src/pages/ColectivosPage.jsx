@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import BackButton from '../components/BackButton.jsx'
 import BusRouteMap from '../components/BusRouteMap.jsx'
+import BusAlerts from '../components/BusAlerts.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { useDebounce } from '../hooks/useDebounce.js'
@@ -90,6 +91,8 @@ function RouteDetail({ routeId, line, headsign, initialDirection }) {
           {route.agency && <div className="bus-detail-agency">{route.agency}</div>}
         </div>
       </header>
+
+      <BusAlerts shortName={route.shortName} />
 
       {route.directions.length > 1 && (
         <div className="map-filters bus-directions" role="group" aria-label="Sentido">
