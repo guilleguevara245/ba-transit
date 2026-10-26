@@ -169,6 +169,12 @@ class SubteAlertSyncServiceTest {
         assertThat(SubteAlertSyncService.extractLineCode("LineaA")).isEqualTo("A");
         assertThat(SubteAlertSyncService.extractLineCode("LíneaH")).isEqualTo("H");
         assertThat(SubteAlertSyncService.extractLineCode(null)).isEmpty();
+        // Premetro: sus ramales del GTFS o el nombre, todos son la linea P.
+        assertThat(SubteAlertSyncService.extractLineCode("PM-C")).isEqualTo("P");
+        assertThat(SubteAlertSyncService.extractLineCode("PM-S")).isEqualTo("P");
+        assertThat(SubteAlertSyncService.extractLineCode("Premetro")).isEqualTo("P");
+        assertThat(SubteAlertSyncService.modeFor("P")).isEqualTo(TransportMode.PREMETRO);
+        assertThat(SubteAlertSyncService.modeFor("A")).isEqualTo(TransportMode.SUBTE);
 
         assertThat(SubteAlertSyncService.feedEntityIdOf("alerta#C")).isEqualTo("alerta");
         assertThat(SubteAlertSyncService.feedEntityIdOf("alerta")).isEqualTo("alerta");

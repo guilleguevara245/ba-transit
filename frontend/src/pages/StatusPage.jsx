@@ -74,6 +74,36 @@ export default function StatusPage() {
             </ul>
           </section>
 
+          {data.cityServices?.length > 0 && (
+            <section className="panel status-panel status-city" aria-labelledby="status-city-title">
+              <h2 id="status-city-title" className="status-city-title">
+                Otros servicios de la Ciudad
+              </h2>
+              <p className="status-city-intro">
+                La API Transporte los ofrece, pero hoy no devuelven datos. Se prueban al arrancar el servidor y una vez por semana: si vuelven,
+                se pueden sumar al sitio.
+              </p>
+              <ul className="status-list">
+                {data.cityServices.map((c) => (
+                  <li key={c.key} className={`status-item status-item-${c.available ? 'ok' : 'idle'}`}>
+                    <span className="status-item-dot" aria-hidden="true" />
+                    <div className="status-item-main">
+                      <div className="status-item-what">{c.what}</div>
+                      <div className="status-item-provider">Serviría para: {c.use}</div>
+                    </div>
+                    <div className="status-item-detail">
+                      <strong>{c.available ? 'Volvió a responder' : 'Sin datos'}</strong>
+                      <span>
+                        {!c.available && c.detail && `${errorLabel(c.detail)} · `}
+                        probado {formatRelativeTime(c.checkedAt, now)}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
           <p className="airports-source">
             Servidor activo desde {formatRelativeTime(data.startedAt, now)}. Algunas fuentes se consultan solo cuando
             alguien abre la sección que las usa (por ejemplo, los próximos trenes del Belgrano Norte).

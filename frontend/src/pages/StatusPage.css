@@ -128,3 +128,20 @@
 .status-item-retry {
   color: var(--text-faint);
 }
+
+.status-city {
+  margin-top: 16px;
+}
+
+.status-city-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.status-city-intro {
+  margin: 4px 0 6px;
+  font-size: 12px;
+  color: var(--text-dim);
+}

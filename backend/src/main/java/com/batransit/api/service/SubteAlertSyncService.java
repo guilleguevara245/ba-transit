@@ -147,7 +147,7 @@ public class SubteAlertSyncService {
 
         for (String lineCode : lineCodes) {
             TransportLine line = transportLineRepository
-                    .findByModeAndCodeIgnoreCase(TransportMode.SUBTE, lineCode)
+                    .findByModeAndCodeIgnoreCase(modeFor(lineCode), lineCode)
                     .orElse(null);
 
             if (line == null) {
@@ -192,12 +192,25 @@ public class SubteAlertSyncService {
         return Objects.requireNonNullElse(description, "Alerta sin descripcion (fuente: " + SOURCE_NAME + ")");
     }
 
-    /** "LineaA" -> "A". Si el formato cambiara, esto es lo unico que habria que tocar. */
+    /**
+     * "LineaA" -> "A". El Premetro viene como sus ramales del GTFS ("PM-C",
+     * "PM-S") o como "Premetro": todos son la linea P, que en la base es
+     * de modo PREMETRO. Si el formato cambiara, esto es lo unico que habria que tocar.
+     */
     static String extractLineCode(String routeId) {
         if (routeId == null) {
             return "";
         }
-        return routeId.replaceFirst("(?i)^l[ií]nea", "").trim();
+        String code = routeId.replaceFirst("(?i)^l[ií]nea", "").trim();
+        if (code.matches("(?i)(PM([-_ ]?[A-Z])?|premetro.*)")) {
+            return "P";
+        }
+        return code;
+    }
+
+    /** La linea P es del Premetro; el resto, del subte. */
+    static TransportMode modeFor(String lineCode) {
+        return "P".equalsIgnoreCase(lineCode) ? TransportMode.PREMETRO : TransportMode.SUBTE;
     }
 
     private String firstText(SubteAlertsFeed.TranslatedText translatedText) {
