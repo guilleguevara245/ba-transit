@@ -59,6 +59,7 @@ public class CityEventService {
     private static final Duration REFRESH_EVERY = Duration.ofMinutes(15);
     private static final Duration RETRY_AFTER = Duration.ofMinutes(2);
     private volatile Instant nextRefresh = Instant.EPOCH;
+    private int failures;
 
     /**
      * Se revisa cada minuto, pero solo se consulta cuando toca: cada 15
@@ -70,7 +71,15 @@ public class CityEventService {
         if (Instant.now().isBefore(nextRefresh)) {
             return;
         }
-        nextRefresh = Instant.now().plus(refresh() ? REFRESH_EVERY : RETRY_AFTER);
+        if (refresh()) {
+            failures = 0;
+            nextRefresh = Instant.now().plus(REFRESH_EVERY);
+        } else {
+            // 2, 4, 8 y despues 15 minutos: si la API sigue caida no se la consulta de mas.
+            Duration wait = RETRY_AFTER.multipliedBy(1L << Math.min(failures, 3));
+            failures++;
+            nextRefresh = Instant.now().plus(wait.compareTo(REFRESH_EVERY) > 0 ? REFRESH_EVERY : wait);
+        }
     }
 
     /** true si la API respondio. */
@@ -83,9 +92,12 @@ public class CityEventService {
             YearMonth month = YearMonth.now(BUENOS_AIRES);
             Map<String, CityEvent> events = new LinkedHashMap<>();
             boolean any = false;
+            String failure = null;
             for (YearMonth m : List.of(month, month.plusMonths(1))) {
-                var feed = client.get("/transito/v1/eventos?month=" + m + "&provider=1", Duration.ofMinutes(10));
+                String path = "/transito/v1/eventos?month=" + m + "&provider=1";
+                var feed = client.get(path, Duration.ofMinutes(10));
                 if (feed.isEmpty()) {
+                    failure = client.lastError(path);
                     continue;
                 }
                 any = true;
@@ -102,7 +114,8 @@ public class CityEventService {
                 health.ok(SourceHealth.Source.EVENTOS);
                 return true;
             }
-            health.fail(SourceHealth.Source.EVENTOS, "sin respuesta");
+            health.fail(SourceHealth.Source.EVENTOS, failure != null ? failure : "sin respuesta");
+            log.warn("Eventos API Transporte: sin datos ({})", failure != null ? failure : "sin respuesta");
             return false;
         } catch (Exception e) {
             health.fail(SourceHealth.Source.EVENTOS, e.getClass().getSimpleName());

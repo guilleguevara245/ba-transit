@@ -47,6 +47,8 @@ public class TransporteLiveClient {
     private final RestClient restClient;
     private final Clock clock;
     private final Map<String, Cached> cache = new ConcurrentHashMap<>();
+    /** Motivo de la ultima falla por ruta ("HTTP 404", "SocketTimeoutException"), para el estado de los datos. */
+    private final Map<String, String> lastErrors = new ConcurrentHashMap<>();
 
     public TransporteLiveClient(TransporteApiProperties properties) {
         this.properties = properties;
@@ -85,8 +87,10 @@ public class TransporteLiveClient {
                     .retrieve()
                     .body(JsonNode.class);
             if (body == null) {
+                lastErrors.put(path, "respuesta vacía");
                 return Optional.ofNullable(cached).map(c -> new Fetched(c.body(), c.fetchedAt()));
             }
+            lastErrors.remove(path);
             cache.put(path, new Cached(body, now));
             health.ok(SourceHealth.Source.TRANSPORTE_VIVO);
             return Optional.of(new Fetched(body, now));
@@ -96,6 +100,7 @@ public class TransporteLiveClient {
                     : e.getMostSpecificCause().getClass().getSimpleName();
             log.warn("API Transporte {} no respondio ({})", path, reason);
             health.fail(SourceHealth.Source.TRANSPORTE_VIVO, reason);
+            lastErrors.put(path, reason);
             return Optional.ofNullable(cached).map(c -> new Fetched(c.body(), c.fetchedAt()));
         }
     }
@@ -104,6 +109,11 @@ public class TransporteLiveClient {
      * Archivo binario de la API (por ejemplo el GTFS estatico, un .zip), sin
      * cache: se pide pocas veces. Vacio si no hay credenciales o si falla.
      */
+    /** Motivo de la ultima falla de esa ruta, o null si la ultima consulta anduvo. */
+    public String lastError(String path) {
+        return lastErrors.get(path);
+    }
+
     public Optional<byte[]> getBytes(String path) {
         if (!isConfigured()) {
             return Optional.empty();
