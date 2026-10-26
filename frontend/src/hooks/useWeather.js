@@ -32,6 +32,8 @@ export function useWeather(latitude, longitude) {
               temperature: current.temperature_2m,
               wind: current.wind_speed_10m,
               code: current.weather_code,
+              // is_day: 1 de dia, 0 de noche (si falta, se asume de dia).
+              isDay: current.is_day !== 0,
             },
             error: null,
           })

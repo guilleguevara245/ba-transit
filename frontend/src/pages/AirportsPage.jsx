@@ -1,15 +1,20 @@
 import ModeIcon from '../components/ModeIcon.jsx'
 import { CircleMarker, MapContainer, TileLayer, Tooltip } from 'react-leaflet'
+import MapCard, { MapCardIcon } from '../components/MapCard.jsx'
 import BackButton from '../components/BackButton.jsx'
 import { AIRPORTS, FLIGHTS_URL } from '../data/airports.js'
 import { useWeather } from '../hooks/useWeather.js'
 import { describeWeather } from '../utils/weather.js'
+import WeatherIcon from '../components/WeatherIcon.jsx'
 import './ModePage.css'
 import './AirportsPage.css'
 
+// Mismo trazo que el icono de Aeropuertos.
+const AIRPORT_ICON = 'M2 13l9-2 4-8h2l-2 9 6 1 1 2-7 1-3 6h-2l1-7-9-2z'
+
 function AirportCard({ airport }) {
   const { data: weather, error } = useWeather(airport.latitude, airport.longitude)
-  const sky = weather ? describeWeather(weather.code) : null
+  const sky = weather ? describeWeather(weather.code, weather.isDay) : null
 
   return (
     <article className="airport-card">
@@ -26,9 +31,7 @@ function AirportCard({ airport }) {
       <div className="airport-weather" aria-live="polite">
         {weather && (
           <>
-            <span className="airport-weather-icon" aria-hidden="true">
-              {sky.icon}
-            </span>
+            <WeatherIcon kind={sky.icon} className="airport-weather-icon" />
             <span className="airport-temp">{Math.round(weather.temperature)}°C</span>
             <span className="airport-sky">
               {sky.label} · viento {Math.round(weather.wind)} km/h
@@ -92,9 +95,31 @@ export default function AirportsPage() {
             radius={10}
             pathOptions={{ color: '#17171a', fillColor: '#f4c11b', fillOpacity: 1, weight: 2 }}
           >
-            <Tooltip permanent direction="right" offset={[10, 0]}>
-              {airport.code} · {airport.name}
+            <Tooltip permanent direction="right" offset={[10, 0]} className="airport-map-label">
+              <strong>{airport.code}</strong> {airport.name}
             </Tooltip>
+            <MapCard
+              badge={<MapCardIcon path={AIRPORT_ICON} />}
+              kicker={airport.code}
+              title={airport.name}
+              subtitle={`${airport.area} · ${airport.kind}`}
+              actions={
+                <a className="station-popup-link" href={FLIGHTS_URL} target="_blank" rel="noreferrer">
+                  Ver vuelos ↗
+                </a>
+              }
+            >
+              <div className="station-popup-section">
+                <div className="station-popup-label">Colectivos</div>
+                <div className="airport-buses">
+                  {airport.buses.map((bus) => (
+                    <span className="bus-chip" key={bus}>
+                      {bus}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </MapCard>
           </CircleMarker>
         ))}
       </MapContainer>
