@@ -151,6 +151,12 @@
   box-shadow: var(--shadow);
 }
 
+/* En el minimapa la tarjeta no puede ser mas alta que el mapa: si no entra, se desplaza adentro. */
+.line-minimap .leaflet-popup-content {
+  max-height: 330px;
+  overflow-y: auto;
+}
+
 .line-minimap-hint {
   margin: 8px 0 0;
   font-size: 12px;

@@ -59,6 +59,47 @@ function FitToStations({ positions, skip }) {
   return null
 }
 
+/**
+ * La tarjeta de una estacion crece despues de abrirse (llegan los proximos
+ * trenes) y el ajuste automatico de Leaflet solo corre al abrir: sin esto
+ * la parte de arriba quedaba cortada en mapas bajos como el minimapa.
+ */
+function KeepPopupInView() {
+  const map = useMap()
+
+  useEffect(() => {
+    let observer = null
+    let frame = 0
+    function onOpen(event) {
+      observer?.disconnect()
+      const content = event.popup.getElement()?.querySelector('.leaflet-popup-content')
+      if (!content || typeof window.ResizeObserver === 'undefined') return
+      let lastHeight = content.offsetHeight
+      observer = new window.ResizeObserver(() => {
+        if (content.offsetHeight === lastHeight) return
+        lastHeight = content.offsetHeight
+        window.cancelAnimationFrame(frame)
+        frame = window.requestAnimationFrame(() => event.popup.isOpen() && event.popup.update())
+      })
+      observer.observe(content)
+    }
+    function onClose() {
+      observer?.disconnect()
+      observer = null
+    }
+    map.on('popupopen', onOpen)
+    map.on('popupclose', onClose)
+    return () => {
+      map.off('popupopen', onOpen)
+      map.off('popupclose', onClose)
+      onClose()
+      window.cancelAnimationFrame(frame)
+    }
+  }, [map])
+
+  return null
+}
+
 /** Centra el mapa en la estacion enfocada y abre su popup. */
 function FocusOnStation({ station, markers, openPopup }) {
   const map = useMap()
@@ -169,6 +210,7 @@ export default function NetworkMap({
 
       <FitToStations positions={positions} skip={Boolean(focused)} />
       <FocusOnStation station={focused} markers={markers} openPopup={openFocusedPopup} />
+      <KeepPopupInView />
     </MapContainer>
   )
 }

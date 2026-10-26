@@ -96,19 +96,29 @@
   gap: 4px;
 }
 
+.next-trains-list {
+  gap: 6px;
+}
+
+/* Destino arriba y los horarios debajo: con nombres largos ("Villa Rosa",
+   "Plaza Constitución") la columna del destino quedaba en tres renglones. */
 .next-trains-list li {
   display: flex;
-  justify-content: space-between;
-  gap: 12px;
+  flex-direction: column;
+  gap: 1px;
 }
 
 .next-trains-towards {
+  font-size: 12px;
   color: var(--text-dim);
 }
 
 .next-trains-times {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+}
+
+.next-trains-times > span {
   white-space: nowrap;
 }
 
@@ -276,4 +286,13 @@ button.station-popup-link {
   font-size: 12px;
   font-weight: 400;
   color: var(--text-faint);
+}
+
+.next-trains-towards .next-trains-every {
+  display: inline;
+  font-size: inherit;
+}
+
+.next-trains-towards .next-trains-every::before {
+  content: ' · ';
 }
