@@ -13,6 +13,7 @@ import { formatDuration } from '../utils/travelTime.js'
 import './ModePage.css'
 import './AirportsPage.css'
 import './TripPlannerPage.css'
+import { stationPath } from '../utils/lineSlug.js'
 
 const asLine = (s) => ({ mode: s.lineMode, code: s.lineCode, name: s.lineName, colorHex: s.lineColorHex })
 
@@ -191,7 +192,7 @@ export default function TripPlannerPage() {
               <p className="planner-note">
                 Tiempo estimado por distancia, más unos minutos de espera en cada combinación. No incluye la espera
                 inicial.{' '}
-                <Link to={`/estaciones/${plan.legs[plan.legs.length - 1].to.stationId}`}>Ver la estación de destino</Link>
+                <Link to={stationPath(plan.legs[plan.legs.length - 1].to)}>Ver la estación de destino</Link>
               </p>
               <button type="button" className="share-button planner-share" onClick={share}>
                 <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">

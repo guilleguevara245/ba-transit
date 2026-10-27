@@ -78,7 +78,8 @@ con APIs públicas, pruebas, integración continua y despliegue.
 **Experiencia**
 - Modo claro y oscuro (sigue al sistema la primera vez), diseño adaptado a celular y feriados marcados en la fecha.
 - Accesibilidad: 100 en Lighthouse (contraste, nombres accesibles en el mapa, navegación con teclado).
-- Direcciones legibles para compartir: `/lineas/subte-b`, `/red/trenes`, `/colectivos?linea=53A`.
+- Direcciones legibles para compartir: `/lineas/subte-b`, `/estaciones/subte-b/medrano`, `/red/trenes`,
+  `/colectivos?linea=53A`.
 - Instalable como app en el celular, con pantalla "Sin conexión".
 - Cada página se descarga recién cuando se abre, para que la primera visita sea liviana.
 

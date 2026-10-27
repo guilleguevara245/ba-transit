@@ -7,6 +7,7 @@ import { findTransfers, routeInfo } from '../utils/map.js'
 import { splitAlertsForStation } from '../utils/stationAlerts.js'
 import { formatLongDate, yearsSince } from '../utils/format.js'
 import './MapPopup.css'
+import { stationPath } from '../utils/lineSlug.js'
 
 const MAX_ALERT_CHARS = 110
 
@@ -106,7 +107,7 @@ export default function StationPopup({ station, stations, alerts, mode }) {
       </div>
 
       <div className="station-popup-links">
-        <Link className="station-popup-link chevrons-host" to={`/estaciones/${station.stationId}`}>
+        <Link className="station-popup-link chevrons-host" to={stationPath(station)}>
           Ver la estación <Chevrons />
         </Link>
       </div>

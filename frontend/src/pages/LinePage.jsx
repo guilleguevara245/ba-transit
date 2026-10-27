@@ -14,7 +14,7 @@ import NetworkMap from '../components/NetworkMap.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { MODE_LABELS, MODE_LABELS_PLURAL, MODE_SLUGS } from '../constants.js'
 import { mentionsStation } from '../utils/stationAlerts.js'
-import { findLine, lineSlug } from '../utils/lineSlug.js'
+import { findLine, lineSlug, stationPath } from '../utils/lineSlug.js'
 import '../components/Panels.css'
 import './LinePage.css'
 
@@ -73,7 +73,7 @@ function BranchStations({ branch, line, selected, onSelect, locatedIds, alerts =
                 {isSelected && located && (
                   <Link
                     className="station-item-link chevrons-host"
-                    to={`/estaciones/${station.id}`}
+                    to={stationPath({ stationId: station.id, stationName: station.name, lineMode: line.mode, lineCode: line.code })}
                     onClick={(event) => event.stopPropagation()}
                   >
                     Ver estación <Chevrons />

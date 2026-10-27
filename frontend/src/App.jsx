@@ -36,7 +36,9 @@ export default function App() {
           <Route path="/" element={<DashboardPage />} />
           <Route path="/mapa" element={<MapPage />} />
           <Route path="/lineas/:lineId" element={<LinePage />} />
-          <Route path="/estaciones/:stationId" element={<StationPage />} />
+          <Route path="/estaciones/:lineRef/:stationRef" element={<StationPage />} />
+          {/* Direccion vieja con el id (/estaciones/27): la pagina la cambia por la nueva. */}
+          <Route path="/estaciones/:lineRef" element={<StationPage />} />
           <Route path="/red/:slug" element={<ModePage />} />
           {/* Direccion vieja (hasta la v17.4): los links compartidos siguen andando. */}
           <Route path="/modos/:slug" element={<RedirectToRed />} />

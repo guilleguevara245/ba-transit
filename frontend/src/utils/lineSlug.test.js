@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { findLine, linePath, lineSlug } from './lineSlug.js'
+import { findLine, findStation, linePath, lineSlug, stationPath, textSlug } from './lineSlug.js'
 
 const LINES = [
   { id: 2, mode: 'SUBTE', code: 'B' },
@@ -24,5 +24,26 @@ describe('lineSlug', () => {
     expect(findLine(LINES, 'san-martin').id).toBe(10)
     expect(findLine(LINES, '10').id).toBe(10)
     expect(findLine(LINES, 'subte-z')).toBe(null)
+  })
+})
+
+describe('estaciones', () => {
+  const STATIONS = [
+    { stationId: 27, stationName: 'Medrano', lineMode: 'SUBTE', lineCode: 'B' },
+    { stationId: 300, stationName: 'J. M. Bosch', lineMode: 'TREN', lineCode: 'URQUIZA' },
+    { stationId: 80, stationName: 'Plaza de Mayo', lineMode: 'SUBTE', lineCode: 'A' },
+  ]
+
+  it('arma la direccion con la linea y el nombre sin tildes', () => {
+    expect(textSlug('Ejército de los Andes')).toBe('ejercito-de-los-andes')
+    expect(stationPath(STATIONS[0])).toBe('/estaciones/subte-b/medrano')
+    expect(stationPath(STATIONS[1])).toBe('/estaciones/urquiza/j-m-bosch')
+    expect(stationPath({ stationId: 5, stationName: 'X' })).toBe('/estaciones/5')
+  })
+
+  it('encuentra la estacion por slugs o por id', () => {
+    expect(findStation(STATIONS, 'subte-a', 'plaza-de-mayo').stationId).toBe(80)
+    expect(findStation(STATIONS, '27').stationId).toBe(27)
+    expect(findStation(STATIONS, 'subte-b', 'nada')).toBe(null)
   })
 })

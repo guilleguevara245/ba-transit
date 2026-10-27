@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import AccessibleBadge from '../components/AccessibleBadge.jsx'
 import BackButton, { BackTrail } from '../components/BackButton.jsx'
 import Chevrons from '../components/Chevrons.jsx'
@@ -22,7 +22,7 @@ import './ModePage.css'
 import './LinePage.css'
 import './MapPage.css'
 import './StationPage.css'
-import { linePath } from '../utils/lineSlug.js'
+import { findStation, linePath, stationPath } from '../utils/lineSlug.js'
 
 /** Paradas de colectivo a esta distancia cuentan como cerca de la estacion. */
 const BUS_RADIUS_M = 300
@@ -87,9 +87,17 @@ function useStationHistory(lineCode, stationName) {
  * cercanos, inauguracion, alertas de la linea y su ubicacion en el mapa.
  */
 export default function StationPage() {
-  const stationId = Number(useParams().stationId)
+  // /estaciones/subte-b/medrano; los links viejos (/estaciones/27) se cambian por la nueva.
+  const { lineRef, stationRef } = useParams()
+  const navigate = useNavigate()
   const { data: allStations, loading, error } = useApi('/api/v1/map/stations')
-  const station = allStations?.find((s) => s.stationId === stationId)
+  const station = findStation(allStations, lineRef, stationRef)
+  useEffect(() => {
+    if (station && stationRef == null) {
+      const path = stationPath(station)
+      if (path !== `/estaciones/${lineRef}`) navigate(path, { replace: true })
+    }
+  }, [station, lineRef, stationRef, navigate])
   const alertsState = useApi(station ? `/api/v1/lines/${station.lineId}/alerts` : null, { refreshMs: 60_000 })
   const history = useStationHistory(station?.lineCode, station?.stationName)
   const eventsState = useApi(station ? '/api/v1/eventos' : null, { refreshMs: 10 * 60_000 })
@@ -252,7 +260,7 @@ export default function StationPage() {
               <ul className="station-transfers">
                 {transfers.map((t) => (
                   <li key={t.stationId}>
-                    <Link to={`/estaciones/${t.stationId}`} className="chevrons-host">
+                    <Link to={stationPath(t)} className="chevrons-host">
                       <LineBadge line={asLine(t)} size="sm" />
                       <span className="station-transfer-name">
                         {t.stationName} <span className="station-dim">· {t.lineName}</span>
