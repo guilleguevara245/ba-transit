@@ -53,6 +53,27 @@ describe('festiveFor', () => {
     expect(festiveFor(at('2026-04-06')).greeting).toBe(null)
   })
 
+  it('dias populares y del transporte', () => {
+    const vday = festiveFor(at('2027-02-14'))
+    expect(vday.greeting).toBe('Feliz San Valentín')
+    expect(vday.decoration).toBe('corazones')
+    expect(festiveFor(at('2026-09-24')).greeting).toBe('Feliz Día del Colectivero')
+    expect(festiveFor(at('2026-06-11')).greeting).toBe('Feliz cumpleaños, Buenos Aires')
+    expect(festiveFor(at('2026-10-31')).phrase).toMatch(/hora pico/)
+    // Diciembre: dia propio, con gorro igual.
+    const subte = festiveFor(at('2026-12-01'))
+    expect(subte.greeting).toBe('El subte cumple años')
+    expect(subte.decoration).toBe('gorro')
+  })
+
+  it('Dia del Padre y de la Madre: tercer domingo', () => {
+    expect(festiveFor(at('2026-06-21')).greeting).toBe('Feliz Día del Padre')
+    expect(festiveFor(at('2026-10-18')).greeting).toBe('Feliz Día de la Madre')
+    expect(festiveFor(at('2026-10-25')).greeting).toBe(null)
+    // 2027: el tercer domingo de junio es el 20, Dia de la Bandera: gana la fecha patria.
+    expect(festiveFor(at('2027-06-20')).greeting).toBe('Feliz Día de la Bandera')
+  })
+
   it('otro feriado lo nombra', () => {
     expect(festiveFor(at('2026-10-12')).phrase).toMatch(/Diversidad Cultural/)
   })

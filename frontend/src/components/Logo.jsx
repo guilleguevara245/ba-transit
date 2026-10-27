@@ -37,6 +37,26 @@ const DECORATIONS = {
       <circle cx="12" cy="12" r="4.2" fill="#6cace4" />
     </svg>
   ),
+  // San Valentin: tres corazones que suben despacio arriba a la derecha.
+  corazones: (
+    <svg className="brand-deco brand-deco-corazones" viewBox="0 0 30 30" aria-hidden="true" focusable="false">
+      <path
+        className="heart heart-1"
+        d="M8 26 C 3 22, 1 19, 2 16 C 3 14, 6 14, 8 16 C 10 14, 13 14, 14 16 C 15 19, 13 22, 8 26 Z"
+        fill="#e63946"
+      />
+      <path
+        className="heart heart-2"
+        d="M21 15 C 17 12, 16 10, 17 8 C 18 6, 20 6, 21 8 C 22 6, 24 6, 25 8 C 26 10, 25 12, 21 15 Z"
+        fill="#ff8fa3"
+      />
+      <path
+        className="heart heart-3"
+        d="M14 7 C 12 5.5, 11 4.5, 11.5 3.5 C 12 2.5, 13 2.5, 14 3.5 C 15 2.5, 16 2.5, 16.5 3.5 C 17 4.5, 16 5.5, 14 7 Z"
+        fill="#e63946"
+      />
+    </svg>
+  ),
   // Confeti alrededor de la esquina (Año Nuevo, carnaval).
   confeti: (
     <svg className="brand-deco brand-deco-confeti" viewBox="0 0 30 30" aria-hidden="true" focusable="false">

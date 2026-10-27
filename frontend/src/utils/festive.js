@@ -5,7 +5,7 @@ import { holidayOn, localDateKey } from './holidays.js'
  * frase en lugar de "Así está el transporte ahora" y un adorno en el logo.
  *
  * greeting: reemplaza "Buenos días"; withName: si va seguido del nombre.
- * decoration: 'escarapela' | 'gorro' | 'confeti' | null.
+ * decoration: 'escarapela' | 'gorro' | 'confeti' | 'corazones' | null.
  * wave: mano que saluda al lado del saludo (Día del Amigo).
  *
  * Las fechas de memoria (24 de marzo, 2 de abril) van sin chistes ni adornos.
@@ -72,6 +72,55 @@ const BY_DAY = {
   },
 }
 
+/**
+ * Dias populares y del transporte: van despues de los feriados (si un
+ * feriado cae el mismo dia, gana el feriado).
+ */
+const POPULAR_BY_DAY = {
+  '02-14': {
+    greeting: 'Feliz San Valentín',
+    phrase: 'Que el amor no espere en el andén: fijate cuándo pasa el próximo tren.',
+    decoration: 'corazones',
+  },
+  '04-23': { greeting: 'Feliz Día del Libro', phrase: 'El viaje en subte es buen momento para leer. Así está el transporte.' },
+  '06-03': { greeting: 'Feliz Día de la Bicicleta', phrase: 'Día de la bici: fijate dónde hay EcoBici disponibles.' },
+  '06-07': { greeting: 'Feliz Día del Periodista', phrase: 'Así está el transporte hoy, con información chequeada.' },
+  '06-11': {
+    greeting: 'Feliz cumpleaños, Buenos Aires',
+    withName: false,
+    phrase: 'Hoy se celebra la fundación de la Ciudad (1580). Así está el transporte.',
+  },
+  '08-30': {
+    greeting: 'Feliz Día del Ferroviario',
+    phrase: 'Hace más de 160 años salía La Porteña, el primer tren argentino. Así están los trenes hoy.',
+  },
+  '09-11': { greeting: 'Feliz Día del Maestro', phrase: 'Gracias, maestras y maestros. Así está el transporte.' },
+  '09-24': {
+    greeting: 'Feliz Día del Colectivero',
+    phrase: 'Un invento porteño desde 1928: gracias a quienes manejan todos los días.',
+  },
+  '10-11': { phrase: 'Día del Dulce de Leche: el mejor invento argentino. Así está el transporte.' },
+  '10-31': { greeting: 'Feliz Halloween', phrase: 'Nada da más miedo que el subte en hora pico. Así está el transporte.' },
+  '11-10': { greeting: 'Feliz Día de la Tradición', phrase: 'Mate, guitarra y un buen viaje. Así está el transporte.' },
+  '11-30': { greeting: 'Feliz Día del Mate', phrase: 'El termo va en la mochila. Así está el transporte.' },
+  '12-01': {
+    greeting: 'El subte cumple años',
+    withName: false,
+    phrase: 'Desde 1913, el primero de Latinoamérica. Así está el transporte hoy.',
+  },
+  '12-11': { greeting: 'Feliz Día del Tango', phrase: 'Buenos Aires se mueve a otro ritmo. Así está el transporte.' },
+}
+
+/** Tercer domingo del mes: Dia del Padre (junio) y de la Madre (octubre). */
+function movableDay(key, date) {
+  const [y, m, d] = localDateKey(date).split('-').map(Number)
+  const sunday = new Date(Date.UTC(y, m - 1, d)).getUTCDay() === 0
+  if (!sunday || d < 15 || d > 21) return null
+  if (key.startsWith('06-')) return { greeting: 'Feliz Día del Padre', phrase: 'Hoy se viaja a almorzar con papá. Así está el transporte.' }
+  if (key.startsWith('10-')) return { greeting: 'Feliz Día de la Madre', phrase: 'Hoy se viaja a ver a mamá: salí con tiempo.' }
+  return null
+}
+
 /** Por nombre de feriado, para los que cambian de fecha (carnaval, Pascua, San Martín). */
 const BY_HOLIDAY = [
   [/carnaval/i, { greeting: 'Feliz Carnaval', phrase: 'Murgas y cortes en los barrios. Así está el transporte.', decoration: 'confeti' }],
@@ -92,6 +141,9 @@ export function festiveFor(date = new Date()) {
   if (!match && [1, 2].some((days) => /viernes santo/i.test(holidayOn(new Date(date.getTime() - days * DAY_MS)) ?? ''))) {
     match = { greeting: 'Felices Pascuas', phrase: 'Fin de semana largo de Pascua. Así está el transporte.' }
   }
+  // Otro feriado: lo dice, sin chistes (gana sobre los dias populares).
+  if (!match && holiday) match = { phrase: `Hoy es feriado: ${holiday}. Así está el transporte.` }
+  if (!match) match = movableDay(key, date) ?? POPULAR_BY_DAY[key]
   // Diciembre: gorrito todo el mes, con frase de fiestas los dias sin una propia.
   if (!match && key.startsWith('12-')) {
     match = {
@@ -102,7 +154,7 @@ export function festiveFor(date = new Date()) {
       decoration: 'gorro',
     }
   }
-  // Otro feriado: lo dice, sin chistes.
-  if (!match && holiday) match = { phrase: `Hoy es feriado: ${holiday}. Así está el transporte.` }
+  // En diciembre el gorro va siempre, aunque el dia tenga su propia frase.
+  if (match && key.startsWith('12-') && !match.decoration) match = { ...match, decoration: 'gorro' }
   return { ...NONE, ...match }
 }

@@ -339,6 +339,44 @@
   right: -12px;
 }
 
+/* San Valentin: los corazones suben y bajan apenas, cada uno a su ritmo. */
+.brand-deco-corazones {
+  width: 30px;
+  top: -13px;
+  right: -18px;
+  overflow: visible;
+}
+
+.brand-deco-corazones .heart {
+  animation: heart-float 2.6s ease-in-out infinite;
+}
+
+.brand-deco-corazones .heart-2 {
+  animation-delay: 0.5s;
+}
+
+.brand-deco-corazones .heart-3 {
+  animation-delay: 1s;
+}
+
+@keyframes heart-float {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-3px);
+    opacity: 0.75;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-deco-corazones .heart {
+    animation: none;
+  }
+}
+
 @media (max-width: 1080px) {
   .brand-deco-gorro {
     width: 28px;
