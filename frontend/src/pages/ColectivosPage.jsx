@@ -9,7 +9,7 @@ import BusAlerts from '../components/BusAlerts.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { useDebounce } from '../hooks/useDebounce.js'
-import { busDescription, busTitle } from '../utils/busNames.js'
+import { busDescription, busParams, busTitle } from '../utils/busNames.js'
 import { formatDuration } from '../utils/travelTime.js'
 import './ModePage.css'
 import './ColectivosPage.css'
@@ -167,7 +167,15 @@ function RouteDetail({ routeId, line, headsign, initialDirection }) {
  */
 export default function ColectivosPage() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const selectedId = searchParams.get('linea')
+  // La URL muestra el numero de la linea (?linea=53A) y el id del feed
+  // (&id=283) para ubicarla sin ambiguedad. Con solo el numero (escrito a
+  // mano o compartido) se busca la linea con ese cartel; los links viejos
+  // traian el id en "linea" y siguen andando.
+  const lineParam = searchParams.get('linea')
+  const idParam = searchParams.get('id')
+  const lookup = useApi(!idParam && lineParam ? `/api/v1/colectivos?q=${encodeURIComponent(lineParam)}` : null)
+  const exact = lookup.data?.find((r) => (r.shortName ?? '').toUpperCase() === lineParam?.toUpperCase())
+  const selectedId = idParam ?? (lineParam ? (exact?.id ?? (lookup.loading ? null : lineParam)) : null)
   const [query, setQuery] = useState('')
   // "Línea 53" o "linea 53" buscan lo mismo que "53".
   const debounced = useDebounce(query.trim().replace(/^l[ií]nea\s*/i, ''), 300)
@@ -220,7 +228,7 @@ export default function ColectivosPage() {
                   key={route.id}
                   type="button"
                   className={route.id === selectedId ? 'bus-result active' : 'bus-result'}
-                  onClick={() => setSearchParams({ linea: route.id })}
+                  onClick={() => setSearchParams(busParams(route.shortName, route.id))}
                 >
                   <BusNumber route={route} />
                   <span className="bus-result-text">
@@ -249,7 +257,7 @@ export default function ColectivosPage() {
             <LiveBusesMap
               onSelectRoute={(bus) =>
                 setSearchParams({
-                  linea: bus.routeId,
+                  ...busParams(bus.line, bus.routeId),
                   ...(bus.line ? { numero: bus.line } : {}),
                   ...(bus.headsign ? { destino: bus.headsign } : {}),
                   ...(Number.isInteger(bus.direction) ? { sentido: String(bus.direction) } : {}),

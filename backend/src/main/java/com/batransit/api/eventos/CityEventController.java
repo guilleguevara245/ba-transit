@@ -14,14 +14,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.Instant;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/eventos")
 public class CityEventController {
 
-    public record EventsResponse(Instant apiUpdatedAt, List<CityEvent> events) {
+    public record EventsResponse(List<CityEvent> events) {
     }
 
     private final CityEventService service;
@@ -30,10 +29,10 @@ public class CityEventController {
         this.service = service;
     }
 
-    /** Eventos masivos y cortes vigentes o proximos (API Transporte + carga manual). */
+    /** Eventos masivos y cortes vigentes o proximos (cargados a mano). */
     @GetMapping
     public EventsResponse current() {
-        return new EventsResponse(service.apiUpdatedAt(), service.current());
+        return new EventsResponse(service.current());
     }
 
     @Operation(summary = "Carga un evento masivo o corte (requiere el header X-API-Key)")

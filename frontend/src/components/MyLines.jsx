@@ -8,6 +8,7 @@ import { useFavorites } from '../hooks/useFavorites.js'
 import { useFavoriteStations } from '../hooks/useFavoriteStations.js'
 import { statusFor, worstAlertType } from '../utils/network.js'
 import './MyLines.css'
+import { linePath } from '../utils/lineSlug.js'
 
 /**
  * Seccion "Mis lineas" del inicio: las favoritas con su estado actual.
@@ -42,7 +43,7 @@ export default function MyLines({ lines, alerts }) {
             return (
               <div key={line.id} className="my-line-card">
                 <div className="my-line">
-                  <Link to={`/lineas/${line.id}`} className="my-line-link">
+                  <Link to={linePath(line)} className="my-line-link">
                     <LineBadge line={line} size="md" />
                     <span className="my-line-name">{line.name}</span>
                   </Link>

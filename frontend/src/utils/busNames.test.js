@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { busDescription, busTitle, parseBusShortName, stopName } from './busNames.js'
+import { busDescription, busParams, busTitle, parseBusShortName, stopName } from './busNames.js'
 
 describe('parseBusShortName', () => {
   it('separa numero y cartel', () => {
@@ -29,5 +29,12 @@ describe('stopName', () => {
     expect(stopName('1302 ANTARTIDA ARGENTINA AV.')).toBe('Antartida Argentina Av.')
     expect(stopName('AV. DE MAYO Y PERU')).toBe('Av. de Mayo y Peru')
     expect(stopName('Plaza Italia')).toBe('Plaza Italia')
+  })
+})
+
+describe('busParams', () => {
+  it('pone el numero a la vista y el id aparte', () => {
+    expect(busParams('53A', '283')).toEqual({ linea: '53A', id: '283' })
+    expect(busParams(null, '283')).toEqual({ linea: '283' })
   })
 })

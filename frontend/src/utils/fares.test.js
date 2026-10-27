@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { basePrices, fareLabel, fareSummary, groupFares, tierLabel } from './fares.js'
+import { basePrices, fareSummary, groupFares, tierLabel } from './fares.js'
 
 const FARES = [
   { id: 1, mode: 'TREN', minKm: 12, maxKm: 24, section: 2, price: 640, priceUnregistered: 1280 },
@@ -13,28 +13,6 @@ const FARES = [
   { id: 9, mode: 'COLECTIVO', jurisdiction: 'NACIONAL', minKm: 0, maxKm: 3, price: 742.81 },
   { id: 10, mode: 'PREMETRO', price: 635.95, priceUnregistered: 883.97 },
 ]
-
-describe('fareLabel', () => {
-  it('tarifa plana', () => {
-    expect(fareLabel({ mode: 'SUBTE', minKm: null, maxKm: null })).toBe('Subte, tarifa plana')
-  })
-
-  it('tramo con techo', () => {
-    expect(fareLabel({ mode: 'COLECTIVO', minKm: 0, maxKm: 3 })).toBe('Colectivo, 0-3 km')
-  })
-
-  it('tramo abierto', () => {
-    expect(fareLabel({ mode: 'TREN', minKm: 24, maxKm: null })).toBe('Tren, más de 24 km')
-  })
-
-  it('incluye jurisdiccion, seccion y viajes', () => {
-    expect(fareLabel({ mode: 'COLECTIVO', jurisdiction: 'CABA', minKm: 0, maxKm: 3 })).toBe(
-      'Colectivo Ciudad (CABA), 0-3 km',
-    )
-    expect(fareLabel({ mode: 'TREN', section: 1, minKm: 0, maxKm: 12 })).toBe('Tren, Sección 1 · 0-12 km')
-    expect(fareLabel({ mode: 'SUBTE', tripsFrom: 41, tripsTo: null })).toBe('Subte, 41 viajes o más')
-  })
-})
 
 describe('tierLabel', () => {
   it('rango de viajes del subte', () => {

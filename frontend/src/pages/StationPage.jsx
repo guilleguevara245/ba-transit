@@ -7,6 +7,7 @@ import ErrorMessage from '../components/ErrorMessage.jsx'
 import LineBadge from '../components/LineBadge.jsx'
 import NetworkMap from '../components/NetworkMap.jsx'
 import NextTrains from '../components/NextTrains.jsx'
+import { busParams } from '../utils/busNames.js'
 import Skeleton from '../components/Skeleton.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { MODE_LABELS, MODE_LABELS_PLURAL, MODE_SLUGS } from '../constants.js'
@@ -21,6 +22,7 @@ import './ModePage.css'
 import './LinePage.css'
 import './MapPage.css'
 import './StationPage.css'
+import { linePath } from '../utils/lineSlug.js'
 
 /** Paradas de colectivo a esta distancia cuentan como cerca de la estacion. */
 const BUS_RADIUS_M = 300
@@ -149,9 +151,9 @@ export default function StationPage() {
     <div className="wrap content">
       <BackTrail
         links={[
-          { to: `/lineas/${station.lineId}`, label: `Volver a la ${station.lineName}` },
+          { to: linePath({ id: station.lineId, mode: station.lineMode, code: station.lineCode }), label: `Volver a la ${station.lineName}` },
           ...(MODE_SLUGS[station.lineMode]
-            ? [{ to: `/modos/${MODE_SLUGS[station.lineMode]}`, label: `Volver a ${MODE_LABELS_PLURAL[station.lineMode]}` }]
+            ? [{ to: `/red/${MODE_SLUGS[station.lineMode]}`, label: `Volver a ${MODE_LABELS_PLURAL[station.lineMode]}` }]
             : []),
         ]}
       />
@@ -270,7 +272,7 @@ export default function StationPage() {
                 {nearbyBuses.map((bus) => (
                   <Link
                     key={bus.id}
-                    to={`/colectivos?linea=${encodeURIComponent(bus.id)}`}
+                    to={`/colectivos?${new URLSearchParams(busParams(bus.shortName, bus.id))}`}
                     className="station-bus"
                     style={bus.color ? { background: bus.color, color: readableTextColor(bus.color) } : undefined}
                     title={`Línea ${bus.shortName} · parada a unos ${Math.max(50, Math.round(bus.meters / 50) * 50)} m`}

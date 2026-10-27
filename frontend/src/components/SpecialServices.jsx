@@ -4,6 +4,7 @@ import LineBadge from './LineBadge.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { formatLongDate } from '../utils/format.js'
 import './SpecialServices.css'
+import { linePath } from '../utils/lineSlug.js'
 
 const REFRESH_MS = 10 * 60_000
 
@@ -45,7 +46,7 @@ export default function SpecialServices({ lineId, limit, showTitle = true }) {
                   </span>
                   <strong>{s.title}</strong>
                   {!lineId && (
-                    <Link className="special-line" to={`/lineas/${s.lineId}`}>
+                    <Link className="special-line" to={linePath({ ...line, id: s.lineId })}>
                       {s.lineName}
                     </Link>
                   )}

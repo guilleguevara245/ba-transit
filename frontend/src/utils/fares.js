@@ -32,18 +32,6 @@ export function tierLabel(fare) {
   return km ?? 'Tarifa única'
 }
 
-/**
- * Texto completo de una tarifa (ver Fare en el backend): modo,
- * jurisdiccion del colectivo si la hay, y tramo.
- */
-export function fareLabel(fare) {
-  const modeLabel = MODE_LABELS[fare.mode] ?? fare.mode
-  const jurisdiction = fare.jurisdiction ? ` ${JURISDICTION_LABELS[fare.jurisdiction] ?? fare.jurisdiction}` : ''
-  const tier = tierLabel(fare)
-  if (tier === 'Tarifa única') return `${modeLabel}${jurisdiction}, tarifa plana`
-  return `${modeLabel}${jurisdiction}, ${tier}`
-}
-
 function sortTiers(a, b) {
   return (
     (num(a.tripsFrom) ?? 0) - (num(b.tripsFrom) ?? 0) ||

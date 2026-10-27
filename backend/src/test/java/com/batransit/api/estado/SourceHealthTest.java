@@ -82,12 +82,6 @@ class SourceHealthTest {
         assertNull(metrovias.lastSuccess());
     }
 
-    @Test
-    void unaFuenteApagadaNoSeMuestra() {
-        SourceHealth health = new SourceHealth(ticking());
-        health.disable(Source.EVENTOS);
-        assertEquals(Source.values().length - 1, health.checks().size());
-    }
 
     @Test
     void elRegistroVacioNoGuardaNada() {

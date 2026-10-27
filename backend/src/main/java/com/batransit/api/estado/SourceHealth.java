@@ -27,10 +27,6 @@ public class SourceHealth {
         @Override
         public void fail(Source source, String reason) {
         }
-
-        @Override
-        public void disable(Source source) {
-        }
     };
 
     public enum Status { OK, ERROR, SIN_DATOS }
@@ -41,7 +37,6 @@ public class SourceHealth {
         TRANSPORTE_VIVO("Subte, colectivos y EcoBici en vivo", "API Transporte (Gobierno de la Ciudad)"),
         COLECTIVOS_RECORRIDOS("Recorridos de colectivos", "API Transporte (Gobierno de la Ciudad)"),
         SUBTE_HORARIO("Horario programado del subte", "API Transporte (Gobierno de la Ciudad)"),
-        EVENTOS("Cortes y eventos", "API Transporte (Gobierno de la Ciudad)"),
         TRENES_AVISOS("Avisos de los trenes", "Trenes Argentinos"),
         FERROVIAS("Próximos trenes del Belgrano Norte", "Ferrovías"),
         METROVIAS("Estado del Urquiza", "Metrovías"),
@@ -81,12 +76,7 @@ public class SourceHealth {
 
     private final Clock clock;
     private final Map<Source, Entry> entries = new ConcurrentHashMap<>();
-    /** Fuentes que no se consultan (apagadas por configuracion): no se muestran. */
-    private final java.util.Set<Source> disabled = ConcurrentHashMap.newKeySet();
 
-    public void disable(Source source) {
-        disabled.add(source);
-    }
 
     public SourceHealth() {
         this(Clock.systemUTC());
@@ -113,9 +103,6 @@ public class SourceHealth {
         List<Check> result = new ArrayList<>();
         Map<Source, Entry> snapshot = new LinkedHashMap<>(entries);
         for (Source source : Source.values()) {
-            if (disabled.contains(source)) {
-                continue;
-            }
             Entry e = snapshot.get(source);
             Status status;
             if (e == null) {

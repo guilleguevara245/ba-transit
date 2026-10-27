@@ -47,3 +47,11 @@ export function stopName(name) {
     )
     .join(' ')
 }
+
+/**
+ * Parametros de la URL de una linea (/colectivos?linea=53A&id=283): el
+ * numero a la vista y el id del feed para ubicarla sin ambiguedad.
+ */
+export function busParams(shortName, id) {
+  return shortName ? { linea: shortName, id } : { linea: id }
+}

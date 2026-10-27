@@ -22,7 +22,7 @@ export const MODE_LABELS_PLURAL = {
   AEROPUERTO: 'Aeropuertos',
 }
 
-// Slug de cada modo en la URL (/modos/trenes).
+// Slug de cada modo en la URL (/red/trenes).
 export const MODE_SLUGS = {
   SUBTE: 'subtes',
   TREN: 'trenes',

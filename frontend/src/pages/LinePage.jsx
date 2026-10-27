@@ -3,7 +3,7 @@ import Chevrons from '../components/Chevrons.jsx'
 import SpecialServices from '../components/SpecialServices.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import AlertsPanel from '../components/AlertsPanel.jsx'
 import BackButton, { BackTrail } from '../components/BackButton.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
@@ -14,6 +14,7 @@ import NetworkMap from '../components/NetworkMap.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { MODE_LABELS, MODE_LABELS_PLURAL, MODE_SLUGS } from '../constants.js'
 import { mentionsStation } from '../utils/stationAlerts.js'
+import { findLine, lineSlug } from '../utils/lineSlug.js'
 import '../components/Panels.css'
 import './LinePage.css'
 
@@ -88,7 +89,14 @@ function BranchStations({ branch, line, selected, onSelect, locatedIds, alerts =
 }
 
 export default function LinePage() {
-  const { lineId } = useParams()
+  // La direccion es /lineas/subte-b o /lineas/san-martin; los links viejos
+  // con el id (/lineas/10) siguen andando y se reemplazan por la nueva.
+  const { lineId: lineRef } = useParams()
+  const navigate = useNavigate()
+  const { data: allLinesList } = useApi('/api/v1/lines')
+  const isNumericRef = /^\d+$/.test(lineRef ?? '')
+  const lineId = isNumericRef ? lineRef : (findLine(allLinesList, lineRef)?.id ?? null)
+  const lineNotFound = !isNumericRef && Array.isArray(allLinesList) && lineId == null
   const [searchParams] = useSearchParams()
   const urlStationId = Number(searchParams.get('estacion')) || null
   const [selected, setSelected] = useState({ id: urlStationId, fromUrl: true })
@@ -116,11 +124,19 @@ export default function LinePage() {
     setSelected({ id: urlStationId, fromUrl: true })
   }, [urlStationId, lineId])
 
-  const lineState = useApi(`/api/v1/lines/${lineId}`)
-  const branchesState = useApi(`/api/v1/lines/${lineId}/branches`)
-  const alertsState = useApi(`/api/v1/lines/${lineId}/alerts`, { refreshMs: 60_000 })
+  const lineState = useApi(lineId ? `/api/v1/lines/${lineId}` : null)
+  const branchesState = useApi(lineId ? `/api/v1/lines/${lineId}/branches` : null)
+  const alertsState = useApi(lineId ? `/api/v1/lines/${lineId}/alerts` : null, { refreshMs: 60_000 })
 
   const line = lineState.data
+
+  // Link viejo con el id: se cambia la direccion por la legible, sin recargar.
+  useEffect(() => {
+    const slug = line && lineSlug(line)
+    if (isNumericRef && slug) {
+      navigate({ pathname: `/lineas/${slug}`, search: window.location.search }, { replace: true })
+    }
+  }, [isNumericRef, line, navigate])
   // Estaciones del mismo modo con coordenadas: las de esta linea van al
   // minimapa y el resto sirve para mostrar combinaciones en el popup.
   const modeStationsState = useApi(line ? `/api/v1/map/stations?mode=${line.mode}` : null)
@@ -134,14 +150,14 @@ export default function LinePage() {
   // Para mostrar los badges de las lineas con las que combina.
   // Subte y premetro combinan entre si: hacen falta todas las lineas para los badges.
   const isMetro = line?.mode === 'SUBTE' || line?.mode === 'PREMETRO'
-  const { data: allLines } = useApi(isMetro ? '/api/v1/lines' : null)
+  const allLines = isMetro ? allLinesList : null
 
   return (
     <div className="wrap content">
       {line && MODE_SLUGS[line.mode] ? (
         <BackTrail
           links={[
-            { to: `/modos/${MODE_SLUGS[line.mode]}`, label: `Volver a ${MODE_LABELS_PLURAL[line.mode]}` },
+            { to: `/red/${MODE_SLUGS[line.mode]}`, label: `Volver a ${MODE_LABELS_PLURAL[line.mode]}` },
             { to: '/', label: 'Volver al inicio' },
           ]}
         />
@@ -149,7 +165,13 @@ export default function LinePage() {
         <BackButton />
       )}
 
-      {lineState.loading && <Skeleton variant="block" label="Cargando línea…" />}
+      {lineNotFound && (
+        <>
+          <h1 className="page-title">No encontramos esa línea</h1>
+          <p className="page-subtitle">Puede que el enlace esté mal escrito. Buscala desde el inicio o el mapa.</p>
+        </>
+      )}
+      {((!lineId && !lineNotFound) || lineState.loading) && <Skeleton variant="block" label="Cargando línea…" />}
       {lineState.error && <ErrorMessage what="la línea" error={lineState.error} />}
 
       {line && (

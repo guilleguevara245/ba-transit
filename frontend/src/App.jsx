@@ -1,8 +1,14 @@
 import { lazy } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Navigate, Routes, Route, useParams } from 'react-router-dom'
 import Layout from './components/Layout.jsx'
 import DashboardPage from './pages/DashboardPage.jsx'
 import './App.css'
+
+/** /modos/subtes -> /red/subtes (la direccion cambio en la v17.4). */
+function RedirectToRed() {
+  const { slug } = useParams()
+  return <Navigate to={`/red/${slug}`} replace />
+}
 
 // El inicio se carga con el sitio; el resto de las paginas (y sus mapas)
 // se descargan recien cuando se abren, asi la primera visita es mas liviana.
@@ -31,7 +37,9 @@ export default function App() {
           <Route path="/mapa" element={<MapPage />} />
           <Route path="/lineas/:lineId" element={<LinePage />} />
           <Route path="/estaciones/:stationId" element={<StationPage />} />
-          <Route path="/modos/:slug" element={<ModePage />} />
+          <Route path="/red/:slug" element={<ModePage />} />
+          {/* Direccion vieja (hasta la v17.4): los links compartidos siguen andando. */}
+          <Route path="/modos/:slug" element={<RedirectToRed />} />
           <Route path="/aeropuertos" element={<AirportsPage />} />
           <Route path="/colectivos" element={<ColectivosPage />} />
           <Route path="/accesos" element={<AccessesPage />} />

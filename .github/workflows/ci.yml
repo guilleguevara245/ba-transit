@@ -79,3 +79,40 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  e2e:
+    name: Frontend (pruebas de punta a punta)
+    runs-on: ubuntu-latest
+    # Nuevo: mientras se estabiliza, una falla aca no pone el commit en rojo.
+    continue-on-error: true
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Build
+        run: npm run build
+
+      # Playwright no esta en package.json: se instala solo para esta prueba.
+      - name: Install Playwright and Chromium
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1.63.0
+          npx playwright install --with-deps chromium
+
+      - name: Smoke test (inicio, linea, mapa, estado)
+        run: |
+          npx vite preview --port 4173 --strictPort &
+          for i in $(seq 1 30); do curl -sf http://localhost:4173 > /dev/null && break; sleep 1; done
+          node e2e/smoke.mjs

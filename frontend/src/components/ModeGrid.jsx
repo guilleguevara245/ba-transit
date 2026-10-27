@@ -60,7 +60,7 @@ export default function ModeGrid({ lines, alerts }) {
         const status = statusFor(worstType)
 
         return (
-          <Link className="mode-card chevrons-host" key={mode} to={`/modos/${MODE_SLUGS[mode]}`}>
+          <Link className="mode-card chevrons-host" key={mode} to={`/red/${MODE_SLUGS[mode]}`}>
             <div className="mode-name">
               <ModeIcon mode={mode} />
               <span className="mode-label">{MODE_LABELS_PLURAL[mode] ?? mode}</span>

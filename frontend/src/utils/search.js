@@ -1,4 +1,5 @@
 import { MODE_LABELS } from '../constants.js'
+import { linePath } from './lineSlug.js'
 
 /**
  * Convierte la respuesta de /api/v1/search en una lista plana de
@@ -14,7 +15,7 @@ export function toSearchOptions(results) {
     name: line.name,
     meta: MODE_LABELS[line.mode] ?? line.mode,
     color: line.colorHex,
-    href: `/lineas/${line.id}`,
+    href: linePath(line),
   }))
 
   const stations = results.stations.map((station) => ({

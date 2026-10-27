@@ -11,7 +11,7 @@ export default function TrainNoticesPage() {
 
   return (
     <div className="wrap content">
-      <BackButton to="/modos/trenes">Volver a Trenes</BackButton>
+      <BackButton to="/red/trenes">Volver a Trenes</BackButton>
       <h1 className="page-title page-title-icon">
         <ModeIcon mode="TREN" size="lg" />
         Avisos de trenes

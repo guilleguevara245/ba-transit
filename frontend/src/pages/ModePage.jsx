@@ -11,9 +11,10 @@ import { useApi } from '../hooks/useApi.js'
 import { MODE_LABELS_PLURAL, modeFromSlug } from '../constants.js'
 import { statusFor, worstAlertType } from '../utils/network.js'
 import './ModePage.css'
+import { linePath } from '../utils/lineSlug.js'
 
 /**
- * Pagina de un modo (/modos/trenes): todas sus lineas con su estado y,
+ * Pagina de un modo (/red/trenes): todas sus lineas con su estado y,
  * si hay coordenadas cargadas, el mapa de sus estaciones.
  */
 export default function ModePage() {
@@ -61,7 +62,7 @@ export default function ModePage() {
           const lineAlerts = alerts.filter((a) => a.transportLineId === line.id)
           const status = statusFor(worstAlertType(lineAlerts))
           return (
-            <Link key={line.id} to={`/lineas/${line.id}`} className="mode-line-card" style={{ '--line-color': line.colorHex }}>
+            <Link key={line.id} to={linePath(line)} className="mode-line-card" style={{ '--line-color': line.colorHex }}>
               <LineBadge line={line} size="md" />
               <span className="mode-line-name">{line.name}</span>
               <span className={`status-pill ${status.className}`}>

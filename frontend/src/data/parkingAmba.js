@@ -11,12 +11,6 @@
  *
  * Exportado de OpenStreetMap con Overpass el 26/10/2026.
  */
-export const OSM_PARKING_SOURCE = {
-  name: 'OpenStreetMap',
-  url: 'https://www.openstreetmap.org/copyright',
-  license: 'ODbL',
-}
-
 // Los 40 partidos del AMBA (Region Metropolitana de Buenos Aires).
 export const AMBA_PARTIDOS = ["Almirante Brown", "Avellaneda", "Berazategui", "Berisso", "Brandsen", "Campana", "Cañuelas", "Ensenada", "Escobar", "Esteban Echeverría", "Exaltación de la Cruz", "Ezeiza", "Florencio Varela", "General Las Heras", "General Rodríguez", "General San Martín", "Hurlingham", "Ituzaingó", "José C. Paz", "La Matanza", "La Plata", "Lanús", "Lomas de Zamora", "Luján", "Malvinas Argentinas", "Marcos Paz", "Merlo", "Moreno", "Morón", "Pilar", "Presidente Perón", "Quilmes", "San Fernando", "San Isidro", "San Miguel", "San Vicente", "Tigre", "Tres de Febrero", "Vicente López", "Zárate"]
 

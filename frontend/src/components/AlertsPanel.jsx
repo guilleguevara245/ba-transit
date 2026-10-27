@@ -4,6 +4,7 @@ import './AlertsPanel.css'
 import { formatRelativeTime } from '../utils/format.js'
 import { ALERT_TYPE_LABELS } from '../constants.js'
 import { ALERT_FILTERS, DEFAULT_VISIBLE, countByFilter, filterAlerts, sortByRecent } from '../utils/alertFilters.js'
+import { linePath } from '../utils/lineSlug.js'
 
 /**
  * Alertas activas, de la mas reciente a la mas vieja. Con lineas de mas
@@ -65,7 +66,7 @@ export default function AlertsPanel({ alerts, lines }) {
               <span className={`alert-tag alert-tag-${alert.type.toLowerCase()}`}>
                 {ALERT_TYPE_LABELS[alert.type] ?? alert.type}
               </span>
-              <Link className="alert-line" to={`/lineas/${alert.transportLineId}`}>
+              <Link className="alert-line" to={linePath(line ?? { id: alert.transportLineId })}>
                 {line ? line.name : `Línea #${alert.transportLineId}`}
               </Link>
             </div>

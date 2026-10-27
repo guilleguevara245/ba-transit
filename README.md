@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="design/ba-transit-logo.jpg" alt="BA Transit" width="800">
+  <img src="design/ba-transit-logo.png" alt="BA Transit · La ciudad se mueve. Vos también." width="800">
 </p>
 
 <p align="center">
@@ -18,8 +18,8 @@
 # BA Transit
 
 **El estado del transporte de Buenos Aires en un solo lugar.** Subte, Premetro, trenes, colectivos, accesos a la
-Ciudad, EcoBici y aeropuertos: alertas en vivo, próximos trenes, recorridos, tarifas, cortes de tránsito y un
-planificador de viajes.
+Ciudad, EcoBici, estacionamiento y aeropuertos: alertas en vivo, próximos trenes, recorridos, tarifas, tránsito en
+las autopistas y un planificador de viajes.
 
 La información del transporte del AMBA está repartida entre muchas fuentes oficiales, cada una con su formato. BA
 Transit las reúne, las cruza y las muestra de forma simple, pensada para consultar rápido antes de salir.
@@ -37,7 +37,8 @@ con APIs públicas, pruebas, integración continua y despliegue.
 </p>
 
 <p align="center">
-  <img src="docs/capturas/celular.png" alt="BA Transit en el celular" width="260">
+  <img src="docs/capturas/accesos.png" alt="Accesos: tránsito en cada mano de las autopistas" width="66%">
+  <img src="docs/capturas/celular.png" alt="BA Transit en el celular" width="26%">
 </p>
 
 > Las capturas usan datos de muestra.
@@ -50,23 +51,34 @@ con APIs públicas, pruebas, integración continua y despliegue.
 - Alertas meteorológicas del Servicio Meteorológico Nacional (tormentas, lluvias, calor) que afectan al AMBA, con un
   consejo para quien va a viajar.
 - Eventos masivos, manifestaciones y obras que cortan calles, con aviso en las estaciones y los accesos cercanos.
+- **Estado de los datos**: una página muestra cuándo respondió cada fuente por última vez y si alguna está fallando,
+  con un indicador en el pie de todas las páginas.
 
 **Subte, Premetro y trenes**
 - Mapa interactivo de toda la red con recorridos reales, combinaciones y filtro de estaciones accesibles.
-- Página de cada línea y de cada estación: próximos trenes en vivo, último tren de la noche, historia, lugares
-  cercanos, colectivos que paran cerca y accesibilidad.
+- Página de cada línea y de cada estación: próximos trenes, último tren de la noche, historia, lugares cercanos,
+  colectivos que paran cerca y accesibilidad.
+- Próximos trenes: en vivo para el subte (API Transporte) y el Belgrano Norte (pantallas de Ferrovías); según el
+  horario programado para el subte sin datos en vivo y para el Urquiza (horario de Metrovías, con servicio nocturno).
+- Estado del Urquiza leído del panel de Metrovías, y avisos de obras y servicios limitados de Trenes Argentinos.
 - **Cómo llegar**: planificador propio (algoritmo de Dijkstra sobre el grafo de la red) con combinaciones, tiempo
   estimado, opción de viajar solo por estaciones accesibles y enlace para compartir el viaje.
 
 **Colectivos, accesos y más**
-- Colectivos en movimiento en tiempo real sobre el mapa, búsqueda por número y recorrido con paradas y tiempos.
-- Estado del tránsito en las autopistas de acceso (TomTom Traffic) y cuadro de peajes.
+- Colectivos en movimiento en tiempo real sobre el mapa, búsqueda por número, recorrido con paradas y tiempos, y
+  avisos de cada línea.
+- Tránsito en las autopistas de acceso (TomTom Traffic), medido en cada mano (hacia CABA y hacia Provincia), y cuadro
+  de peajes que resalta la tarifa vigente según la hora pico.
+- Estacionamiento: 2.700 garajes y las playas de la Ciudad, lugares para motos, 1.600 playas del conurbano
+  (OpenStreetMap) por partido, y búsqueda de los más cercanos.
 - Estaciones de EcoBici con bicis y anclajes disponibles.
 - Aeropuertos con el clima actual y cómo llegar.
 - Cuadro tarifario completo del AMBA y simulador del descuento Red SUBE.
 
 **Experiencia**
-- Modo claro y oscuro, diseño adaptado a celular y feriados marcados en la fecha.
+- Modo claro y oscuro (sigue al sistema la primera vez), diseño adaptado a celular y feriados marcados en la fecha.
+- Accesibilidad: 100 en Lighthouse (contraste, nombres accesibles en el mapa, navegación con teclado).
+- Direcciones legibles para compartir: `/lineas/subte-b`, `/red/trenes`, `/colectivos?linea=53A`.
 - Instalable como app en el celular, con pantalla "Sin conexión".
 - Cada página se descarga recién cuando se abre, para que la primera visita sea liviana.
 
@@ -77,7 +89,8 @@ flowchart LR
     U[Navegador / app instalada] -->|HTTPS| F[Frontend<br>React + Vite<br>Render Static Site]
     F -->|REST /api/v1| B[Backend<br>Java 21 + Spring Boot<br>Render Web Service]
     B --> DB[(PostgreSQL<br>Neon)]
-    B --> T[API Transporte GCBA<br>alertas, subte, colectivos,<br>EcoBici, eventos]
+    B --> T[API Transporte GCBA<br>alertas, subte, colectivos,<br>EcoBici]
+    B --> TR[Trenes Argentinos, Ferrovías,<br>Metrovías]
     B --> SMN[SMN<br>alertas CAP]
     B --> TT[TomTom Traffic]
     F --> OM[Open-Meteo<br>clima]
@@ -87,7 +100,7 @@ flowchart LR
 - **Backend**: API REST con Spring Boot. Sincroniza las fuentes externas con tareas programadas y guarda en caché las
   respuestas en vivo, para que muchas visitas juntas no se conviertan en muchas llamadas a las APIs. Las credenciales
   nunca se escriben en los logs.
-- **Base de datos**: PostgreSQL con el esquema versionado en 40 migraciones de Flyway: líneas, ramales, estaciones con
+- **Base de datos**: PostgreSQL con el esquema versionado en 42 migraciones de Flyway: líneas, ramales, estaciones con
   coordenadas reales, alertas, tarifas, servicios especiales y eventos.
 - **Frontend**: React con React Router y Leaflet. La lógica (planificador, tarifas, horarios, textos) vive en funciones
   puras con sus propias pruebas, separada de los componentes.
@@ -102,10 +115,17 @@ flowchart LR
 - **Lectura de alertas CAP**: el SMN publica sus alertas en el estándar de la Organización Meteorológica Mundial. El
   backend las lee, descarta las canceladas o reemplazadas y se queda con las que cubren el AMBA, comprobando si el
   polígono de la alerta contiene puntos de la Ciudad y el conurbano.
+- **Fuentes sin API pública**: el estado del Urquiza se lee de la conexión en tiempo real (SignalR) del panel de
+  Metrovías; los próximos trenes del Belgrano Norte, del HTML de las pantallas de Ferrovías; el horario del Urquiza,
+  del PDF oficial, validado al cargarlo (así apareció y se corrigió un error de tipeo del original).
+- **Cuidar los cupos gratuitos**: TomTom da 20.000 consultas por mes. Cada medición se reutiliza 20 minutos y hay un
+  tope diario; si dos tramos caen en el mismo tramo de TomTom, se muestran como uno en lugar de repetir el dato.
+- **Salud de las fuentes**: cada integración informa si respondió o falló; una falla aislada no marca la fuente como
+  caída. Los servicios de la Ciudad que hoy no funcionan se prueban una vez por semana.
 - **Seguridad**: los endpoints de escritura piden una clave de administrador (`X-API-Key`), los errores siguen el
   formato estándar Problem Details (RFC 9457) y el XML externo se procesa sin entidades externas.
-- **Calidad**: pruebas unitarias, de controllers y de repositorios en el backend, y de la lógica del frontend, todas
-  en GitHub Actions en cada push.
+- **Calidad**: pruebas unitarias, de controllers y de repositorios en el backend, de la lógica del frontend y de punta
+  a punta en un navegador real (Playwright), todas en GitHub Actions en cada push.
 
 ## Tecnologías
 
@@ -114,14 +134,18 @@ flowchart LR
 | Backend | Java 21, Spring Boot 3.5, Spring Data JPA, Flyway, springdoc-openapi (Swagger UI) |
 | Base de datos | PostgreSQL 16 (Neon en producción, Docker en desarrollo) |
 | Frontend | React 18, Vite, React Router, Leaflet / React Leaflet |
-| Pruebas | JUnit 5, Mockito, MockMvc, Vitest, ESLint |
+| Pruebas | JUnit 5, Mockito, MockMvc, Vitest, Playwright, ESLint |
 | Infraestructura | Docker Compose, GitHub Actions, Render, UptimeRobot |
 
 ## Fuentes de datos
 
 | Dato | Fuente |
 |---|---|
-| Alertas de subte, próximos trenes, colectivos, EcoBici, eventos y cortes | [API Transporte del Gobierno de la Ciudad](https://www.buenosaires.gob.ar/desarrollourbano/transporte/apitransporte) |
+| Alertas de subte y colectivos, próximos trenes del subte, colectivos y EcoBici | [API Transporte del Gobierno de la Ciudad](https://www.buenosaires.gob.ar/desarrollourbano/transporte/apitransporte) |
+| Avisos de los trenes | [Trenes Argentinos](https://www.argentina.gob.ar/transporte/trenes-argentinos/modificaciones-en-el-servicio-y-novedades) |
+| Próximos trenes del Belgrano Norte | [Ferrovías](http://proximostrenes.ferrovias.com.ar/) |
+| Estado y horarios del Urquiza | [Metrovías](https://metrovias.com.ar/) |
+| Estacionamiento | [Buenos Aires Data](https://data.buenosaires.gob.ar/) y [OpenStreetMap](https://www.openstreetmap.org/copyright) (conurbano) |
 | Alertas meteorológicas | [Servicio Meteorológico Nacional](https://www.smn.gob.ar/alertas) |
 | Tránsito en los accesos | [TomTom Traffic](https://www.tomtom.com/products/traffic-apis/) |
 | Clima en los aeropuertos | [Open-Meteo](https://open-meteo.com/) |
@@ -143,7 +167,9 @@ ba-transit/
 │       │   ├── colectivos/   feed GTFS de colectivos
 │       │   ├── accesos/      tránsito en autopistas (TomTom)
 │       │   ├── clima/        alertas del SMN (CAP)
-│       │   ├── eventos/      eventos masivos y cortes
+│       │   ├── eventos/      eventos masivos y cortes (carga manual)
+│       │   ├── trenes/       avisos, Ferrovías y Metrovías
+│       │   ├── estado/       salud de cada fuente de datos
 │       │   └── security/     clave para los endpoints de escritura
 │       └── resources/db/migration/   migraciones Flyway
 ├── frontend/                 cliente web (React + Vite)
@@ -153,7 +179,8 @@ ba-transit/
 │       ├── components/       componentes reutilizables
 │       ├── hooks/            consumo de la API, favoritos, reloj
 │       ├── utils/            lógica pura con pruebas
-│       └── data/             datos fijos (historia de estaciones, peajes, aeropuertos)
+│       └── data/             datos fijos (historia, peajes, estacionamiento, horario del Urquiza)
+│   └── e2e/                  pruebas de punta a punta (Playwright)
 ├── docs/capturas/            imágenes de este README
 └── .github/workflows/        integración continua
 ```
@@ -179,7 +206,7 @@ La API queda en `http://localhost:8080` y la documentación interactiva en `http
 
 | Variable | Para qué | Si falta |
 |---|---|---|
-| `TRANSPORTE_CLIENT_ID` / `TRANSPORTE_CLIENT_SECRET` | API Transporte ([registro gratuito](https://www.buenosaires.gob.ar/form/formulario-de-registro-api-transporte)) | sin alertas, subte en vivo, colectivos ni eventos |
+| `TRANSPORTE_CLIENT_ID` / `TRANSPORTE_CLIENT_SECRET` | API Transporte ([registro gratuito](https://www.buenosaires.gob.ar/form/formulario-de-registro-api-transporte)) | sin alertas, subte en vivo ni colectivos |
 | `TOMTOM_API_KEY` | estado del tránsito en los accesos | Accesos sin estado en vivo |
 | `ADMIN_API_KEY` | endpoints de escritura (`POST`) | escritura deshabilitada |
 
@@ -204,7 +231,19 @@ cd backend && mvn clean verify
 
 # Frontend
 cd frontend && npm run lint && npm test
+
+# De punta a punta (con el sitio compilado y servido)
+cd frontend && npm run build && npx vite preview --port 4173 &
+npm install --no-save playwright && npx playwright install chromium && node e2e/smoke.mjs
 ```
+
+## Limitaciones conocidas
+
+- Los trenes (salvo Belgrano Norte) no tienen datos en vivo: Trenes Argentinos no publica una API abierta.
+- La API Transporte dio de baja los cortes y eventos, y hoy no responde con semáforos ni datos de movilidad: los
+  eventos se cargan a mano y esos servicios se prueban una vez por semana por si vuelven.
+- El estacionamiento del conurbano sale de OpenStreetMap (colaborativo): en algunos partidos hay pocos datos.
+- Plan gratuito de Render: si nadie entró en un rato, la primera visita tarda en despertar el servidor.
 
 ## Autor
 
