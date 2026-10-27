@@ -196,7 +196,8 @@
     font-size: 28px;
   }
 
-  .line-hero .favorite-button {
+  .line-hero .favorite-button,
+  .line-hero .share-button {
     flex-basis: 100%;
     justify-content: center;
   }

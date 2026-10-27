@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { SUBTE_TRANSFERS, buildLegend, buildRoutes, connectingLineCodes, distanceKm, findTransfers, lineSummary, routeInfo } from './map.js'
+import { SUBTE_TRANSFERS, buildLegend, buildRoutes, connectingLineCodes, distanceKm, findTransfers, lineSummary, routeInfo, stationBranches } from './map.js'
 
 const station = (id, branchId, lineId, sequenceOrder, lat, lng) => ({
   stationId: id,
@@ -116,5 +116,23 @@ describe('combinacion con el Premetro', () => {
   it('la linea P combina con la E en Intendente Saguier', () => {
     expect(connectingLineCodes('P')).toEqual(['E'])
     expect(connectingLineCodes('E')).toContain('P')
+  })
+})
+
+describe('stationBranches', () => {
+  const s = (id, branchId, seq, name) => ({ stationId: id, lineId: 7, branchId, sequenceOrder: seq, stationName: name })
+  // Temperley es parada de dos ramales.
+  const stations = [
+    s(1, 1, 1, 'Plaza Constitución'), s(2, 1, 2, 'Temperley'), s(3, 1, 3, 'La Plata'),
+    s(4, 2, 1, 'Plaza Constitución'), s(5, 2, 2, 'Temperley'), s(6, 2, 3, 'Ezeiza'),
+  ]
+
+  it('una estacion de varios ramales los lista todos', () => {
+    const result = stationBranches(stations, stations[1])
+    expect(result.map((r) => `${r.from}-${r.to}`)).toEqual(['Plaza Constitución-La Plata', 'Plaza Constitución-Ezeiza'])
+  })
+
+  it('una estacion de un solo ramal', () => {
+    expect(stationBranches(stations, stations[2])).toHaveLength(1)
   })
 })

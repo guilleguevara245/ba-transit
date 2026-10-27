@@ -12,7 +12,7 @@ import Skeleton from '../components/Skeleton.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { MODE_LABELS, MODE_LABELS_PLURAL, MODE_SLUGS } from '../constants.js'
 import { formatLongDate, yearsSince } from '../utils/format.js'
-import { findTransfers, routeInfo } from '../utils/map.js'
+import { findTransfers, stationBranches } from '../utils/map.js'
 import { lastTrainsAt, serviceDayType } from '../utils/lastTrain.js'
 import { eventsNear } from '../utils/events.js'
 import { splitAlertsForStation } from '../utils/stationAlerts.js'
@@ -135,7 +135,8 @@ export default function StationPage() {
     )
   }
 
-  const route = routeInfo(allStations, station)
+  // Las estaciones compartidas entre ramales (Roca, Mitre) muestran todos.
+  const branches = stationBranches(allStations, station)
   const transfers = findTransfers(allStations, station)
   const landmarks = (station.landmarks ?? '').split(';').map((p) => p.trim()).filter(Boolean)
   const alerts = alertsState.data ?? []
@@ -174,7 +175,21 @@ export default function StationPage() {
           </div>
           <h1 className="line-title">{station.stationName}</h1>
           <div className="line-facts">
-            Estación {route.position} de {route.total} · {route.from} ↔ {route.to}
+            {branches.length === 1 ? (
+              <>
+                Estación {branches[0].position} de {branches[0].total} · {branches[0].from} ↔ {branches[0].to}
+              </>
+            ) : (
+              <>
+                Parada de {branches.length} ramales:
+                <ul className="station-branches">
+                  {/* Bosques vía Quilmes y vía Temperley tienen las mismas cabeceras: se muestra una vez. */}
+                  {[...new Set(branches.map((b) => `${b.from} ↔ ${b.to}`))].map((label) => (
+                    <li key={label}>{label}</li>
+                  ))}
+                </ul>
+              </>
+            )}
           </div>
           {(station.accessible || alertSplit.here.length > 0) && (
             <div className="station-accessible">

@@ -85,6 +85,24 @@ export function routeInfo(stations, station) {
   }
 }
 
+/**
+ * Todos los ramales de la linea que paran en esta estacion (en el Roca,
+ * Temperley es parada de varios): un routeInfo por ramal, sin repetir.
+ */
+export function stationBranches(stations, station) {
+  const same = stations.filter(
+    (s) => s.lineId === station.lineId && s.stationName === station.stationName,
+  )
+  const seen = new Set()
+  const result = []
+  for (const s of same.length > 0 ? same : [station]) {
+    if (seen.has(s.branchId)) continue
+    seen.add(s.branchId)
+    result.push({ branchId: s.branchId, ...routeInfo(stations, s) })
+  }
+  return result
+}
+
 /** Distancia en km entre dos puntos {latitude, longitude} (haversine). */
 export function distanceKm(a, b) {
   const toRad = (deg) => (Number(deg) * Math.PI) / 180
