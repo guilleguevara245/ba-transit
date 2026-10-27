@@ -57,7 +57,8 @@ describe('festiveFor', () => {
     const vday = festiveFor(at('2027-02-14'))
     expect(vday.greeting).toBe('Feliz San Valentín')
     expect(vday.decoration).toBe('corazones')
-    expect(festiveFor(at('2026-09-24')).greeting).toBe('Feliz Día del Colectivero')
+    expect(festiveFor(at('2026-09-24')).greeting).toBe(null)
+    expect(festiveFor(at('2026-09-24')).phrase).toMatch(/^Día del Colectivero/)
     expect(festiveFor(at('2026-06-11')).greeting).toBe('Buenos Aires cumple años')
     expect(festiveFor(at('2026-06-11')).withName).toBe(true)
     expect(festiveFor(at('2026-10-31')).phrase).toMatch(/hora pico/)
@@ -68,9 +69,9 @@ describe('festiveFor', () => {
   })
 
   it('Dia del Padre y de la Madre: tercer domingo', () => {
-    expect(festiveFor(at('2026-06-21')).greeting).toBe('Feliz Día del Padre')
-    expect(festiveFor(at('2026-10-18')).greeting).toBe('Feliz Día de la Madre')
-    expect(festiveFor(at('2026-10-25')).greeting).toBe(null)
+    expect(festiveFor(at('2026-06-21')).phrase).toMatch(/^Día del Padre/)
+    expect(festiveFor(at('2026-10-18')).phrase).toMatch(/^Día de la Madre/)
+    expect(festiveFor(at('2026-10-25')).phrase).toBe(null)
     // 2027: el tercer domingo de junio es el 20, Dia de la Bandera: gana la fecha patria.
     expect(festiveFor(at('2027-06-20')).greeting).toBe('Feliz Día de la Bandera')
   })

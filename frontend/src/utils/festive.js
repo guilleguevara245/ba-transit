@@ -82,22 +82,20 @@ const POPULAR_BY_DAY = {
     phrase: 'Que el amor no espere en el andén: fijate cuándo pasa el próximo tren.',
     decoration: 'corazones',
   },
-  '04-23': { greeting: 'Feliz Día del Libro', phrase: 'El viaje en subte es buen momento para leer. Así está el transporte.' },
-  '06-03': { greeting: 'Feliz Día de la Bicicleta', phrase: 'Día de la bici: fijate dónde hay EcoBici disponibles.' },
-  '06-07': { greeting: 'Feliz Día del Periodista', phrase: 'Así está el transporte hoy, con información chequeada.' },
+  '04-23': { phrase: 'Día del Libro: el viaje en subte es buen momento para leer. Así está el transporte.' },
+  '06-03': { phrase: 'Día de la Bicicleta: fijate dónde hay EcoBici disponibles.' },
+  '06-07': { phrase: 'Día del Periodista: así está el transporte hoy, con información chequeada.' },
   // Redactado para que el nombre quede bien: "Buenos Aires cumple años, Nicolás".
   '06-11': {
     greeting: 'Buenos Aires cumple años',
     phrase: 'Hoy se celebra la fundación de la Ciudad (1580). Así está el transporte.',
   },
   '08-30': {
-    greeting: 'Feliz Día del Ferroviario',
-    phrase: 'Hace más de 160 años salía La Porteña, el primer tren argentino. Así están los trenes hoy.',
+    phrase: 'Día del Ferroviario: hace más de 160 años salía La Porteña, el primer tren argentino. Así están los trenes hoy.',
   },
-  '09-11': { greeting: 'Feliz Día del Maestro', phrase: 'Gracias, maestras y maestros. Así está el transporte.' },
+  '09-11': { phrase: 'Día del Maestro: gracias, maestras y maestros. Así está el transporte.' },
   '09-24': {
-    greeting: 'Feliz Día del Colectivero',
-    phrase: 'Un invento porteño desde 1928: gracias a quienes manejan todos los días.',
+    phrase: 'Día del Colectivero: un invento porteño desde 1928. Gracias a quienes manejan todos los días.',
   },
   '10-11': { phrase: 'Día del Dulce de Leche: el mejor invento argentino. Así está el transporte.' },
   '10-31': { greeting: 'Feliz Halloween', phrase: 'Nada da más miedo que el subte en hora pico. Así está el transporte.' },
@@ -115,8 +113,8 @@ function movableDay(key, date) {
   const [y, m, d] = localDateKey(date).split('-').map(Number)
   const sunday = new Date(Date.UTC(y, m - 1, d)).getUTCDay() === 0
   if (!sunday || d < 15 || d > 21) return null
-  if (key.startsWith('06-')) return { greeting: 'Feliz Día del Padre', phrase: 'Hoy se viaja a almorzar con papá. Así está el transporte.' }
-  if (key.startsWith('10-')) return { greeting: 'Feliz Día de la Madre', phrase: 'Hoy se viaja a ver a mamá: salí con tiempo.' }
+  if (key.startsWith('06-')) return { phrase: 'Día del Padre: hoy se viaja a almorzar con papá. Así está el transporte.' }
+  if (key.startsWith('10-')) return { phrase: 'Día de la Madre: hoy se viaja a ver a mamá, salí con tiempo.' }
   return null
 }
 
