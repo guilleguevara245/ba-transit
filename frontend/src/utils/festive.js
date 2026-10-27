@@ -51,6 +51,10 @@ const BY_DAY = {
     greeting: 'Feliz primavera',
     phrase: 'Día del Estudiante y de la primavera: hoy los parques se llenan. Así está el transporte.',
   },
+  '12-08': {
+    phrase: 'Hoy se arma el arbolito: ¿ya bajaste los adornos? Así está el transporte.',
+    decoration: 'gorro',
+  },
   '12-24': {
     greeting: 'Feliz Nochebuena',
     phrase: 'Últimos regalos y mucho tránsito: fijate el último tren.',
@@ -71,9 +75,11 @@ const BY_DAY = {
 /** Por nombre de feriado, para los que cambian de fecha (carnaval, Pascua, San Martín). */
 const BY_HOLIDAY = [
   [/carnaval/i, { greeting: 'Feliz Carnaval', phrase: 'Murgas y cortes en los barrios. Así está el transporte.', decoration: 'confeti' }],
-  [/viernes santo/i, { phrase: 'Fin de semana largo de Pascua. Así está el transporte.' }],
+  [/viernes santo/i, { greeting: 'Felices Pascuas', phrase: 'Fin de semana largo de Pascua. Así está el transporte.' }],
   [/san mart[ií]n/i, { phrase: 'Homenaje al Libertador. Así está el transporte hoy.', decoration: 'escarapela' }],
 ]
+
+const DAY_MS = 24 * 60 * 60 * 1000
 
 const NONE = { greeting: null, withName: true, phrase: null, decoration: null, wave: false }
 
@@ -82,6 +88,10 @@ export function festiveFor(date = new Date()) {
   const holiday = holidayOn(date)
   let match = BY_DAY[key]
   if (!match && holiday) match = BY_HOLIDAY.find(([pattern]) => pattern.test(holiday))?.[1]
+  // Sabado y domingo de Pascua (el feriado es el viernes, uno o dos dias antes).
+  if (!match && [1, 2].some((days) => /viernes santo/i.test(holidayOn(new Date(date.getTime() - days * DAY_MS)) ?? ''))) {
+    match = { greeting: 'Felices Pascuas', phrase: 'Fin de semana largo de Pascua. Así está el transporte.' }
+  }
   // Diciembre: gorrito todo el mes, con frase de fiestas los dias sin una propia.
   if (!match && key.startsWith('12-')) {
     match = {

@@ -46,6 +46,13 @@ describe('festiveFor', () => {
     expect(festiveFor(at('2027-02-08')).greeting).toBe('Feliz Carnaval')
   })
 
+  it('arbolito el 8 de diciembre y Pascuas de viernes a domingo', () => {
+    expect(festiveFor(at('2026-12-08')).phrase).toMatch(/arbolito/)
+    expect(festiveFor(at('2026-04-03')).greeting).toBe('Felices Pascuas') // viernes santo
+    expect(festiveFor(at('2026-04-05')).greeting).toBe('Felices Pascuas') // domingo
+    expect(festiveFor(at('2026-04-06')).greeting).toBe(null)
+  })
+
   it('otro feriado lo nombra', () => {
     expect(festiveFor(at('2026-10-12')).phrase).toMatch(/Diversidad Cultural/)
   })

@@ -318,16 +318,18 @@
   pointer-events: none;
 }
 
+/* Gorro en el borde superior izquierdo, inclinado hacia afuera. */
 .brand-deco-gorro {
   width: 34px;
-  top: -13px;
-  left: 6px;
-  transform: rotate(8deg);
+  top: -14px;
+  left: -12px;
+  transform: scaleX(-1) rotate(14deg);
 }
 
+/* Escarapela abajo, en la esquina derecha. */
 .brand-deco-escarapela {
   width: 17px;
-  top: -6px;
+  bottom: -6px;
   right: -6px;
 }
 
@@ -340,8 +342,8 @@
 @media (max-width: 1080px) {
   .brand-deco-gorro {
     width: 28px;
-    top: -11px;
-    left: 4px;
+    top: -12px;
+    left: -10px;
   }
 
   .brand-deco-escarapela {
