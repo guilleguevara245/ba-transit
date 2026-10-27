@@ -58,7 +58,8 @@ describe('festiveFor', () => {
     expect(vday.greeting).toBe('Feliz San Valentín')
     expect(vday.decoration).toBe('corazones')
     expect(festiveFor(at('2026-09-24')).greeting).toBe('Feliz Día del Colectivero')
-    expect(festiveFor(at('2026-06-11')).greeting).toBe('Feliz cumpleaños, Buenos Aires')
+    expect(festiveFor(at('2026-06-11')).greeting).toBe('Buenos Aires cumple años')
+    expect(festiveFor(at('2026-06-11')).withName).toBe(true)
     expect(festiveFor(at('2026-10-31')).phrase).toMatch(/hora pico/)
     // Diciembre: dia propio, con gorro igual.
     const subte = festiveFor(at('2026-12-01'))

@@ -85,9 +85,9 @@ const POPULAR_BY_DAY = {
   '04-23': { greeting: 'Feliz Día del Libro', phrase: 'El viaje en subte es buen momento para leer. Así está el transporte.' },
   '06-03': { greeting: 'Feliz Día de la Bicicleta', phrase: 'Día de la bici: fijate dónde hay EcoBici disponibles.' },
   '06-07': { greeting: 'Feliz Día del Periodista', phrase: 'Así está el transporte hoy, con información chequeada.' },
+  // Redactado para que el nombre quede bien: "Buenos Aires cumple años, Nicolás".
   '06-11': {
-    greeting: 'Feliz cumpleaños, Buenos Aires',
-    withName: false,
+    greeting: 'Buenos Aires cumple años',
     phrase: 'Hoy se celebra la fundación de la Ciudad (1580). Así está el transporte.',
   },
   '08-30': {
@@ -105,7 +105,6 @@ const POPULAR_BY_DAY = {
   '11-30': { greeting: 'Feliz Día del Mate', phrase: 'El termo va en la mochila. Así está el transporte.' },
   '12-01': {
     greeting: 'El subte cumple años',
-    withName: false,
     phrase: 'Desde 1913, el primero de Latinoamérica. Así está el transporte hoy.',
   },
   '12-11': { greeting: 'Feliz Día del Tango', phrase: 'Buenos Aires se mueve a otro ritmo. Así está el transporte.' },
