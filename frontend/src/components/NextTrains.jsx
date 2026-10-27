@@ -1,6 +1,7 @@
 import { useApi } from '../hooks/useApi.js'
 import { useNow } from '../hooks/useNow.js'
 import { urquizaNextTrains } from '../utils/urquizaSchedule.js'
+import { STALE_TEXT } from '../utils/staleness.js'
 import { formatArrival, hasLiveArrivals, nextTrainsPath, scheduleLabel, schedulePath } from '../utils/nextTrains.js'
 
 const REFRESH_MS = 30_000
@@ -26,7 +27,7 @@ function UrquizaTrains({ stationName, asCard }) {
   const now = useNow(30_000)
   const schedule = urquizaNextTrains(stationName, now)
   if (!schedule?.available) return null
-  const content = <ScheduledTrains directions={schedule.directions} source={schedule.source} />
+  const content = <ScheduledTrains directions={schedule.directions} source={schedule.source} stale={schedule.stale} />
   return asCard ? <section className="station-card">{content}</section> : content
 }
 
@@ -91,7 +92,7 @@ function LiveTrains({ data }) {
   )
 }
 
-function ScheduledTrains({ directions, source }) {
+function ScheduledTrains({ directions, source, stale = false }) {
   return (
     <div className="station-popup-section next-trains">
       <div className="station-popup-label">
@@ -110,6 +111,7 @@ function ScheduledTrains({ directions, source }) {
       </ul>
       <div className="next-trains-note">Sin datos en vivo: horario programado, puede variar.</div>
       {source && <div className="next-trains-note">Fuente: {source}</div>}
+      {stale && <div className="next-trains-note stale-note">{STALE_TEXT}</div>}
     </div>
   )
 }

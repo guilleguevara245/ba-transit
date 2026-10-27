@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom'
 import Chevrons from './Chevrons.jsx'
 import './FaresPanel.css'
-import { formatCurrency } from '../utils/format.js'
+import { formatCurrency, formatLongDate } from '../utils/format.js'
 import { fareSummary } from '../utils/fares.js'
+import { STALE_TEXT, isStale } from '../utils/staleness.js'
 
 /**
  * Resumen de tarifas: una fila por modo con el precio base (SUBE
@@ -10,6 +11,7 @@ import { fareSummary } from '../utils/fares.js'
  */
 export default function FaresPanel({ fares, showMore = true }) {
   const summary = fareSummary(fares)
+  const since = fares?.map((f) => f.effectiveFrom).filter(Boolean).sort().at(-1)
 
   return (
     <div className="panel side-panel">
@@ -30,7 +32,13 @@ export default function FaresPanel({ fares, showMore = true }) {
         </div>
       ))}
 
-      {summary.length > 0 && <p className="fares-note">Con SUBE registrada. Sin registrar cuesta más.</p>}
+      {summary.length > 0 && (
+        <p className="fares-note">
+          Con SUBE registrada. Sin registrar cuesta más.
+          {since && ` Vigentes desde el ${formatLongDate(since)}.`}
+          {isStale('tarifas') && <span className="stale-note"> {STALE_TEXT}</span>}
+        </p>
+      )}
 
       {showMore && (
         <Link className="fares-more chevrons-host" to="/sube#tarifas">

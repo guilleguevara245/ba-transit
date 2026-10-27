@@ -64,10 +64,14 @@ export default function ModePage() {
           return (
             <Link key={line.id} to={linePath(line)} className="mode-line-card" style={{ '--line-color': line.colorHex }}>
               <LineBadge line={line} size="md" />
-              <span className="mode-line-name">{line.name}</span>
-              <span className={`status-pill ${status.className}`}>
-                <span className="dot"></span>
-                {lineAlerts.length > 1 ? `${status.label} (${lineAlerts.length})` : status.label}
+              {/* Nombre arriba y estado abajo: con los dos en fila, un estado largo
+                  ("Interrupciones (2)") empujaba la estrella fuera de la tarjeta. */}
+              <span className="mode-line-text">
+                <span className="mode-line-name">{line.name}</span>
+                <span className={`status-pill ${status.className}`}>
+                  <span className="dot"></span>
+                  {lineAlerts.length > 1 ? `${status.label} (${lineAlerts.length})` : status.label}
+                </span>
               </span>
               <FavoriteButton lineId={line.id} lineName={line.name} compact />
             </Link>

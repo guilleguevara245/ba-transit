@@ -49,8 +49,16 @@
   outline-offset: 2px;
 }
 
-.mode-line-name {
+.mode-line-text {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.mode-line-name {
   font-weight: 600;
   font-size: 14px;
 }

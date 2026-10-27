@@ -14,6 +14,7 @@ import { speedPercent, trafficStatus, worstStatus } from '../utils/traffic.js'
 import './ModePage.css'
 import './AirportsPage.css'
 import './AccessesPage.css'
+import { STALE_TEXT, isStale } from '../utils/staleness.js'
 
 // El backend guarda la medicion 20 minutos; pedirla cada 5 alcanza
 // para mostrar el dato nuevo poco despues de que llegue.
@@ -141,6 +142,7 @@ function TollTable({ toll, accessId }) {
           fuente ↗
         </a>
         {toll.note && <span className="toll-note">{toll.note}</span>}
+        {isStale('peajes') && <span className="toll-note stale-note">{STALE_TEXT}</span>}
       </div>
     </div>
   )

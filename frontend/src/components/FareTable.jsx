@@ -4,6 +4,7 @@ import { JURISDICTION_LABELS, groupFares, tierLabel } from '../utils/fares.js'
 import { MODE_LABELS_PLURAL } from '../constants.js'
 import ModeIcon from './ModeIcon.jsx'
 import './FareTable.css'
+import { STALE_TEXT, isStale } from '../utils/staleness.js'
 
 const TAB_LABELS = { NACIONAL: 'Nacionales', CABA: 'CABA', PROVINCIA: 'Provincia' }
 
@@ -71,6 +72,7 @@ export default function FareTable({ fares }) {
       <p className="sube-dim">
         {since ? `Vigente desde el ${formatDate(since)}. ` : ''}Precio por viaje con la SUBE registrada o sin registrar, sin descuentos Red SUBE ni Tarifa
         Social.
+        {isStale('tarifas') && <span className="stale-note"> {STALE_TEXT}</span>}
       </p>
 
       {bus && (

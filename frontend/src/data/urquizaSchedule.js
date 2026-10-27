@@ -2,6 +2,9 @@
 // (vigencia desde el 2 de marzo de 2026). Se corrigio un error de tipeo del
 // PDF (lun-vie, tren de las 9:49 desde Lemos: en F. Moreno decia 10:13, es 10:23).
 
+/** Desde cuando rige este horario (dice el PDF). */
+export const URQUIZA_VALID_FROM = '2026-03-02'
+
 /** Estaciones en orden de Federico Lacroze a General Lemos (como en la base). */
 export const URQUIZA_STATIONS = ["Federico Lacroze", "Artigas", "Arata", "Francisco Beiró", "El Libertador", "Devoto", "Lynch", "F. Moreno", "Lourdes", "Tropezón", "J. M. Bosch", "Martín Coronado", "Pablo Podestá", "Jorge Newbery", "Rubén Darío", "Ejército de los Andes", "Lasalle", "Sargento Barrufaldi", "Capitán Lozano", "Teniente Agneta", "Campo de Mayo", "Sargento Cabral", "General Lemos"]
 

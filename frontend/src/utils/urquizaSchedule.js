@@ -1,4 +1,6 @@
-import { URQUIZA_PATTERNS, URQUIZA_STATIONS, URQUIZA_TRIPS } from '../data/urquizaSchedule.js'
+import { URQUIZA_PATTERNS, URQUIZA_STATIONS, URQUIZA_TRIPS, URQUIZA_VALID_FROM } from '../data/urquizaSchedule.js'
+import { formatLongDate } from './format.js'
+import { isStale } from './staleness.js'
 import { holidayOn, localDateKey } from './holidays.js'
 
 const TIME_ZONE = 'America/Argentina/Buenos_Aires'
@@ -87,5 +89,10 @@ export function urquizaNextTrains(stationName, now = new Date()) {
         : upcoming.map((m) => (m < 1 ? 'llegando' : `${m} min`)).join(' · ')
     directions.push({ towards, arrivals: upcoming.map((minutes) => ({ minutes })), label })
   }
-  return { available: directions.length > 0, source: 'Metrovías, horario de invierno 2026', directions }
+  return {
+    available: directions.length > 0,
+    source: `Metrovías, horario vigente desde el ${formatLongDate(URQUIZA_VALID_FROM)}`,
+    stale: isStale('urquiza', now),
+    directions,
+  }
 }
