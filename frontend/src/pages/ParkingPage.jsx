@@ -76,6 +76,20 @@ function ClosePopupOnChange({ value }) {
   return null
 }
 
+/** Al elegir un partido de la cobertura: encuadra sus lugares y sube hasta el mapa. */
+function FitPartido({ places }) {
+  const map = useMap()
+  useEffect(() => {
+    if (!places || places.length === 0) return
+    map.getContainer().scrollIntoView({ behavior: 'smooth', block: 'center' })
+    map.fitBounds(
+      places.map((p) => [p.lat, p.lon]),
+      { padding: [30, 30], maxZoom: 15 },
+    )
+  }, [map, places])
+  return null
+}
+
 function FlyToPoint({ point }) {
   const map = useMap()
   useEffect(() => {
@@ -103,13 +117,24 @@ export default function ParkingPage() {
   const lowData = coverage.filter((c) => c.count > 0 && c.count < LOW_COVERAGE).map((c) => c.partido)
   const totals = useMemo(() => parkingTotals(places), [places])
   const [layer, setLayer] = useState('all')
+  // Partido elegido en "Cobertura en el conurbano": muestra solo sus lugares.
+  const [partido, setPartido] = useState(null)
   const [point, setPoint] = useState(null)
   const [selectedId, setSelectedId] = useState(null)
   const [locating, setLocating] = useState(false)
   const [locateError, setLocateError] = useState(null)
   const [view, setView] = useState({ zoom: ZOOM, bounds: null })
 
-  const visible = layer === 'all' ? places : places.filter((p) => p.layer === layer)
+  const partidoPlaces = useMemo(
+    () => (partido ? places.filter((p) => p.layer === 'osm' && p.partido === partido) : null),
+    [places, partido],
+  )
+  const visible = partidoPlaces ?? (layer === 'all' ? places : places.filter((p) => p.layer === layer))
+
+  function choosePartido(name) {
+    setSelectedId(null)
+    setPartido((current) => (current === name ? null : name))
+  }
   const nearest = nearestPlaces(visible, point)
   const selected = places.find((p) => p.id === selectedId)
 
@@ -169,10 +194,11 @@ export default function ParkingPage() {
             <button
               key={l.key}
               type="button"
-              className={l.key === layer ? 'map-filter active' : 'map-filter'}
-              aria-pressed={l.key === layer}
+              className={!partido && l.key === layer ? 'map-filter active' : 'map-filter'}
+              aria-pressed={!partido && l.key === layer}
               onClick={() => {
                 setLayer(l.key)
+                setPartido(null)
                 setSelectedId(null)
               }}
             >
@@ -187,6 +213,15 @@ export default function ParkingPage() {
           {locating ? 'Buscando tu ubicación…' : 'Cerca de mí'}
         </button>
       </div>
+      {partido && (
+        <div className="map-note parking-partido-note" role="status">
+          Mostrando solo {partido}: {partidoPlaces.length}{' '}
+          {partidoPlaces.length === 1 ? 'lugar' : 'lugares'} de OpenStreetMap.{' '}
+          <button type="button" className="parking-partido-clear" onClick={() => setPartido(null)}>
+            Ver todos
+          </button>
+        </div>
+      )}
       {locateError && <div className="map-note">{locateError}</div>}
       {!point && !locateError && (
         <div className="map-note">Tocá el mapa o usá “Cerca de mí” para ver los lugares más cercanos.</div>
@@ -342,7 +377,8 @@ export default function ParkingPage() {
         )}
         <FlyToPoint point={point} />
         <FlyTo target={selected} />
-        <ClosePopupOnChange value={layer} />
+        <ClosePopupOnChange value={`${layer}-${partido ?? ''}`} />
+        <FitPartido places={partidoPlaces} />
       </MapContainer>
 
       <section className="panel parking-coverage" aria-label="Cobertura en el conurbano">
@@ -351,12 +387,21 @@ export default function ParkingPage() {
         </div>
         <p className="parking-coverage-note">
           Los municipios no publican datos abiertos de estacionamiento: los lugares del conurbano salen de
-          OpenStreetMap, un mapa colaborativo, y en algunos partidos falta mucho.
+          OpenStreetMap, un mapa colaborativo, y en algunos partidos falta mucho. Tocá un partido para verlo en
+          el mapa.
         </p>
         <ul className="parking-coverage-list">
           {coverage.map((c) => (
-            <li key={c.partido} className={c.count < LOW_COVERAGE ? 'low' : undefined}>
-              {c.partido} <strong>{c.count}</strong>
+            <li key={c.partido}>
+              <button
+                type="button"
+                className={[c.count < LOW_COVERAGE && 'low', c.partido === partido && 'active'].filter(Boolean).join(' ') || undefined}
+                aria-pressed={c.partido === partido}
+                disabled={c.count === 0}
+                onClick={() => choosePartido(c.partido)}
+              >
+                {c.partido} <strong>{c.count}</strong>
+              </button>
             </li>
           ))}
         </ul>

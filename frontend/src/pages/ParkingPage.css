@@ -95,7 +95,7 @@
   gap: 6px;
 }
 
-.parking-coverage-list li {
+.parking-coverage-list button {
   display: inline-flex;
   align-items: baseline;
   gap: 6px;
@@ -113,14 +113,42 @@
   color: var(--text);
 }
 
-.parking-coverage-list li.low {
+.parking-coverage-list button {
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.parking-coverage-list button:hover:not(:disabled) {
+  border-color: var(--yellow);
+}
+
+.parking-coverage-list button:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+}
+
+.parking-coverage-list button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.parking-coverage-list button.low {
   border-color: transparent;
   background: var(--delayed-tint);
   color: var(--delayed);
 }
 
-.parking-coverage-list li.low strong {
+.parking-coverage-list button.low strong {
   color: var(--delayed);
+}
+
+.parking-coverage-list button.active,
+.parking-coverage-list button.active strong {
+  border-color: var(--yellow);
+  background: var(--yellow);
+  color: #17171a;
 }
 
 .parking-coverage-legend {
@@ -137,4 +165,15 @@
   height: 10px;
   border-radius: 50%;
   background: var(--delayed);
+}
+
+.parking-partido-clear {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent-text);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
 }
