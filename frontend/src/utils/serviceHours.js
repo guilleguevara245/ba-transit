@@ -37,38 +37,12 @@ const LAST_TRAINS = {
     ['Hospitales', '23:51', '00:20', '22:51'],
     ['Facultad de Derecho', '23:30', '23:59', '22:29'],
   ],
-  // Urquiza (Metrovías): sale de cada cabecera; tarda 49 min entre cabeceras.
-  URQUIZA: [
-    ['Federico Lacroze', '23:50', '23:50', '23:50'],
-    ['General Lemos', '23:59', '23:48', '23:35'],
-  ],
   P: [
     ['Int. Saguier (a Lugano)', '21:00', '20:56', '21:00'],
     ['Centro Cívico Lugano', '21:31', '21:26', '21:32'],
     ['Int. Saguier (a Savio)', '20:49', '21:07', '20:47'],
     ['General Savio', '21:20', '21:36', '21:19'],
   ],
-}
-
-/**
- * Minutos entre cabeceras segun el operador, cuando se conoce. Con esto el
- * tiempo hasta cada estacion se reparte en proporcion a la distancia.
- */
-const TRIP_MINUTES = {
-  URQUIZA: 49,
-}
-
-/** Quien publica los horarios de cada linea (para la nota de la tarjeta). */
-const SCHEDULE_SOURCE = {
-  URQUIZA: 'Metrovías',
-}
-
-export function tripMinutesFor(lineCode) {
-  return TRIP_MINUTES[lineCode] ?? null
-}
-
-export function scheduleSourceFor(lineCode) {
-  return SCHEDULE_SOURCE[lineCode] ?? 'Emova'
 }
 
 const NOTES = {

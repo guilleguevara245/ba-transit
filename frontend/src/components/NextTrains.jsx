@@ -1,4 +1,6 @@
 import { useApi } from '../hooks/useApi.js'
+import { useNow } from '../hooks/useNow.js'
+import { urquizaNextTrains } from '../utils/urquizaSchedule.js'
 import { formatArrival, hasLiveArrivals, nextTrainsPath, scheduleLabel, schedulePath } from '../utils/nextTrains.js'
 
 const REFRESH_MS = 30_000
@@ -13,6 +15,22 @@ const SCHEDULE_REFRESH_MS = 60_000
  * componente, asi no queda un cuadro vacio en la pagina de la estacion).
  */
 export default function NextTrains({ mode = 'SUBTE', lineCode, stationName, asCard = false }) {
+  if (mode === 'TREN' && lineCode === 'URQUIZA') {
+    return <UrquizaTrains stationName={stationName} asCard={asCard} />
+  }
+  return <ApiTrains mode={mode} lineCode={lineCode} stationName={stationName} asCard={asCard} />
+}
+
+/** Urquiza: sin datos en vivo, se calcula con el horario de Metrovias que trae el sitio. */
+function UrquizaTrains({ stationName, asCard }) {
+  const now = useNow(30_000)
+  const schedule = urquizaNextTrains(stationName, now)
+  if (!schedule?.available) return null
+  const content = <ScheduledTrains directions={schedule.directions} source={schedule.source} />
+  return asCard ? <section className="station-card">{content}</section> : content
+}
+
+function ApiTrains({ mode, lineCode, stationName, asCard }) {
   const livePath = nextTrainsPath(mode, lineCode, stationName)
   const live = useApi(livePath, { refreshMs: REFRESH_MS })
   const liveUsable = hasLiveArrivals(live.data)
@@ -73,7 +91,7 @@ function LiveTrains({ data }) {
   )
 }
 
-function ScheduledTrains({ directions }) {
+function ScheduledTrains({ directions, source }) {
   return (
     <div className="station-popup-section next-trains">
       <div className="station-popup-label">
@@ -86,11 +104,12 @@ function ScheduledTrains({ directions }) {
               Hacia {d.towards}
               {d.headwayMinutes != null && <span className="next-trains-every">cada {d.headwayMinutes} min</span>}
             </span>
-            <span className="next-trains-times">{scheduleLabel(d)}</span>
+            <span className="next-trains-times">{d.label ?? scheduleLabel(d)}</span>
           </li>
         ))}
       </ul>
       <div className="next-trains-note">Sin datos en vivo: horario programado, puede variar.</div>
+      {source && <div className="next-trains-note">Fuente: {source}</div>}
     </div>
   )
 }

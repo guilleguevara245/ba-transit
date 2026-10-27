@@ -13,7 +13,6 @@ import { MODE_LABELS, MODE_LABELS_PLURAL, MODE_SLUGS } from '../constants.js'
 import { formatLongDate, yearsSince } from '../utils/format.js'
 import { findTransfers, routeInfo } from '../utils/map.js'
 import { lastTrainsAt, serviceDayType } from '../utils/lastTrain.js'
-import { scheduleSourceFor } from '../utils/serviceHours.js'
 import { eventsNear } from '../utils/events.js'
 import { splitAlertsForStation } from '../utils/stationAlerts.js'
 import { readableTextColor } from '../utils/color.js'
@@ -144,9 +143,7 @@ export default function StationPage() {
     if (bus.shortName && !nearbyBuses.some((b) => b.shortName === bus.shortName)) nearbyBuses.push(bus)
   }
   const nearbyEvents = eventsNear(eventsState.data?.events, station)
-  // Subte y Urquiza: las lineas con horario de ultimo tren publicado.
-  const lastTrains =
-    station.lineMode === 'SUBTE' || station.lineCode === 'URQUIZA' ? lastTrainsAt(station.lineCode, branch, station) : null
+  const lastTrains = station.lineMode === 'SUBTE' ? lastTrainsAt(station.lineCode, branch, station) : null
 
   return (
     <div className="wrap content">
@@ -224,8 +221,7 @@ export default function StationPage() {
                 ))}
               </ul>
               <p className="station-dim station-last-note">
-                Horario de {DAY_NAMES[serviceDayType()]} según {scheduleSourceFor(station.lineCode)}, estimado para esta
-                estación (±5 min).
+                Horario de {DAY_NAMES[serviceDayType()]} según Emova, estimado para esta estación (±5 min).
               </p>
             </section>
           )}

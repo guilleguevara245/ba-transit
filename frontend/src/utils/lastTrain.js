@@ -1,5 +1,5 @@
 import { holidayOn, localDateKey } from './holidays.js'
-import { lastTrainsFor, tripMinutesFor } from './serviceHours.js'
+import { lastTrainsFor } from './serviceHours.js'
 import { segmentMinutes } from './travelTime.js'
 
 /** Hasta esta hora, de madrugada, todavia cuenta el servicio del dia anterior. */
@@ -34,8 +34,8 @@ export function serviceDayType(now = new Date()) {
 }
 
 /**
- * Ultimo tren que pasa por una estacion en cada sentido (subte, premetro
- * y Urquiza): el horario de salida de la cabecera mas el tiempo estimado de
+ * Ultimo tren que pasa por una estacion de subte en cada sentido: el
+ * horario de salida de la cabecera (Emova) mas el tiempo estimado de
  * viaje hasta la estacion. Devuelve [{ towards, time }] o null si la
  * linea no tiene horarios cargados.
  *
@@ -59,13 +59,6 @@ export function lastTrainsAt(lineCode, branch, station, now = new Date()) {
     const path = endIndex === 0 ? branch.slice(0, index + 1) : branch.slice(index).reverse()
     let minutes = 0
     for (let i = 0; i < path.length - 1; i++) minutes += segmentMinutes(path[i], path[i + 1], 'SUBTE')
-    // Si el operador informa el tiempo entre cabeceras, se escala a ese total.
-    const total = tripMinutesFor(lineCode)
-    if (total) {
-      let whole = 0
-      for (let i = 0; i < branch.length - 1; i++) whole += segmentMinutes(branch[i], branch[i + 1], 'SUBTE')
-      minutes = whole > 0 ? (minutes / whole) * total : 0
-    }
     result.push({ towards: other.stationName, time: toClock(toMinutes(departure.times[dayType]) + minutes) })
   }
   return result
