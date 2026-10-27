@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNow } from '../hooks/useNow.js'
 import { useVisitorName } from '../hooks/useVisitorName.js'
 import { MAX_NAME_LENGTH, greetingFor, longToday } from '../utils/greeting.js'
+import { festiveFor } from '../utils/festive.js'
 import './Greeting.css'
 
 const PENCIL = 'M4 20h4L19 9l-4-4L4 16v4zm10-14 4 4'
@@ -16,6 +17,9 @@ export default function Greeting() {
   const { name, setName } = useVisitorName()
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
+  // Fechas especiales: saludo y frase propios (ver utils/festive.js).
+  const festive = festiveFor(now)
+  const showName = name && festive.withName
 
   function startEditing() {
     setDraft(name)
@@ -54,8 +58,9 @@ export default function Greeting() {
         </form>
       ) : (
         <h1 className="greeting-title">
-          {greetingFor(now)}
-          {name && `, ${name}`}
+          {festive.greeting ?? greetingFor(now)}
+          {showName && `, ${name}`}
+          {festive.wave && <WavingHand />}
           {name ? (
             <button type="button" className="greeting-edit" onClick={startEditing} aria-label="Cambiar el nombre">
               <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -70,9 +75,25 @@ export default function Greeting() {
         </h1>
       )}
       <p className="greeting-sub">
-        {longToday(now)} · Así está el transporte ahora.
+        {longToday(now)} · {festive.phrase ?? 'Así está el transporte ahora.'}
         {name && !editing && <span className="greeting-private"> Tu nombre se guarda solo en este navegador.</span>}
       </p>
     </div>
+  )
+}
+
+/** Mano que saluda (Dia del Amigo). Quieta si el sistema pide menos movimiento. */
+function WavingHand() {
+  return (
+    <svg className="greeting-wave" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <g>
+        <rect x="6.2" y="2.8" width="2.6" height="10" rx="1.3" />
+        <rect x="9.3" y="1.6" width="2.6" height="11" rx="1.3" />
+        <rect x="12.4" y="2.2" width="2.6" height="10.5" rx="1.3" />
+        <rect x="15.5" y="4" width="2.6" height="9" rx="1.3" />
+        <rect x="3" y="9.5" width="2.6" height="7.5" rx="1.3" transform="rotate(-35 4.3 13.2)" />
+        <rect x="6" y="9" width="12" height="12.5" rx="4.5" />
+      </g>
+    </svg>
   )
 }

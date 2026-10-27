@@ -304,3 +304,47 @@
   outline: 2px solid var(--yellow);
   outline-offset: -2px;
 }
+
+/* ---- Adornos de fechas especiales sobre el logo (utils/festive.js) ---- */
+
+.brand-mark-wrap {
+  position: relative;
+  display: block;
+  flex-shrink: 0;
+}
+
+.brand-deco {
+  position: absolute;
+  pointer-events: none;
+}
+
+.brand-deco-gorro {
+  width: 34px;
+  top: -13px;
+  left: 6px;
+  transform: rotate(8deg);
+}
+
+.brand-deco-escarapela {
+  width: 17px;
+  top: -6px;
+  right: -6px;
+}
+
+.brand-deco-confeti {
+  width: 26px;
+  top: -12px;
+  right: -12px;
+}
+
+@media (max-width: 1080px) {
+  .brand-deco-gorro {
+    width: 28px;
+    top: -11px;
+    left: 4px;
+  }
+
+  .brand-deco-escarapela {
+    width: 14px;
+  }
+}
