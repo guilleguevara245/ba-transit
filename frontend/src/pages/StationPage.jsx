@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import AccessibleBadge from '../components/AccessibleBadge.jsx'
-import BackButton from '../components/BackButton.jsx'
+import BackButton, { BackTrail } from '../components/BackButton.jsx'
 import Chevrons from '../components/Chevrons.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
 import LineBadge from '../components/LineBadge.jsx'
@@ -9,10 +9,11 @@ import NetworkMap from '../components/NetworkMap.jsx'
 import NextTrains from '../components/NextTrains.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import { useApi } from '../hooks/useApi.js'
-import { MODE_LABELS } from '../constants.js'
+import { MODE_LABELS, MODE_LABELS_PLURAL, MODE_SLUGS } from '../constants.js'
 import { formatLongDate, yearsSince } from '../utils/format.js'
 import { findTransfers, routeInfo } from '../utils/map.js'
 import { lastTrainsAt, serviceDayType } from '../utils/lastTrain.js'
+import { scheduleSourceFor } from '../utils/serviceHours.js'
 import { eventsNear } from '../utils/events.js'
 import { splitAlertsForStation } from '../utils/stationAlerts.js'
 import { readableTextColor } from '../utils/color.js'
@@ -143,11 +144,20 @@ export default function StationPage() {
     if (bus.shortName && !nearbyBuses.some((b) => b.shortName === bus.shortName)) nearbyBuses.push(bus)
   }
   const nearbyEvents = eventsNear(eventsState.data?.events, station)
-  const lastTrains = station.lineMode === 'SUBTE' ? lastTrainsAt(station.lineCode, branch, station) : null
+  // Subte y Urquiza: las lineas con horario de ultimo tren publicado.
+  const lastTrains =
+    station.lineMode === 'SUBTE' || station.lineCode === 'URQUIZA' ? lastTrainsAt(station.lineCode, branch, station) : null
 
   return (
     <div className="wrap content">
-      <BackButton to={`/lineas/${station.lineId}`}>Ver la {station.lineName}</BackButton>
+      <BackTrail
+        links={[
+          { to: `/lineas/${station.lineId}`, label: `Volver a la ${station.lineName}` },
+          ...(MODE_SLUGS[station.lineMode]
+            ? [{ to: `/modos/${MODE_SLUGS[station.lineMode]}`, label: `Volver a ${MODE_LABELS_PLURAL[station.lineMode]}` }]
+            : []),
+        ]}
+      />
 
       <div className="line-hero" style={{ '--line-color': station.lineColorHex }}>
         <LineBadge line={asLine(station)} size="lg" />
@@ -214,7 +224,8 @@ export default function StationPage() {
                 ))}
               </ul>
               <p className="station-dim station-last-note">
-                Horario de {DAY_NAMES[serviceDayType()]} según Emova, estimado para esta estación (±5 min).
+                Horario de {DAY_NAMES[serviceDayType()]} según {scheduleSourceFor(station.lineCode)}, estimado para esta
+                estación (±5 min).
               </p>
             </section>
           )}

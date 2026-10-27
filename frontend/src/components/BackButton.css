@@ -33,3 +33,14 @@
   outline: 2px solid var(--yellow);
   outline-offset: 2px;
 }
+
+.back-trail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.back-trail .back-button {
+  margin-bottom: 0;
+}

@@ -5,14 +5,14 @@ import Skeleton from '../components/Skeleton.jsx'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import AlertsPanel from '../components/AlertsPanel.jsx'
-import BackButton from '../components/BackButton.jsx'
+import BackButton, { BackTrail } from '../components/BackButton.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
 import FavoriteButton from '../components/FavoriteButton.jsx'
 import LineBadge from '../components/LineBadge.jsx'
 import LineInfoCard from '../components/LineInfoCard.jsx'
 import NetworkMap from '../components/NetworkMap.jsx'
 import { useApi } from '../hooks/useApi.js'
-import { MODE_LABELS } from '../constants.js'
+import { MODE_LABELS, MODE_LABELS_PLURAL, MODE_SLUGS } from '../constants.js'
 import { mentionsStation } from '../utils/stationAlerts.js'
 import '../components/Panels.css'
 import './LinePage.css'
@@ -138,7 +138,16 @@ export default function LinePage() {
 
   return (
     <div className="wrap content">
-      <BackButton />
+      {line && MODE_SLUGS[line.mode] ? (
+        <BackTrail
+          links={[
+            { to: `/modos/${MODE_SLUGS[line.mode]}`, label: `Volver a ${MODE_LABELS_PLURAL[line.mode]}` },
+            { to: '/', label: 'Volver al inicio' },
+          ]}
+        />
+      ) : (
+        <BackButton />
+      )}
 
       {lineState.loading && <Skeleton variant="block" label="Cargando línea…" />}
       {lineState.error && <ErrorMessage what="la línea" error={lineState.error} />}
