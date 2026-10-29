@@ -4,6 +4,7 @@ import com.batransit.api.vuelos.FlightModels.Flight;
 import com.batransit.api.vuelos.FlightModels.FlightsResponse;
 import com.batransit.api.vuelos.FlightModels.Phase;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
@@ -95,6 +96,7 @@ public class FlightService {
     private Instant lastAttempt = Instant.EPOCH;
     private boolean lastAttemptFailed;
 
+    @Autowired
     public FlightService(OpenSkyClient client) {
         this(client, Clock.systemUTC());
     }
