@@ -39,6 +39,19 @@ class AdminApiKeyFilterTest {
         assertThat(response.getContentType()).startsWith("application/problem+json");
     }
 
+    @Test
+    void lasCuentasDeUsuarioNoLlevanLaClave() throws Exception {
+        AdminApiKeyFilter filter = new AdminApiKeyFilter("");
+        for (String uri : new String[] {"/api/v1/auth/ingreso", "/api/v1/cuenta/favoritos", "/api/v1/cuenta"}) {
+            MockHttpServletRequest request = new MockHttpServletRequest("POST", uri);
+            MockHttpServletResponse response = new MockHttpServletResponse();
+            filter.doFilter(request, response, new MockFilterChain());
+            assertThat(response.getStatus()).isEqualTo(200);
+        }
+        // Lo demas sigue protegido.
+        assertThat(run(filter, "POST", null).getStatus()).isEqualTo(403);
+    }
+
     private static MockHttpServletResponse run(AdminApiKeyFilter filter, String method, String key) throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest(method, "/api/v1/alerts");
         if (key != null) {

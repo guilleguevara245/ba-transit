@@ -1,0 +1,52 @@
+.account-invite {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 20px;
+  margin-bottom: 26px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--yellow);
+  box-shadow: var(--shadow);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+.account-invite strong {
+  color: var(--text);
+}
+
+.account-invite-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.account-invite-go {
+  padding: 7px 14px;
+  background: var(--yellow);
+  color: #17171a;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.account-invite-skip {
+  padding: 4px;
+  border: none;
+  background: none;
+  color: var(--text-dim);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.account-invite-go:focus-visible,
+.account-invite-skip:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+}

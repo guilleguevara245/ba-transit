@@ -1,0 +1,305 @@
+/* Ingresar / crear cuenta / tu cuenta: una tarjeta centrada. */
+.wrap.auth {
+  max-width: 480px;
+  padding-bottom: 48px;
+}
+
+.auth-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 26px 26px 22px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--yellow);
+  box-shadow: var(--shadow);
+}
+
+.auth-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 30px;
+  line-height: 1.05;
+  color: var(--text);
+}
+
+.auth-subtitle {
+  margin-top: -6px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+.google-button {
+  display: flex;
+  justify-content: center;
+  min-height: 44px;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--line);
+}
+
+.auth-tabs button {
+  padding: 9px;
+  border: none;
+  background: var(--bg);
+  color: var(--text-dim);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.auth-tabs button.active {
+  background: var(--ink);
+  color: var(--yellow);
+}
+
+.auth-tabs button:focus-visible,
+.auth-submit:focus-visible,
+.auth-skip:focus-visible,
+.auth-show:focus-visible,
+.account-delete:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.auth-field small {
+  font-weight: 400;
+  color: var(--text-faint);
+}
+
+.auth-field input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.auth-field input:focus {
+  outline: 2px solid var(--yellow);
+  outline-offset: 1px;
+}
+
+.auth-field input[aria-invalid='true'] {
+  border-color: var(--interrupted);
+}
+
+.auth-field input[aria-invalid='true']:focus {
+  outline-color: var(--interrupted);
+}
+
+.auth-password {
+  position: relative;
+  display: block;
+}
+
+.auth-password input {
+  padding-right: 80px;
+}
+
+.auth-show {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  padding: 4px 8px;
+  border: none;
+  background: none;
+  color: var(--accent-text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.auth-hint {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-faint);
+}
+
+/* Mismo aviso que el formulario de Como llegar. */
+.auth-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--interrupted);
+}
+
+.auth-error::before {
+  content: '!';
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--interrupted);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.auth-error-box {
+  padding: 10px 12px;
+  background: var(--interrupted-tint);
+  font-size: 13px;
+}
+
+.auth-submit {
+  padding: 11px 16px;
+  border: none;
+  background: var(--yellow);
+  color: #17171a;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth-submit:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.auth-note {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-faint);
+}
+
+.auth-note a {
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+/* "Seguir sin registrarte": secundario, pero bien visible. */
+.auth-skip {
+  align-self: center;
+  padding: 6px 10px;
+  border: none;
+  background: none;
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.auth-skip:hover {
+  color: var(--text);
+}
+
+.account-data {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 8px 16px;
+  font-size: 14px;
+}
+
+.account-data dt {
+  color: var(--text-faint);
+}
+
+.account-data dd {
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.account-actions {
+  display: flex;
+  flex-direction: column;
+}
+
+.account-danger {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+.account-danger h2 {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 18px;
+  color: var(--text);
+}
+
+.account-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.account-delete {
+  align-self: flex-start;
+  padding: 9px 14px;
+  border: 1px solid var(--interrupted);
+  background: var(--interrupted);
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.account-delete.outline {
+  background: none;
+  color: var(--interrupted);
+}
+
+@media (max-width: 520px) {
+  .auth-card {
+    padding: 20px 16px 18px;
+  }
+}

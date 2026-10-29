@@ -393,3 +393,83 @@
     width: 14px;
   }
 }
+
+/* Cuenta: mismo marco que el selector de tema; con sesion, la inicial en amarillo. */
+.account-button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.account-button svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.account-button:hover {
+  color: var(--yellow);
+}
+
+.account-button:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+}
+
+.account-button.signed-in {
+  border-color: var(--yellow);
+  border-radius: 50%;
+  background: var(--yellow);
+  color: #17171a;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 17px;
+}
+
+/* Celular: logo, hora, tema y cuenta en un solo renglon. */
+@media (max-width: 480px) {
+  .header .header-row {
+    column-gap: 10px;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .clock {
+    gap: 6px;
+  }
+
+  .theme-toggle {
+    margin-left: 0;
+  }
+
+  .theme-toggle button {
+    width: 28px;
+  }
+
+  .account-button {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+@media (max-width: 400px) {
+  .brand-mark {
+    width: 28px;
+    height: 28px;
+  }
+
+  .brand-text {
+    font-size: 20px;
+  }
+}

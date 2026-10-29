@@ -74,6 +74,9 @@ con APIs públicas, pruebas, integración continua y despliegue.
 - Estaciones de EcoBici con bicis y anclajes disponibles.
 - Aviones en vivo alrededor de Aeroparque y Ezeiza (OpenSky Network): cuáles están aterrizando, despegando o en
   tierra, con altura y velocidad.
+- Favoritos (líneas, estaciones y accesos) en el inicio, y cuentas opcionales para tenerlos en todos los dispositivos:
+  con Google o con mail y contraseña (PBKDF2), sesiones firmadas con HMAC y freno de intentos. Política de privacidad
+  propia y borrado de la cuenta desde el sitio.
 - Aeropuertos con el clima actual y cómo llegar.
 - Cuadro tarifario completo del AMBA y simulador del descuento Red SUBE.
 
@@ -175,6 +178,7 @@ ba-transit/
 │       │   ├── accesos/      tránsito en autopistas (TomTom)
 │       │   ├── clima/        alertas del SMN (CAP)
 │       │   ├── vuelos/       aviones en vivo (OpenSky)
+│       │   ├── cuentas/      cuentas de usuario y favoritos
 │       │   ├── eventos/      eventos masivos y cortes (carga manual)
 │       │   ├── trenes/       avisos, Ferrovías y Metrovías
 │       │   ├── estado/       salud de cada fuente de datos
@@ -217,6 +221,8 @@ La API queda en `http://localhost:8080` y la documentación interactiva en `http
 | `TRANSPORTE_CLIENT_ID` / `TRANSPORTE_CLIENT_SECRET` | API Transporte ([registro gratuito](https://www.buenosaires.gob.ar/form/formulario-de-registro-api-transporte)) | sin alertas, subte en vivo ni colectivos |
 | `TOMTOM_API_KEY` | estado del tránsito en los accesos | Accesos sin estado en vivo |
 | `OPENSKY_CLIENT_ID`, `OPENSKY_CLIENT_SECRET` | aviones en vivo cada 30 s | se consulta sin cuenta, cada 5 min |
+| `AUTH_TOKEN_SECRET` | firma de las sesiones de las cuentas (32 caracteres o más) | clave temporal: las sesiones se pierden al reiniciar |
+| `GOOGLE_CLIENT_ID` | "Continuar con Google" | solo mail y contraseña |
 | `ADMIN_API_KEY` | endpoints de escritura (`POST`) | escritura deshabilitada |
 
 Más detalle en [`backend/README.md`](./backend/README.md).

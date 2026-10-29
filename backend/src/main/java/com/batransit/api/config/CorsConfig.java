@@ -22,7 +22,7 @@ public class CorsConfig implements WebMvcConfigurer {
         String[] origins = frontendOrigins.split(",");
         registry.addMapping("/api/**")
                 .allowedOriginPatterns(origins)
-                .allowedMethods("GET", "POST")
+                .allowedMethods("GET", "POST", "PUT", "DELETE")
                 .allowedHeaders("*");
     }
 }

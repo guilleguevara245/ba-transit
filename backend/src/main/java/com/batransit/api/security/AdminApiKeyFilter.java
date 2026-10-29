@@ -25,9 +25,9 @@ import java.util.Set;
  * deshabilitada por completo: es mas seguro fallar cerrado que dejar
  * los POST abiertos por olvidarse una variable de entorno.
  *
- * Se eligio un filtro simple en vez de Spring Security porque la API
- * no tiene usuarios ni sesiones: solo hay que distinguir "lectura
- * publica" de "escritura del administrador".
+ * Se eligio un filtro simple en vez de Spring Security: las cuentas de
+ * usuario (paquete cuentas) se validan con su propio token y quedan
+ * fuera de este filtro.
  */
 @Component
 public class AdminApiKeyFilter extends OncePerRequestFilter {
@@ -43,10 +43,18 @@ public class AdminApiKeyFilter extends OncePerRequestFilter {
         this.expectedKey = adminApiKey == null ? new byte[0] : adminApiKey.getBytes(StandardCharsets.UTF_8);
     }
 
+    /**
+     * Las cuentas de usuario escriben con su propia sesion (o, al ingresar,
+     * sin ella): no llevan la clave de administrador.
+     */
+    static final java.util.List<String> USER_PATHS = java.util.List.of("/api/v1/auth/", "/api/v1/cuenta");
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
+        String uri = request.getRequestURI();
         return !WRITE_METHODS.contains(request.getMethod())
-                || !request.getRequestURI().startsWith("/api/");
+                || !uri.startsWith("/api/")
+                || USER_PATHS.stream().anyMatch(uri::startsWith);
     }
 
     @Override

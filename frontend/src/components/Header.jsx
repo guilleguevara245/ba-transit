@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import Logo from './Logo.jsx'
 import ThemeToggle from './ThemeToggle.jsx'
+import AccountButton from './AccountButton.jsx'
 import { useNow } from '../hooks/useNow.js'
 import { formatClock, formatDayDate, formatShortDate } from '../utils/format.js'
 import { holidayOn } from '../utils/holidays.js'
@@ -102,6 +103,7 @@ export default function Header() {
             </small>
           </time>
           <ThemeToggle />
+          <AccountButton />
         </div>
       </div>
     </header>

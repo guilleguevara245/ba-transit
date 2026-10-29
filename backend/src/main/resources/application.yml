@@ -61,6 +61,13 @@ app:
     # Clave de la API de trafico de TomTom (plan gratuito). Vacia = el
     # apartado Accesos muestra la informacion fija sin estado en vivo.
     api-key: ${TOMTOM_API_KEY:}
+  auth:
+    # Clave con la que se firman las sesiones (32 caracteres o mas; en
+    # Render, "Generate"). Vacia = clave temporal: las sesiones se pierden
+    # al reiniciar el servidor.
+    token-secret: ${AUTH_TOKEN_SECRET:}
+    # ID de cliente de Google (publico). Vacio = sin "Continuar con Google".
+    google-client-id: ${GOOGLE_CLIENT_ID:}
   opensky:
     # Cliente de la API de OpenSky Network (cuenta gratuita). Vacio = se
     # consulta sin cuenta, con menos actualizaciones por dia.

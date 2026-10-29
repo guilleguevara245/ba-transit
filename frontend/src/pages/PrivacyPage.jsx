@@ -13,6 +13,7 @@ const BROWSER_DATA = [
   { what: 'Tema claro u oscuro', why: 'Para abrir el sitio como lo dejaste.' },
   { what: 'Líneas, estaciones y accesos favoritos', why: 'Para mostrarlos en el inicio.' },
   { what: 'Alertas del clima que cerraste', why: 'Para no volver a mostrártelas.' },
+  { what: 'Tu sesión, si ingresaste', why: 'Para que no tengas que ingresar cada vez. Se borra al cerrar sesión.' },
 ]
 
 /** Servicios externos que el navegador contacta directamente. */
@@ -24,6 +25,11 @@ const THIRD_PARTIES = [
     who: 'OpenSky Network',
     why: 'Los aviones en vivo, cuando el servidor no los tiene.',
     url: 'https://opensky-network.org/about/privacy-policy',
+  },
+  {
+    who: 'Google (ingreso)',
+    why: 'Solo si tocás "Continuar con Google" para ingresar.',
+    url: 'https://policies.google.com/privacy',
   },
   {
     who: 'Google Maps',
@@ -43,15 +49,16 @@ export default function PrivacyPage() {
       <section className="about-block">
         <h2 className="about-heading">En pocas palabras</h2>
         <p>
-          BA Transit se puede usar sin cuenta y sin dar ningún dato personal. No hay publicidad, no se venden datos y no
-          se usan herramientas de seguimiento ni de estadísticas de visitas.
+          BA Transit se puede usar sin cuenta y sin dar ningún dato personal. La cuenta es opcional y sirve solo para
+          tener los favoritos en todos tus dispositivos. No hay publicidad, no se venden datos y no se usan
+          herramientas de seguimiento ni de estadísticas de visitas.
         </p>
       </section>
 
       <section className="about-block">
         <h2 className="about-heading">Lo que queda en tu navegador</h2>
         <p>
-          Estos datos se guardan solo en tu dispositivo (en el almacenamiento del navegador) y no se envían al
+          Estos datos se guardan en tu dispositivo (en el almacenamiento del navegador). Sin cuenta, no se envían al
           servidor. Los podés borrar cuando quieras borrando los datos del sitio desde la configuración del navegador.
         </p>
         <ul className="about-sources">
@@ -62,6 +69,24 @@ export default function PrivacyPage() {
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className="about-block">
+        <h2 className="about-heading">Si creás una cuenta</h2>
+        <p>
+          Se guardan en el servidor tu mail, el nombre que elijas (o el de tu cuenta de Google), tus líneas, estaciones y
+          accesos favoritos, y las fechas en que creaste la cuenta e ingresaste por última vez. Se usan solo para que
+          puedas ingresar y ver tus favoritos en cualquier dispositivo: no se usan para nada más ni se comparten.
+        </p>
+        <p>
+          Si usás mail y contraseña, la contraseña se guarda cifrada (con PBKDF2 y una sal propia), nunca tal cual. Si
+          entrás con Google, Google le confirma al sitio tu mail y tu nombre; BA Transit no recibe tu contraseña de
+          Google ni accede a nada más de tu cuenta.
+        </p>
+        <p>
+          Podés borrar tu cuenta cuando quieras desde <Link to="/cuenta">Tu cuenta</Link>: se borran todos sus datos
+          del servidor en el momento.
+        </p>
       </section>
 
       <section className="about-block">
@@ -76,7 +101,8 @@ export default function PrivacyPage() {
         <h2 className="about-heading">El servidor</h2>
         <p>
           El servidor de BA Transit consulta las fuentes de datos (ver <Link to="/acerca">Acerca de y fuentes de
-          datos</Link>) y le responde al sitio. No guarda información de quienes lo visitan. Como cualquier sitio web,
+          datos</Link>) y le responde al sitio. Fuera de las cuentas, no guarda información de quienes lo visitan. Las
+          cuentas están en una base de datos PostgreSQL alojada en Neon. Como cualquier sitio web,
           el proveedor donde está alojado (Render) puede registrar por un tiempo la dirección IP y la hora de cada
           pedido, para su funcionamiento y seguridad.
         </p>
