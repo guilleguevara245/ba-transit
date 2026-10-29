@@ -123,8 +123,9 @@ export default function AirportsPage() {
       </LiveFlights>
 
       <p className="airports-source">
-        Clima: Open-Meteo. Aviones: OpenSky Network, con las señales que reciben antenas voluntarias (puede faltar
-        alguno). Horarios, demoras y puertas: sitio oficial de Aeropuertos Argentina.
+        Clima: Open-Meteo. Aviones: <a href="https://adsb.lol" target="_blank" rel="noreferrer">adsb.lol</a> (ODbL),
+        con las señales que reciben antenas voluntarias (puede faltar alguno). Horarios, demoras y puertas: sitio
+        oficial de Aeropuertos Argentina.
       </p>
     </div>
   )

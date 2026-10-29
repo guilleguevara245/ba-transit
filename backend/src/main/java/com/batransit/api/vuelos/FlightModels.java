@@ -17,16 +17,15 @@ public final class FlightModels {
      * heading en grados (0 = norte), verticalRate en m/s (negativo = baja).
      * airport: AEP o EZE si esta aterrizando, despegando o en tierra ahi.
      */
-    public record Flight(String id, String callsign, String airline, String country, double latitude,
+    public record Flight(String id, String callsign, String airline, String registration, String aircraftType, double latitude,
                          double longitude, Double altitude, boolean onGround, Double speed, Double heading,
                          Double verticalRate, Phase phase, String airport) {
     }
 
     /**
-     * registered: si se usa una cuenta de OpenSky (mas actualizaciones).
      * refreshSeconds: cada cuanto conviene volver a pedir.
      * updatedAt: cuando se obtuvieron los datos (null si todavia no hay).
      */
-    public record FlightsResponse(boolean registered, int refreshSeconds, Instant updatedAt, List<Flight> flights) {
+    public record FlightsResponse(int refreshSeconds, Instant updatedAt, List<Flight> flights) {
     }
 }

@@ -21,21 +21,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Aviones en vivo alrededor de Buenos Aires. Se pide a OpenSky solo cuando
- * alguien mira la seccion y el ultimo dato ya es viejo: con cuenta, cada
- * 30 s como mucho (hasta 2880 creditos por dia, de 4000); sin cuenta, cada
- * 5 minutos (288, de 400). Si OpenSky falla se muestra lo ultimo que hubo.
- *
- * OpenSky a veces tarda mucho en responderle a servidores en la nube: el
- * pedido se hace en segundo plano y la respuesta al sitio sale enseguida
- * con lo ultimo que haya (el sitio vuelve a preguntar a los 30 s). Si el
- * servidor todavia no tiene datos, el navegador los pide directo.
+ * Aviones en vivo alrededor de Buenos Aires, de adsb.lol. Se pide solo
+ * cuando alguien mira la seccion y el ultimo dato tiene mas de 30
+ * segundos. El pedido corre en segundo plano y la respuesta al sitio sale
+ * enseguida con lo ultimo que haya (el sitio vuelve a preguntar a los
+ * 30 s). Si adsb.lol falla, se muestra lo ultimo que hubo.
  */
 @Service
 public class FlightService {
 
-    static final Duration REGISTERED_MAX_AGE = Duration.ofSeconds(30);
-    static final Duration ANONYMOUS_MAX_AGE = Duration.ofMinutes(5);
+    static final Duration MAX_AGE = Duration.ofSeconds(30);
     /** Tras una falla no se reintenta enseguida. */
     static final Duration FAILURE_BACKOFF = Duration.ofMinutes(2);
     /**
@@ -43,8 +38,12 @@ public class FlightService {
      * tierra los aviones estacionados transmiten poco, asi que se les da
      * mas margen (no se mueven).
      */
-    static final long MAX_POSITION_AGE_SECONDS = 120;
-    static final long MAX_GROUND_POSITION_AGE_SECONDS = 900;
+    static final double MAX_POSITION_AGE_SECONDS = 60;
+    static final double MAX_GROUND_POSITION_AGE_SECONDS = 600;
+
+    private static final double FEET = 0.3048;
+    private static final double KNOTS = 1.852;
+    private static final double FEET_PER_MINUTE = 0.00508;
 
     record Airport(String code, String name, double latitude, double longitude) {
     }
@@ -97,7 +96,7 @@ public class FlightService {
             Map.entry("AMX", "Aeroméxico"),
             Map.entry("ARE", "Avianca"));
 
-    private final OpenSkyClient client;
+    private final AdsbLolClient client;
     private final Clock clock;
     private final Executor executor;
     private final AtomicBoolean refreshing = new AtomicBoolean();
@@ -107,16 +106,16 @@ public class FlightService {
     private volatile boolean lastAttemptFailed;
 
     @Autowired
-    public FlightService(OpenSkyClient client) {
+    public FlightService(AdsbLolClient client) {
         this(client, Clock.systemUTC(), Executors.newSingleThreadExecutor(r -> {
-            Thread thread = new Thread(r, "aviones-opensky");
+            Thread thread = new Thread(r, "aviones-adsb");
             thread.setDaemon(true);
             return thread;
         }));
     }
 
-    /** executor: donde corre el pedido a OpenSky (en los tests, en el mismo hilo). */
-    FlightService(OpenSkyClient client, Clock clock, Executor executor) {
+    /** executor: donde corre el pedido a adsb.lol (en los tests, en el mismo hilo). */
+    FlightService(AdsbLolClient client, Clock clock, Executor executor) {
         this.client = client;
         this.clock = clock;
         this.executor = executor;
@@ -124,7 +123,7 @@ public class FlightService {
 
     public FlightsResponse flights() {
         Instant now = clock.instant();
-        Duration maxAge = client.isRegistered() ? REGISTERED_MAX_AGE : ANONYMOUS_MAX_AGE;
+        Duration maxAge = MAX_AGE;
         Duration wait = lastAttemptFailed ? max(maxAge, FAILURE_BACKOFF) : maxAge;
         if (!now.isBefore(lastAttempt.plus(wait)) && refreshing.compareAndSet(false, true)) {
             lastAttempt = now;
@@ -138,52 +137,65 @@ public class FlightService {
         }
         FlightsResponse current = last;
         if (current == null) {
-            return new FlightsResponse(client.isRegistered(), (int) maxAge.toSeconds(), null, List.of());
+            return new FlightsResponse((int) maxAge.toSeconds(), null, List.of());
         }
-        return new FlightsResponse(client.isRegistered(), (int) maxAge.toSeconds(), current.updatedAt(), current.flights());
+        return new FlightsResponse((int) maxAge.toSeconds(), current.updatedAt(), current.flights());
     }
 
     private void refresh(Instant at, Duration maxAge) {
-        Optional<JsonNode> body = client.states();
+        Optional<JsonNode> body = client.aircraft();
         lastAttemptFailed = body.isEmpty();
-        body.ifPresent(b -> last = new FlightsResponse(client.isRegistered(), (int) maxAge.toSeconds(), at, parse(b)));
+        body.ifPresent(b -> last = new FlightsResponse((int) maxAge.toSeconds(), at, parse(b)));
     }
 
-    /** Convierte la respuesta de /states/all (cada estado es un arreglo, ver la doc de OpenSky). */
+    /**
+     * Convierte la respuesta de adsb.lol (formato de readsb): altura en
+     * pies ("ground" si esta en tierra), velocidad en nudos y velocidad
+     * vertical en pies por minuto. Se pasan a metros, km/h y m/s.
+     */
     static List<Flight> parse(JsonNode body) {
-        long time = body.path("time").asLong(0);
         List<Flight> flights = new ArrayList<>();
-        for (JsonNode s : body.path("states")) {
-            if (!s.isArray() || s.get(5) == null || s.get(5).isNull() || s.get(6).isNull()) {
+        for (JsonNode a : body.path("ac")) {
+            Double lat = number(a.get("lat"));
+            Double lon = number(a.get("lon"));
+            if (lat == null || lon == null) {
                 continue;
             }
-            JsonNode positionTime = s.get(3);
-            long maxAge = s.get(8).asBoolean(false) ? MAX_GROUND_POSITION_AGE_SECONDS : MAX_POSITION_AGE_SECONDS;
-            if (time > 0 && (positionTime == null || positionTime.isNull() || time - positionTime.asLong() > maxAge)) {
+            boolean onGround = "ground".equals(a.path("alt_baro").asText());
+            double seenPos = a.path("seen_pos").asDouble(0);
+            if (seenPos > (onGround ? MAX_GROUND_POSITION_AGE_SECONDS : MAX_POSITION_AGE_SECONDS)) {
                 continue;
             }
-            String callsign = s.get(1).isNull() ? "" : s.get(1).asText().strip();
-            double lon = s.get(5).asDouble();
-            double lat = s.get(6).asDouble();
-            boolean onGround = s.get(8).asBoolean(false);
-            Double altitude = number(s.get(13));
-            if (altitude == null) {
-                altitude = number(s.get(7));
+            String callsign = a.path("flight").asText("").strip();
+            Double altFeet = number(a.get("alt_geom"));
+            if (altFeet == null) {
+                altFeet = number(a.get("alt_baro"));
             }
-            Double velocity = number(s.get(9));
-            Double heading = number(s.get(10));
-            Double verticalRate = number(s.get(11));
+            Double altitude = altFeet == null ? null : altFeet * FEET;
+            Double knots = number(a.get("gs"));
+            Double heading = number(a.get("track"));
+            if (heading == null) {
+                heading = number(a.get("true_heading"));
+            }
+            Double rateFpm = number(a.get("geom_rate"));
+            if (rateFpm == null) {
+                rateFpm = number(a.get("baro_rate"));
+            }
+            Double verticalRate = rateFpm == null ? null : rateFpm * FEET_PER_MINUTE;
             Classification c = classify(lat, lon, onGround, altitude, verticalRate);
+            String registration = a.path("r").asText("").strip();
+            String type = a.path("t").asText("").strip();
             flights.add(new Flight(
-                    s.get(0).asText(),
+                    a.path("hex").asText(),
                     callsign.isEmpty() ? null : callsign,
                     airline(callsign),
-                    s.get(2).asText(null),
+                    registration.isEmpty() ? null : registration,
+                    type.isEmpty() ? null : type,
                     lat,
                     lon,
                     onGround ? null : round(altitude),
                     onGround,
-                    velocity == null ? null : round(velocity * 3.6),
+                    knots == null ? null : round(knots * KNOTS),
                     heading,
                     verticalRate,
                     c.phase(),

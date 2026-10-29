@@ -77,8 +77,3 @@ app:
     from-name: BA Transit
   # Direccion del sitio, para los links de los mails.
   site-url: ${SITE_URL:https://ba-transit.onrender.com}
-  opensky:
-    # Cliente de la API de OpenSky Network (cuenta gratuita). Vacio = se
-    # consulta sin cuenta, con menos actualizaciones por dia.
-    client-id: ${OPENSKY_CLIENT_ID:}
-    client-secret: ${OPENSKY_CLIENT_SECRET:}

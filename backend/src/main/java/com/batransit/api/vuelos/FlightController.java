@@ -15,7 +15,7 @@ public class FlightController {
         this.service = service;
     }
 
-    /** Aviones en vivo alrededor de Buenos Aires (OpenSky Network). */
+    /** Aviones en vivo alrededor de Buenos Aires (adsb.lol). */
     @GetMapping
     public FlightsResponse flights() {
         return service.flights();

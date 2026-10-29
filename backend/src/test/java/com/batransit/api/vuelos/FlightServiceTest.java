@@ -20,18 +20,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class FlightServiceTest {
 
-    /** Respuesta real de OpenSky para el recuadro de Buenos Aires (29/10/2026, 17:41), recortada. */
+    /**
+     * Respuesta de adsb.lol (formato readsb) con los aviones que habia sobre
+     * Buenos Aires el 29/10/2026 a las 17:41: altura en pies o "ground",
+     * velocidad en nudos, velocidad vertical en pies por minuto.
+     */
     static final String SAMPLE = """
-            {"time":1793306475,"states":[
-             ["e0b198","JES3331 ","Argentina",1793306164,1793306164,-58.4136,-34.5573,null,true,0,33.75,null,null,null,"2034",false,0],
-             ["a88cde","N650BL  ","United States",1793306475,1793306475,-58.8676,-34.705,3055.62,false,142.08,24.15,-5.2,null,3147.06,"1716",false,0],
-             ["e06541","ARG1477 ","Argentina",1793306474,1793306474,-58.5253,-34.498,571.5,false,74.77,124.35,-3.25,null,624.84,"2361",false,0],
-             ["e80461","LPE2381 ","Chile",1793306473,1793306473,-58.4144,-34.5576,null,true,0,289.69,null,null,null,null,false,0],
-             ["345109","IBE5107 ","Spain",1793306473,1793306473,-58.6027,-34.8103,251.46,false,73.05,101.78,-3.9,null,304.8,"2376",false,0],
-             ["e200a4","LVS100  ","Argentina",1793306462,1793306462,-58.9537,-34.704,609.6,false,40.39,96.58,-0.33,null,640.08,"2000",false,0],
-             ["e80632","JES3791 ","Chile",1793306475,1793306475,-58.4174,-34.5564,null,true,3.6,329.06,null,null,null,"7114",false,0],
-             ["dead00","OLD1    ","Argentina",1793300000,1793300000,-58.5,-34.6,1000,false,80,90,0,null,1000,null,false,0],
-             ["dead01",null,"Argentina",null,1793306475,null,null,null,false,null,null,null,null,null,null,false,0]
+            {"now":1793306475000,"total":9,"ac":[
+             {"hex":"e0b198","flight":"JES3331 ","r":"LV-HVT","t":"A320","alt_baro":"ground","gs":0,"track":33.75,"lat":-34.5573,"lon":-58.4136,"seen_pos":300},
+             {"hex":"a88cde","flight":"N650BL  ","r":"N650BL","t":"C56X","alt_baro":10025,"alt_geom":10325,"gs":276.2,"track":24.15,"baro_rate":-1024,"lat":-34.705,"lon":-58.8676,"seen_pos":0.5},
+             {"hex":"e06541","flight":"ARG1477 ","r":"LV-GKO","t":"B738","alt_baro":1875,"alt_geom":2050,"gs":145.3,"track":124.35,"baro_rate":-640,"lat":-34.498,"lon":-58.5253,"seen_pos":1.1},
+             {"hex":"e80461","flight":"LPE2381 ","alt_baro":"ground","gs":0,"track":289.69,"lat":-34.5576,"lon":-58.4144,"seen_pos":2},
+             {"hex":"345109","flight":"IBE5107 ","r":"EC-NCX","t":"A359","alt_baro":825,"alt_geom":1000,"gs":142,"track":101.78,"geom_rate":-768,"lat":-34.8103,"lon":-58.6027,"seen_pos":0.2},
+             {"hex":"e200a4","flight":"LVS100  ","alt_baro":2000,"alt_geom":2100,"gs":78.5,"track":96.58,"baro_rate":-64,"lat":-34.704,"lon":-58.9537,"seen_pos":13},
+             {"hex":"e80632","flight":"JES3791 ","alt_baro":"ground","gs":7,"track":329.06,"lat":-34.5564,"lon":-58.4174,"seen_pos":0.4},
+             {"hex":"dead00","flight":"OLD1","alt_baro":3000,"gs":150,"lat":-34.6,"lon":-58.5,"seen_pos":300},
+             {"hex":"dead01","flight":"SINPOS"}
             ]}""";
 
     private static JsonNode sample() throws Exception {
@@ -51,8 +55,10 @@ class FlightServiceTest {
         assertThat(iberia.phase()).isEqualTo(Phase.LANDING);
         assertThat(iberia.airport()).isEqualTo("EZE");
         assertThat(iberia.airline()).isEqualTo("Iberia");
-        assertThat(iberia.altitude()).isEqualTo(305.0); // altitud geometrica
-        assertThat(iberia.speed()).isEqualTo(263.0); // 73,05 m/s
+        assertThat(iberia.altitude()).isEqualTo(305.0); // 1000 pies (altitud geometrica)
+        assertThat(iberia.speed()).isEqualTo(263.0); // 142 nudos
+        assertThat(iberia.registration()).isEqualTo("EC-NCX");
+        assertThat(iberia.aircraftType()).isEqualTo("A359");
 
         Flight aerolineas = byCallsign(flights, "ARG1477");
         assertThat(aerolineas.phase()).isEqualTo(Phase.LANDING);
@@ -90,23 +96,12 @@ class FlightServiceTest {
     }
 
     /** Cliente falso: devuelve la muestra y cuenta los pedidos. */
-    static class FakeClient extends OpenSkyClient {
+    static class FakeClient extends AdsbLolClient {
         final AtomicInteger calls = new AtomicInteger();
         boolean fail;
-        final boolean registered;
-
-        FakeClient(boolean registered) {
-            super("", "");
-            this.registered = registered;
-        }
 
         @Override
-        public boolean isRegistered() {
-            return registered;
-        }
-
-        @Override
-        public Optional<JsonNode> states() {
+        public Optional<JsonNode> aircraft() {
             calls.incrementAndGet();
             try {
                 return fail ? Optional.empty() : Optional.of(sample());
@@ -136,33 +131,26 @@ class FlightServiceTest {
     }
 
     @Test
-    void guardaElDatoSegunHayaCuentaONo() {
+    void guardaElDato30Segundos() {
         MutableClock clock = new MutableClock();
-        FakeClient anonymous = new FakeClient(false);
-        FlightService service = new FlightService(anonymous, clock, Runnable::run);
+        FakeClient client = new FakeClient();
+        FlightService service = new FlightService(client, clock, Runnable::run);
 
         FlightsResponse first = service.flights();
         assertThat(first.flights()).hasSize(7);
-        assertThat(first.refreshSeconds()).isEqualTo(300);
-        clock.now = clock.now.plus(Duration.ofMinutes(4));
+        assertThat(first.refreshSeconds()).isEqualTo(30);
+        clock.now = clock.now.plusSeconds(20);
         service.flights();
-        assertThat(anonymous.calls).hasValue(1);
-        clock.now = clock.now.plus(Duration.ofMinutes(1));
+        assertThat(client.calls).hasValue(1);
+        clock.now = clock.now.plusSeconds(11);
         service.flights();
-        assertThat(anonymous.calls).hasValue(2);
-
-        FakeClient registered = new FakeClient(true);
-        FlightService withAccount = new FlightService(registered, clock, Runnable::run);
-        withAccount.flights();
-        clock.now = clock.now.plusSeconds(31);
-        assertThat(withAccount.flights().refreshSeconds()).isEqualTo(30);
-        assertThat(registered.calls).hasValue(2);
+        assertThat(client.calls).hasValue(2);
     }
 
     @Test
     void siFallaMuestraLoUltimoYEspera() {
         MutableClock clock = new MutableClock();
-        FakeClient client = new FakeClient(true);
+        FakeClient client = new FakeClient();
         FlightService service = new FlightService(client, clock, Runnable::run);
         Instant firstAt = service.flights().updatedAt();
 
@@ -185,7 +173,7 @@ class FlightServiceTest {
     void elPedidoNoFrenaLaRespuesta() {
         // Con un executor que todavia no corrio el pedido: responde enseguida, sin datos, y no pide dos veces.
         java.util.List<Runnable> pending = new java.util.ArrayList<>();
-        FakeClient client = new FakeClient(true);
+        FakeClient client = new FakeClient();
         FlightService service = new FlightService(client, new MutableClock(), pending::add);
         assertThat(service.flights().updatedAt()).isNull();
         service.flights();
@@ -196,7 +184,7 @@ class FlightServiceTest {
 
     @Test
     void sinDatosTodaviaDevuelveListaVacia() {
-        FakeClient client = new FakeClient(false);
+        FakeClient client = new FakeClient();
         client.fail = true;
         FlightsResponse response = new FlightService(client, new MutableClock(), Runnable::run).flights();
         assertThat(response.flights()).isEmpty();

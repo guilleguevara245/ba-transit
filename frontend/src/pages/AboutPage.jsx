@@ -90,9 +90,9 @@ const SOURCES = [
   },
   {
     what: 'Aviones en vivo',
-    source: 'OpenSky Network',
-    url: 'https://opensky-network.org/',
-    detail: 'Posición, altura y velocidad de los aviones alrededor de Buenos Aires, con las señales que reciben antenas voluntarias.',
+    source: 'adsb.lol',
+    url: 'https://adsb.lol/',
+    detail: 'Posición, altura y velocidad de los aviones alrededor de Buenos Aires, con las señales que reciben antenas voluntarias. Datos abiertos bajo licencia ODbL.',
   },
   {
     what: 'Clima en los aeropuertos',

@@ -42,7 +42,7 @@ public class SourceHealth {
         METROVIAS("Estado del Urquiza", "Metrovías"),
         SMN("Alertas meteorológicas", "Servicio Meteorológico Nacional"),
         TOMTOM("Tránsito en los accesos", "TomTom"),
-        OPENSKY("Aviones en vivo", "OpenSky Network");
+        ADSB_LOL("Aviones en vivo", "adsb.lol");
 
         private final String what;
         private final String provider;

@@ -3,12 +3,12 @@ import { divIcon } from 'leaflet'
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet'
 import MapCard, { MapCardIcon } from './MapCard.jsx'
 import { useApi } from '../hooks/useApi.js'
-import { useBrowserFlights } from '../hooks/useBrowserFlights.js'
 import { useNow } from '../hooks/useNow.js'
 import { formatRelativeTime } from '../utils/format.js'
 import { GLYPHS } from '../utils/mapIcons.js'
 import {
   FLIGHT_GROUPS,
+  flightDetail,
   flightGroup,
   flightStatus,
   flightTitle,
@@ -18,7 +18,7 @@ import {
 } from '../utils/flights.js'
 import './LiveFlights.css'
 
-// El backend guarda el dato 30 s (con cuenta de OpenSky) o 5 min (sin cuenta).
+// El backend guarda el dato de adsb.lol 30 segundos.
 const REFRESH_MS = 30_000
 const GROUP_COLOR = Object.fromEntries(FLIGHT_GROUPS.map((g) => [g.key, g.color]))
 // Mismo trazo que el icono de Aeropuertos.
@@ -84,7 +84,7 @@ function FlightCard({ flight }) {
       badge={<MapCardIcon path={AIRPORT_ICON} />}
       kicker={flight.airline ?? 'Vuelo'}
       title={flightTitle(flight)}
-      subtitle={flight.country ? `Registrado en ${flight.country}` : undefined}
+      subtitle={flightDetail(flight) ?? undefined}
     >
       <div className="map-card-status" style={{ '--status-color': GROUP_COLOR[group] }}>
         <i />
@@ -116,12 +116,7 @@ function FlightCard({ flight }) {
  * bounds: encuadre inicial del mapa.
  */
 export default function LiveFlights({ bounds, children }) {
-  const server = useApi('/api/v1/vuelos', { refreshMs: REFRESH_MS })
-  // Si el servidor todavia no tiene aviones (o no responde), los pide el navegador.
-  const serverHasData = Boolean(server.data?.updatedAt)
-  const browser = useBrowserFlights(!server.loading && !serverHasData)
-  const data = serverHasData ? server.data : (browser.data ?? server.data)
-  const error = serverHasData ? null : browser.error ?? server.error
+  const { data, error } = useApi('/api/v1/vuelos', { refreshMs: REFRESH_MS })
   const now = useNow(15_000)
   const [groupFilter, setGroupFilter] = useState(null)
   const [selectedId, setSelectedId] = useState(null)
@@ -197,10 +192,10 @@ export default function LiveFlights({ bounds, children }) {
         <FlyTo target={flyTarget} />
       </MapContainer>
 
-      {!data?.updatedAt && error && (
+      {!data && error && (
         <p className="flights-empty">Los aviones en vivo no están disponibles por el momento: probá en un rato.</p>
       )}
-      {!data?.updatedAt && !error && <p className="flights-empty">Buscando aviones…</p>}
+      {(!data || !data.updatedAt) && !error && <p className="flights-empty">Buscando aviones…</p>}
       {data?.updatedAt && flights.length === 0 && (
         <p className="flights-empty">No hay aviones a la vista en este momento.</p>
       )}

@@ -23,11 +23,6 @@ const THIRD_PARTIES = [
   { who: 'Google Fonts', why: 'Las tipografías del sitio.', url: 'https://policies.google.com/privacy' },
   { who: 'Open-Meteo', why: 'El clima de los aeropuertos.', url: 'https://open-meteo.com/en/terms' },
   {
-    who: 'OpenSky Network',
-    why: 'Los aviones en vivo, cuando el servidor no los tiene.',
-    url: 'https://opensky-network.org/about/privacy-policy',
-  },
-  {
     who: 'Google (ingreso)',
     why: 'Solo si tocás "Continuar con Google" para ingresar.',
     url: 'https://policies.google.com/privacy',

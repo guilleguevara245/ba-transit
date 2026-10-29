@@ -137,3 +137,8 @@
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 13px;
 }
+
+.airports-source a {
+  color: var(--accent-text);
+  font-weight: 600;
+}
