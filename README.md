@@ -72,6 +72,8 @@ con APIs públicas, pruebas, integración continua y despliegue.
 - Estacionamiento: 2.700 garajes y las playas de la Ciudad, lugares para motos, 1.600 playas del conurbano
   (OpenStreetMap) por partido, y búsqueda de los más cercanos.
 - Estaciones de EcoBici con bicis y anclajes disponibles.
+- Aviones en vivo alrededor de Aeroparque y Ezeiza (OpenSky Network): cuáles están aterrizando, despegando o en
+  tierra, con altura y velocidad.
 - Aeropuertos con el clima actual y cómo llegar.
 - Cuadro tarifario completo del AMBA y simulador del descuento Red SUBE.
 
@@ -94,6 +96,7 @@ flowchart LR
     B --> TR[Trenes Argentinos, Ferrovías,<br>Metrovías]
     B --> SMN[SMN<br>alertas CAP]
     B --> TT[TomTom Traffic]
+    B --> OS[OpenSky Network<br>aviones]
     F --> OM[Open-Meteo<br>clima]
     F --> OSM[OpenStreetMap<br>mapas]
 ```
@@ -121,6 +124,8 @@ flowchart LR
   del PDF oficial, validado al cargarlo (así apareció y se corrigió un error de tipeo del original).
 - **Cuidar los cupos gratuitos**: TomTom da 20.000 consultas por mes. Cada medición se reutiliza 20 minutos y hay un
   tope diario; si dos tramos caen en el mismo tramo de TomTom, se muestran como uno en lugar de repetir el dato.
+  Los aviones se piden a OpenSky solo cuando alguien mira la sección, y el dato se reutiliza 30 segundos (con cuenta)
+  o 5 minutos (sin cuenta), dentro del cupo diario de cada caso.
 - **Salud de las fuentes**: cada integración informa si respondió o falló; una falla aislada no marca la fuente como
   caída. Los servicios de la Ciudad que hoy no funcionan se prueban una vez por semana.
 - **Seguridad**: los endpoints de escritura piden una clave de administrador (`X-API-Key`), los errores siguen el
@@ -149,6 +154,7 @@ flowchart LR
 | Estacionamiento | [Buenos Aires Data](https://data.buenosaires.gob.ar/) y [OpenStreetMap](https://www.openstreetmap.org/copyright) (conurbano) |
 | Alertas meteorológicas | [Servicio Meteorológico Nacional](https://www.smn.gob.ar/alertas) |
 | Tránsito en los accesos | [TomTom Traffic](https://www.tomtom.com/products/traffic-apis/) |
+| Aviones en vivo | [OpenSky Network](https://opensky-network.org/) |
 | Clima en los aeropuertos | [Open-Meteo](https://open-meteo.com/) |
 | Tarifas | [Red SUBE](https://www.argentina.gob.ar/redsube/tarifas-de-transporte-publico-amba) |
 | Horarios y accesibilidad del subte | [Emova](https://emova.com.ar/) |
@@ -168,6 +174,7 @@ ba-transit/
 │       │   ├── colectivos/   feed GTFS de colectivos
 │       │   ├── accesos/      tránsito en autopistas (TomTom)
 │       │   ├── clima/        alertas del SMN (CAP)
+│       │   ├── vuelos/       aviones en vivo (OpenSky)
 │       │   ├── eventos/      eventos masivos y cortes (carga manual)
 │       │   ├── trenes/       avisos, Ferrovías y Metrovías
 │       │   ├── estado/       salud de cada fuente de datos
@@ -209,6 +216,7 @@ La API queda en `http://localhost:8080` y la documentación interactiva en `http
 |---|---|---|
 | `TRANSPORTE_CLIENT_ID` / `TRANSPORTE_CLIENT_SECRET` | API Transporte ([registro gratuito](https://www.buenosaires.gob.ar/form/formulario-de-registro-api-transporte)) | sin alertas, subte en vivo ni colectivos |
 | `TOMTOM_API_KEY` | estado del tránsito en los accesos | Accesos sin estado en vivo |
+| `OPENSKY_CLIENT_ID`, `OPENSKY_CLIENT_SECRET` | aviones en vivo cada 30 s | se consulta sin cuenta, cada 5 min |
 | `ADMIN_API_KEY` | endpoints de escritura (`POST`) | escritura deshabilitada |
 
 Más detalle en [`backend/README.md`](./backend/README.md).

@@ -7,7 +7,7 @@
  */
 export const AIRPORTS = [
   {
-    code: 'NEW',
+    code: 'AEP',
     name: 'Aeroparque Jorge Newbery',
     area: 'Costanera Norte, Ciudad de Buenos Aires',
     kind: 'Vuelos de cabotaje y regionales',

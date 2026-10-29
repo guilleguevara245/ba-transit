@@ -41,7 +41,8 @@ public class SourceHealth {
         FERROVIAS("Próximos trenes del Belgrano Norte", "Ferrovías"),
         METROVIAS("Estado del Urquiza", "Metrovías"),
         SMN("Alertas meteorológicas", "Servicio Meteorológico Nacional"),
-        TOMTOM("Tránsito en los accesos", "TomTom");
+        TOMTOM("Tránsito en los accesos", "TomTom"),
+        OPENSKY("Aviones en vivo", "OpenSky Network");
 
         private final String what;
         private final String provider;

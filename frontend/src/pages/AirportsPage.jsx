@@ -1,5 +1,5 @@
 import ModeIcon from '../components/ModeIcon.jsx'
-import { MapContainer, Marker, TileLayer, Tooltip } from 'react-leaflet'
+import { Marker, Tooltip } from 'react-leaflet'
 import { badgeIcon } from '../utils/mapIcons.js'
 import MapCard, { MapCardIcon } from '../components/MapCard.jsx'
 import BackButton from '../components/BackButton.jsx'
@@ -7,7 +7,9 @@ import { AIRPORTS, FLIGHTS_URL } from '../data/airports.js'
 import { useWeather } from '../hooks/useWeather.js'
 import { describeWeather } from '../utils/weather.js'
 import WeatherIcon from '../components/WeatherIcon.jsx'
+import LiveFlights from '../components/LiveFlights.jsx'
 import './ModePage.css'
+import './EcobiciPage.css'
 import './AirportsPage.css'
 
 // Mismo trazo que el icono de Aeropuertos.
@@ -66,7 +68,7 @@ function AirportCard({ airport }) {
   )
 }
 
-/** Pagina de aeropuertos: clima actual, como llegar y enlace a vuelos. */
+/** Pagina de aeropuertos: clima actual, como llegar, aviones en vivo y enlace a vuelos. */
 export default function AirportsPage() {
   return (
     <div className="wrap content">
@@ -75,7 +77,7 @@ export default function AirportsPage() {
         <ModeIcon mode="AEROPUERTO" size="lg" />
         Aeropuertos
       </h1>
-      <p className="page-subtitle">Clima actual y cómo llegar en transporte público.</p>
+      <p className="page-subtitle">Clima actual, cómo llegar en transporte público y los aviones en vivo.</p>
 
       <div className="airports-grid">
         {AIRPORTS.map((airport) => (
@@ -83,12 +85,7 @@ export default function AirportsPage() {
         ))}
       </div>
 
-      <div className="section-label">Ubicación</div>
-      <MapContainer className="airports-map" bounds={AIRPORTS.map((a) => [a.latitude, a.longitude])} boundsOptions={{ padding: [60, 60] }}>
-        <TileLayer
-          url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        />
+      <LiveFlights bounds={AIRPORTS.map((a) => [a.latitude, a.longitude])}>
         {AIRPORTS.map((airport) => (
           <Marker
             key={airport.code}
@@ -123,10 +120,11 @@ export default function AirportsPage() {
             </MapCard>
           </Marker>
         ))}
-      </MapContainer>
+      </LiveFlights>
 
       <p className="airports-source">
-        Clima: Open-Meteo. Los vuelos y demoras se consultan en el sitio oficial de Aeropuertos Argentina.
+        Clima: Open-Meteo. Aviones: OpenSky Network, con las señales que reciben antenas voluntarias (puede faltar
+        alguno). Horarios, demoras y puertas: sitio oficial de Aeropuertos Argentina.
       </p>
     </div>
   )

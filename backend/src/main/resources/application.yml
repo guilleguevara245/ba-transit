@@ -61,3 +61,8 @@ app:
     # Clave de la API de trafico de TomTom (plan gratuito). Vacia = el
     # apartado Accesos muestra la informacion fija sin estado en vivo.
     api-key: ${TOMTOM_API_KEY:}
+  opensky:
+    # Cliente de la API de OpenSky Network (cuenta gratuita). Vacio = se
+    # consulta sin cuenta, con menos actualizaciones por dia.
+    client-id: ${OPENSKY_CLIENT_ID:}
+    client-secret: ${OPENSKY_CLIENT_SECRET:}

@@ -89,6 +89,12 @@ const SOURCES = [
     detail: 'Velocidad actual y normal de cada tramo, en cada mano (hacia CABA y hacia Provincia), medida cada 20 minutos.',
   },
   {
+    what: 'Aviones en vivo',
+    source: 'OpenSky Network',
+    url: 'https://opensky-network.org/',
+    detail: 'Posición, altura y velocidad de los aviones alrededor de Buenos Aires, con las señales que reciben antenas voluntarias.',
+  },
+  {
     what: 'Clima en los aeropuertos',
     source: 'Open-Meteo',
     url: 'https://open-meteo.com/',
