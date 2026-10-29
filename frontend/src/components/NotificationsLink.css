@@ -1,0 +1,39 @@
+.notif-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: -14px 0 28px;
+  padding: 7px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color 0.15s ease;
+}
+
+.notif-link:hover {
+  border-color: var(--yellow);
+}
+
+.notif-link:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+}
+
+.notif-link svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: var(--accent-text);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.notif-link.active svg {
+  fill: var(--yellow);
+  stroke: var(--yellow-deep);
+}

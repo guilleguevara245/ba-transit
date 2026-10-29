@@ -14,6 +14,7 @@ const BROWSER_DATA = [
   { what: 'Líneas, estaciones y accesos favoritos', why: 'Para mostrarlos en el inicio.' },
   { what: 'Alertas del clima que cerraste', why: 'Para no volver a mostrártelas.' },
   { what: 'Tu sesión, si ingresaste', why: 'Para que no tengas que ingresar cada vez. Se borra al cerrar sesión.' },
+  { what: 'Tus preferencias de avisos', why: 'Qué avisar y el horario sin avisos.' },
 ]
 
 /** Servicios externos que el navegador contacta directamente. */
@@ -90,6 +91,21 @@ export default function PrivacyPage() {
         <p>
           Podés borrar tu cuenta cuando quieras desde <Link to="/cuenta">Tu cuenta</Link>: se borran todos sus datos
           del servidor en el momento.
+        </p>
+      </section>
+
+      <section className="about-block">
+        <h2 className="about-heading">Si activás los avisos</h2>
+        <p>
+          Tu navegador le da al sitio una dirección para mandarte avisos (la crea el servicio de notificaciones del
+          navegador: Google, Mozilla, Apple o Microsoft) y unas claves para cifrarlos. Se guardan en el servidor junto
+          con tus favoritos y tus preferencias (qué avisar y el horario sin avisos), y un registro de qué avisos ya te
+          llegaron, que se borra a los 30 días. No hace falta cuenta; si ingresaste, quedan asociados a ella.
+        </p>
+        <p>
+          Los avisos viajan cifrados: el servicio del navegador los entrega pero no puede leerlos. Podés apagarlos
+          cuando quieras desde <Link to="/notificaciones">Avisos</Link> o desde la configuración del navegador, y ahí se
+          borra la suscripción.
         </p>
       </section>
 

@@ -329,3 +329,14 @@
   text-align: center;
   text-decoration: none;
 }
+
+.notif-account-link {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent-text);
+  text-decoration: none;
+}
+
+.notif-account-link:hover {
+  text-decoration: underline;
+}

@@ -157,7 +157,7 @@ public class AccountService {
     }
 
     /** Sin repetidos, sin valores invalidos y como mucho MAX_FAVORITES por grupo. */
-    static Favorites sanitize(Favorites f) {
+    public static Favorites sanitize(Favorites f) {
         if (f == null) {
             return Favorites.empty();
         }

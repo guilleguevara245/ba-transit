@@ -27,6 +27,7 @@ const TermsPage = lazy(() => import('./pages/TermsPage.jsx'))
 const LoginPage = lazy(() => import('./pages/LoginPage.jsx'))
 const RecoverPage = lazy(() => import('./pages/RecoverPage.jsx'))
 const ResetPage = lazy(() => import('./pages/ResetPage.jsx'))
+const NotificationsPage = lazy(() => import('./pages/NotificationsPage.jsx'))
 const AccountPage = lazy(() => import('./pages/AccountPage.jsx'))
 const TrainNoticesPage = lazy(() => import('./pages/TrainNoticesPage.jsx'))
 const StationPage = lazy(() => import('./pages/StationPage.jsx'))
@@ -62,6 +63,7 @@ export default function App() {
           <Route path="/condiciones" element={<TermsPage />} />
           <Route path="/ingresar" element={<LoginPage />} />
           <Route path="/cuenta" element={<AccountPage />} />
+          <Route path="/notificaciones" element={<NotificationsPage />} />
           <Route path="/recuperar" element={<RecoverPage />} />
           <Route path="/restablecer" element={<ResetPage />} />
           <Route path="*" element={<NotFoundPage />} />

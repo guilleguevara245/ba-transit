@@ -5,6 +5,7 @@ import ModeGrid from '../components/ModeGrid.jsx'
 import MyLines from '../components/MyLines.jsx'
 import { MyAccesses, MyStations } from '../components/MyPlaces.jsx'
 import AccountInvite from '../components/AccountInvite.jsx'
+import NotificationsLink from '../components/NotificationsLink.jsx'
 import AlertsPanel from '../components/AlertsPanel.jsx'
 import FaresPanel from '../components/FaresPanel.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
@@ -40,6 +41,7 @@ export default function DashboardPage() {
       {ready && <MyLines lines={lines} alerts={alerts} />}
       {ready && <MyStations lines={lines} alerts={alerts} />}
       <MyAccesses />
+      {ready && <NotificationsLink />}
       <div className="section-label section-label-row">
         <span>Estado de la red</span>
         {alertsState.updatedAt && (

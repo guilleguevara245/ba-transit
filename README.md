@@ -76,7 +76,10 @@ con APIs públicas, pruebas, integración continua y despliegue.
   tierra, con altura y velocidad.
 - Favoritos (líneas, estaciones y accesos) en el inicio, y cuentas opcionales para tenerlos en todos los dispositivos:
   con Google o con mail y contraseña (PBKDF2), sesiones firmadas con HMAC, freno de intentos y recuperación de la
-  contraseña con un link de un solo uso por mail (cierra las sesiones de otros dispositivos). Política de privacidad
+  contraseña con un link de un solo uso por mail (cierra las sesiones de otros dispositivos).
+- Avisos en el celular o la compu (Web Push) sobre los favoritos, con un formato propio para líneas, estaciones y
+  accesos, y su aviso de "volvió a la normalidad". Sin cuenta, con horario sin avisos y sin repetir. El cifrado
+  (RFC 8291) y la firma VAPID (RFC 8292) están hechos con lo que trae Java y probados con el ejemplo del RFC. Política de privacidad
   propia y borrado de la cuenta desde el sitio.
 - Aeropuertos con el clima actual y cómo llegar.
 - Cuadro tarifario completo del AMBA y simulador del descuento Red SUBE.
@@ -180,6 +183,7 @@ ba-transit/
 │       │   ├── clima/        alertas del SMN (CAP)
 │       │   ├── vuelos/       aviones en vivo (OpenSky)
 │       │   ├── cuentas/      cuentas de usuario y favoritos
+│       │   ├── notificaciones/ avisos Web Push (cifrado, VAPID, reglas)
 │       │   ├── eventos/      eventos masivos y cortes (carga manual)
 │       │   ├── trenes/       avisos, Ferrovías y Metrovías
 │       │   ├── estado/       salud de cada fuente de datos

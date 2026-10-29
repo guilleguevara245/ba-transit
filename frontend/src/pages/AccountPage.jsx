@@ -73,6 +73,10 @@ export default function AccountPage() {
           </dd>
         </dl>
 
+        <Link className="notif-account-link" to="/notificaciones">
+          Avisos de tus favoritos en este dispositivo →
+        </Link>
+
         <div className="account-actions">
           <button
             type="button"
