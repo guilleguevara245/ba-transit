@@ -212,6 +212,11 @@
     -webkit-mask-image: linear-gradient(to right, #000 85%, transparent);
   }
 
+  .nav-tabs.at-end {
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+
   .nav-tab {
     flex-shrink: 0;
   }

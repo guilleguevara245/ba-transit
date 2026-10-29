@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import Logo from './Logo.jsx'
 import ThemeToggle from './ThemeToggle.jsx'
@@ -56,6 +56,22 @@ export default function Header() {
     nav.scrollLeft += offset - (nav.clientWidth - active.offsetWidth) / 2
   }, [pathname])
 
+  // El degradado de la derecha avisa que hay mas pestañas; al llegar al
+  // final se saca, asi la ultima no queda difuminada.
+  const [navAtEnd, setNavAtEnd] = useState(false)
+  useEffect(() => {
+    const nav = navRef.current
+    if (!nav) return undefined
+    const update = () => setNavAtEnd(nav.scrollLeft + nav.clientWidth >= nav.scrollWidth - 2)
+    update()
+    nav.addEventListener('scroll', update, { passive: true })
+    window.addEventListener('resize', update)
+    return () => {
+      nav.removeEventListener('scroll', update)
+      window.removeEventListener('resize', update)
+    }
+  }, [])
+
   return (
     <header className="header">
       <div className="wrap header-row">
@@ -63,7 +79,7 @@ export default function Header() {
           <Logo />
         </NavLink>
 
-        <nav ref={navRef} className="nav-tabs" aria-label="Secciones">
+        <nav ref={navRef} className={navAtEnd ? 'nav-tabs at-end' : 'nav-tabs'} aria-label="Secciones">
           {TABS.map((tab) => (
             <NavLink key={tab.to} to={tab.to} end={tab.end} className={tabClass}>
               <TabIcon path={tab.icon} />

@@ -12,9 +12,13 @@ import './Select.css'
  *
  * options: [{ value, label, color?, meta? }]
  */
+const LIST_MAX_HEIGHT = 280
+
 export default function Select({ value, options, onChange, label, labelledBy, placeholder = 'Elegí…', className = '' }) {
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
+  // Si abajo no entra la lista, se abre hacia arriba.
+  const [up, setUp] = useState(false)
   const containerRef = useRef(null)
   const buttonRef = useRef(null)
   const listRef = useRef(null)
@@ -38,6 +42,11 @@ export default function Select({ value, options, onChange, label, labelledBy, pl
   }, [open, activeIndex])
 
   function openList() {
+    const rect = buttonRef.current?.getBoundingClientRect()
+    if (rect) {
+      const below = window.innerHeight - rect.bottom
+      setUp(below < LIST_MAX_HEIGHT + 16 && rect.top > below)
+    }
     setActiveIndex(selectedIndex >= 0 ? selectedIndex : 0)
     setOpen(true)
   }
@@ -101,7 +110,7 @@ export default function Select({ value, options, onChange, label, labelledBy, pl
       </button>
 
       {open && (
-        <div className="search-results select-list" id={listboxId} role="listbox" ref={listRef}>
+        <div className={up ? 'search-results select-list up' : 'search-results select-list'} id={listboxId} role="listbox" ref={listRef}>
           {options.map((option, index) => (
             <div
               key={String(option.value)}

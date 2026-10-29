@@ -71,6 +71,9 @@ export default function TripPlannerPage() {
   const [accessibleOnly, setAccessibleOnly] = useState(searchParams.get('accesible') === '1')
   const [fromAddress, setFromAddress] = useState('')
   const [toAddress, setToAddress] = useState('')
+  // Aviso propio (no el globo del navegador) si falta el destino.
+  const [missingTo, setMissingTo] = useState(false)
+  const toAddressRef = useRef(null)
   const [copied, setCopied] = useState(false)
   const restored = useRef(false)
 
@@ -216,9 +219,15 @@ export default function TripPlannerPage() {
         </p>
         <form
           className="planner-address"
+          noValidate
           onSubmit={(event) => {
             event.preventDefault()
-            if (toAddress.trim()) window.open(googleMapsUrl(fromAddress.trim() || 'Mi ubicación', toAddress.trim()), '_blank', 'noopener')
+            if (!toAddress.trim()) {
+              setMissingTo(true)
+              toAddressRef.current?.focus()
+              return
+            }
+            window.open(googleMapsUrl(fromAddress.trim() || 'Mi ubicación', toAddress.trim()), '_blank', 'noopener')
           }}
         >
           <input
@@ -227,13 +236,25 @@ export default function TripPlannerPage() {
             placeholder="Desde (vacío = tu ubicación)"
             aria-label="Dirección de origen"
           />
-          <input
-            value={toAddress}
-            onChange={(e) => setToAddress(e.target.value)}
-            placeholder="Hasta, por ejemplo Av. Corrientes 1500"
-            aria-label="Dirección de destino"
-            required
-          />
+          <div className="planner-address-field">
+            <input
+              ref={toAddressRef}
+              value={toAddress}
+              onChange={(e) => {
+                setToAddress(e.target.value)
+                if (e.target.value.trim()) setMissingTo(false)
+              }}
+              placeholder="Hasta, por ejemplo Av. Corrientes 1500"
+              aria-label="Dirección de destino"
+              aria-invalid={missingTo || undefined}
+              aria-describedby={missingTo ? 'planner-address-error' : undefined}
+            />
+            {missingTo && (
+              <p className="planner-address-error" id="planner-address-error" role="alert">
+                Escribí a dónde vas, por ejemplo Av. Corrientes 1500.
+              </p>
+            )}
+          </div>
           <button type="submit">Abrir en Google Maps ↗</button>
         </form>
       </section>

@@ -85,6 +85,54 @@
   gap: 6px;
 }
 
+.ecobici-legend.filters {
+  gap: 6px 8px;
+  margin-left: -4px;
+}
+
+.ecobici-legend button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 4px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.ecobici-legend button small {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-faint);
+}
+
+.ecobici-legend button:hover {
+  border-color: var(--line);
+}
+
+.ecobici-legend button.active {
+  border-color: var(--yellow);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.ecobici-legend button:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+}
+
+.ecobici-legend .ecobici-legend-all {
+  padding-left: 10px;
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
 .ecobici-legend i {
   width: 10px;
   height: 10px;

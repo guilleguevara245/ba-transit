@@ -80,8 +80,8 @@ export default function StatusPage() {
                 Otros servicios de la Ciudad
               </h2>
               <p className="status-city-intro">
-                La API Transporte los ofrece, pero hoy no devuelven datos. Se prueban al arrancar el servidor y una vez por semana: si vuelven,
-                se pueden sumar al sitio.
+                La API Transporte los ofrece, pero el sitio todavía no los usa porque suelen fallar o venir vacíos. Se prueban al arrancar el
+                servidor y una vez por semana: los que respondan de forma estable se pueden sumar.
               </p>
               <ul className="status-list">
                 {data.cityServices.map((c) => (

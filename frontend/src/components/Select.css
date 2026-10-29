@@ -61,6 +61,13 @@
   top: calc(100% + 4px);
   min-width: 100%;
   max-height: 280px;
+  /* Por encima del boton "Instalar la app" del pie. */
+  z-index: 40;
+}
+
+.search-results.select-list.up {
+  top: auto;
+  bottom: calc(100% + 4px);
 }
 
 .select-list .search-result-row.selected .result-name {

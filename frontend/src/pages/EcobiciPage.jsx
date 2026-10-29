@@ -35,6 +35,8 @@ export default function EcobiciPage() {
   const now = useNow()
   const [query, setQuery] = useState('')
   const [selectedId, setSelectedId] = useState(null)
+  // Referencia elegida: el mapa muestra solo esas estaciones (null = todas).
+  const [levelFilter, setLevelFilter] = useState(null)
 
   const stations = useMemo(() => data?.stations ?? [], [data])
   const totals = useMemo(
@@ -49,6 +51,14 @@ export default function EcobiciPage() {
     ? stations.filter((s) => normalizeText(`${s.name} ${s.address}`).includes(q)).slice(0, MAX_RESULTS)
     : []
   const selected = stations.find((s) => s.id === selectedId)
+  const countByLevel = useMemo(() => {
+    const counts = { ok: 0, low: 0, empty: 0, off: 0 }
+    for (const s of stations) counts[availability(s).key] += 1
+    return counts
+  }, [stations])
+  const visibleStations = levelFilter
+    ? stations.filter((s) => s.id === selectedId || availability(s).key === levelFilter)
+    : stations
 
   return (
     <div className="wrap content">
@@ -123,17 +133,30 @@ export default function EcobiciPage() {
             </ul>
           )}
 
-          <div className="ecobici-legend" aria-label="Referencias">
+          <div className="ecobici-legend filters" role="group" aria-label="Filtrar el mapa por disponibilidad">
             {LEGEND.map((key) => {
               const sample = { ok: { renting: true, bikes: 9 }, low: { renting: true, bikes: 2 }, empty: { renting: true, bikes: 0 }, off: { renting: false } }[key]
               const level = availability(sample)
+              const active = levelFilter === key
               return (
-                <span key={key}>
+                <button
+                  key={key}
+                  type="button"
+                  className={active ? 'active' : undefined}
+                  aria-pressed={active}
+                  onClick={() => setLevelFilter(active ? null : key)}
+                >
                   <MapBadge {...AVAILABILITY_BADGES[key]} />
                   {level.label}
-                </span>
+                  <small>{countByLevel[key]}</small>
+                </button>
               )
             })}
+            {levelFilter && (
+              <button type="button" className="ecobici-legend-all" onClick={() => setLevelFilter(null)}>
+                Ver todas
+              </button>
+            )}
           </div>
 
           <MapContainer className="ecobici-map" center={[-34.6037, -58.4]} zoom={13} scrollWheelZoom>
@@ -141,7 +164,7 @@ export default function EcobiciPage() {
               url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
-            {stations.map((s) => {
+            {visibleStations.map((s) => {
               const level = availability(s)
               const badge = AVAILABILITY_BADGES[level.key]
               const active = s.id === selectedId
