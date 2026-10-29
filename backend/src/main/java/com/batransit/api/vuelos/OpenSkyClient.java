@@ -62,8 +62,9 @@ public class OpenSkyClient {
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-        requestFactory.setConnectTimeout(5_000);
-        requestFactory.setReadTimeout(15_000);
+        // OpenSky puede tardar bastante: el pedido corre en segundo plano, asi que se le da tiempo.
+        requestFactory.setConnectTimeout(15_000);
+        requestFactory.setReadTimeout(45_000);
         this.restClient = RestClient.builder().requestFactory(requestFactory).build();
     }
 

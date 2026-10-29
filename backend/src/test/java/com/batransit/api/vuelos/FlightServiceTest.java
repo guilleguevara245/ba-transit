@@ -139,7 +139,7 @@ class FlightServiceTest {
     void guardaElDatoSegunHayaCuentaONo() {
         MutableClock clock = new MutableClock();
         FakeClient anonymous = new FakeClient(false);
-        FlightService service = new FlightService(anonymous, clock);
+        FlightService service = new FlightService(anonymous, clock, Runnable::run);
 
         FlightsResponse first = service.flights();
         assertThat(first.flights()).hasSize(7);
@@ -152,7 +152,7 @@ class FlightServiceTest {
         assertThat(anonymous.calls).hasValue(2);
 
         FakeClient registered = new FakeClient(true);
-        FlightService withAccount = new FlightService(registered, clock);
+        FlightService withAccount = new FlightService(registered, clock, Runnable::run);
         withAccount.flights();
         clock.now = clock.now.plusSeconds(31);
         assertThat(withAccount.flights().refreshSeconds()).isEqualTo(30);
@@ -163,7 +163,7 @@ class FlightServiceTest {
     void siFallaMuestraLoUltimoYEspera() {
         MutableClock clock = new MutableClock();
         FakeClient client = new FakeClient(true);
-        FlightService service = new FlightService(client, clock);
+        FlightService service = new FlightService(client, clock, Runnable::run);
         Instant firstAt = service.flights().updatedAt();
 
         client.fail = true;
@@ -182,10 +182,23 @@ class FlightServiceTest {
     }
 
     @Test
+    void elPedidoNoFrenaLaRespuesta() {
+        // Con un executor que todavia no corrio el pedido: responde enseguida, sin datos, y no pide dos veces.
+        java.util.List<Runnable> pending = new java.util.ArrayList<>();
+        FakeClient client = new FakeClient(true);
+        FlightService service = new FlightService(client, new MutableClock(), pending::add);
+        assertThat(service.flights().updatedAt()).isNull();
+        service.flights();
+        assertThat(pending).hasSize(1);
+        pending.get(0).run();
+        assertThat(service.flights().flights()).hasSize(7);
+    }
+
+    @Test
     void sinDatosTodaviaDevuelveListaVacia() {
         FakeClient client = new FakeClient(false);
         client.fail = true;
-        FlightsResponse response = new FlightService(client, new MutableClock()).flights();
+        FlightsResponse response = new FlightService(client, new MutableClock(), Runnable::run).flights();
         assertThat(response.flights()).isEmpty();
         assertThat(response.updatedAt()).isNull();
     }

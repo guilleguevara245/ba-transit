@@ -3,6 +3,7 @@ import { divIcon } from 'leaflet'
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet'
 import MapCard, { MapCardIcon } from './MapCard.jsx'
 import { useApi } from '../hooks/useApi.js'
+import { useBrowserFlights } from '../hooks/useBrowserFlights.js'
 import { useNow } from '../hooks/useNow.js'
 import { formatRelativeTime } from '../utils/format.js'
 import { GLYPHS } from '../utils/mapIcons.js'
@@ -115,7 +116,12 @@ function FlightCard({ flight }) {
  * bounds: encuadre inicial del mapa.
  */
 export default function LiveFlights({ bounds, children }) {
-  const { data, error } = useApi('/api/v1/vuelos', { refreshMs: REFRESH_MS })
+  const server = useApi('/api/v1/vuelos', { refreshMs: REFRESH_MS })
+  // Si el servidor todavia no tiene aviones (o no responde), los pide el navegador.
+  const serverHasData = Boolean(server.data?.updatedAt)
+  const browser = useBrowserFlights(!server.loading && !serverHasData)
+  const data = serverHasData ? server.data : (browser.data ?? server.data)
+  const error = serverHasData ? null : browser.error ?? server.error
   const now = useNow(15_000)
   const [groupFilter, setGroupFilter] = useState(null)
   const [selectedId, setSelectedId] = useState(null)
@@ -191,8 +197,10 @@ export default function LiveFlights({ bounds, children }) {
         <FlyTo target={flyTarget} />
       </MapContainer>
 
-      {!data && error && <p className="flights-empty">Los aviones en vivo no están disponibles por el momento.</p>}
-      {data && !data.updatedAt && <p className="flights-empty">Todavía no hay datos de aviones: probá en un rato.</p>}
+      {!data?.updatedAt && error && (
+        <p className="flights-empty">Los aviones en vivo no están disponibles por el momento: probá en un rato.</p>
+      )}
+      {!data?.updatedAt && !error && <p className="flights-empty">Buscando aviones…</p>}
       {data?.updatedAt && flights.length === 0 && (
         <p className="flights-empty">No hay aviones a la vista en este momento.</p>
       )}

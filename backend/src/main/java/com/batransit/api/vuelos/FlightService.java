@@ -16,12 +16,20 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Aviones en vivo alrededor de Buenos Aires. Se pide a OpenSky solo cuando
  * alguien mira la seccion y el ultimo dato ya es viejo: con cuenta, cada
  * 30 s como mucho (hasta 2880 creditos por dia, de 4000); sin cuenta, cada
  * 5 minutos (288, de 400). Si OpenSky falla se muestra lo ultimo que hubo.
+ *
+ * OpenSky a veces tarda mucho en responderle a servidores en la nube: el
+ * pedido se hace en segundo plano y la respuesta al sitio sale enseguida
+ * con lo ultimo que haya (el sitio vuelve a preguntar a los 30 s). Si el
+ * servidor todavia no tiene datos, el navegador los pide directo.
  */
 @Service
 public class FlightService {
@@ -91,35 +99,54 @@ public class FlightService {
 
     private final OpenSkyClient client;
     private final Clock clock;
+    private final Executor executor;
+    private final AtomicBoolean refreshing = new AtomicBoolean();
 
-    private FlightsResponse last;
-    private Instant lastAttempt = Instant.EPOCH;
-    private boolean lastAttemptFailed;
+    private volatile FlightsResponse last;
+    private volatile Instant lastAttempt = Instant.EPOCH;
+    private volatile boolean lastAttemptFailed;
 
     @Autowired
     public FlightService(OpenSkyClient client) {
-        this(client, Clock.systemUTC());
+        this(client, Clock.systemUTC(), Executors.newSingleThreadExecutor(r -> {
+            Thread thread = new Thread(r, "aviones-opensky");
+            thread.setDaemon(true);
+            return thread;
+        }));
     }
 
-    FlightService(OpenSkyClient client, Clock clock) {
+    /** executor: donde corre el pedido a OpenSky (en los tests, en el mismo hilo). */
+    FlightService(OpenSkyClient client, Clock clock, Executor executor) {
         this.client = client;
         this.clock = clock;
+        this.executor = executor;
     }
 
-    public synchronized FlightsResponse flights() {
+    public FlightsResponse flights() {
         Instant now = clock.instant();
         Duration maxAge = client.isRegistered() ? REGISTERED_MAX_AGE : ANONYMOUS_MAX_AGE;
         Duration wait = lastAttemptFailed ? max(maxAge, FAILURE_BACKOFF) : maxAge;
-        if (last == null || !now.isBefore(lastAttempt.plus(wait))) {
+        if (!now.isBefore(lastAttempt.plus(wait)) && refreshing.compareAndSet(false, true)) {
             lastAttempt = now;
-            Optional<JsonNode> body = client.states();
-            lastAttemptFailed = body.isEmpty();
-            body.ifPresent(b -> last = new FlightsResponse(client.isRegistered(), (int) maxAge.toSeconds(), now, parse(b)));
+            executor.execute(() -> {
+                try {
+                    refresh(now, maxAge);
+                } finally {
+                    refreshing.set(false);
+                }
+            });
         }
-        if (last == null) {
+        FlightsResponse current = last;
+        if (current == null) {
             return new FlightsResponse(client.isRegistered(), (int) maxAge.toSeconds(), null, List.of());
         }
-        return new FlightsResponse(client.isRegistered(), (int) maxAge.toSeconds(), last.updatedAt(), last.flights());
+        return new FlightsResponse(client.isRegistered(), (int) maxAge.toSeconds(), current.updatedAt(), current.flights());
+    }
+
+    private void refresh(Instant at, Duration maxAge) {
+        Optional<JsonNode> body = client.states();
+        lastAttemptFailed = body.isEmpty();
+        body.ifPresent(b -> last = new FlightsResponse(client.isRegistered(), (int) maxAge.toSeconds(), at, parse(b)));
     }
 
     /** Convierte la respuesta de /states/all (cada estado es un arreglo, ver la doc de OpenSky). */
