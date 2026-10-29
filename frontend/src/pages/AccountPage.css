@@ -303,3 +303,29 @@
     padding: 20px 16px 18px;
   }
 }
+
+.auth-forgot {
+  align-self: flex-end;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-text);
+  text-decoration: none;
+}
+
+.auth-forgot:hover {
+  text-decoration: underline;
+}
+
+.auth-success {
+  padding: 12px 14px;
+  background: var(--normal-tint);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.auth-link-button {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+}

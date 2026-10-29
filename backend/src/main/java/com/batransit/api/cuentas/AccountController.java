@@ -5,6 +5,8 @@ import com.batransit.api.cuentas.AccountModels.Favorites;
 import com.batransit.api.cuentas.AccountModels.GoogleRequest;
 import com.batransit.api.cuentas.AccountModels.LoginRequest;
 import com.batransit.api.cuentas.AccountModels.RegisterRequest;
+import com.batransit.api.cuentas.AccountModels.ResetConfirm;
+import com.batransit.api.cuentas.AccountModels.ResetRequest;
 import com.batransit.api.cuentas.AccountModels.SessionResponse;
 import com.batransit.api.cuentas.AccountModels.UserView;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,18 +31,35 @@ public class AccountController {
     private final TokenService tokens;
     private final GoogleTokenVerifier google;
     private final LoginRateLimiter limiter;
+    private final PasswordResetService resets;
 
     public AccountController(AccountService service, TokenService tokens, GoogleTokenVerifier google,
-                             LoginRateLimiter limiter) {
+                             LoginRateLimiter limiter, PasswordResetService resets) {
         this.service = service;
         this.tokens = tokens;
         this.google = google;
         this.limiter = limiter;
+        this.resets = resets;
     }
 
     @GetMapping("/api/v1/auth/config")
     public AuthConfig config() {
-        return new AuthConfig(google.isConfigured() ? google.clientId() : null);
+        return new AuthConfig(google.isConfigured() ? google.clientId() : null, resets.isAvailable());
+    }
+
+    /** Pide el mail para recuperar la contrasena. Responde lo mismo haya o no cuenta. */
+    @PostMapping("/api/v1/auth/recuperar")
+    public ResponseEntity<Void> requestReset(@RequestBody ResetRequest body, HttpServletRequest request) {
+        limit("recuperar:" + clientIp(request));
+        resets.request(body.email());
+        return ResponseEntity.accepted().build();
+    }
+
+    /** Pone la contrasena nueva con el codigo del link y deja la sesion iniciada. */
+    @PostMapping("/api/v1/auth/restablecer")
+    public SessionResponse reset(@RequestBody ResetConfirm body, HttpServletRequest request) {
+        limit("restablecer:" + clientIp(request));
+        return resets.reset(body.code(), body.password());
     }
 
     @PostMapping("/api/v1/auth/registro")
@@ -85,7 +104,7 @@ public class AccountController {
         return ResponseEntity.noContent().build();
     }
 
-    private long userId(String authorization) {
+    private TokenService.Claims userId(String authorization) {
         return tokens.fromHeader(authorization).orElseThrow(AccountException::unauthorized);
     }
 

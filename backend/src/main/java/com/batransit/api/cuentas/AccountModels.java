@@ -33,7 +33,14 @@ public final class AccountModels {
     public record SessionResponse(String token, UserView user) {
     }
 
-    /** Para que el sitio sepa si mostrar "Continuar con Google". */
-    public record AuthConfig(String googleClientId) {
+    /** Para que el sitio sepa si mostrar "Continuar con Google" y "¿Olvidaste tu contraseña?". */
+    public record AuthConfig(String googleClientId, boolean passwordReset) {
+    }
+
+    public record ResetRequest(String email) {
+    }
+
+    /** code: el codigo del link que llego por mail. */
+    public record ResetConfirm(String code, String password) {
     }
 }

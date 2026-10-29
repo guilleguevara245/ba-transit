@@ -4,6 +4,7 @@ import com.batransit.api.cuentas.AccountModels.Favorites;
 import com.batransit.api.cuentas.AccountModels.SessionResponse;
 import com.batransit.api.cuentas.AccountModels.UserView;
 import com.batransit.api.cuentas.GoogleTokenVerifier.GoogleIdentity;
+import com.batransit.api.cuentas.TokenService.Claims;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -49,12 +50,7 @@ public class AccountService {
     @Transactional
     public SessionResponse register(String rawEmail, String password, String rawName) {
         String email = normalizeEmail(rawEmail);
-        if (password == null || password.length() < MIN_PASSWORD) {
-            throw bad("La contraseña tiene que tener al menos " + MIN_PASSWORD + " caracteres.");
-        }
-        if (password.length() > MAX_PASSWORD) {
-            throw bad("La contraseña es demasiado larga.");
-        }
+        checkPassword(password);
         users.findByEmail(email).ifPresent(existing -> {
             throw new AccountException(HttpStatus.CONFLICT, existing.getPasswordHash() == null
                     ? "Ya hay una cuenta con ese mail que entra con Google: usá \"Continuar con Google\"."
@@ -106,18 +102,18 @@ public class AccountService {
     }
 
     @Transactional(readOnly = true)
-    public UserView me(long userId) {
-        return view(find(userId));
+    public UserView me(Claims session) {
+        return view(find(session));
     }
 
     @Transactional(readOnly = true)
-    public Favorites favorites(long userId) {
-        return readFavorites(find(userId).getFavorites());
+    public Favorites favorites(Claims session) {
+        return readFavorites(find(session).getFavorites());
     }
 
     @Transactional
-    public Favorites saveFavorites(long userId, Favorites favorites) {
-        AppUser user = find(userId);
+    public Favorites saveFavorites(Claims session, Favorites favorites) {
+        AppUser user = find(session);
         Favorites clean = sanitize(favorites);
         try {
             user.setFavorites(mapper.writeValueAsString(clean), Instant.now());
@@ -128,15 +124,21 @@ public class AccountService {
     }
 
     @Transactional
-    public void delete(long userId) {
-        users.delete(find(userId));
+    public void delete(Claims session) {
+        users.delete(find(session));
     }
 
-    private AppUser find(long userId) {
-        return users.findById(userId).orElseThrow(AccountException::unauthorized);
+    /** La cuenta de la sesion; si se borro o la sesion es anterior a un cambio de contrasena, 401. */
+    private AppUser find(Claims session) {
+        AppUser user = users.findById(session.userId()).orElseThrow(AccountException::unauthorized);
+        Instant validAfter = user.getSessionsValidAfter();
+        if (validAfter != null && session.issuedAt().getEpochSecond() < validAfter.getEpochSecond()) {
+            throw AccountException.unauthorized();
+        }
+        return user;
     }
 
-    private SessionResponse session(AppUser user) {
+    SessionResponse session(AppUser user) {
         return new SessionResponse(tokens.issue(user.getId()), view(user));
     }
 
@@ -176,6 +178,15 @@ public class AccountService {
         }
         return new ArrayList<>(values.stream().filter(Objects::nonNull).filter(v -> ACCESS_ID.matcher(v).matches())
                 .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new))).stream().limit(MAX_FAVORITES).toList();
+    }
+
+    static void checkPassword(String password) {
+        if (password == null || password.length() < MIN_PASSWORD) {
+            throw bad("La contraseña tiene que tener al menos " + MIN_PASSWORD + " caracteres.");
+        }
+        if (password.length() > MAX_PASSWORD) {
+            throw bad("La contraseña es demasiado larga.");
+        }
     }
 
     static String normalizeEmail(String raw) {

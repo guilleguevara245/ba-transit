@@ -75,7 +75,8 @@ con APIs públicas, pruebas, integración continua y despliegue.
 - Aviones en vivo alrededor de Aeroparque y Ezeiza (OpenSky Network): cuáles están aterrizando, despegando o en
   tierra, con altura y velocidad.
 - Favoritos (líneas, estaciones y accesos) en el inicio, y cuentas opcionales para tenerlos en todos los dispositivos:
-  con Google o con mail y contraseña (PBKDF2), sesiones firmadas con HMAC y freno de intentos. Política de privacidad
+  con Google o con mail y contraseña (PBKDF2), sesiones firmadas con HMAC, freno de intentos y recuperación de la
+  contraseña con un link de un solo uso por mail (cierra las sesiones de otros dispositivos). Política de privacidad
   propia y borrado de la cuenta desde el sitio.
 - Aeropuertos con el clima actual y cómo llegar.
 - Cuadro tarifario completo del AMBA y simulador del descuento Red SUBE.
@@ -223,6 +224,7 @@ La API queda en `http://localhost:8080` y la documentación interactiva en `http
 | `OPENSKY_CLIENT_ID`, `OPENSKY_CLIENT_SECRET` | aviones en vivo cada 30 s | se consulta sin cuenta, cada 5 min |
 | `AUTH_TOKEN_SECRET` | firma de las sesiones de las cuentas (32 caracteres o más) | clave temporal: las sesiones se pierden al reiniciar |
 | `GOOGLE_CLIENT_ID` | "Continuar con Google" | solo mail y contraseña |
+| `BREVO_API_KEY`, `MAIL_FROM` | mails para recuperar la contraseña (Brevo, plan gratuito) | sin "¿Olvidaste tu contraseña?" |
 | `ADMIN_API_KEY` | endpoints de escritura (`POST`) | escritura deshabilitada |
 
 Más detalle en [`backend/README.md`](./backend/README.md).

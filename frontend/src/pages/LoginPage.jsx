@@ -170,6 +170,11 @@ export default function LoginPage() {
             {mode === 'registro' && !fieldError('password') && (
               <span className="auth-hint">Al menos {MIN_PASSWORD} caracteres.</span>
             )}
+            {mode === 'ingreso' && config?.passwordReset && (
+              <Link className="auth-forgot" to="/recuperar">
+                ¿Olvidaste tu contraseña?
+              </Link>
+            )}
           </label>
 
           {error && !error.field && (

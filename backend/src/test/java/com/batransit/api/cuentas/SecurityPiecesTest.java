@@ -37,8 +37,8 @@ class SecurityPiecesTest {
     void sesiones() {
         TokenService tokens = new TokenService("una-clave-de-pruebas-con-mas-de-32-caracteres", Clock.fixed(NOW, ZoneOffset.UTC));
         String token = tokens.issue(42);
-        assertThat(tokens.verify(token)).isEqualTo(Optional.of(42L));
-        assertThat(tokens.fromHeader("Bearer " + token)).isEqualTo(Optional.of(42L));
+        assertThat(tokens.verify(token)).isEqualTo(Optional.of(new TokenService.Claims(42, NOW)));
+        assertThat(tokens.fromHeader("Bearer " + token).map(TokenService.Claims::userId)).isEqualTo(Optional.of(42L));
         assertThat(tokens.fromHeader(token)).isEqualTo(Optional.empty());
 
         // Modificado: otro usuario con la misma firma.
@@ -53,6 +53,12 @@ class SecurityPiecesTest {
                 Clock.fixed(NOW.plus(TokenService.VALIDITY).plusSeconds(1), ZoneOffset.UTC));
         assertThat(later.verify(token)).isEqualTo(Optional.empty());
         assertThat(tokens.verify("basura")).isEqualTo(Optional.empty());
+
+        // Los tokens de la v18.9 (sin "iat") siguen valiendo, como emitidos en 1970.
+        String old = b64("{\"sub\":7,\"exp\":" + NOW.plusSeconds(60).getEpochSecond() + "}");
+        TokenService signer = new TokenService("una-clave-de-pruebas-con-mas-de-32-caracteres", Clock.fixed(NOW, ZoneOffset.UTC));
+        String oldToken = old + "." + signer.signForTests(old);
+        assertThat(signer.verify(oldToken)).isEqualTo(Optional.of(new TokenService.Claims(7, Instant.EPOCH)));
     }
 
     private static String b64(String json) {

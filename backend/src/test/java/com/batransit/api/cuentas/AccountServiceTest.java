@@ -63,6 +63,11 @@ class AccountServiceTest {
     private final AccountService service =
             new AccountService(memoryRepository(rows), tokens, new FakeGoogle(), new ObjectMapper());
 
+    /** La sesion de una respuesta, como la leeria el controlador. */
+    private TokenService.Claims claims(SessionResponse s) {
+        return tokens.verify(s.token()).orElseThrow();
+    }
+
     private static HttpStatus statusOf(Runnable action) {
         return assertThrows(AccountException.class, action::run).status();
     }
@@ -73,7 +78,7 @@ class AccountServiceTest {
         assertThat(created.user().email()).isEqualTo("ana@gmail.com");
         assertThat(created.user().name()).isEqualTo("Ana Pérez");
         assertThat(created.user().hasPassword()).isEqualTo(true);
-        assertThat(tokens.verify(created.token())).isEqualTo(Optional.of(created.user().id()));
+        assertThat(claims(created).userId()).isEqualTo(created.user().id());
         // La contrasena no se guarda tal cual.
         assertThat(rows.get(0).getPasswordHash().contains("contraseña1")).isEqualTo(false);
 
@@ -121,7 +126,7 @@ class AccountServiceTest {
 
     @Test
     void favoritosSeGuardanLimpios() {
-        long id = service.register("ana@gmail.com", "contraseña1", null).user().id();
+        TokenService.Claims id = claims(service.register("ana@gmail.com", "contraseña1", null));
         assertThat(service.favorites(id)).isEqualTo(Favorites.empty());
 
         Favorites saved = service.saveFavorites(id,
@@ -134,9 +139,9 @@ class AccountServiceTest {
     @Test
     void borrarLaCuenta() {
         SessionResponse s = service.register("ana@gmail.com", "contraseña1", null);
-        service.delete(s.user().id());
+        service.delete(claims(s));
         assertThat(rows.size()).isEqualTo(0);
         // El token sigue firmado, pero la cuenta ya no existe.
-        assertThat(statusOf(() -> service.me(s.user().id()))).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(statusOf(() -> service.me(claims(s)))).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 }

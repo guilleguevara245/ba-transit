@@ -55,40 +55,12 @@
   color: var(--text-dim);
 }
 
-.weather-alert-detail {
-  margin-top: 6px;
-  color: var(--text-dim);
-}
-
-.weather-alert-detail p + p {
-  margin-top: 4px;
-}
-
-.weather-alert-instruction {
-  color: var(--text);
-}
-
-.weather-alert-source {
-  font-size: 12px;
-  color: var(--text-faint);
-}
-
-.weather-alert-more,
 .weather-alert-close {
   flex-shrink: 0;
   border: none;
   background: transparent;
   font: inherit;
   cursor: pointer;
-}
-
-.weather-alert-more {
-  color: color-mix(in srgb, var(--accent-text) 80%, var(--text));
-  font-weight: 600;
-}
-
-.weather-alert-more:hover {
-  text-decoration: underline;
 }
 
 .weather-alert-close {
@@ -114,10 +86,5 @@
 
   .weather-alert-text {
     flex-basis: calc(100% - 70px);
-  }
-
-  .weather-alert-more {
-    order: 3;
-    margin-left: 36px;
   }
 }

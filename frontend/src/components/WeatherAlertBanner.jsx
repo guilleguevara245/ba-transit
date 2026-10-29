@@ -17,14 +17,14 @@ function readDismissed() {
 
 /**
  * Franja con las alertas meteorologicas del SMN vigentes para el AMBA
- * (tormentas, lluvias y calor). Solo aparece cuando hay alguna;
+ * (tormentas, lluvias y calor), en una linea: tipo, cuando y un consejo
+ * para viajar (sin el texto largo del SMN). Solo aparece cuando hay alguna;
  * cada una se puede cerrar y no vuelve a mostrarse (si cambia de nivel
  * llega con otro id y se ve de nuevo).
  */
 export default function WeatherAlertBanner() {
   const { data } = useApi('/api/v1/clima/alertas', { refreshMs: REFRESH_MS })
   const [dismissed, setDismissed] = useState(readDismissed)
-  const [open, setOpen] = useState(null)
 
   const alerts = (data?.alerts ?? []).filter((a) => !dismissed.includes(a.id))
   if (alerts.length === 0) return null
@@ -44,7 +44,6 @@ export default function WeatherAlertBanner() {
     <div className="weather-alerts" role="region" aria-label="Alertas meteorológicas">
       {alerts.map((alert) => {
         const level = ALERT_LEVELS[alert.level] ?? ALERT_LEVELS.AMARILLA
-        const expanded = open === alert.id
         return (
           <div key={alert.id} className={`weather-alert ${level.className}`}>
             <div className="wrap weather-alert-row">
@@ -53,22 +52,7 @@ export default function WeatherAlertBanner() {
                 <strong>{alertTitle(alert)}</strong>
                 {periodText(alert) && <span className="weather-alert-period">: {periodText(alert)}.</span>}
                 {travelTip(alert) && <span className="weather-alert-tip"> {travelTip(alert)}</span>}
-                {expanded && (
-                  <div className="weather-alert-detail">
-                    {alert.description && <p>{alert.description}</p>}
-                    {alert.instruction && <p className="weather-alert-instruction">{alert.instruction}</p>}
-                    <p className="weather-alert-source">Fuente: Servicio Meteorológico Nacional (SMN).</p>
-                  </div>
-                )}
               </div>
-              <button
-                type="button"
-                className="weather-alert-more"
-                aria-expanded={expanded}
-                onClick={() => setOpen(expanded ? null : alert.id)}
-              >
-                {expanded ? 'Ocultar' : 'Ver detalles'}
-              </button>
               <button
                 type="button"
                 className="weather-alert-close"

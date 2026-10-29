@@ -84,6 +84,10 @@ export default function PrivacyPage() {
           Google ni accede a nada más de tu cuenta.
         </p>
         <p>
+          Si pedís recuperar la contraseña, se te manda un mail con un link de un solo uso que vence en una hora. El
+          mail se envía a través de Brevo, un servicio de envío de correos, que recibe solo tu dirección y el mensaje.
+        </p>
+        <p>
           Podés borrar tu cuenta cuando quieras desde <Link to="/cuenta">Tu cuenta</Link>: se borran todos sus datos
           del servidor en el momento.
         </p>

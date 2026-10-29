@@ -46,6 +46,10 @@ public class AppUser {
     @Column(name = "favorites_updated_at")
     private Instant favoritesUpdatedAt;
 
+    /** Las sesiones emitidas antes de esto ya no valen (se cambio la contrasena). */
+    @Column(name = "sessions_valid_after")
+    private Instant sessionsValidAfter;
+
     protected AppUser() {
         // Para JPA.
     }
@@ -117,6 +121,14 @@ public class AppUser {
 
     public Instant getFavoritesUpdatedAt() {
         return favoritesUpdatedAt;
+    }
+
+    public Instant getSessionsValidAfter() {
+        return sessionsValidAfter;
+    }
+
+    public void setSessionsValidAfter(Instant sessionsValidAfter) {
+        this.sessionsValidAfter = sessionsValidAfter;
     }
 
     /** Para los tests (sin base de datos). */

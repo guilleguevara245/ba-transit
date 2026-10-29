@@ -35,6 +35,16 @@ export async function loginWithGoogle(credential) {
   await start(await apiSend('POST', '/api/v1/auth/google', { body: { credential } }))
 }
 
+/** Pide el mail para recuperar la contraseña (el servidor responde igual haya o no cuenta). */
+export async function requestPasswordReset(email) {
+  await apiSend('POST', '/api/v1/auth/recuperar', { body: { email } })
+}
+
+/** Contraseña nueva con el codigo del link del mail; deja la sesion iniciada. */
+export async function resetPassword(code, password) {
+  await start(await apiSend('POST', '/api/v1/auth/restablecer', { body: { code, password } }))
+}
+
 /** Cierra la sesion en este navegador; los favoritos quedan en el dispositivo. */
 export function logout() {
   setSession(null)

@@ -68,6 +68,15 @@ app:
     token-secret: ${AUTH_TOKEN_SECRET:}
     # ID de cliente de Google (publico). Vacio = sin "Continuar con Google".
     google-client-id: ${GOOGLE_CLIENT_ID:}
+  mail:
+    # Mails de recuperacion de contrasena con Brevo (plan gratuito). Sin
+    # clave o sin remitente, "Olvidaste tu contrasena" no aparece.
+    brevo-api-key: ${BREVO_API_KEY:}
+    # Remitente verificado en Brevo (por ejemplo, tu Gmail).
+    from: ${MAIL_FROM:}
+    from-name: BA Transit
+  # Direccion del sitio, para los links de los mails.
+  site-url: ${SITE_URL:https://ba-transit.onrender.com}
   opensky:
     # Cliente de la API de OpenSky Network (cuenta gratuita). Vacio = se
     # consulta sin cuenta, con menos actualizaciones por dia.

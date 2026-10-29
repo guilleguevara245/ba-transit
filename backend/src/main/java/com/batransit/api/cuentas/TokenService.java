@@ -32,7 +32,13 @@ public class TokenService {
     private static final Logger log = LoggerFactory.getLogger(TokenService.class);
 
     static final Duration VALIDITY = Duration.ofDays(30);
-    private static final Pattern PAYLOAD = Pattern.compile("^\\{\"sub\":(\\d{1,18}),\"exp\":(\\d{1,12})}$");
+    /** iat (emitido) falta en los tokens de la v18.9: se toma como 0. */
+    private static final Pattern PAYLOAD =
+            Pattern.compile("^\\{\"sub\":(\\d{1,18}),(?:\"iat\":(\\d{1,12}),)?\"exp\":(\\d{1,12})}$");
+
+    /** Lo que dice un token valido: de quien es y cuando se emitio. */
+    public record Claims(long userId, Instant issuedAt) {
+    }
 
     private final byte[] secret;
     private final Clock clock;
@@ -59,13 +65,15 @@ public class TokenService {
     }
 
     public String issue(long userId) {
-        long exp = clock.instant().plus(VALIDITY).getEpochSecond();
-        String payload = b64(("{\"sub\":" + userId + ",\"exp\":" + exp + "}").getBytes(StandardCharsets.UTF_8));
+        Instant now = clock.instant();
+        long exp = now.plus(VALIDITY).getEpochSecond();
+        String json = "{\"sub\":" + userId + ",\"iat\":" + now.getEpochSecond() + ",\"exp\":" + exp + "}";
+        String payload = b64(json.getBytes(StandardCharsets.UTF_8));
         return payload + "." + b64(sign(payload));
     }
 
-    /** El id del usuario si el token es valido y no vencio. */
-    public Optional<Long> verify(String token) {
+    /** De quien es el token, si es valido y no vencio. */
+    public Optional<Claims> verify(String token) {
         if (token == null) {
             return Optional.empty();
         }
@@ -80,17 +88,18 @@ public class TokenService {
                 return Optional.empty();
             }
             Matcher m = PAYLOAD.matcher(new String(Base64.getUrlDecoder().decode(payload), StandardCharsets.UTF_8));
-            if (!m.matches() || Instant.ofEpochSecond(Long.parseLong(m.group(2))).isBefore(clock.instant())) {
+            if (!m.matches() || Instant.ofEpochSecond(Long.parseLong(m.group(3))).isBefore(clock.instant())) {
                 return Optional.empty();
             }
-            return Optional.of(Long.parseLong(m.group(1)));
+            Instant issuedAt = Instant.ofEpochSecond(m.group(2) == null ? 0 : Long.parseLong(m.group(2)));
+            return Optional.of(new Claims(Long.parseLong(m.group(1)), issuedAt));
         } catch (IllegalArgumentException e) {
             return Optional.empty();
         }
     }
 
     /** Lee "Authorization: Bearer <token>". */
-    public Optional<Long> fromHeader(String authorization) {
+    public Optional<Claims> fromHeader(String authorization) {
         if (authorization == null || !authorization.startsWith("Bearer ")) {
             return Optional.empty();
         }
@@ -105,6 +114,11 @@ public class TokenService {
         } catch (GeneralSecurityException e) {
             throw new IllegalStateException("HMAC no disponible", e);
         }
+    }
+
+    /** Para los tests: la firma de un payload ya codificado. */
+    String signForTests(String payload) {
+        return b64(sign(payload));
     }
 
     private static String b64(byte[] bytes) {
