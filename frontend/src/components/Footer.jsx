@@ -21,17 +21,22 @@ export default function Footer() {
         </span>
         <span className="footer-text">Proyecto de Guillermo Guevara · Información orientativa</span>
         <InstallApp />
-        <Link className="footer-link footer-status" to="/estado">
-          {status && <span className={failing ? 'footer-dot failing' : 'footer-dot'} aria-hidden="true" />}
-          Estado de los datos
-          {failing && <span className="visually-hidden"> (alguna fuente está fallando)</span>}
-        </Link>
-        <Link className="footer-link" to="/acerca">
-          Acerca de y fuentes de datos
-        </Link>
-        <Link className="footer-link" to="/privacidad">
-          Privacidad
-        </Link>
+        <nav className="footer-links" aria-label="Información del sitio">
+          <Link className="footer-link footer-status" to="/estado">
+            {status && <span className={failing ? 'footer-dot failing' : 'footer-dot'} aria-hidden="true" />}
+            Estado de los datos
+            {failing && <span className="visually-hidden"> (alguna fuente está fallando)</span>}
+          </Link>
+          <Link className="footer-link" to="/acerca">
+            Acerca de y fuentes de datos
+          </Link>
+          <Link className="footer-link" to="/privacidad">
+            Privacidad
+          </Link>
+          <Link className="footer-link" to="/condiciones">
+            Condiciones
+          </Link>
+        </nav>
       </div>
     </footer>
   )

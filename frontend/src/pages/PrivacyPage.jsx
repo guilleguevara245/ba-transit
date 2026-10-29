@@ -142,7 +142,8 @@ export default function PrivacyPage() {
           <a href={CONTACT_URL} target="_blank" rel="noreferrer">
             el repositorio del proyecto ↗
           </a>
-          . Si la política cambia, se actualiza esta página y su fecha de revisión.
+          . Si la política cambia, se actualiza esta página y su fecha de revisión. Las reglas de uso del sitio están en
+          las <Link to="/condiciones">Condiciones del servicio</Link>.
         </p>
       </section>
     </div>

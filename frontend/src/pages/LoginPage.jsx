@@ -183,7 +183,8 @@ export default function LoginPage() {
           </button>
           {mode === 'registro' && (
             <p className="auth-note">
-              Al crear la cuenta aceptás la <Link to="/privacidad">política de privacidad</Link>.
+              Al crear la cuenta aceptás las <Link to="/condiciones">condiciones del servicio</Link> y la{' '}
+              <Link to="/privacidad">política de privacidad</Link>.
             </p>
           )}
         </form>

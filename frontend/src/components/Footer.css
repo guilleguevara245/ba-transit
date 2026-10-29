@@ -60,3 +60,24 @@
   background: var(--delayed);
   box-shadow: 0 0 0 3px var(--delayed-tint);
 }
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+}
+
+/* Celular: marca y aviso arriba; los enlaces abajo, en renglones prolijos. */
+@media (max-width: 600px) {
+  .footer-text {
+    flex-basis: 100%;
+    order: 1;
+  }
+
+  .footer-links {
+    flex-basis: 100%;
+    order: 2;
+    gap: 10px 18px;
+  }
+}

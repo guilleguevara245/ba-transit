@@ -23,6 +23,7 @@ const EcobiciPage = lazy(() => import('./pages/EcobiciPage.jsx'))
 const ParkingPage = lazy(() => import('./pages/ParkingPage.jsx'))
 const StatusPage = lazy(() => import('./pages/StatusPage.jsx'))
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage.jsx'))
+const TermsPage = lazy(() => import('./pages/TermsPage.jsx'))
 const LoginPage = lazy(() => import('./pages/LoginPage.jsx'))
 const AccountPage = lazy(() => import('./pages/AccountPage.jsx'))
 const TrainNoticesPage = lazy(() => import('./pages/TrainNoticesPage.jsx'))
@@ -56,6 +57,7 @@ export default function App() {
           <Route path="/acerca" element={<AboutPage />} />
           <Route path="/estado" element={<StatusPage />} />
           <Route path="/privacidad" element={<PrivacyPage />} />
+          <Route path="/condiciones" element={<TermsPage />} />
           <Route path="/ingresar" element={<LoginPage />} />
           <Route path="/cuenta" element={<AccountPage />} />
           <Route path="*" element={<NotFoundPage />} />
