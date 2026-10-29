@@ -34,7 +34,7 @@ export function buildLegend(stations) {
   const seen = new Map()
   for (const station of stations) {
     if (!seen.has(station.lineId)) {
-      seen.set(station.lineId, { name: station.lineName, color: station.lineColorHex })
+      seen.set(station.lineId, { id: station.lineId, name: station.lineName, color: station.lineColorHex })
     }
   }
   return Array.from(seen.values())

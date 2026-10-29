@@ -41,8 +41,8 @@ describe('buildLegend', () => {
     const legend = buildLegend([station(1, 10, 1, 1, 0, 0), station(2, 10, 1, 2, 0, 0), station(3, 20, 2, 1, 0, 0)])
 
     expect(legend).toEqual([
-      { name: 'Línea 1', color: '#000001' },
-      { name: 'Línea 2', color: '#000002' },
+      { id: 1, name: 'Línea 1', color: '#000001' },
+      { id: 2, name: 'Línea 2', color: '#000002' },
     ])
   })
 })
