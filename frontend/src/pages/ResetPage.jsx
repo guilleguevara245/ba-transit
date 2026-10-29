@@ -46,7 +46,7 @@ export default function ResetPage() {
         <section className="auth-card">
           <h1 className="auth-title">Link incompleto</h1>
           <p className="auth-subtitle">
-            Abrí el link tal cual llegó en el mail, o pedí uno nuevo desde "¿Olvidaste tu contraseña?".
+            Abrí el link tal cual llegó en el mail, o pedí uno nuevo desde “¿Olvidaste tu contraseña?”.
           </p>
           <Link className="auth-submit auth-link-button" to="/recuperar">
             Pedir un link nuevo

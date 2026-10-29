@@ -140,7 +140,7 @@ export default function LinePage() {
   // Estaciones del mismo modo con coordenadas: las de esta linea van al
   // minimapa y el resto sirve para mostrar combinaciones en el popup.
   const modeStationsState = useApi(line ? `/api/v1/map/stations?mode=${line.mode}` : null)
-  const modeStations = modeStationsState.data ?? []
+  const modeStations = useMemo(() => modeStationsState.data ?? [], [modeStationsState.data])
   const lineStations = useMemo(
     () => modeStations.filter((s) => String(s.lineId) === String(lineId)),
     [modeStations, lineId],
