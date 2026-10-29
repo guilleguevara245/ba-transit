@@ -82,3 +82,13 @@
     grid-row: auto;
   }
 }
+
+/* Enlaces dentro del texto (Politica de privacidad). */
+.about-block p a {
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+.about-block p + .about-sources {
+  margin-top: 12px;
+}

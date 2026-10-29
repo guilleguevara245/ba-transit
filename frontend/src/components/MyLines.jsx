@@ -6,6 +6,7 @@ import MiniNextTrains from './MiniNextTrains.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { useFavorites } from '../hooks/useFavorites.js'
 import { useFavoriteStations } from '../hooks/useFavoriteStations.js'
+import { useFavoriteList } from '../hooks/useFavoriteList.js'
 import { statusFor, worstAlertType } from '../utils/network.js'
 import './MyLines.css'
 import { linePath } from '../utils/lineSlug.js'
@@ -17,10 +18,14 @@ import { linePath } from '../utils/lineSlug.js'
 export default function MyLines({ lines, alerts }) {
   const { favorites } = useFavorites()
   const { stations: chosen, setStation } = useFavoriteStations()
+  const { ids: favoriteStations } = useFavoriteList('estaciones')
+  const { ids: favoriteAccesses } = useFavoriteList('accesos')
   const lineById = new Map(lines.map((line) => [line.id, line]))
   const myLines = favorites.map((id) => lineById.get(id)).filter(Boolean)
   const hasSubte = myLines.some((line) => line.mode === 'SUBTE')
   const { data: subteStations } = useApi(hasSubte ? '/api/v1/map/stations?mode=SUBTE' : null)
+  // Sin lineas pero con estaciones o accesos favoritos, la seccion no hace falta.
+  if (myLines.length === 0 && (favoriteStations.length > 0 || favoriteAccesses.length > 0)) return null
 
   return (
     <section className="my-lines" aria-label="Mis líneas">
@@ -28,8 +33,8 @@ export default function MyLines({ lines, alerts }) {
 
       {myLines.length === 0 ? (
         <div className="my-lines-empty">
-          Tocá la <span className="star">★</span> en cualquier línea para seguir su estado desde acá.
-          Se guardan en este navegador.
+          Tocá la <span className="star">★</span> en cualquier línea, estación o acceso para seguir su estado desde
+          acá. Se guardan en este navegador.
         </div>
       ) : (
         <div className="my-lines-row">

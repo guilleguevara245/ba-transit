@@ -3,6 +3,7 @@ import Greeting from '../components/Greeting.jsx'
 import SearchBar from '../components/SearchBar.jsx'
 import ModeGrid from '../components/ModeGrid.jsx'
 import MyLines from '../components/MyLines.jsx'
+import { MyAccesses, MyStations } from '../components/MyPlaces.jsx'
 import AlertsPanel from '../components/AlertsPanel.jsx'
 import FaresPanel from '../components/FaresPanel.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
@@ -35,6 +36,8 @@ export default function DashboardPage() {
       <Greeting />
       <SearchBar />
       {ready && <MyLines lines={lines} alerts={alerts} />}
+      {ready && <MyStations lines={lines} alerts={alerts} />}
+      <MyAccesses />
       <div className="section-label section-label-row">
         <span>Estado de la red</span>
         {alertsState.updatedAt && (

@@ -29,6 +29,9 @@ export default function Footer() {
         <Link className="footer-link" to="/acerca">
           Acerca de y fuentes de datos
         </Link>
+        <Link className="footer-link" to="/privacidad">
+          Privacidad
+        </Link>
       </div>
     </footer>
   )

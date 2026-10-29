@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import AccessibleBadge from '../components/AccessibleBadge.jsx'
+import FavoriteButton from '../components/FavoriteButton.jsx'
 import BackButton, { BackTrail } from '../components/BackButton.jsx'
 import Chevrons from '../components/Chevrons.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
@@ -202,7 +203,10 @@ export default function StationPage() {
             </div>
           )}
         </div>
-        <ShareButton title={`${station.stationName} · ${station.lineName}`} />
+        <div className="station-hero-actions">
+          <FavoriteButton kind="estaciones" id={station.stationId} name={`${station.stationName}, ${station.lineName}`} />
+          <ShareButton title={`${station.stationName} · ${station.lineName}`} />
+        </div>
       </div>
 
       <div className="station-layout">

@@ -2,6 +2,7 @@ import Skeleton from '../components/Skeleton.jsx'
 import ModeIcon from '../components/ModeIcon.jsx'
 import AccessesMap from '../components/AccessesMap.jsx'
 import BackButton from '../components/BackButton.jsx'
+import FavoriteButton from '../components/FavoriteButton.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
 import { useApi } from '../hooks/useApi.js'
 import EventCard from '../components/EventCard.jsx'
@@ -159,6 +160,7 @@ function AccessCard({ access, configured }) {
           <div className="access-connects">{access.connects}</div>
           {configured && <StatusPill status={overall} />}
         </div>
+        <FavoriteButton kind="accesos" id={access.id} name={access.name} compact />
       </header>
       <ul className="access-segments">
         {access.segments.map((segment) => (

@@ -27,6 +27,7 @@
 
 .my-line-link {
   flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -88,4 +89,67 @@
 
 .my-lines-empty .star {
   color: var(--accent-text);
+}
+
+/* Estaciones y accesos favoritos: nombre con un dato chico debajo. */
+.my-place-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.my-place-text small {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+/* Escudo de ruta en chico (el de Accesos). */
+.my-place-road {
+  display: grid;
+  place-items: center;
+  min-width: 34px;
+  height: 26px;
+  padding: 0 6px;
+  border: 2px solid #17171a;
+  border-radius: 4px 4px 12px 12px;
+  background: #fff;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1;
+  text-align: center;
+  color: #17171a;
+  flex-shrink: 0;
+}
+
+.my-place-traffic {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--status-color) 70%, var(--text));
+}
+
+.my-place-traffic i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--status-color);
+  flex-shrink: 0;
+}
+
+.my-place-text small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Celular: todas las tarjetas a lo ancho, una debajo de la otra. */
+@media (max-width: 600px) {
+  .my-line-card {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
 }

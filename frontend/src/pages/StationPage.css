@@ -222,3 +222,22 @@
   margin-right: 6px;
   color: var(--text-faint);
 }
+
+/* Estrella y compartir, juntos a la derecha del encabezado. */
+.station-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+@media (max-width: 720px) {
+  .station-hero-actions {
+    flex-basis: 100%;
+  }
+
+  .line-hero .station-hero-actions > * {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+}
