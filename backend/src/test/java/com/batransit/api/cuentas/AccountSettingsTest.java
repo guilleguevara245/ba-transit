@@ -22,7 +22,7 @@ class AccountSettingsTest {
     private final List<AppUser> rows = new ArrayList<>();
     private final TokenService tokens = new TokenService("una-clave-de-pruebas-con-mas-de-32-caracteres");
     private final AccountService service = new AccountService(AccountServiceTest.memoryRepository(rows), tokens,
-            new AccountServiceTest.FakeGoogle(), new ObjectMapper());
+            new AccountServiceTest.FakeGoogle(), new ObjectMapper(), new MemorySessionStore());
 
     private TokenService.Claims claims(SessionResponse s) {
         return tokens.verify(s.token()).orElseThrow();
@@ -104,5 +104,56 @@ class AccountSettingsTest {
         assertThat(data.toString().contains("pbkdf2")).isEqualTo(false);
         assertThat(AccountDataExport.host("https://fcm.googleapis.com/fcm/send/abc")).isEqualTo("fcm.googleapis.com");
         assertThat(AccountDataExport.host("no es url")).isEqualTo(null);
+    }
+
+    @Test
+    void dispositivos() {
+        service.register("ana@gmail.com", "contraseña1", null);
+        TokenService.Claims compu = claims(service.login("ana@gmail.com", "contraseña1"));
+        TokenService.Claims celu = claims(service.login("ana@gmail.com", "contraseña1"));
+
+        List<AccountService.DeviceView> devices = service.devices(compu);
+        // Tres sesiones (crear la cuenta tambien entra): esta primero y marcada.
+        assertThat(devices.size()).isEqualTo(3);
+        assertThat(devices.get(0).current()).isEqualTo(true);
+        assertThat(devices.get(0).id()).isEqualTo(compu.sessionId());
+        assertThat(devices.get(0).device()).isEqualTo("Navegador desconocido");
+
+        // Esta no se cierra desde la lista; otra si, y su token deja de valer.
+        assertThat(statusOf(() -> service.closeDevice(compu, compu.sessionId()))).isEqualTo(HttpStatus.BAD_REQUEST);
+        service.closeDevice(compu, celu.sessionId());
+        assertThat(statusOf(() -> service.me(celu))).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(statusOf(() -> service.closeDevice(compu, celu.sessionId()))).isEqualTo(HttpStatus.NOT_FOUND);
+
+        // Cerrar las demas deja solo esta; cerrar sesion la cierra.
+        service.closeOtherSessions(compu);
+        assertThat(service.devices(compu).size()).isEqualTo(1);
+        service.logout(compu);
+        assertThat(statusOf(() -> service.me(compu))).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    void nombresDeLosDispositivos() {
+        String win = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36";
+        String iphone = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1";
+        String edge = "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36 Edg/130.0";
+        String android = "Mozilla/5.0 (Linux; Android 14; SM-S911B) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/25.0 Chrome/121.0 Mobile Safari/537.36";
+        String mac = "Mozilla/5.0 (Macintosh; Intel Mac OS X 14.0; rv:131.0) Gecko/20100101 Firefox/131.0";
+        assertThat(DeviceNames.describe(win)).isEqualTo("Chrome en Windows");
+        assertThat(DeviceNames.describe(iphone)).isEqualTo("Safari en iPhone");
+        assertThat(DeviceNames.describe(edge)).isEqualTo("Edge en Windows");
+        assertThat(DeviceNames.describe(android)).isEqualTo("Samsung Internet en Android");
+        assertThat(DeviceNames.describe(mac)).isEqualTo("Firefox en Mac");
+        assertThat(DeviceNames.describe(null)).isEqualTo("Navegador desconocido");
+        assertThat(DeviceNames.describe("curl/8.0")).isEqualTo("Navegador desconocido");
+        assertThat(DeviceNames.kind("Safari en iPhone")).isEqualTo("celular");
+        assertThat(DeviceNames.kind("Chrome en Windows")).isEqualTo("computadora");
+    }
+
+    @Test
+    void elTokenLlevaLaSesion() {
+        TokenService t = new TokenService("una-clave-de-pruebas-con-mas-de-32-caracteres");
+        assertThat(t.verify(t.issue(7, "abcDEF123_-xyz")).orElseThrow().sessionId()).isEqualTo("abcDEF123_-xyz");
+        assertThat(t.verify(t.issue(7)).orElseThrow().sessionId()).isEqualTo(null);
     }
 }

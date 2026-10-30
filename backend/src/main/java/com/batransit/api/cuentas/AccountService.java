@@ -45,8 +45,11 @@ public class AccountService {
     private final TokenService tokens;
     private final GoogleTokenVerifier google;
     private final ObjectMapper mapper;
+    private final SessionStore sessions;
 
-    public AccountService(AppUserRepository users, TokenService tokens, GoogleTokenVerifier google, ObjectMapper mapper) {
+    public AccountService(AppUserRepository users, TokenService tokens, GoogleTokenVerifier google, ObjectMapper mapper,
+                          SessionStore sessions) {
+        this.sessions = sessions;
         this.users = users;
         this.tokens = tokens;
         this.google = google;
@@ -147,19 +150,62 @@ public class AccountService {
         }
         checkPassword(password);
         user.setPasswordHash(PasswordHasher.hash(password));
-        return closeOthers(user);
+        sessions.deleteOthers(user.getId(), session.sessionId());
+        return current(user, session);
     }
 
-    /** Cierra la sesion en todos los demas dispositivos; este sigue con una sesion nueva. */
+    /** Cierra la sesion en todos los demas dispositivos; este sigue igual. */
     @Transactional
     public SessionResponse closeOtherSessions(Claims session) {
-        return closeOthers(find(session));
+        AppUser user = find(session);
+        sessions.deleteOthers(user.getId(), session.sessionId());
+        return current(user, session);
     }
 
-    private SessionResponse closeOthers(AppUser user) {
-        // Las sesiones guardan el segundo en que se crearon: la nueva, del mismo segundo, sigue valiendo.
-        user.setSessionsValidAfter(Instant.now().truncatedTo(java.time.temporal.ChronoUnit.SECONDS));
-        return session(user);
+    /** Un token nuevo para la misma sesion (sigue siendo el mismo dispositivo). */
+    private SessionResponse current(AppUser user, Claims session) {
+        return new SessionResponse(tokens.issue(user.getId(), session.sessionId()), view(user));
+    }
+
+    /** Un dispositivo con la cuenta abierta. current: el que hace el pedido. */
+    public record DeviceView(String id, String device, String kind, Instant createdAt, Instant lastSeenAt,
+                             boolean current) {
+    }
+
+    /** Los dispositivos con la cuenta abierta: este primero, despues por ultimo uso. */
+    @Transactional(readOnly = true)
+    public java.util.List<DeviceView> devices(Claims session) {
+        AppUser user = find(session);
+        return sessions.list(user.getId()).stream()
+                .map(s -> new DeviceView(s.id(), s.device(), DeviceNames.kind(s.device()), s.createdAt(), s.lastSeenAt(),
+                        s.id().equals(session.sessionId())))
+                .sorted(java.util.Comparator.comparing(DeviceView::current).reversed()
+                        .thenComparing(DeviceView::lastSeenAt, java.util.Comparator.reverseOrder()))
+                .toList();
+    }
+
+    /** Cierra la sesion de otro dispositivo (la de este se cierra con "Cerrar sesión"). */
+    @Transactional
+    public void closeDevice(Claims session, String deviceId) {
+        AppUser user = find(session);
+        if (deviceId == null || deviceId.equals(session.sessionId())) {
+            throw bad("Para este dispositivo usá \"Cerrar sesión\".");
+        }
+        if (!sessions.delete(deviceId, user.getId())) {
+            throw new AccountException(HttpStatus.NOT_FOUND, "Ese dispositivo ya no tiene la sesión abierta.");
+        }
+    }
+
+    /** Cierra la sesion de este dispositivo. Si ya no valia, no pasa nada. */
+    public void logout(Claims session) {
+        if (session.sessionId() != null) {
+            sessions.delete(session.sessionId(), session.userId());
+        }
+    }
+
+    /** Cierra todas las sesiones de la cuenta (al restablecer la contraseña). */
+    void endAllSessions(long userId) {
+        sessions.deleteOthers(userId, null);
     }
 
     @Transactional(readOnly = true)
@@ -246,18 +292,27 @@ public class AccountService {
         users.delete(find(session));
     }
 
-    /** La cuenta de la sesion; si se borro o la sesion es anterior a un cambio de contrasena, 401. */
+    /**
+     * La cuenta de la sesion. 401 si la cuenta se borro, si la sesion se
+     * cerro (desde Dispositivos o al cambiar la contraseña) o si el token es
+     * de antes de las sesiones por dispositivo (hay que volver a entrar una vez).
+     */
     private AppUser find(Claims session) {
         AppUser user = users.findById(session.userId()).orElseThrow(AccountException::unauthorized);
         Instant validAfter = user.getSessionsValidAfter();
         if (validAfter != null && session.issuedAt().getEpochSecond() < validAfter.getEpochSecond()) {
             throw AccountException.unauthorized();
         }
+        if (session.sessionId() == null || !sessions.touch(session.sessionId(), user.getId(), Instant.now())) {
+            throw AccountException.unauthorized();
+        }
         return user;
     }
 
+    /** Abre una sesion nueva para este dispositivo (al crear la cuenta o entrar). */
     SessionResponse session(AppUser user) {
-        return new SessionResponse(tokens.issue(user.getId()), view(user));
+        String sid = sessions.create(user.getId(), DeviceContext.current(), Instant.now());
+        return new SessionResponse(tokens.issue(user.getId(), sid), view(user));
     }
 
     static UserView view(AppUser user) {

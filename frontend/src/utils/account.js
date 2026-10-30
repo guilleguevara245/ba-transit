@@ -101,9 +101,26 @@ export async function downloadMyData() {
   setTimeout(() => window.URL.revokeObjectURL(url), 1000)
 }
 
-/** Cierra la sesion en este navegador; los favoritos quedan en el dispositivo. */
+/**
+ * Cierra la sesion en este navegador (y la borra del servidor, asi deja de
+ * figurar en Dispositivos). Los favoritos quedan en el dispositivo.
+ */
 export function logout() {
+  const session = getSession()
   setSession(null)
+  if (session) apiSend('DELETE', '/api/v1/cuenta/sesion', { token: session.token }).catch(() => {})
+}
+
+/** Los dispositivos con la cuenta abierta: [{ id, device, kind, createdAt, lastSeenAt, current }]. */
+export async function listDevices() {
+  const session = getSession()
+  return apiGetWithToken('/api/v1/cuenta/dispositivos', session.token)
+}
+
+/** Cierra la sesion de otro dispositivo. */
+export async function closeDevice(id) {
+  const session = getSession()
+  await apiSend('DELETE', `/api/v1/cuenta/dispositivos/${encodeURIComponent(id)}`, { token: session.token })
 }
 
 export async function deleteAccount() {

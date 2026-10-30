@@ -111,6 +111,7 @@ public class PasswordResetService {
             other.setUsedAt(now);
         }
         reset.setUsedAt(now);
+        accounts.endAllSessions(user.getId());
         return accounts.session(user);
     }
 

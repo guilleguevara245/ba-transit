@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import { changePassword, closeOtherSessions, downloadMyData, rename } from '../utils/account.js'
+import { useCallback, useEffect, useState } from 'react'
+import { changePassword, closeDevice, closeOtherSessions, downloadMyData, listDevices, rename } from '../utils/account.js'
+import { formatLongDate, formatRelativeTime } from '../utils/format.js'
 
 const MIN_PASSWORD = 8
 
@@ -42,7 +43,7 @@ function Feedback({ error, done }) {
 }
 
 /** El nombre de la cuenta, con "Cambiar" para editarlo ahi mismo. */
-export function NameEditor({ user }) {
+export function NameEditor({ user, short = false }) {
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState(user.name ?? '')
   const { busy, error, run, setError } = useAction()
@@ -58,7 +59,7 @@ export function NameEditor({ user }) {
           setEditing(true)
         }}
       >
-        {user.name ? 'Cambiar nombre' : 'Agregar tu nombre'}
+        {short ? (user.name ? 'Cambiar' : 'Agregar') : user.name ? 'Cambiar nombre' : 'Agregar tu nombre'}
       </button>
     )
   }
@@ -191,35 +192,104 @@ export function PasswordSection({ user }) {
   )
 }
 
-/** Cerrar la sesion en los demas dispositivos. */
-export function SessionsSection() {
+const DEVICE_ICONS = {
+  computadora: 'M3 4h18a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zM8 20h8M12 16v4',
+  celular: 'M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM11 18h2',
+  tablet: 'M5 2h14a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM11 18h2',
+}
+
+/** "desde el 29 de octubre de 2026". */
+const since = (iso) => `desde el ${formatLongDate(iso.slice(0, 10))}`
+
+/**
+ * Dispositivos con la cuenta abierta: este (marcado) y los demas, cada uno
+ * con su "Cerrar sesión", y "Cerrar todas las demás".
+ */
+export function DevicesSection() {
+  const [devices, setDevices] = useState(null)
   const { busy, error, done, run } = useAction()
+
+  const load = useCallback(
+    () =>
+      listDevices()
+        .then(setDevices)
+        .catch(() => setDevices([])),
+    [],
+  )
+
+  useEffect(() => {
+    load()
+  }, [load])
+
+  const others = (devices ?? []).filter((d) => !d.current)
+
   return (
     <div className="account-subsection">
-      <h3>Dispositivos</h3>
       <p className="account-help">
-        Si entraste en una computadora que no es tuya o perdiste el celular, cerrá la sesión en todos los demás. Acá
-        seguís adentro.
+        Dónde está abierta tu cuenta. Si no reconocés alguno, cerrá su sesión: en ese dispositivo vas a tener que volver a
+        entrar.
       </p>
+      {devices === null && <p className="account-help">Cargando…</p>}
+      {devices && (
+        <ul className="account-devices">
+          {devices.map((d) => (
+            <li key={d.id}>
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d={DEVICE_ICONS[d.kind] ?? DEVICE_ICONS.computadora} />
+              </svg>
+              <div>
+                <strong>
+                  {d.device}
+                  {d.current && <span className="account-device-tag">Este dispositivo</span>}
+                </strong>
+                <small>
+                  {d.current ? 'Activo ahora' : `Último uso ${formatRelativeTime(d.lastSeenAt)}`} · {since(d.createdAt)}
+                </small>
+              </div>
+              {!d.current && (
+                <button
+                  type="button"
+                  className="account-secondary"
+                  disabled={busy}
+                  aria-label={`Cerrar la sesión de ${d.device}`}
+                  onClick={() => run(async () => {
+                    await closeDevice(d.id)
+                    await load()
+                  }, `Cerramos la sesión de ${d.device}.`)}
+                >
+                  Cerrar sesión
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
       <Feedback error={error} done={done} />
-      <button
-        type="button"
-        className="account-secondary"
-        disabled={busy}
-        onClick={() => run(closeOtherSessions, 'Listo: cerramos la sesión en todos tus otros dispositivos.')}
-      >
-        {busy ? 'Cerrando…' : 'Cerrar las otras sesiones'}
-      </button>
+      {others.length > 1 && (
+        <button
+          type="button"
+          className="account-secondary"
+          disabled={busy}
+          onClick={() =>
+            run(async () => {
+              await closeOtherSessions()
+              await load()
+            }, 'Listo: cerramos la sesión en todos tus otros dispositivos.')
+          }
+        >
+          {busy ? 'Cerrando…' : 'Cerrar todas las demás'}
+        </button>
+      )}
     </div>
   )
 }
 
 /** Descargar todo lo que guarda la cuenta (JSON). */
-export function DataSection() {
+export function DataSection({ heading = true }) {
   const { busy, error, run } = useAction()
   return (
     <div className="account-subsection">
-      <h3>Tus datos</h3>
+      {heading && <h3>Tus datos</h3>}
       <p className="account-help">
         Un archivo con todo lo que guarda tu cuenta: datos, favoritos, lugares, preferencias y avisos. Nunca incluye tu
         contraseña.

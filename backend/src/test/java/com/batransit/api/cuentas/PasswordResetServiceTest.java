@@ -84,7 +84,8 @@ class PasswordResetServiceTest {
     private final TokenService tokens = new TokenService("una-clave-de-pruebas-con-mas-de-32-caracteres", clock);
     private final AppUserRepository userRepo = AccountServiceTest.memoryRepository(users);
     private final AccountService accounts =
-            new AccountService(userRepo, tokens, new AccountServiceTest.FakeGoogle(), new ObjectMapper());
+            new AccountService(userRepo, tokens, new AccountServiceTest.FakeGoogle(), new ObjectMapper(),
+                    new MemorySessionStore());
     private final FakeMail mail = new FakeMail();
     private final PasswordResetService service =
             new PasswordResetService(userRepo, memoryResets(resetRows), accounts, mail, "https://ba-transit.onrender.com/", clock);

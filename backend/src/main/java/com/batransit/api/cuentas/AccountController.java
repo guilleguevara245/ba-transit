@@ -126,6 +126,28 @@ public class AccountController {
         return service.changePassword(claims, body.current(), body.password());
     }
 
+    /** Los dispositivos con la cuenta abierta. */
+    @GetMapping("/api/v1/cuenta/dispositivos")
+    public java.util.List<AccountService.DeviceView> devices(
+            @RequestHeader(name = "Authorization", required = false) String authorization) {
+        return service.devices(userId(authorization));
+    }
+
+    /** Cierra la sesion de otro dispositivo. */
+    @DeleteMapping("/api/v1/cuenta/dispositivos/{id}")
+    public ResponseEntity<Void> closeDevice(@RequestHeader(name = "Authorization", required = false) String authorization,
+                                            @org.springframework.web.bind.annotation.PathVariable String id) {
+        service.closeDevice(userId(authorization), id);
+        return ResponseEntity.noContent().build();
+    }
+
+    /** Cierra la sesion de este dispositivo (si el token ya no vale, igual responde bien). */
+    @DeleteMapping("/api/v1/cuenta/sesion")
+    public ResponseEntity<Void> logout(@RequestHeader(name = "Authorization", required = false) String authorization) {
+        tokens.fromHeader(authorization).ifPresent(service::logout);
+        return ResponseEntity.noContent().build();
+    }
+
     /** Cierra la sesion en todos los demas dispositivos. */
     @PostMapping("/api/v1/cuenta/cerrar-sesiones")
     public SessionResponse closeOtherSessions(@RequestHeader(name = "Authorization", required = false) String authorization) {

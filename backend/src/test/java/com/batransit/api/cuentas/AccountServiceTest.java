@@ -61,7 +61,7 @@ class AccountServiceTest {
     private final List<AppUser> rows = new ArrayList<>();
     private final TokenService tokens = new TokenService("una-clave-de-pruebas-con-mas-de-32-caracteres");
     private final AccountService service =
-            new AccountService(memoryRepository(rows), tokens, new FakeGoogle(), new ObjectMapper());
+            new AccountService(memoryRepository(rows), tokens, new FakeGoogle(), new ObjectMapper(), new MemorySessionStore());
 
     /** La sesion de una respuesta, como la leeria el controlador. */
     private TokenService.Claims claims(SessionResponse s) {

@@ -570,3 +570,309 @@
   font-weight: 600;
   color: var(--text-dim);
 }
+
+/* ---- Tu cuenta: en el celular una columna de tarjetas; en computadora, menu a la izquierda ---- */
+.wrap.account-page {
+  max-width: 520px;
+  padding-bottom: 48px;
+}
+
+.account-layout {
+  display: block;
+}
+
+.account-nav {
+  display: none;
+}
+
+.account-main {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.account-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px 22px 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  scroll-margin-top: 16px;
+}
+
+.account-card#perfil {
+  border-top: 4px solid var(--yellow);
+}
+
+.account-card-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 21px;
+  color: var(--text);
+}
+
+.account-card .account-help {
+  margin-top: -6px;
+}
+
+.account-card.account-danger {
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+
+.account-desktop-only {
+  display: none;
+}
+
+/* Datos del perfil: etiqueta y valor; "Cambiar" a la derecha del nombre. */
+.account-rows {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 10px 16px;
+  font-size: 14px;
+}
+
+.account-rows dt {
+  color: var(--text-faint);
+}
+
+.account-rows dd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.account-rows dd .account-inline-link {
+  margin-top: 0;
+}
+
+.account-rows dd .account-name-form {
+  flex-basis: 100%;
+  margin-top: 0;
+}
+
+.account-rows .account-rows-wide {
+  display: block;
+}
+
+/* En el celular, "Tu imagen" ocupa todo el ancho: la grilla de avatares entra mejor. */
+@media (max-width: 899px) {
+  .account-rows .account-rows-wide-label,
+  .account-rows .account-rows-wide {
+    grid-column: 1 / -1;
+  }
+
+  .account-rows .account-rows-wide-label {
+    margin-top: 6px;
+  }
+}
+
+/* Dispositivos */
+.account-devices {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.account-devices li {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+}
+
+.account-devices li:first-child {
+  border-top: none;
+  padding-top: 4px;
+}
+
+.account-devices svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: var(--text-dim);
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.account-devices strong {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.account-devices small {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.account-device-tag {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--normal-tint);
+  color: var(--normal);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.account-devices .account-secondary {
+  padding: 7px 10px;
+  font-size: 13px;
+}
+
+@media (max-width: 520px) {
+  .account-card {
+    padding: 18px 16px;
+  }
+
+  .account-devices li {
+    grid-template-columns: 24px 1fr;
+  }
+
+  .account-devices .account-secondary {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
+
+/* Computadora: dos columnas, el menu queda fijo al bajar. */
+@media (min-width: 900px) {
+  .wrap.account-page {
+    max-width: 1080px;
+  }
+
+  .account-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+
+  .account-nav {
+    position: sticky;
+    top: 16px;
+    display: flex;
+    flex-direction: column;
+    padding: 16px 0;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--yellow);
+    box-shadow: var(--shadow);
+  }
+
+  .account-nav-me {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 16px 14px;
+    margin-bottom: 6px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .account-nav-me div {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .account-nav-me strong {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    color: var(--text);
+  }
+
+  .account-nav-me small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .account-nav a,
+  .account-nav button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 16px;
+    border: none;
+    border-left: 3px solid transparent;
+    background: none;
+    color: var(--text);
+    font: inherit;
+    font-size: 14px;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .account-nav a:hover,
+  .account-nav button:hover {
+    border-left-color: var(--yellow);
+    background: var(--bg);
+  }
+
+  .account-nav a:focus-visible,
+  .account-nav button:focus-visible {
+    outline: 2px solid var(--yellow);
+    outline-offset: -2px;
+  }
+
+  .account-nav svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .account-nav .account-nav-danger {
+    color: var(--interrupted);
+  }
+
+  .account-hero,
+  .account-mobile-only {
+    display: none;
+  }
+
+  .account-desktop-only {
+    display: block;
+  }
+
+  .account-card {
+    padding: 24px 28px;
+  }
+
+  .account-rows {
+    grid-template-columns: 150px 1fr;
+    gap: 0;
+  }
+
+  .account-rows dt,
+  .account-rows dd {
+    padding: 11px 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .account-rows dt:first-of-type,
+  .account-rows dd:first-of-type {
+    border-top: none;
+  }
+}

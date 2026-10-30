@@ -32,12 +32,18 @@ public class TokenService {
     private static final Logger log = LoggerFactory.getLogger(TokenService.class);
 
     static final Duration VALIDITY = Duration.ofDays(30);
-    /** iat (emitido) falta en los tokens de la v18.9: se toma como 0. */
-    private static final Pattern PAYLOAD =
-            Pattern.compile("^\\{\"sub\":(\\d{1,18}),(?:\"iat\":(\\d{1,12}),)?\"exp\":(\\d{1,12})}$");
+    /**
+     * iat (emitido) falta en los tokens de la v18.9: se toma como 0. sid (la
+     * sesion, ver SessionStore) falta en los anteriores a la v21.4.
+     */
+    private static final Pattern PAYLOAD = Pattern.compile(
+            "^\\{\"sub\":(\\d{1,18}),(?:\"sid\":\"([A-Za-z0-9_-]{8,43})\",)?(?:\"iat\":(\\d{1,12}),)?\"exp\":(\\d{1,12})}$");
 
-    /** Lo que dice un token valido: de quien es y cuando se emitio. */
-    public record Claims(long userId, Instant issuedAt) {
+    /** Lo que dice un token valido: de quien es, cuando se emitio y de que sesion (null en los viejos). */
+    public record Claims(long userId, Instant issuedAt, String sessionId) {
+        public Claims(long userId, Instant issuedAt) {
+            this(userId, issuedAt, null);
+        }
     }
 
     private final byte[] secret;
@@ -65,9 +71,15 @@ public class TokenService {
     }
 
     public String issue(long userId) {
+        return issue(userId, null);
+    }
+
+    /** Un token de la sesion sessionId (de SessionStore). */
+    public String issue(long userId, String sessionId) {
         Instant now = clock.instant();
         long exp = now.plus(VALIDITY).getEpochSecond();
-        String json = "{\"sub\":" + userId + ",\"iat\":" + now.getEpochSecond() + ",\"exp\":" + exp + "}";
+        String sid = sessionId == null ? "" : ",\"sid\":\"" + sessionId + "\"";
+        String json = "{\"sub\":" + userId + sid + ",\"iat\":" + now.getEpochSecond() + ",\"exp\":" + exp + "}";
         String payload = b64(json.getBytes(StandardCharsets.UTF_8));
         return payload + "." + b64(sign(payload));
     }
@@ -88,11 +100,11 @@ public class TokenService {
                 return Optional.empty();
             }
             Matcher m = PAYLOAD.matcher(new String(Base64.getUrlDecoder().decode(payload), StandardCharsets.UTF_8));
-            if (!m.matches() || Instant.ofEpochSecond(Long.parseLong(m.group(3))).isBefore(clock.instant())) {
+            if (!m.matches() || Instant.ofEpochSecond(Long.parseLong(m.group(4))).isBefore(clock.instant())) {
                 return Optional.empty();
             }
-            Instant issuedAt = Instant.ofEpochSecond(m.group(2) == null ? 0 : Long.parseLong(m.group(2)));
-            return Optional.of(new Claims(Long.parseLong(m.group(1)), issuedAt));
+            Instant issuedAt = Instant.ofEpochSecond(m.group(3) == null ? 0 : Long.parseLong(m.group(3)));
+            return Optional.of(new Claims(Long.parseLong(m.group(1)), issuedAt, m.group(2)));
         } catch (IllegalArgumentException e) {
             return Optional.empty();
         }

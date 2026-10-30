@@ -18,3 +18,11 @@
   background: var(--yellow);
   color: #17171a;
 }
+
+/* El dibujo del avatar ocupa siempre todo el circulo (otras reglas fijan el tamaño de los iconos del menu o el encabezado). */
+.user-avatar > svg {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  stroke: none;
+}
