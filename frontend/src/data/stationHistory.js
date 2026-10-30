@@ -21,7 +21,7 @@ export const LINE_HISTORY = {
   SARMIENTO: 'Heredera del Ferrocarril Oeste, el primero de la Argentina. El 29 de agosto de 1857 la locomotora La Porteña hizo el primer viaje entre la Estación del Parque, donde hoy está el Teatro Colón, y La Floresta.',
   MITRE: 'Reúne los antiguos ferrocarriles Central Argentino, Buenos Aires a Rosario y del Norte de Buenos Aires, de capitales británicos. Sus tres ramales salen de la monumental estación Retiro hacia Tigre, Bartolomé Mitre y José León Suárez.',
   ROCA: 'Heredera del Ferrocarril del Sud, de capitales británicos, que desde 1865 salía de Constitución hacia el sur de la provincia. Es la línea con más pasajeros del área metropolitana.',
-  SAN_MARTIN: 'Heredera del Ferrocarril Buenos Aires al Pacífico, que unía Retiro con Mendoza. Hoy corre entre Retiro y Dr. Cabred, pasando por Palermo, Chacarita y el noroeste del conurbano.',
+  SAN_MARTIN: 'Heredera del Ferrocarril Buenos Aires al Pacífico, que unía Retiro con Mendoza. Hoy corre entre Retiro y Dr. Cabred, pasando por Palermo, Villa Crespo y el noroeste del conurbano.',
   BELGRANO_NORTE: 'Línea de trocha angosta (un metro), heredera del Ferrocarril Central Córdoba. Va de Retiro a Villa Rosa, en Pilar, y la opera Ferrovías desde los años 90.',
   BELGRANO_SUR: 'Línea de trocha angosta (un metro), heredera de la Compañía General de Ferrocarriles en la Provincia de Buenos Aires. Recorre el sudoeste de la ciudad y La Matanza hasta González Catán y Marinos del Crucero Gral. Belgrano.',
   URQUIZA: 'Nació como el Tramway Rural de los hermanos Lacroze y luego fue el Ferrocarril Central de Buenos Aires. Es de trocha media, toma la electricidad de un tercer riel y corre de Federico Lacroze a General Lemos.',
@@ -189,7 +189,7 @@ export const STATION_HISTORY = {
   SAN_MARTIN: {
     Retiro: 'Cabecera de la línea, la antigua terminal del Ferrocarril Buenos Aires al Pacífico.',
     Palermo: 'Combina con la estación Palermo de la línea D, junto al Distrito Arcos.',
-    Chacarita: 'Junto al Cementerio de la Chacarita y cerca del Movistar Arena.',
+    'Villa Crespo': 'Antes se llamaba Chacarita. Está sobre el viaducto nuevo, cerca del Movistar Arena y del Cementerio de la Chacarita.',
     Devoto: 'El barrio recuerda a Antonio Devoto, empresario italiano que lo fundó a fines del siglo XIX.',
     'Santos Lugares': 'En este barrio vivió el escritor Ernesto Sábato durante gran parte de su vida.',
     Caseros: 'Cerca del lugar donde se libró la batalla de Caseros en 1852.',
