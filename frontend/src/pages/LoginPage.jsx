@@ -9,8 +9,10 @@ import './AccountPage.css'
 
 const MIN_PASSWORD = 8
 
-function validate(mode, { email, password }) {
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(email.trim())) return { field: 'email', text: 'Escribí un mail válido, por ejemplo nombre@gmail.com.' }
+function validate(mode, { name, email, password }) {
+  if (mode === 'registro' && !name.trim()) return { field: 'name', text: 'Escribí tu nombre.' }
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(email.trim()))
+    return { field: 'email', text: 'Escribí un mail válido, por ejemplo nombre@gmail.com.' }
   if (!password) return { field: 'password', text: 'Escribí tu contraseña.' }
   if (mode === 'registro' && password.length < MIN_PASSWORD) {
     return { field: 'password', text: `La contraseña tiene que tener al menos ${MIN_PASSWORD} caracteres.` }
@@ -63,7 +65,7 @@ export default function LoginPage() {
       document.getElementById(`auth-${problem.field}`)?.focus()
       return
     }
-    const data = { email: form.email.trim(), password: form.password, name: form.name.trim() || undefined }
+    const data = { email: form.email.trim(), password: form.password, name: form.name.trim() }
     run(() => (mode === 'registro' ? register(data) : login(data)))
   }
 
@@ -117,10 +119,21 @@ export default function LoginPage() {
         <form className="auth-form" noValidate onSubmit={submit}>
           {mode === 'registro' && (
             <label className="auth-field">
-              <span>
-                Nombre <small>(opcional, para saludarte)</small>
-              </span>
-              <input value={form.name} onChange={update('name')} autoComplete="given-name" maxLength={80} />
+              <span>Nombre</span>
+              <input
+                id="auth-name"
+                value={form.name}
+                onChange={update('name')}
+                autoComplete="given-name"
+                maxLength={80}
+                aria-invalid={Boolean(fieldError('name')) || undefined}
+                aria-describedby={fieldError('name') ? 'auth-name-error' : undefined}
+              />
+              {fieldError('name') && (
+                <span className="auth-error" id="auth-name-error" role="alert">
+                  {fieldError('name')}
+                </span>
+              )}
             </label>
           )}
           <label className="auth-field">
@@ -194,7 +207,11 @@ export default function LoginPage() {
           )}
         </form>
 
-        <button type="button" className="auth-skip" onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/'))}>
+        <button
+          type="button"
+          className="auth-skip"
+          onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/'))}
+        >
           Seguir sin registrarte
         </button>
       </section>

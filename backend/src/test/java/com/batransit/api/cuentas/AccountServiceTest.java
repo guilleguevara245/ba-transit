@@ -88,15 +88,18 @@ class AccountServiceTest {
 
     @Test
     void erroresAlCrearCuenta() {
-        service.register("ana@gmail.com", "contraseña1", null);
-        assertThat(statusOf(() -> service.register("ana@gmail.com", "otraclave1", null))).isEqualTo(HttpStatus.CONFLICT);
-        assertThat(statusOf(() -> service.register("beto@gmail.com", "corta", null))).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(statusOf(() -> service.register("sin-arroba", "contraseña1", null))).isEqualTo(HttpStatus.BAD_REQUEST);
+        service.register("ana@gmail.com", "contraseña1", "Ana");
+        assertThat(statusOf(() -> service.register("ana@gmail.com", "otraclave1", "Ana"))).isEqualTo(HttpStatus.CONFLICT);
+        assertThat(statusOf(() -> service.register("beto@gmail.com", "corta", "Ana"))).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(statusOf(() -> service.register("sin-arroba", "contraseña1", "Ana"))).isEqualTo(HttpStatus.BAD_REQUEST);
+        // El nombre es obligatorio.
+        assertThat(statusOf(() -> service.register("beto@gmail.com", "contraseña1", null))).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(statusOf(() -> service.register("beto@gmail.com", "contraseña1", "   "))).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     @Test
     void mailInexistenteYContrasenaMalaDanElMismoError() {
-        service.register("ana@gmail.com", "contraseña1", null);
+        service.register("ana@gmail.com", "contraseña1", "Ana");
         AccountException wrongPassword = assertThrows(AccountException.class, () -> service.login("ana@gmail.com", "mal"));
         AccountException noUser = assertThrows(AccountException.class, () -> service.login("nadie@gmail.com", "mal"));
         assertThat(wrongPassword.status()).isEqualTo(HttpStatus.UNAUTHORIZED);
@@ -112,10 +115,10 @@ class AccountServiceTest {
         // La misma cuenta de Google vuelve a la misma cuenta.
         assertThat(service.loginWithGoogle("g-1|carla@gmail.com").user().id()).isEqualTo(first.user().id());
         // Con mail y contrasena no se puede crear otra con ese mail.
-        assertThat(statusOf(() -> service.register("carla@gmail.com", "contraseña1", null))).isEqualTo(HttpStatus.CONFLICT);
+        assertThat(statusOf(() -> service.register("carla@gmail.com", "contraseña1", "Ana"))).isEqualTo(HttpStatus.CONFLICT);
 
         // Cuenta con contrasena que despues entra con Google: se le suma Google.
-        long ana = service.register("ana@gmail.com", "contraseña1", null).user().id();
+        long ana = service.register("ana@gmail.com", "contraseña1", "Ana").user().id();
         SessionResponse linked = service.loginWithGoogle("g-2|ana@gmail.com|Ana");
         assertThat(linked.user().id()).isEqualTo(ana);
         assertThat(linked.user().hasGoogle()).isEqualTo(true);
@@ -126,7 +129,7 @@ class AccountServiceTest {
 
     @Test
     void favoritosSeGuardanLimpios() {
-        TokenService.Claims id = claims(service.register("ana@gmail.com", "contraseña1", null));
+        TokenService.Claims id = claims(service.register("ana@gmail.com", "contraseña1", "Ana"));
         assertThat(service.favorites(id)).isEqualTo(Favorites.empty());
 
         Favorites saved = service.saveFavorites(id,
@@ -176,7 +179,7 @@ class AccountServiceTest {
 
     @Test
     void borrarLaCuenta() {
-        SessionResponse s = service.register("ana@gmail.com", "contraseña1", null);
+        SessionResponse s = service.register("ana@gmail.com", "contraseña1", "Ana");
         service.delete(claims(s));
         assertThat(rows.size()).isEqualTo(0);
         // El token sigue firmado, pero la cuenta ya no existe.

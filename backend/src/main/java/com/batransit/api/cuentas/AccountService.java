@@ -59,13 +59,17 @@ public class AccountService {
     @Transactional
     public SessionResponse register(String rawEmail, String password, String rawName) {
         String email = normalizeEmail(rawEmail);
+        String name = cleanName(rawName);
+        if (name == null) {
+            throw new AccountException(HttpStatus.BAD_REQUEST, "Escribí tu nombre.");
+        }
         checkPassword(password);
         users.findByEmail(email).ifPresent(existing -> {
             throw new AccountException(HttpStatus.CONFLICT, existing.getPasswordHash() == null
                     ? "Ya hay una cuenta con ese mail que entra con Google: usá \"Continuar con Google\"."
                     : "Ya hay una cuenta con ese mail: ingresá con tu contraseña.");
         });
-        AppUser user = new AppUser(email, cleanName(rawName));
+        AppUser user = new AppUser(email, name);
         user.setPasswordHash(PasswordHasher.hash(password));
         user.setLastLoginAt(Instant.now());
         try {

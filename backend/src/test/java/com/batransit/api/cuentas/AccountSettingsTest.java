@@ -41,7 +41,7 @@ class AccountSettingsTest {
 
     @Test
     void cambiarLaContrasenaCierraLasOtrasSesiones() {
-        SessionResponse first = service.register("ana@gmail.com", "contraseña1", null);
+        SessionResponse first = service.register("ana@gmail.com", "contraseña1", "Ana");
         // Una sesion "vieja" (de otro dispositivo, de hace un rato).
         TokenService.Claims old = new TokenService.Claims(first.user().id(), Instant.now().minusSeconds(120));
 
@@ -64,7 +64,7 @@ class AccountSettingsTest {
 
     @Test
     void cerrarLasOtrasSesiones() {
-        SessionResponse s = service.register("ana@gmail.com", "contraseña1", null);
+        SessionResponse s = service.register("ana@gmail.com", "contraseña1", "Ana");
         TokenService.Claims old = new TokenService.Claims(s.user().id(), Instant.now().minusSeconds(60));
         SessionResponse kept = service.closeOtherSessions(claims(s));
         assertThat(service.me(claims(kept)).id()).isEqualTo(s.user().id());
@@ -73,7 +73,7 @@ class AccountSettingsTest {
 
     @Test
     void preferenciasValidadas() {
-        TokenService.Claims me = claims(service.register("ana@gmail.com", "contraseña1", null));
+        TokenService.Claims me = claims(service.register("ana@gmail.com", "contraseña1", "Ana"));
         Prefs saved = service.savePreferences(me, new Prefs("dark", new Notices(2,
                 Arrays.asList("lineas", "clima", "spam", null), true, true, 23, 99, true, "25:00",
                 List.of(1, 9, 3, 3), true, 20)));
@@ -108,7 +108,7 @@ class AccountSettingsTest {
 
     @Test
     void dispositivos() {
-        service.register("ana@gmail.com", "contraseña1", null);
+        service.register("ana@gmail.com", "contraseña1", "Ana");
         TokenService.Claims compu = claims(service.login("ana@gmail.com", "contraseña1"));
         TokenService.Claims celu = claims(service.login("ana@gmail.com", "contraseña1"));
 

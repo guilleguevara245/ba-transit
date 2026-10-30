@@ -98,7 +98,7 @@ class PasswordResetServiceTest {
 
     @Test
     void recuperarYEntrarConLaNueva() {
-        SessionResponse before = accounts.register("ana@gmail.com", "contraseña1", null);
+        SessionResponse before = accounts.register("ana@gmail.com", "contraseña1", "Ana");
         clock.now = clock.now.plusSeconds(5);
         service.request("ANA@gmail.com");
 
@@ -135,7 +135,7 @@ class PasswordResetServiceTest {
 
     @Test
     void linkVencidoOInventado() {
-        accounts.register("ana@gmail.com", "contraseña1", null);
+        accounts.register("ana@gmail.com", "contraseña1", "Ana");
         service.request("ana@gmail.com");
         String code = codeFromMail();
         clock.now = clock.now.plus(PasswordResetService.VALIDITY).plusSeconds(1);
@@ -150,7 +150,7 @@ class PasswordResetServiceTest {
 
     @Test
     void comoMuchoTresLinksPorHora() {
-        accounts.register("ana@gmail.com", "contraseña1", null);
+        accounts.register("ana@gmail.com", "contraseña1", "Ana");
         for (int i = 0; i < 5; i++) {
             clock.now = clock.now.plusSeconds(10);
             service.request("ana@gmail.com");
