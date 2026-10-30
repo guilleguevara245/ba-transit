@@ -29,3 +29,16 @@
   width: 26px;
   height: 26px;
 }
+
+/* Chico: para chips y atajos (Mis lugares). */
+.mode-icon-sm {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+}
+
+.mode-icon-sm svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 2.1;
+}

@@ -8,7 +8,7 @@ import './WeatherAlertBanner.css'
 const REFRESH_MS = 10 * 60_000
 const STORAGE_KEY = 'ba-transit:alertas-clima-cerradas'
 // Pantallas donde la alerta no aporta (ingresar, cuenta, avisos, legales): ahi distrae.
-const HIDDEN_ON = ['/ingresar', '/cuenta', '/recuperar', '/restablecer', '/notificaciones', '/privacidad', '/condiciones']
+const HIDDEN_ON = ['/ingresar', '/cuenta', '/recuperar', '/restablecer', '/notificaciones', '/mis-lugares', '/privacidad', '/condiciones']
 
 function readDismissed() {
   try {

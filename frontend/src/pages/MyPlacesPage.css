@@ -1,0 +1,175 @@
+.place-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+}
+
+.place-list:empty {
+  display: none;
+}
+
+.place-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.place-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.place-text strong {
+  font-size: 15px;
+  color: var(--text);
+}
+
+.place-detail {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.place-dots {
+  display: inline-flex;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.place-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.place-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.place-actions button {
+  padding: 6px 8px;
+  border: none;
+  background: none;
+  color: var(--accent-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.place-actions button:last-child {
+  color: var(--text-faint);
+}
+
+.place-actions button:hover {
+  text-decoration: underline;
+}
+
+.place-actions button:focus-visible,
+.place-add-button:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+}
+
+.place-add {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.place-add-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px dashed var(--line);
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.place-add-button:hover:not(:disabled) {
+  border-color: var(--yellow);
+}
+
+.place-add-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.place-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--yellow);
+  background: var(--bg);
+}
+
+.place-editor-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  color: var(--text);
+}
+
+.place-editor .planner-field {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.place-editor-hint {
+  margin-top: -6px;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.place-editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 420px) {
+  .place-row {
+    flex-wrap: wrap;
+  }
+
+  /* Debajo del texto, alineadas con el nombre. */
+  .place-actions {
+    width: 100%;
+    margin: -8px 0 -4px 46px;
+  }
+
+  .place-actions button:first-child {
+    padding-left: 0;
+  }
+}
+
+.place-detail-text {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.place-editor .planner-field input {
+  font-weight: 400;
+}

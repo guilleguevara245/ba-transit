@@ -46,6 +46,13 @@ public class AppUser {
     @Column(name = "favorites_updated_at")
     private Instant favoritesUpdatedAt;
 
+    /** Mis lugares, en JSON ({"lugares":[...]}). */
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String places = "{}";
+
+    @Column(name = "places_updated_at")
+    private Instant placesUpdatedAt;
+
     /** Imagen: 'avatar' | 'google' | 'foto' (null = la inicial). */
     @Column(name = "avatar_kind", length = 10)
     private String avatarKind;
@@ -135,6 +142,19 @@ public class AppUser {
 
     public void setLastLoginAt(Instant lastLoginAt) {
         this.lastLoginAt = lastLoginAt;
+    }
+
+    public String getPlaces() {
+        return places;
+    }
+
+    public void setPlaces(String places, Instant at) {
+        this.places = places;
+        this.placesUpdatedAt = at;
+    }
+
+    public Instant getPlacesUpdatedAt() {
+        return placesUpdatedAt;
     }
 
     public Instant getFavoritesUpdatedAt() {

@@ -1,4 +1,5 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import PlaceIcon from './PlaceIcon.jsx'
 import { moveActiveIndex } from '../utils/search.js'
 import { matchStations, normalizeText } from '../utils/stationSearch.js'
 import './SearchBar.css'
@@ -19,8 +20,11 @@ function Dots({ colors }) {
  * Campo para elegir una estacion, con el mismo desplegable que el
  * buscador del inicio (flechas, Enter y Escape). Reemplaza al
  * <datalist> nativo, que cada navegador dibuja a su manera.
+ *
+ * shortcuts (opcional): lugares guardados ({ key, tipo, nombre, option })
+ * que se muestran como chips debajo del campo mientras esta vacio.
  */
-export default function StationPicker({ id, title, stations, value, onChange }) {
+export default function StationPicker({ id, title, stations, value, onChange, shortcuts = [] }) {
   const [text, setText] = useState(value ? value.stationName : '')
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
@@ -104,6 +108,17 @@ export default function StationPicker({ id, title, stations, value, onChange }) 
         />
         {value && <span className="station-picker-line">{value.lineName}</span>}
       </div>
+
+      {!value && shortcuts.length > 0 && (
+        <div className="place-chips" role="group" aria-label={`Mis lugares para ${title.toLowerCase()}`}>
+          {shortcuts.map((s) => (
+            <button key={s.key} type="button" className="place-chip" onClick={() => choose(s.option)}>
+              <PlaceIcon tipo={s.tipo} size="sm" />
+              {s.nombre}
+            </button>
+          ))}
+        </div>
+      )}
 
       {showDropdown && (
         <div className="search-results station-picker-results" id={listboxId} role="listbox">

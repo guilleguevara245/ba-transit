@@ -27,6 +27,20 @@ public final class AccountModels {
     }
 
     /**
+     * Un lugar guardado. tipo: 'casa' | 'trabajo' | 'otro'. Tiene una
+     * estacion (id) o una direccion, no las dos.
+     */
+    public record SavedPlace(String tipo, String nombre, Long estacion, String direccion) {
+    }
+
+    /** Mis lugares: Casa, Trabajo y otros. */
+    public record Places(List<SavedPlace> lugares) {
+        public static Places empty() {
+            return new Places(List.of());
+        }
+    }
+
+    /**
      * La imagen de la cuenta. kind: 'avatar' | 'google' | 'foto' (null = la
      * inicial). value: el avatar elegido. url: la foto (de Google o propia,
      * esta ultima como data URL). googleAvailable: si hay foto de Google para elegir.

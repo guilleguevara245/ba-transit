@@ -3,8 +3,10 @@ import { Link, useNavigate } from 'react-router-dom'
 import BackButton from '../components/BackButton.jsx'
 import Chevrons from '../components/Chevrons.jsx'
 import ImagePicker from '../components/ImagePicker.jsx'
+import PlaceIcon from '../components/PlaceIcon.jsx'
 import UserAvatar from '../components/UserAvatar.jsx'
 import { useFavoriteList } from '../hooks/useFavoriteList.js'
+import { useSavedPlaces } from '../hooks/useSavedPlaces.js'
 import { useSession } from '../hooks/useSession.js'
 import { deleteAccount, logout } from '../utils/account.js'
 import { formatLongDate } from '../utils/format.js'
@@ -21,6 +23,7 @@ export default function AccountPage() {
   const lines = useFavoriteList('lineas').ids.length
   const stations = useFavoriteList('estaciones').ids.length
   const accesses = useFavoriteList('accesos').ids.length
+  const { places } = useSavedPlaces()
   const [confirming, setConfirming] = useState(false)
   const [error, setError] = useState(null)
   const [busy, setBusy] = useState(false)
@@ -62,6 +65,25 @@ export default function AccountPage() {
         <div className="account-section">
           <h2>Tu imagen</h2>
           <ImagePicker user={user} />
+        </div>
+
+        <div className="account-section">
+          <h2>Mis lugares</h2>
+          {places.length > 0 ? (
+            <ul className="account-places">
+              {places.map((p, i) => (
+                <li key={i}>
+                  <PlaceIcon tipo={p.tipo} size="sm" />
+                  {p.nombre}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="account-places-empty">Guardá Casa y Trabajo para armar el viaje con un toque.</p>
+          )}
+          <Link className="notif-account-link chevrons-host" to="/mis-lugares">
+            {places.length > 0 ? 'Editar mis lugares' : 'Agregar mis lugares'} <Chevrons />
+          </Link>
         </div>
 
         <dl className="account-data">

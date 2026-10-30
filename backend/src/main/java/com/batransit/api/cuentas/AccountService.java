@@ -1,6 +1,7 @@
 package com.batransit.api.cuentas;
 
 import com.batransit.api.cuentas.AccountModels.Favorites;
+import com.batransit.api.cuentas.AccountModels.Places;
 import com.batransit.api.cuentas.AccountModels.SessionResponse;
 import com.batransit.api.cuentas.AccountModels.UserImage;
 import com.batransit.api.cuentas.AccountModels.UserView;
@@ -118,6 +119,23 @@ public class AccountService {
     @Transactional(readOnly = true)
     public Favorites favorites(Claims session) {
         return readFavorites(find(session).getFavorites());
+    }
+
+    @Transactional(readOnly = true)
+    public Places places(Claims session) {
+        return readPlaces(find(session).getPlaces());
+    }
+
+    @Transactional
+    public Places savePlaces(Claims session, Places places) {
+        AppUser user = find(session);
+        Places clean = SavedPlaces.sanitize(places);
+        try {
+            user.setPlaces(mapper.writeValueAsString(clean), Instant.now());
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException(e);
+        }
+        return clean;
     }
 
     @Transactional
@@ -246,6 +264,14 @@ public class AccountService {
             return "image/webp";
         }
         return null;
+    }
+
+    Places readPlaces(String json) {
+        try {
+            return SavedPlaces.sanitize(mapper.readValue(json == null || json.isBlank() ? "{}" : json, Places.class));
+        } catch (JsonProcessingException e) {
+            return Places.empty();
+        }
     }
 
     Favorites readFavorites(String json) {

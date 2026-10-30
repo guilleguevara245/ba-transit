@@ -97,6 +97,18 @@ public class AccountController {
         return service.saveFavorites(userId(authorization), body);
     }
 
+    @GetMapping("/api/v1/cuenta/lugares")
+    public AccountModels.Places places(@RequestHeader(name = "Authorization", required = false) String authorization) {
+        return service.places(userId(authorization));
+    }
+
+    /** Guarda Mis lugares (reemplaza la lista entera). */
+    @PutMapping("/api/v1/cuenta/lugares")
+    public AccountModels.Places savePlaces(@RequestHeader(name = "Authorization", required = false) String authorization,
+                                           @RequestBody AccountModels.Places body) {
+        return service.savePlaces(userId(authorization), body);
+    }
+
     /** Elige la imagen de la cuenta: un avatar, la foto de Google o la inicial. */
     @PutMapping("/api/v1/cuenta/imagen")
     public UserView setImage(@RequestHeader(name = "Authorization", required = false) String authorization,

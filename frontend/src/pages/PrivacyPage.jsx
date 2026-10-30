@@ -12,6 +12,10 @@ const BROWSER_DATA = [
   { what: 'Tu nombre', why: 'Para saludarte en el inicio, si lo escribiste.' },
   { what: 'Tema claro u oscuro', why: 'Para abrir el sitio como lo dejaste.' },
   { what: 'Líneas, estaciones y accesos favoritos', why: 'Para mostrarlos en el inicio.' },
+  {
+    what: 'Mis lugares (Casa, Trabajo y otros)',
+    why: 'Para armar el viaje con un toque en Cómo llegar. Son la estación o la dirección que vos elegiste.',
+  },
   { what: 'Alertas del clima que cerraste', why: 'Para no volver a mostrártelas.' },
   { what: 'Tu sesión, si ingresaste', why: 'Para que no tengas que ingresar cada vez. Se borra al cerrar sesión.' },
   { what: 'Tus preferencias de avisos', why: 'Qué avisar y el horario sin avisos.' },
@@ -71,7 +75,7 @@ export default function PrivacyPage() {
         <h2 className="about-heading">Si creás una cuenta</h2>
         <p>
           Se guardan en el servidor tu mail, el nombre que elijas (o el de tu cuenta de Google), tus líneas, estaciones y
-          accesos favoritos, la imagen que elijas (un avatar, la dirección de tu foto de Google o una foto que subas,
+          accesos favoritos, tus lugares guardados (la estación o dirección de Casa, Trabajo y los otros que agregues), la imagen que elijas (un avatar, la dirección de tu foto de Google o una foto que subas,
           achicada a 256 píxeles) y las fechas en que creaste la cuenta e ingresaste por última vez. Se usan solo para que
           puedas ingresar y ver tus favoritos en cualquier dispositivo: no se usan para nada más ni se comparten.
         </p>

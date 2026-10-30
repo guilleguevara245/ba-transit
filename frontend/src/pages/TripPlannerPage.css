@@ -9,7 +9,7 @@
 .planner-form {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
-  align-items: end;
+  align-items: start;
   gap: 10px;
 }
 
@@ -38,6 +38,8 @@
 }
 
 .planner-swap {
+  /* A la altura de los campos (debajo de la etiqueta). */
+  margin-top: 20px;
   width: 40px;
   height: 40px;
   border: 1px solid var(--line);
@@ -216,6 +218,7 @@
 
   .planner-swap {
     justify-self: center;
+    margin-top: 0;
   }
 }
 
@@ -241,4 +244,98 @@
 
 .planner-share {
   margin: 10px 14px 0 0;
+}
+
+/* Mis lugares: atajos Casa / Trabajo y chips debajo de cada campo. */
+.planner-shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.planner-shortcut {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px 7px 7px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.planner-shortcut .chevrons {
+  color: var(--yellow);
+  width: 1.1em;
+  height: 0.8em;
+}
+
+.planner-shortcut span {
+  margin-left: 4px;
+}
+
+.planner-shortcut small {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-faint);
+}
+
+.planner-shortcut:hover {
+  border-color: var(--yellow);
+}
+
+.planner-shortcut:focus-visible,
+.place-chip:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+}
+
+.planner-places-link {
+  display: inline-block;
+  margin-bottom: 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-text);
+  text-decoration: none;
+}
+
+.planner-places-link:hover {
+  text-decoration: underline;
+}
+
+.place-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.place-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px 3px 3px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.place-chip .mode-icon-sm {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+}
+
+.place-chip:hover {
+  border-color: var(--yellow);
 }

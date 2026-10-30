@@ -1,5 +1,6 @@
 import { apiGetWithToken, apiSend } from '../api.js'
 import { mergeFavorites, readAll, writeList, FAVORITE_KINDS } from './favoritesStore.js'
+import { mergePlaces, readPlaces, writePlaces } from './placesStore.js'
 import { firstName, getSession, setSession } from './session.js'
 
 /** Acciones de la cuenta. Los errores (ApiError) traen el mensaje para mostrar. */
@@ -19,6 +20,7 @@ async function start(session) {
   setSession(session)
   adoptName(session.user)
   await syncFavorites()
+  await syncPlaces()
 }
 
 export const authConfig = () => apiSend('GET', '/api/v1/auth/config')
@@ -118,4 +120,45 @@ export function schedulePush() {
   if (pausePush || !getSession()) return
   clearTimeout(pushTimer)
   pushTimer = setTimeout(pushFavorites, 800)
+}
+
+/** Con que cuenta se sincronizaron por ultima vez los lugares de este navegador. */
+const PLACES_SYNC_KEY = 'ba-transit:lugares-cuenta'
+let placesTimer = null
+
+/** Trae Mis lugares de la cuenta y los une con los de este navegador (ver mergePlaces). */
+export async function syncPlaces() {
+  const session = getSession()
+  if (!session) return
+  const remote = await apiGetWithToken('/api/v1/cuenta/lugares', session.token)
+  let synced = false
+  try {
+    synced = window.localStorage.getItem(PLACES_SYNC_KEY) === String(session.user.id)
+  } catch {
+    // Sin almacenamiento: se suman.
+  }
+  writePlaces(mergePlaces(readPlaces(), remote?.lugares, synced), { silent: true })
+  try {
+    window.localStorage.setItem(PLACES_SYNC_KEY, String(session.user.id))
+  } catch {
+    // Sin almacenamiento.
+  }
+  if (!synced) await pushPlaces()
+}
+
+export async function pushPlaces() {
+  const session = getSession()
+  if (!session) return
+  try {
+    await apiSend('PUT', '/api/v1/cuenta/lugares', { body: { lugares: readPlaces() }, token: session.token })
+  } catch (error) {
+    if (error.status === 401) setSession(null)
+  }
+}
+
+/** Sube los lugares un momento despues del ultimo cambio hecho en esta pagina. */
+export function schedulePlacesPush(event) {
+  if (event?.detail?.silent || !getSession()) return
+  clearTimeout(placesTimer)
+  placesTimer = setTimeout(pushPlaces, 500)
 }

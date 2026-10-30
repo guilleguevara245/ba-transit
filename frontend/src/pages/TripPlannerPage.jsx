@@ -1,19 +1,78 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import BackButton from '../components/BackButton.jsx'
+import Chevrons from '../components/Chevrons.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
 import LineBadge from '../components/LineBadge.jsx'
 import ModeIcon from '../components/ModeIcon.jsx'
+import PlaceIcon from '../components/PlaceIcon.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import StationPicker from '../components/StationPicker.jsx'
 import { useApi } from '../hooks/useApi.js'
+import { useSavedPlaces } from '../hooks/useSavedPlaces.js'
 import { buildPlaces } from '../utils/places.js'
+import { findStationPlace, placePhrase } from '../utils/placesStore.js'
 import { googleMapsUrl, planTrip } from '../utils/planner.js'
 import { formatDuration } from '../utils/travelTime.js'
 import './ModePage.css'
 import './AirportsPage.css'
 import './TripPlannerPage.css'
 import { stationPath } from '../utils/lineSlug.js'
+
+/** Un lugar guardado como punto para Google Maps: la estacion (lat,lng) o la direccion. */
+function mapsPoint(place, options) {
+  if (place.direccion) return `${place.direccion}, Buenos Aires`
+  return findStationPlace(options, place.estacion)
+}
+
+/** Atajos entre Casa y Trabajo (y al reves). Si alguno es una direccion, abren Google Maps. */
+function CommuteShortcuts({ places, options, onTrip }) {
+  const home = places.find((p) => p.tipo === 'casa')
+  const work = places.find((p) => p.tipo === 'trabajo')
+  if (!home || !work) {
+    return (
+      <Link className="planner-places-link chevrons-host" to="/mis-lugares">
+        {places.length > 0 ? 'Completá Casa y Trabajo en Mis lugares' : 'Guardá Casa y Trabajo y armá el viaje con un toque'}{' '}
+        <Chevrons />
+      </Link>
+    )
+  }
+  const trips = [
+    [home, work],
+    [work, home],
+  ]
+  return (
+    <div className="planner-shortcuts">
+      {trips.map(([from, to]) => {
+        const a = mapsPoint(from, options)
+        const b = mapsPoint(to, options)
+        if (!a || !b) return null
+        const label = `${placePhrase(from, 'de')} ${placePhrase(to, 'a')}`
+        const content = (
+          <>
+            <PlaceIcon tipo={from.tipo} size="sm" />
+            <Chevrons />
+            <PlaceIcon tipo={to.tipo} size="sm" />
+            <span>{label}</span>
+            {(from.direccion || to.direccion) && <small>Google Maps ↗</small>}
+          </>
+        )
+        if (from.direccion || to.direccion) {
+          return (
+            <a key={label} className="planner-shortcut chevrons-host" href={googleMapsUrl(a, b)} target="_blank" rel="noreferrer">
+              {content}
+            </a>
+          )
+        }
+        return (
+          <button key={label} type="button" className="planner-shortcut chevrons-host" onClick={() => onTrip(a, b)}>
+            {content}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
 
 const asLine = (s) => ({ mode: s.lineMode, code: s.lineCode, name: s.lineName, colorHex: s.lineColorHex })
 
@@ -80,6 +139,15 @@ export default function TripPlannerPage() {
   // Un lugar por estacion: Retiro aparece una vez aunque tenga cinco
   // lineas, y el viaje sale o llega por la que mas convenga.
   const options = useMemo(() => buildPlaces(stations), [stations])
+  const { places } = useSavedPlaces()
+  // Los lugares guardados como estacion, listos para los chips de cada campo.
+  const placeChips = useMemo(
+    () =>
+      places
+        .map((p, i) => ({ key: `${p.tipo}-${i}`, tipo: p.tipo, nombre: p.nombre, option: findStationPlace(options, p.estacion) }))
+        .filter((c) => c.option),
+    [places, options],
+  )
 
   // Un enlace compartido (?desde=...&hasta=...) carga el viaje al abrirlo.
   useEffect(() => {
@@ -142,8 +210,23 @@ export default function TripPlannerPage() {
 
       {stations && (
         <section className="planner-card">
+          <CommuteShortcuts
+            places={places}
+            options={options}
+            onTrip={(from, to) => {
+              setOrigin(from)
+              setDestination(to)
+            }}
+          />
           <div className="planner-form">
-            <StationPicker id="origen" title="Desde" stations={options} value={origin} onChange={setOrigin} />
+            <StationPicker
+              id="origen"
+              title="Desde"
+              stations={options}
+              value={origin}
+              onChange={setOrigin}
+              shortcuts={placeChips}
+            />
             <button type="button" className="planner-swap" onClick={swap} aria-label="Invertir origen y destino">
               ⇅
             </button>
@@ -153,6 +236,7 @@ export default function TripPlannerPage() {
               stations={options}
               value={destination}
               onChange={setDestination}
+              shortcuts={placeChips}
             />
           </div>
 
