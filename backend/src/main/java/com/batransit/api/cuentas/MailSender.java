@@ -107,9 +107,24 @@ public class MailSender {
 
     private static String reason(RestClientException e) {
         if (e instanceof RestClientResponseException r) {
-            return describe(r.getStatusCode().value(), r.getResponseBodyAsString());
+            String body = r.getResponseBodyAsString();
+            // El texto de Brevo va al log del servidor (Render), que es donde se ve el motivo completo.
+            String message = message(body);
+            if (message != null) {
+                log.warn("Brevo respondio HTTP {}: {}", r.getStatusCode().value(), message);
+            }
+            return describe(r.getStatusCode().value(), body);
         }
         return e.getMostSpecificCause().getClass().getSimpleName();
+    }
+
+    /** El "message" de la respuesta de Brevo, corto (no trae la clave). */
+    static String message(String body) {
+        if (body == null) {
+            return null;
+        }
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("\"message\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.){1,300})\"").matcher(body);
+        return m.find() ? m.group(1) : null;
     }
 
     /**
@@ -122,6 +137,13 @@ public class MailSender {
         if (text.contains("unrecognised ip") || text.contains("unrecognized ip") || text.contains("ip not authorized")
                 || text.contains("ip address")) {
             return "HTTP " + status + ": la IP del servidor no está autorizada en Brevo";
+        }
+        // 403 de cuentas nuevas o revisadas: Brevo tiene que habilitar el envio de mails transaccionales.
+        if (text.contains("not yet activated") || text.contains("not activated") || text.contains("under validation")) {
+            return "HTTP " + status + ": Brevo todavía no activó el envío de mails de la cuenta";
+        }
+        if (text.contains("suspended") || text.contains("blocked") || text.contains("deactivated")) {
+            return "HTTP " + status + ": la cuenta de Brevo está suspendida";
         }
         java.util.regex.Matcher code = java.util.regex.Pattern.compile("\"code\"\\s*:\\s*\"([a-z_]{1,40})\"").matcher(text);
         return code.find() ? "HTTP " + status + ": " + code.group(1) : "HTTP " + status;

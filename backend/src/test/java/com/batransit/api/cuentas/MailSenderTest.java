@@ -24,6 +24,13 @@ class MailSenderTest {
                 .isEqualTo("HTTP 401: la IP del servidor no está autorizada en Brevo");
         assertThat(MailSender.describe(403, "{\"code\":\"permission_denied\",\"message\":\"Key not allowed\"}"))
                 .isEqualTo("HTTP 403: permission_denied");
+        assertThat(MailSender.describe(403, "{\"code\":\"permission_denied\",\"message\":\"Unable to send email. Your SMTP account is not yet activated. Please contact us at contact@brevo.com to get it activated.\"}"))
+                .isEqualTo("HTTP 403: Brevo todavía no activó el envío de mails de la cuenta");
+        assertThat(MailSender.describe(403, "{\"code\":\"permission_denied\",\"message\":\"Your account has been suspended\"}"))
+                .isEqualTo("HTTP 403: la cuenta de Brevo está suspendida");
+        assertThat(MailSender.message("{\"code\":\"permission_denied\",\"message\":\"Key \\\"x\\\" not allowed\"}"))
+                .isEqualTo("Key \\\"x\\\" not allowed");
+        assertThat(MailSender.message("<html>caido</html>")).isNull();
         assertThat(MailSender.describe(503, "<html>caido</html>")).isEqualTo("HTTP 503");
         assertThat(MailSender.describe(500, null)).isEqualTo("HTTP 500");
     }
