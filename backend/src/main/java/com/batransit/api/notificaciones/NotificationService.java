@@ -36,7 +36,11 @@ public class NotificationService {
 
     private static final Logger log = LoggerFactory.getLogger(NotificationService.class);
     static final ZoneId BUENOS_AIRES = ZoneId.of("America/Argentina/Buenos_Aires");
-    static final Set<String> KINDS = Set.of("lineas", "estaciones", "accesos");
+    static final Set<String> KINDS = Set.of("lineas", "estaciones", "accesos", "clima", "tarifas", "especiales");
+    /** Opciones de pausa: una hora, hasta mañana a la mañana, hasta el lunes a la mañana. */
+    static final Set<String> PAUSES = Set.of("hora", "manana", "lunes");
+    /** A que hora termina la pausa "hasta mañana" o "hasta el lunes". */
+    static final int PAUSE_ENDS_AT = 6;
 
     private final PushSubscriptionRepository subscriptions;
     private final PushStore store;
@@ -117,6 +121,58 @@ public class NotificationService {
         }
     }
 
+    /**
+     * Pausa los avisos de este navegador. option: "hora", "manana" (hasta
+     * mañana a las 6), "lunes" (hasta el lunes a las 6) o null para
+     * reanudar. Devuelve hasta cuando quedo pausado (null = activo).
+     */
+    @Transactional
+    public Instant pause(String endpoint, String option, Instant now) {
+        PushSubscription sub = endpoint == null ? null : subscriptions.findByEndpoint(endpoint).orElse(null);
+        if (sub == null) {
+            throw bad("Primero activá los avisos en este navegador.");
+        }
+        if (option != null && !PAUSES.contains(option)) {
+            throw bad("Esa pausa no existe.");
+        }
+        Instant until = option == null ? null : pauseEnd(option, ZonedDateTime.ofInstant(now, BUENOS_AIRES));
+        sub.pauseUntil(until);
+        subscriptions.save(sub);
+        return until;
+    }
+
+    static Instant pauseEnd(String option, ZonedDateTime now) {
+        return switch (option) {
+            case "hora" -> now.plusHours(1).toInstant();
+            case "manana" -> now.toLocalDate().plusDays(now.getHour() < PAUSE_ENDS_AT ? 0 : 1)
+                    .atTime(PAUSE_ENDS_AT, 0).atZone(BUENOS_AIRES).toInstant();
+            default -> now.toLocalDate().with(java.time.temporal.TemporalAdjusters.next(java.time.DayOfWeek.MONDAY))
+                    .atTime(PAUSE_ENDS_AT, 0).atZone(BUENOS_AIRES).toInstant();
+        };
+    }
+
+    /**
+     * Las suscripciones para los avisos de clima, tarifas, servicios
+     * especiales y ultimo tren. stationLine: de que linea es cada estacion
+     * (las estaciones favoritas suman su linea).
+     */
+    @Transactional(readOnly = true)
+    public List<ExtraNotices.Target> targets(Map<Long, Long> stationLine) {
+        return subscriptions.findAll().stream().map(s -> {
+            Subscriber sub = toSubscriber(s);
+            Set<Long> lines = new HashSet<>(sub.lines());
+            sub.stations().forEach(id -> {
+                Long line = stationLine.get(id);
+                if (line != null) {
+                    lines.add(line);
+                }
+            });
+            Set<String> kinds = new HashSet<>(List.of(s.getKinds().split(",")));
+            return new ExtraNotices.Target(s.getId(), lines, kinds,
+                    s.getLastTrainMinutes() == null ? null : s.getLastTrainMinutes().intValue());
+        }).toList();
+    }
+
     /** Todas las suscripciones, como preferencias para el planificador. */
     @Transactional(readOnly = true)
     public List<Subscriber> subscribers() {
@@ -159,9 +215,10 @@ public class NotificationService {
         Instant now = Instant.now();
         for (Planned p : planned) {
             PushSubscription sub = byId.get(p.subscriptionId());
-            boolean summary = p.eventKey().startsWith("resumen:");
-            if (sub == null || isPaused(sub, now) || (!summary && inQuietHours(sub, now))) {
-                continue; // el resumen se pidio a esa hora a proposito: no lo frena el horario sin avisos
+            // El resumen y el ultimo tren se pidieron para esa hora a proposito: no los frena el horario sin avisos.
+            boolean scheduled = p.eventKey().startsWith("resumen:") || p.eventKey().startsWith("ultimo:");
+            if (sub == null || isPaused(sub, now) || (!scheduled && inQuietHours(sub, now))) {
+                continue;
             }
             if (!store.claim(sub.getId(), p.eventKey())) {
                 continue; // ya se mando

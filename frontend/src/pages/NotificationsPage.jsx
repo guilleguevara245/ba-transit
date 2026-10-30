@@ -3,7 +3,17 @@ import { Link } from 'react-router-dom'
 import BackButton from '../components/BackButton.jsx'
 import Select from '../components/Select.jsx'
 import { useFavoriteList } from '../hooks/useFavoriteList.js'
-import { currentSubscription, disablePush, enablePush, pushSupport, readPrefs, testPush, updatePush } from '../utils/push.js'
+import { isPaused, pauseLabel } from '../utils/notifPrefs.js'
+import {
+  currentSubscription,
+  disablePush,
+  enablePush,
+  pausePush,
+  pushSupport,
+  readPrefs,
+  testPush,
+  updatePush,
+} from '../utils/push.js'
 import './AccountPage.css'
 import './NotificationsPage.css'
 
@@ -11,6 +21,22 @@ const KINDS = [
   { key: 'lineas', label: 'Mis líneas', hint: 'Demoras, interrupciones y obras en tus líneas.' },
   { key: 'estaciones', label: 'Mis estaciones', hint: 'Cuando una alerta nombra a tu estación (cerrada, sin parada…).' },
   { key: 'accesos', label: 'Mis accesos', hint: 'Cuando un acceso se congestiona o se corta, y en qué mano.' },
+]
+// Avisos que no dependen de un favorito puntual (los servicios especiales, de tus líneas).
+const EXTRA_KINDS = [
+  { key: 'clima', label: 'Alertas del clima', hint: 'Alertas del Servicio Meteorológico para la Ciudad y el conurbano.' },
+  { key: 'tarifas', label: 'Cambios de tarifa', hint: 'Cuando cambia el boleto de subte, colectivo o tren, y desde cuándo.' },
+  {
+    key: 'especiales',
+    label: 'Servicios especiales',
+    hint: 'Trenes rápidos, recorridos distintos y cambios por obras en tus líneas.',
+  },
+]
+const LAST_TRAIN_OPTIONS = [15, 30, 45, 60].map((m) => ({ value: m, label: m === 60 ? '1 hora antes' : `${m} minutos antes` }))
+const PAUSES = [
+  ['hora', '1 hora'],
+  ['manana', 'Hasta mañana'],
+  ['lunes', 'Hasta el lunes'],
 ]
 const HOURS = Array.from({ length: 24 }, (_, h) => ({ value: h, label: `${String(h).padStart(2, '0')}:00` }))
 // Resumen: cada 15 minutos, de 05:00 a 23:45.
@@ -79,6 +105,10 @@ export default function NotificationsPage() {
     else updatePush(next).catch(() => {})
   }
 
+  // El estado de la pausa se ve en su bloque: no hace falta otro mensaje.
+  const pause = (option) => run(async () => setPrefs(await pausePush(option)))
+  const paused = isPaused(prefs)
+
   const toggleKind = (key) =>
     change({ ...prefs, kinds: prefs.kinds.includes(key) ? prefs.kinds.filter((k) => k !== key) : [...prefs.kinds, key] })
 
@@ -90,9 +120,9 @@ export default function NotificationsPage() {
           Avisos
         </h1>
         <p className="auth-subtitle">
-          Te avisamos en este dispositivo cuando hay problemas en tus favoritos: seguís{' '}
+          Te avisamos en este dispositivo cuando hay problemas en tus favoritos (seguís{' '}
           {plural(lines, 'línea', 'líneas')}, {plural(stations, 'estación', 'estaciones')} y{' '}
-          {plural(accesses, 'acceso', 'accesos')}.
+          {plural(accesses, 'acceso', 'accesos')}) y, si querés, del clima, las tarifas y el último subte.
         </p>
         {lines + stations + accesses === 0 && (
           <p className="auth-note">
@@ -134,9 +164,32 @@ export default function NotificationsPage() {
         )}
 
         {support === 'ok' && subscribed && (
-          <div className="notif-on">
+          <div className={paused ? 'notif-on paused' : 'notif-on'}>
             <span className="notif-on-dot" aria-hidden="true" />
-            <span>Avisos activados en este dispositivo.</span>
+            <span>
+              {paused ? `Avisos pausados ${pauseLabel(prefs.pausedUntil)}.` : 'Avisos activados en este dispositivo.'}
+            </span>
+          </div>
+        )}
+
+        {support === 'ok' && subscribed && (
+          <div className="notif-pause">
+            {paused ? (
+              <button type="button" className="notif-pause-resume" disabled={busy} onClick={() => pause(null)}>
+                Reanudar los avisos
+              </button>
+            ) : (
+              <>
+                <span id="notif-pause-label">Pausar</span>
+                <div className="image-picker-tabs" role="group" aria-labelledby="notif-pause-label">
+                  {PAUSES.map(([option, label]) => (
+                    <button key={option} type="button" disabled={busy} onClick={() => pause(option)}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -195,7 +248,7 @@ export default function NotificationsPage() {
 
         {support !== 'no' && (
           <fieldset className="notif-prefs" disabled={busy}>
-            <legend>Qué avisar</legend>
+            <legend>De tus favoritos</legend>
             {KINDS.map((k) => (
               <label key={k.key} className="notif-check">
                 <input type="checkbox" checked={prefs.kinds.includes(k.key)} onChange={() => toggleKind(k.key)} />
@@ -216,6 +269,48 @@ export default function NotificationsPage() {
                 <small>Por ejemplo, “Línea B: volvió a funcionar normal”.</small>
               </span>
             </label>
+          </fieldset>
+        )}
+
+        {support !== 'no' && (
+          <fieldset className="notif-prefs" disabled={busy}>
+            <legend>Además</legend>
+            {EXTRA_KINDS.map((k) => (
+              <label key={k.key} className="notif-check">
+                <input type="checkbox" checked={prefs.kinds.includes(k.key)} onChange={() => toggleKind(k.key)} />
+                <span>
+                  {k.label}
+                  <small>{k.hint}</small>
+                </span>
+              </label>
+            ))}
+            <label className="notif-check">
+              <input
+                type="checkbox"
+                checked={prefs.lastTrain}
+                onChange={() => change({ ...prefs, lastTrain: !prefs.lastTrain })}
+              />
+              <span>
+                Último subte
+                <small>
+                  Antes del último subte o Premetro de tus líneas (y las de tus estaciones). Llega aunque sea horario
+                  sin avisos.
+                </small>
+              </span>
+            </label>
+            {prefs.lastTrain && (
+              <div className="notif-summary">
+                <div className="auth-field notif-last-train">
+                  <span id="last-train">Avisarme</span>
+                  <Select
+                    labelledBy="last-train"
+                    value={prefs.lastTrainMinutes}
+                    options={LAST_TRAIN_OPTIONS}
+                    onChange={(v) => change({ ...prefs, lastTrainMinutes: v })}
+                  />
+                </div>
+              </div>
+            )}
           </fieldset>
         )}
 

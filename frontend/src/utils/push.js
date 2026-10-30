@@ -1,6 +1,7 @@
 import { apiSend } from '../api.js'
 import { readAll } from './favoritesStore.js'
 import { getSession } from './session.js'
+import { upgradePrefs } from './notifPrefs.js'
 
 /**
  * Avisos (Web Push) de este navegador: activar, actualizar los favoritos y
@@ -8,8 +9,11 @@ import { getSession } from './session.js'
  */
 
 const PREFS_KEY = 'ba-transit:avisos'
+/** Tipos que se sumaron despues (v2): a quien ya tenia avisos se le agregan una vez. */
+export const NEW_KINDS_V2 = ['clima', 'tarifas', 'especiales']
 export const DEFAULT_PREFS = {
-  kinds: ['lineas', 'estaciones', 'accesos'],
+  version: 2,
+  kinds: ['lineas', 'estaciones', 'accesos', ...NEW_KINDS_V2],
   notifyResolved: true,
   quiet: true,
   quietFrom: 23,
@@ -18,6 +22,11 @@ export const DEFAULT_PREFS = {
   summary: false,
   summaryTime: '07:30',
   summaryDays: [1, 2, 3, 4, 5],
+  // Ultimo subte o Premetro de tus lineas: cuantos minutos antes avisar.
+  lastTrain: false,
+  lastTrainMinutes: 30,
+  // Hasta cuando estan pausados (ISO) o null.
+  pausedUntil: null,
 }
 
 /** El nombre del saludo del inicio, para el resumen ("Buen día, Guille"). */
@@ -39,12 +48,30 @@ export function pushSupport() {
   return hasApis ? 'ok' : 'no'
 }
 
-export function readPrefs() {
+function readSaved() {
   try {
-    return { ...DEFAULT_PREFS, ...JSON.parse(window.localStorage.getItem(PREFS_KEY) ?? '{}') }
+    return JSON.parse(window.localStorage.getItem(PREFS_KEY) ?? 'null')
   } catch {
-    return { ...DEFAULT_PREFS }
+    return null
   }
+}
+
+export function readPrefs() {
+  return upgradePrefs(readSaved(), DEFAULT_PREFS, NEW_KINDS_V2)
+}
+
+/**
+ * Quien ya tenia los avisos activos antes de los tipos nuevos: se los
+ * suma una vez y se los manda al servidor (si no, recien los tendria al
+ * volver a la pagina de avisos).
+ */
+export async function upgradeSubscription() {
+  const saved = readSaved()
+  if (!saved || (saved.version ?? 1) >= DEFAULT_PREFS.version) return
+  const prefs = readPrefs()
+  savePrefs(prefs)
+  const subscription = await currentSubscription()
+  if (subscription) await send(subscription, prefs)
 }
 
 function savePrefs(prefs) {
@@ -86,6 +113,7 @@ function body(subscription, prefs) {
     summaryTime: prefs.summary ? prefs.summaryTime : null,
     summaryDays: prefs.summaryDays,
     greetingName: greetingName(),
+    lastTrainMinutes: prefs.lastTrain ? prefs.lastTrainMinutes : null,
   }
 }
 
@@ -126,6 +154,22 @@ export async function disablePush() {
   } finally {
     await subscription.unsubscribe()
   }
+}
+
+/**
+ * Pausa los avisos: 'hora', 'manana' (hasta mañana a las 6), 'lunes'
+ * (hasta el lunes a las 6) o null para reanudar. Devuelve las preferencias
+ * con pausedUntil al dia.
+ */
+export async function pausePush(option) {
+  const subscription = await currentSubscription()
+  if (!subscription) throw new Error('Primero activá los avisos.')
+  const { pausedUntil } = await apiSend('POST', '/api/v1/notificaciones/pausa', {
+    body: { endpoint: subscription.endpoint, option },
+  })
+  const prefs = { ...readPrefs(), pausedUntil: pausedUntil ?? null }
+  savePrefs(prefs)
+  return prefs
 }
 
 export async function testPush() {

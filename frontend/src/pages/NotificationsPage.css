@@ -147,3 +147,46 @@
   outline: 2px solid var(--yellow);
   outline-offset: 2px;
 }
+
+/* Pausa: chips para pausar o, si esta pausado, reanudar. */
+.notif-on.paused {
+  background: var(--bg);
+}
+
+.notif-on.paused .notif-on-dot {
+  background: var(--text-faint);
+}
+
+.notif-pause {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  margin-top: -4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.notif-pause button:disabled {
+  opacity: 0.6;
+}
+
+.notif-pause-resume {
+  padding: 8px 14px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--yellow);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.notif-last-train {
+  width: 180px !important;
+}
+
+.notif-pause .image-picker-tabs button {
+  padding: 6px 11px;
+}

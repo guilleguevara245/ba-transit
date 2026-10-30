@@ -139,6 +139,10 @@ public class SpecialService {
         return validUntil;
     }
 
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
     public boolean isActive() {
         return active;
     }

@@ -44,6 +44,12 @@ public class PushStore {
         return values.stream().findFirst();
     }
 
+    /** Guarda o reemplaza un ajuste. */
+    public void saveSetting(String key, String value) {
+        jdbc.update("INSERT INTO app_setting (key, value) VALUES (?, ?) "
+                + "ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()", key, value);
+    }
+
     /** Guarda el ajuste si todavia no existe (si dos procesos lo crean a la vez, gana el primero). */
     public void saveSettingIfAbsent(String key, String value) {
         jdbc.update("INSERT INTO app_setting (key, value) VALUES (?, ?) ON CONFLICT (key) DO NOTHING", key, value);

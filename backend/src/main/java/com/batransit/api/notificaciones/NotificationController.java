@@ -4,6 +4,8 @@ import com.batransit.api.cuentas.AccountException;
 import com.batransit.api.cuentas.LoginRateLimiter;
 import com.batransit.api.cuentas.TokenService;
 import com.batransit.api.notificaciones.NotificationModels.EndpointRequest;
+import com.batransit.api.notificaciones.NotificationModels.PauseRequest;
+import com.batransit.api.notificaciones.NotificationModels.PauseResponse;
 import com.batransit.api.notificaciones.NotificationModels.PublicKey;
 import com.batransit.api.notificaciones.NotificationModels.SubscribeRequest;
 import jakarta.servlet.http.HttpServletRequest;
@@ -56,6 +58,12 @@ public class NotificationController {
     public ResponseEntity<Void> unsubscribe(@RequestBody EndpointRequest body) {
         service.unsubscribe(body.endpoint());
         return ResponseEntity.noContent().build();
+    }
+
+    /** Pausa los avisos de este navegador (una hora, hasta mañana o hasta el lunes) o los reanuda. */
+    @PostMapping("/api/v1/notificaciones/pausa")
+    public PauseResponse pause(@RequestBody PauseRequest body) {
+        return new PauseResponse(service.pause(body.endpoint(), body.option(), java.time.Instant.now()));
     }
 
     /** Manda un aviso de prueba a este navegador. */

@@ -14,7 +14,8 @@ public final class NotificationModels {
 
     /**
      * Activar o actualizar los avisos de este navegador. kinds: tipos
-     * elegidos ("lineas", "estaciones", "accesos"); quietFrom/quietTo:
+     * elegidos ("lineas", "estaciones", "accesos", "clima",
+     * "tarifas", "especiales"); quietFrom/quietTo:
      * horas sin avisos (0-23, hora de Buenos Aires), ambos null = sin pausa.
      * summaryTime: hora del resumen diario ("07:30", null = sin resumen) y
      * summaryDays sus dias (1 = lunes ... 7 = domingo); greetingName: para
@@ -27,6 +28,14 @@ public final class NotificationModels {
     }
 
     public record EndpointRequest(String endpoint) {
+    }
+
+    /** Pausar: option "hora", "manana", "lunes" o null (reanudar). */
+    public record PauseRequest(String endpoint, String option) {
+    }
+
+    /** Hasta cuando estan pausados los avisos (null = activos). */
+    public record PauseResponse(java.time.Instant pausedUntil) {
     }
 
     public record PublicKey(String publicKey) {
