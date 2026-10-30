@@ -92,3 +92,40 @@
 .about-block p + .about-sources {
   margin-top: 12px;
 }
+
+/* Creditos de las fotos: plegados (son muchas). */
+.about-photos-list > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 8px;
+  list-style: none;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text);
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.about-photos-list > summary::-webkit-details-marker {
+  display: none;
+}
+
+.about-photos-list > summary .chevrons {
+  width: 22px;
+  height: 14px;
+  transition: transform 0.15s ease;
+}
+
+.about-photos-list[open] > summary .chevrons {
+  transform: rotate(90deg);
+}
+
+.about-photos-list > summary:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 3px;
+}
+
+.about-photos-list[open] > .about-photos {
+  margin-top: 8px;
+}

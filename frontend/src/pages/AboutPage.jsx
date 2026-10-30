@@ -1,4 +1,5 @@
 import BackButton from '../components/BackButton.jsx'
+import Chevrons from '../components/Chevrons.jsx'
 import { photoCredits } from '../data/stationPhotos.js'
 import './ModePage.css'
 import './AboutPage.css'
@@ -9,7 +10,8 @@ const SOURCES = [
     what: 'Alertas del subte y de colectivos, y recorridos de colectivos',
     source: 'API Transporte del Gobierno de la Ciudad de Buenos Aires',
     url: 'https://api-transporte.buenosaires.gob.ar/',
-    detail: 'Alertas de servicio en tiempo real (en colectivos, por línea) y feed GTFS de colectivos (se actualiza una vez por día).',
+    detail:
+      'Alertas de servicio en tiempo real (en colectivos, por línea) y feed GTFS de colectivos (se actualiza una vez por día).',
   },
   {
     what: 'Estaciones de tren',
@@ -39,7 +41,8 @@ const SOURCES = [
     what: 'Frecuencias programadas del subte y el Premetro',
     source: 'API Transporte (Gobierno de la Ciudad), GTFS del subte',
     url: 'https://www.buenosaires.gob.ar/desarrollourbano/transporte/apitransporte',
-    detail: 'Frecuencia por franja horaria y tiempo entre estaciones, para estimar las próximas pasadas cuando no hay datos en vivo.',
+    detail:
+      'Frecuencia por franja horaria y tiempo entre estaciones, para estimar las próximas pasadas cuando no hay datos en vivo.',
   },
   {
     what: 'Estaciones accesibles del subte',
@@ -69,13 +72,15 @@ const SOURCES = [
     what: 'Estacionamiento',
     source: 'Buenos Aires Data — Garajes Comerciales, Estacionamientos concesionados y Estacionamientos de Motos',
     url: 'https://data.buenosaires.gob.ar/dataset/garajes-comerciales',
-    detail: 'Garajes y playas de estacionamiento de toda la Ciudad, y cocheras y lugares en la calle para motos del microcentro (actualizados el 22/06/2026).',
+    detail:
+      'Garajes y playas de estacionamiento de toda la Ciudad, y cocheras y lugares en la calle para motos del microcentro (actualizados el 22/06/2026).',
   },
   {
     what: 'Estacionamiento en el conurbano',
     source: 'OpenStreetMap (© colaboradores de OpenStreetMap, licencia ODbL)',
     url: 'https://www.openstreetmap.org/copyright',
-    detail: 'Playas y garajes de los 40 partidos del AMBA, con el partido de cada uno. Son datos colaborativos, no oficiales: los municipios no publican datos abiertos de estacionamiento.',
+    detail:
+      'Playas y garajes de los 40 partidos del AMBA, con el partido de cada uno. Son datos colaborativos, no oficiales: los municipios no publican datos abiertos de estacionamiento.',
   },
   {
     what: 'Peajes',
@@ -87,13 +92,15 @@ const SOURCES = [
     what: 'Tránsito en los accesos',
     source: 'TomTom Traffic',
     url: 'https://www.tomtom.com/products/traffic-apis/',
-    detail: 'Velocidad actual y normal de cada tramo, en cada mano (hacia CABA y hacia Provincia), medida cada 20 minutos.',
+    detail:
+      'Velocidad actual y normal de cada tramo, en cada mano (hacia CABA y hacia Provincia), medida cada 20 minutos.',
   },
   {
     what: 'Aviones en vivo',
     source: 'adsb.lol',
     url: 'https://adsb.lol/',
-    detail: 'Posición, altura y velocidad de los aviones alrededor de Buenos Aires, con las señales que reciben antenas voluntarias. Datos abiertos bajo licencia ODbL.',
+    detail:
+      'Posición, altura y velocidad de los aviones alrededor de Buenos Aires, con las señales que reciben antenas voluntarias. Datos abiertos bajo licencia ODbL.',
   },
   {
     what: 'Clima en los aeropuertos',
@@ -105,7 +112,8 @@ const SOURCES = [
     what: 'Avisos de los trenes',
     source: 'Trenes Argentinos, modificaciones en el servicio y novedades',
     url: 'https://www.argentina.gob.ar/transporte/trenes-argentinos/modificaciones-en-el-servicio-y-novedades',
-    detail: 'Obras, recorridos limitados, interrupciones y estaciones cerradas de Roca, Mitre, Sarmiento, San Martín, Belgrano Sur y Tren de la Costa, revisados cada 15 minutos.',
+    detail:
+      'Obras, recorridos limitados, interrupciones y estaciones cerradas de Roca, Mitre, Sarmiento, San Martín, Belgrano Sur y Tren de la Costa, revisados cada 15 minutos.',
   },
   {
     what: 'Estado del Urquiza',
@@ -123,7 +131,8 @@ const SOURCES = [
     what: 'Alertas meteorológicas',
     source: 'Servicio Meteorológico Nacional (feed CAP)',
     url: 'https://www.smn.gob.ar/alertas',
-    detail: 'Alertas amarillas, naranjas y rojas por tormentas, lluvias y calor que afectan al AMBA, revisadas cada 10 minutos.',
+    detail:
+      'Alertas amarillas, naranjas y rojas por tormentas, lluvias y calor que afectan al AMBA, revisadas cada 10 minutos.',
   },
   {
     what: 'Horario del último tren',
@@ -150,8 +159,8 @@ export default function AboutPage() {
       <section className="about-block">
         <h2 className="about-heading">Qué es</h2>
         <p>
-          BA Transit reúne el estado del subte, el Premetro, los trenes metropolitanos, los colectivos, los accesos
-          a la Ciudad y los aeropuertos: alertas de servicio, recorridos, estaciones, horarios, tarifas y tránsito.
+          BA Transit reúne el estado del subte, el Premetro, los trenes metropolitanos, los colectivos, los accesos a la
+          Ciudad y los aeropuertos: alertas de servicio, recorridos, estaciones, horarios, tarifas y tránsito.
         </p>
         <p>
           Es un proyecto personal de <strong>Guillermo Guevara</strong>, hecho con Java 21, Spring Boot, PostgreSQL,
@@ -177,28 +186,37 @@ export default function AboutPage() {
       {credits.length > 0 && (
         <section className="about-block">
           <h2 className="about-heading">Fotos de las estaciones</h2>
-          <p>Las fotos son de Wikimedia Commons y se usan según su licencia. Gracias a sus autores.</p>
-          <ul className="about-sources about-photos">
-            {credits.map((c) => (
-              <li key={c.file}>
-                <span className="about-what">{c.name}</span>
-                <span className="about-detail">
-                  Foto: {c.author} ·{' '}
-                  {c.licenseUrl ? (
-                    <a href={c.licenseUrl} target="_blank" rel="noreferrer">
-                      {c.license}
+          <p>
+            Las {credits.length} fotos son de Wikimedia Commons y se usan según su licencia; para el sitio se recortaron
+            y achicaron. Gracias a sus autores.
+          </p>
+          <details className="about-photos-list">
+            <summary className="chevrons-host">
+              Ver autor y licencia de cada foto
+              <Chevrons />
+            </summary>
+            <ul className="about-sources about-photos">
+              {credits.map((c) => (
+                <li key={c.file}>
+                  <span className="about-what">{c.name}</span>
+                  <span className="about-detail">
+                    Foto: {c.author} ·{' '}
+                    {c.licenseUrl ? (
+                      <a href={c.licenseUrl} target="_blank" rel="noreferrer">
+                        {c.license}
+                      </a>
+                    ) : (
+                      c.license
+                    )}{' '}
+                    ·{' '}
+                    <a href={c.source} target="_blank" rel="noreferrer">
+                      Ver en Wikimedia Commons
                     </a>
-                  ) : (
-                    c.license
-                  )}{' '}
-                  ·{' '}
-                  <a href={c.source} target="_blank" rel="noreferrer">
-                    Ver en Wikimedia Commons ↗
-                  </a>
-                </span>
-              </li>
-            ))}
-          </ul>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </details>
         </section>
       )}
 

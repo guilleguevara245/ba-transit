@@ -1,8 +1,9 @@
 import { lineSlug, textSlug } from '../utils/lineSlug.js'
+import { PHOTO_LIST } from './stationPhotoList.js'
 
 /**
  * Fotos de las estaciones, de Wikimedia Commons (licencias libres). Se
- * guardan en el sitio (public/estaciones/...), achicadas a 320 px, asi la
+ * guardan en el sitio (public/estaciones/...), recortadas y achicadas, asi la
  * pagina no le pide nada a otro servidor. Los creditos se muestran todos
  * juntos en "Acerca de".
  *
@@ -15,7 +16,7 @@ import { lineSlug, textSlug } from '../utils/lineSlug.js'
  *   licenseUrl: el texto de la licencia (opcional en dominio publico)
  *   source: la ficha del archivo en Commons
  */
-export const STATION_PHOTOS = {}
+export const STATION_PHOTOS = PHOTO_LIST
 
 /** "subte-b/medrano": la clave de la foto de una estacion. */
 export function photoKey(station) {
