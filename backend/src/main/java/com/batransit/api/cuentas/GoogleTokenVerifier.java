@@ -45,7 +45,12 @@ public class GoogleTokenVerifier {
     static final Duration SKEW = Duration.ofMinutes(1);
 
     /** Lo que nos importa de la cuenta de Google. */
-    public record GoogleIdentity(String sub, String email, String name) {
+    /** picture: foto de la cuenta de Google (solo si es una direccion https de Google). */
+    public record GoogleIdentity(String sub, String email, String name, String picture) {
+
+        public GoogleIdentity(String sub, String email, String name) {
+            this(sub, email, name, null);
+        }
     }
 
     private final String clientId;
@@ -122,7 +127,11 @@ public class GoogleTokenVerifier {
             return Optional.empty();
         }
         String name = claims.path("name").asText(null);
-        return Optional.of(new GoogleIdentity(sub, email.toLowerCase(java.util.Locale.ROOT), name));
+        String picture = claims.path("picture").asText(null);
+        if (picture != null && (!picture.startsWith("https://") || !picture.contains(".googleusercontent.com/") || picture.length() > 500)) {
+            picture = null;
+        }
+        return Optional.of(new GoogleIdentity(sub, email.toLowerCase(java.util.Locale.ROOT), name, picture));
     }
 
     private synchronized PublicKey key(String kid) {

@@ -2,6 +2,7 @@ package com.batransit.api.cuentas;
 
 import com.batransit.api.cuentas.AccountModels.Favorites;
 import com.batransit.api.cuentas.AccountModels.SessionResponse;
+import com.batransit.api.cuentas.AccountModels.UserImage;
 import com.batransit.api.cuentas.AccountModels.UserView;
 import com.batransit.api.cuentas.GoogleTokenVerifier.GoogleIdentity;
 import com.batransit.api.cuentas.TokenService.Claims;
@@ -18,6 +19,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -97,6 +100,12 @@ public class AccountService {
         if (user.getDisplayName() == null) {
             user.setDisplayName(cleanName(identity.name()));
         }
+        if (identity.picture() != null) {
+            user.setGooglePicture(identity.picture());
+            if (user.getAvatarKind() == null) {
+                user.setAvatar("google", null); // de entrada, la foto de Google
+            }
+        }
         user.setLastLoginAt(Instant.now());
         return session(users.saveAndFlush(user));
     }
@@ -144,7 +153,99 @@ public class AccountService {
 
     static UserView view(AppUser user) {
         return new UserView(user.getId(), user.getEmail(), user.getDisplayName(), user.getPasswordHash() != null,
-                user.getGoogleSub() != null, user.getCreatedAt());
+                user.getGoogleSub() != null, user.getCreatedAt(), image(user));
+    }
+
+    static UserImage image(AppUser user) {
+        String kind = user.getAvatarKind();
+        boolean google = user.getGooglePicture() != null;
+        if ("google".equals(kind) && google) {
+            return new UserImage("google", null, user.getGooglePicture(), true);
+        }
+        if ("foto".equals(kind) && user.getPhoto() != null) {
+            String url = "data:" + user.getPhotoType() + ";base64," + java.util.Base64.getEncoder().encodeToString(user.getPhoto());
+            return new UserImage("foto", null, url, google);
+        }
+        if ("avatar".equals(kind) && user.getAvatarValue() != null) {
+            return new UserImage("avatar", user.getAvatarValue(), null, google);
+        }
+        return new UserImage(null, null, null, google);
+    }
+
+    /** Avatares del sitio: las lineas, el colectivo, la bici y el avion. */
+    static final Set<String> AVATARS = Set.of("subte-a", "subte-b", "subte-c", "subte-d", "subte-e", "subte-h", "premetro",
+            "belgrano-norte", "belgrano-sur", "mitre", "roca", "san-martin", "sarmiento", "tren-de-la-costa", "urquiza",
+            "colectivo", "bici", "avion");
+    /** La foto ya llega achicada (256 px); esto deja margen y frena archivos grandes. */
+    static final int MAX_PHOTO_BYTES = 150_000;
+
+    @Transactional
+    public UserView setImage(Claims session, String kind, String value) {
+        AppUser user = find(session);
+        if (kind == null || kind.isBlank()) {
+            user.setAvatar(null, null);
+        } else if ("avatar".equals(kind)) {
+            if (value == null || !AVATARS.contains(value)) {
+                throw bad("Ese avatar no existe.");
+            }
+            user.setAvatar("avatar", value);
+        } else if ("google".equals(kind)) {
+            if (user.getGooglePicture() == null) {
+                throw bad("Tu cuenta no tiene foto de Google: entrá con Google para usarla.");
+            }
+            user.setAvatar("google", null);
+        } else if ("foto".equals(kind)) {
+            if (user.getPhoto() == null) {
+                throw bad("Primero subí una foto.");
+            }
+            user.setAvatar("foto", null);
+        } else {
+            throw bad("Ese tipo de imagen no existe.");
+        }
+        return view(user);
+    }
+
+    /** Guarda la foto propia (JPEG, PNG o WebP; ya recortada y achicada en el navegador) y la elige. */
+    @Transactional
+    public UserView setPhoto(Claims session, String dataUrl) {
+        AppUser user = find(session);
+        Matcher m = dataUrl == null ? null : DATA_URL.matcher(dataUrl);
+        if (m == null || !m.matches()) {
+            throw bad("La foto no es válida. Probá con una imagen JPG o PNG.");
+        }
+        byte[] bytes;
+        try {
+            bytes = java.util.Base64.getDecoder().decode(m.group(2));
+        } catch (IllegalArgumentException e) {
+            throw bad("La foto no es válida. Probá con una imagen JPG o PNG.");
+        }
+        if (bytes.length > MAX_PHOTO_BYTES) {
+            throw bad("La foto es demasiado grande.");
+        }
+        String type = imageType(bytes);
+        if (type == null) {
+            throw bad("La foto no es válida. Probá con una imagen JPG o PNG.");
+        }
+        user.setPhoto(bytes, type);
+        user.setAvatar("foto", null);
+        return view(user);
+    }
+
+    private static final Pattern DATA_URL = Pattern.compile("^data:(image/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$");
+
+    /** El tipo real por los primeros bytes (no por lo que dice el navegador). */
+    static String imageType(byte[] b) {
+        if (b.length > 3 && (b[0] & 0xff) == 0xFF && (b[1] & 0xff) == 0xD8 && (b[2] & 0xff) == 0xFF) {
+            return "image/jpeg";
+        }
+        if (b.length > 8 && (b[0] & 0xff) == 0x89 && b[1] == 'P' && b[2] == 'N' && b[3] == 'G') {
+            return "image/png";
+        }
+        if (b.length > 12 && b[0] == 'R' && b[1] == 'I' && b[2] == 'F' && b[3] == 'F'
+                && b[8] == 'W' && b[9] == 'E' && b[10] == 'B' && b[11] == 'P') {
+            return "image/webp";
+        }
+        return null;
     }
 
     Favorites readFavorites(String json) {

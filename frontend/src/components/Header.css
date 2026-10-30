@@ -428,14 +428,11 @@
 }
 
 .account-button.signed-in {
-  border-color: var(--yellow);
+  border: 2px solid var(--yellow);
   border-radius: 50%;
-  background: var(--yellow);
-  color: #17171a;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 700;
-  font-size: 17px;
+  overflow: hidden;
 }
+
 
 /* Celular: logo, hora, tema y cuenta en un solo renglon. */
 @media (max-width: 480px) {

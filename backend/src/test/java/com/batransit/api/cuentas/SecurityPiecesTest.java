@@ -86,7 +86,13 @@ class SecurityPiecesTest {
                 + "\"email\":\"Ana@Gmail.com\",\"email_verified\":true,\"name\":\"Ana\",\"exp\":" + exp + "}";
 
         assertThat(verifier.verify(googleToken(keys, good)))
-                .isEqualTo(Optional.of(new GoogleTokenVerifier.GoogleIdentity("123", "ana@gmail.com", "Ana")));
+                .isEqualTo(Optional.of(new GoogleTokenVerifier.GoogleIdentity("123", "ana@gmail.com", "Ana", null)));
+        // La foto de Google solo si es una direccion de Google.
+        String withPicture = good.replace("\"name\":\"Ana\"", "\"name\":\"Ana\",\"picture\":\"https://lh3.googleusercontent.com/a/x\"");
+        assertThat(verifier.verify(googleToken(keys, withPicture)).orElseThrow().picture())
+                .isEqualTo("https://lh3.googleusercontent.com/a/x");
+        String badPicture = good.replace("\"name\":\"Ana\"", "\"name\":\"Ana\",\"picture\":\"https://evil.example/x.png\"");
+        assertThat(verifier.verify(googleToken(keys, badPicture)).orElseThrow().picture()).isNull();
         // Para otra aplicacion, vencido o sin mail verificado: no.
         assertThat(verifier.verify(googleToken(keys, good.replace("cliente.apps", "otro.apps")))).isEqualTo(Optional.empty());
         assertThat(verifier.verify(googleToken(keys, good.replace(String.valueOf(exp), String.valueOf(NOW.minusSeconds(3600).getEpochSecond())))))

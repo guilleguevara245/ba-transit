@@ -97,6 +97,20 @@ public class AccountController {
         return service.saveFavorites(userId(authorization), body);
     }
 
+    /** Elige la imagen de la cuenta: un avatar, la foto de Google o la inicial. */
+    @PutMapping("/api/v1/cuenta/imagen")
+    public UserView setImage(@RequestHeader(name = "Authorization", required = false) String authorization,
+                             @RequestBody AccountModels.ImageRequest body) {
+        return service.setImage(userId(authorization), body.kind(), body.value());
+    }
+
+    /** Sube la foto propia (ya recortada en el navegador). */
+    @PutMapping("/api/v1/cuenta/foto")
+    public UserView setPhoto(@RequestHeader(name = "Authorization", required = false) String authorization,
+                             @RequestBody AccountModels.PhotoRequest body) {
+        return service.setPhoto(userId(authorization), body.dataUrl());
+    }
+
     /** Borra la cuenta y sus favoritos (derecho de supresion). */
     @DeleteMapping("/api/v1/cuenta")
     public ResponseEntity<Void> delete(@RequestHeader(name = "Authorization", required = false) String authorization) {

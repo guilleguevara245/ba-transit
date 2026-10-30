@@ -45,6 +45,20 @@ export async function resetPassword(code, password) {
   await start(await apiSend('POST', '/api/v1/auth/restablecer', { body: { code, password } }))
 }
 
+/** Elige la imagen: { kind: 'avatar', value } | { kind: 'google' } | { kind: null } (la inicial). */
+export async function setImage(kind, value = null) {
+  const session = getSession()
+  const user = await apiSend('PUT', '/api/v1/cuenta/imagen', { body: { kind, value }, token: session.token })
+  setSession({ ...session, user })
+}
+
+/** Sube la foto propia (ya recortada y achicada: ver photoToDataUrl). */
+export async function uploadPhoto(dataUrl) {
+  const session = getSession()
+  const user = await apiSend('PUT', '/api/v1/cuenta/foto', { body: { dataUrl }, token: session.token })
+  setSession({ ...session, user })
+}
+
 /** Cierra la sesion en este navegador; los favoritos quedan en el dispositivo. */
 export function logout() {
   setSession(null)

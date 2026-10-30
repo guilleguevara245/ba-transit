@@ -54,7 +54,7 @@ class AccountServiceTest {
                 return Optional.empty();
             }
             String[] p = token.split("\\|");
-            return Optional.of(new GoogleIdentity(p[0], p[1], p.length > 2 ? p[2] : null));
+            return Optional.of(new GoogleIdentity(p[0], p[1], p.length > 2 ? p[2] : null, p.length > 3 ? p[3] : null));
         }
     }
 
@@ -134,6 +134,41 @@ class AccountServiceTest {
         assertThat(saved).isEqualTo(new Favorites(List.of(2L, 5L), List.of(27L), List.of("norte")));
         assertThat(service.favorites(id)).isEqualTo(saved);
         assertThat(service.saveFavorites(id, new Favorites(null, null, null))).isEqualTo(Favorites.empty());
+    }
+
+    @Test
+    void imagenDeLaCuenta() {
+        SessionResponse s = service.register("ana@gmail.com", "contraseña1", "Ana");
+        TokenService.Claims c = claims(s);
+        assertThat(s.user().image().kind()).isNull(); // de entrada, la inicial
+
+        assertThat(service.setImage(c, "avatar", "subte-b").image().value()).isEqualTo("subte-b");
+        assertThat(statusOf(() -> service.setImage(c, "avatar", "no-existe"))).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(statusOf(() -> service.setImage(c, "google", null))).isEqualTo(HttpStatus.BAD_REQUEST); // sin Google
+
+        // Un JPEG minimo (los primeros bytes alcanzan para reconocerlo).
+        byte[] jpeg = {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0, 0, 16, 'J', 'F', 'I', 'F', 0};
+        String dataUrl = "data:image/jpeg;base64," + java.util.Base64.getEncoder().encodeToString(jpeg);
+        var withPhoto = service.setPhoto(c, dataUrl).image();
+        assertThat(withPhoto.kind()).isEqualTo("foto");
+        assertThat(withPhoto.url()).isEqualTo(dataUrl);
+        // Lo que dice ser PNG pero no lo es, no pasa.
+        String fake = "data:image/png;base64," + java.util.Base64.getEncoder().encodeToString("hola".getBytes());
+        assertThat(statusOf(() -> service.setPhoto(c, fake))).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(statusOf(() -> service.setPhoto(c, "https://otro.sitio/foto.jpg"))).isEqualTo(HttpStatus.BAD_REQUEST);
+
+        assertThat(service.setImage(c, null, null).image().kind()).isNull();
+    }
+
+    @Test
+    void conGoogleArrancaConSuFoto() {
+        String pic = "https://lh3.googleusercontent.com/a/foto";
+        SessionResponse s = service.loginWithGoogle("g-9|carla@gmail.com|Carla|" + pic);
+        assertThat(s.user().image().kind()).isEqualTo("google");
+        assertThat(s.user().image().url()).isEqualTo(pic);
+        // Si despues elige un avatar, volver a entrar con Google no lo pisa.
+        service.setImage(claims(s), "avatar", "colectivo");
+        assertThat(service.loginWithGoogle("g-9|carla@gmail.com|Carla|" + pic).user().image().value()).isEqualTo("colectivo");
     }
 
     @Test

@@ -340,3 +340,105 @@
 .notif-account-link:hover {
   text-decoration: underline;
 }
+
+.account-hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.account-hero-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.account-hero-text span {
+  font-size: 13px;
+  color: var(--text-dim);
+  overflow-wrap: anywhere;
+}
+
+.account-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.account-section h2 {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 18px;
+  color: var(--text);
+}
+
+.image-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.image-picker-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.image-picker-tabs button {
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.image-picker-tabs button.active {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--yellow);
+}
+
+.image-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+  gap: 8px;
+  justify-items: center;
+}
+
+.image-picker-grid button {
+  padding: 0;
+  border: 3px solid transparent;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  line-height: 0;
+}
+
+.image-picker-grid button.chosen {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 2px var(--yellow);
+}
+
+.image-picker-tabs button:focus-visible,
+.image-picker-grid button:focus-visible,
+.image-picker-link:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+}
+
+.image-picker-link {
+  align-self: flex-start;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}

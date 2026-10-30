@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import BackButton from '../components/BackButton.jsx'
 import Chevrons from '../components/Chevrons.jsx'
+import ImagePicker from '../components/ImagePicker.jsx'
+import UserAvatar from '../components/UserAvatar.jsx'
 import { useFavoriteList } from '../hooks/useFavoriteList.js'
 import { useSession } from '../hooks/useSession.js'
 import { deleteAccount, logout } from '../utils/account.js'
@@ -47,18 +49,22 @@ export default function AccountPage() {
     <div className="wrap content auth">
       <BackButton />
       <section className="auth-card" aria-labelledby="account-title">
-        <h1 className="auth-title" id="account-title">
-          Tu cuenta
-        </h1>
+        <div className="account-hero">
+          <UserAvatar user={user} size={72} />
+          <div className="account-hero-text">
+            <h1 className="auth-title" id="account-title">
+              {user.name || 'Tu cuenta'}
+            </h1>
+            <span>{user.email}</span>
+          </div>
+        </div>
+
+        <div className="account-section">
+          <h2>Tu imagen</h2>
+          <ImagePicker user={user} />
+        </div>
+
         <dl className="account-data">
-          {user.name && (
-            <>
-              <dt>Nombre</dt>
-              <dd>{user.name}</dd>
-            </>
-          )}
-          <dt>Mail</dt>
-          <dd>{user.email}</dd>
           <dt>Entrás con</dt>
           <dd>{methods}</dd>
           {user.createdAt && (

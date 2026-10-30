@@ -1,0 +1,20 @@
+.user-avatar {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.user-avatar-photo {
+  object-fit: cover;
+  background: var(--surface);
+}
+
+.user-avatar-initial {
+  background: var(--yellow);
+  color: #17171a;
+}

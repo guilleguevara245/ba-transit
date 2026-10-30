@@ -26,8 +26,25 @@ public final class AccountModels {
         }
     }
 
+    /**
+     * La imagen de la cuenta. kind: 'avatar' | 'google' | 'foto' (null = la
+     * inicial). value: el avatar elegido. url: la foto (de Google o propia,
+     * esta ultima como data URL). googleAvailable: si hay foto de Google para elegir.
+     */
+    public record UserImage(String kind, String value, String url, boolean googleAvailable) {
+    }
+
     /** hasPassword / hasGoogle: con que puede entrar. */
-    public record UserView(long id, String email, String name, boolean hasPassword, boolean hasGoogle, Instant createdAt) {
+    public record UserView(long id, String email, String name, boolean hasPassword, boolean hasGoogle, Instant createdAt,
+                           UserImage image) {
+    }
+
+    /** Elegir la imagen: kind 'avatar' (con value), 'google' o null (la inicial). */
+    public record ImageRequest(String kind, String value) {
+    }
+
+    /** Foto propia, ya recortada en el navegador: "data:image/jpeg;base64,...". */
+    public record PhotoRequest(String dataUrl) {
     }
 
     public record SessionResponse(String token, UserView user) {

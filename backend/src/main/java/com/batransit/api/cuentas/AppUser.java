@@ -46,6 +46,24 @@ public class AppUser {
     @Column(name = "favorites_updated_at")
     private Instant favoritesUpdatedAt;
 
+    /** Imagen: 'avatar' | 'google' | 'foto' (null = la inicial). */
+    @Column(name = "avatar_kind", length = 10)
+    private String avatarKind;
+
+    /** El avatar elegido ("subte-b", "colectivo"...). */
+    @Column(name = "avatar_value", length = 40)
+    private String avatarValue;
+
+    @Column(name = "google_picture", length = 500)
+    private String googlePicture;
+
+    /** Foto propia: JPEG de 256 px recortado en el navegador. */
+    @Column(name = "photo", columnDefinition = "bytea")
+    private byte[] photo;
+
+    @Column(name = "photo_type", length = 20)
+    private String photoType;
+
     /** Las sesiones emitidas antes de esto ya no valen (se cambio la contrasena). */
     @Column(name = "sessions_valid_after")
     private Instant sessionsValidAfter;
@@ -121,6 +139,40 @@ public class AppUser {
 
     public Instant getFavoritesUpdatedAt() {
         return favoritesUpdatedAt;
+    }
+
+    public String getAvatarKind() {
+        return avatarKind;
+    }
+
+    public String getAvatarValue() {
+        return avatarValue;
+    }
+
+    public String getGooglePicture() {
+        return googlePicture;
+    }
+
+    public byte[] getPhoto() {
+        return photo;
+    }
+
+    public String getPhotoType() {
+        return photoType;
+    }
+
+    public void setAvatar(String kind, String value) {
+        this.avatarKind = kind;
+        this.avatarValue = value;
+    }
+
+    public void setGooglePicture(String googlePicture) {
+        this.googlePicture = googlePicture;
+    }
+
+    public void setPhoto(byte[] photo, String type) {
+        this.photo = photo;
+        this.photoType = type;
     }
 
     public Instant getSessionsValidAfter() {
