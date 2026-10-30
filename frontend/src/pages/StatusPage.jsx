@@ -25,8 +25,8 @@ export default function StatusPage() {
       <BackButton />
       <h1 className="page-title">Estado de los datos</h1>
       <p className="page-subtitle">
-        Cómo respondió cada fuente la última vez que el servidor la consultó. Si una falla, el sitio sigue mostrando
-        los últimos datos que tenga.
+        Cómo respondió cada fuente la última vez que el servidor la consultó. Si una falla, el sitio sigue mostrando los
+        últimos datos que tenga.
       </p>
 
       {loading && <Skeleton variant="block" label="Consultando el estado…" />}
@@ -52,7 +52,9 @@ export default function StatusPage() {
                     </div>
                     <div className="status-item-detail">
                       <strong>{label.text}</strong>
-                      {s.status === 'OK' && s.lastSuccess && <span>Respondió {formatRelativeTime(s.lastSuccess, now)}</span>}
+                      {s.status === 'OK' && s.lastSuccess && (
+                        <span>Respondió {formatRelativeTime(s.lastSuccess, now)}</span>
+                      )}
                       {lastAttemptFailed(s) && (
                         <span className="status-item-retry">
                           Un intento falló {formatRelativeTime(s.lastFailure, now)}
@@ -73,36 +75,6 @@ export default function StatusPage() {
               })}
             </ul>
           </section>
-
-          {data.cityServices?.length > 0 && (
-            <section className="panel status-panel status-city" aria-labelledby="status-city-title">
-              <h2 id="status-city-title" className="status-city-title">
-                Otros servicios de la Ciudad
-              </h2>
-              <p className="status-city-intro">
-                La API Transporte los ofrece, pero el sitio todavía no los usa porque suelen fallar o venir vacíos. Se prueban al arrancar el
-                servidor y una vez por semana: los que respondan de forma estable se pueden sumar.
-              </p>
-              <ul className="status-list">
-                {data.cityServices.map((c) => (
-                  <li key={c.key} className={`status-item status-item-${c.available ? 'ok' : 'idle'}`}>
-                    <span className="status-item-dot" aria-hidden="true" />
-                    <div className="status-item-main">
-                      <div className="status-item-what">{c.what}</div>
-                      <div className="status-item-provider">Serviría para: {c.use}</div>
-                    </div>
-                    <div className="status-item-detail">
-                      <strong>{c.available ? 'Volvió a responder' : 'Sin datos'}</strong>
-                      <span>
-                        {!c.available && c.detail && `${errorLabel(c.detail)} · `}
-                        probado {formatRelativeTime(c.checkedAt, now)}
-                      </span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
 
           <p className="airports-source">
             Servidor activo desde {formatRelativeTime(data.startedAt, now)}. Algunas fuentes se consultan solo cuando

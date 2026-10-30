@@ -15,8 +15,8 @@ import java.util.List;
  *
  * La API Transporte tenia una ruta /transito/v1/eventos, pero en su
  * especificacion esta dada de baja y responde HTTP 500 (octubre de 2026).
- * La prueba semanal de CityApiProbe avisa si vuelve; el lector que la usaba
- * esta en el historial de git (v16.4) por si hay que recuperarlo.
+ * El lector que la usaba esta en el historial de git (v16.4) por si hay
+ * que recuperarlo.
  */
 @Service
 public class CityEventService {
