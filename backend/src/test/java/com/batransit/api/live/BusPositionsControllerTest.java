@@ -47,4 +47,20 @@ class BusPositionsControllerTest {
         assertThat(buses.get(0).latitude()).isEqualTo(-34.78668);
         assertThat(buses.get(0).direction()).isEqualTo(1);
     }
+
+    @Test
+    void cuentaLosColectivosEnMovimientoPorLinea() {
+        List<BusPositionsController.MovingBus> moving = List.of(
+                new BusPositionsController.MovingBus("1", "r1", "152", -34.6, -58.4, "", 0),
+                new BusPositionsController.MovingBus("2", "r1", "152", -34.6, -58.4, "", 1),
+                new BusPositionsController.MovingBus("3", "r2", "53a", -34.6, -58.4, "", 0),
+                new BusPositionsController.MovingBus("4", "r3", "60", -34.6, -58.4, "", 0));
+        List<String> wanted = BusPositionsController.parseLines(" 152, 53A,152,raro!, 7 ");
+        assertThat(wanted.equals(List.of("152", "53A", "7"))).isEqualTo(true);
+        assertThat(BusPositionsController.countByLine(moving, wanted).equals(List.of(
+                new BusPositionsController.LineCount("152", 2),
+                new BusPositionsController.LineCount("53A", 1),
+                new BusPositionsController.LineCount("7", 0)))).isEqualTo(true);
+        assertThat(BusPositionsController.parseLines(null).isEmpty()).isEqualTo(true);
+    }
 }

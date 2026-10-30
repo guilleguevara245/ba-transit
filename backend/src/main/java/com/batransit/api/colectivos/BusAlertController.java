@@ -19,8 +19,8 @@ import java.util.List;
 @RequestMapping("/api/v1/colectivos/alertas")
 public class BusAlertController {
 
-    static final String PATH = "/colectivos/serviceAlerts?json=1";
-    static final Duration MAX_AGE = Duration.ofMinutes(5);
+    public static final String PATH = "/colectivos/serviceAlerts?json=1";
+    public static final Duration MAX_AGE = Duration.ofMinutes(5);
 
     public record Response(boolean available, List<BusAlert> alerts) {
     }

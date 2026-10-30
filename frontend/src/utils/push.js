@@ -10,11 +10,11 @@ import { PREFS_CHANGED } from './prefsEvents.js'
  */
 
 const PREFS_KEY = 'ba-transit:avisos'
-/** Tipos que se sumaron despues (v2): a quien ya tenia avisos se le agregan una vez. */
-export const NEW_KINDS_V2 = ['clima', 'tarifas', 'especiales']
+/** Tipos que se sumaron despues, por version: a quien ya tenia avisos se le agregan una vez. */
+export const NEW_KINDS = { 2: ['clima', 'tarifas', 'especiales'], 3: ['colectivos'] }
 export const DEFAULT_PREFS = {
-  version: 2,
-  kinds: ['lineas', 'estaciones', 'accesos', ...NEW_KINDS_V2],
+  version: 3,
+  kinds: ['lineas', 'estaciones', 'accesos', 'colectivos', ...NEW_KINDS[2]],
   notifyResolved: true,
   quiet: true,
   quietFrom: 23,
@@ -58,7 +58,7 @@ function readSaved() {
 }
 
 export function readPrefs() {
-  return upgradePrefs(readSaved(), DEFAULT_PREFS, NEW_KINDS_V2)
+  return upgradePrefs(readSaved(), DEFAULT_PREFS, NEW_KINDS)
 }
 
 /**

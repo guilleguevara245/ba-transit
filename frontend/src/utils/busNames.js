@@ -13,6 +13,12 @@ export function parseBusShortName(shortName) {
   return { number: match[1], sign: match[2].toUpperCase() }
 }
 
+/** El id de favorito de una linea: su cartel sin espacios y en mayusculas ("53a " -> "53A"); null si no sirve. */
+export function busFavoriteId(shortName) {
+  const id = (shortName ?? '').replace(/\s+/g, '').toUpperCase()
+  return /^[0-9A-Z]{1,8}$/.test(id) ? id : null
+}
+
 /** "Línea 53 · Cartel A" o "Línea 152". */
 export function busTitle(route) {
   const { number, sign } = parseBusShortName(route.shortName)
@@ -54,4 +60,18 @@ export function stopName(name) {
  */
 export function busParams(shortName, id) {
   return shortName ? { linea: shortName, id } : { linea: id }
+}
+
+/** "12 en la calle ahora" / "Ninguno en la calle ahora". */
+export function movingLabel(count) {
+  if (count == null) return null
+  if (count === 0) return 'Ninguno en la calle ahora'
+  return `${count.toLocaleString('es-AR')} en la calle ahora`
+}
+
+/** Los avisos de la API Transporte que nombran el numero de esa linea (sin cartel). */
+export function alertsForBus(alerts, line) {
+  const { number } = parseBusShortName(line)
+  const n = String(Number.parseInt(number, 10))
+  return (alerts ?? []).filter((a) => (a.lines ?? []).includes(n))
 }

@@ -36,6 +36,8 @@ public class AccountService {
     static final int MAX_FAVORITES = 50;
     private static final Pattern EMAIL = Pattern.compile("^[^@\\s]{1,64}@[^@\\s]+\\.[^@\\s]{2,}$");
     private static final Pattern ACCESS_ID = Pattern.compile("^[a-z0-9-]{1,40}$");
+    /** Cartel de un colectivo: "152", "53A", "8C". */
+    private static final Pattern BUS_LINE = Pattern.compile("^[0-9A-Z]{1,8}$");
     /** Para que "mail inexistente" tarde lo mismo que "contrasena incorrecta". */
     private static final String DUMMY_HASH = PasswordHasher.hash("contraseña de relleno");
 
@@ -377,7 +379,7 @@ public class AccountService {
         if (f == null) {
             return Favorites.empty();
         }
-        return new Favorites(ids(f.lineas()), ids(f.estaciones()), accesses(f.accesos()));
+        return new Favorites(ids(f.lineas()), ids(f.estaciones()), accesses(f.accesos()), buses(f.colectivos()));
     }
 
     private static List<Long> ids(List<Long> values) {
@@ -393,6 +395,17 @@ public class AccountService {
             return List.of();
         }
         return new ArrayList<>(values.stream().filter(Objects::nonNull).filter(v -> ACCESS_ID.matcher(v).matches())
+                .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new))).stream().limit(MAX_FAVORITES).toList();
+    }
+
+    /** "53a " -> "53A"; sin repetidos ni valores raros. */
+    private static List<String> buses(List<String> values) {
+        if (values == null) {
+            return List.of();
+        }
+        return new ArrayList<>(values.stream().filter(Objects::nonNull)
+                .map(v -> v.replaceAll("\\s+", "").toUpperCase(Locale.ROOT))
+                .filter(v -> BUS_LINE.matcher(v).matches())
                 .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new))).stream().limit(MAX_FAVORITES).toList();
     }
 

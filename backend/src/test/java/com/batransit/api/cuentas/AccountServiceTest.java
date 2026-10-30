@@ -130,10 +130,11 @@ class AccountServiceTest {
         assertThat(service.favorites(id)).isEqualTo(Favorites.empty());
 
         Favorites saved = service.saveFavorites(id,
-                new Favorites(List.of(2L, 2L, -1L, 5L), List.of(27L), List.of("norte", "Oeste!", "norte")));
-        assertThat(saved).isEqualTo(new Favorites(List.of(2L, 5L), List.of(27L), List.of("norte")));
+                new Favorites(List.of(2L, 2L, -1L, 5L), List.of(27L), List.of("norte", "Oeste!", "norte"),
+                        java.util.Arrays.asList("152", " 53a", "53A", "no vale!", null)));
+        assertThat(saved).isEqualTo(new Favorites(List.of(2L, 5L), List.of(27L), List.of("norte"), List.of("152", "53A")));
         assertThat(service.favorites(id)).isEqualTo(saved);
-        assertThat(service.saveFavorites(id, new Favorites(null, null, null))).isEqualTo(Favorites.empty());
+        assertThat(service.saveFavorites(id, new Favorites(null, null, null, null))).isEqualTo(Favorites.empty());
     }
 
     @Test

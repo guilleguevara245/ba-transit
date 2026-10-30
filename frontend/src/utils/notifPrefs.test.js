@@ -1,21 +1,27 @@
 import { describe, expect, it } from 'vitest'
 import { isPaused, pauseLabel, upgradePrefs } from './notifPrefs.js'
 
-const DEFAULTS = { version: 2, kinds: ['lineas', 'estaciones', 'accesos', 'clima'], quiet: true }
+const DEFAULTS = { version: 3, kinds: ['lineas', 'estaciones', 'accesos', 'colectivos', 'clima'], quiet: true }
+const NEW = { 2: ['clima'], 3: ['colectivos'] }
 
 describe('upgradePrefs', () => {
   it('sin nada guardado usa los valores por defecto', () => {
-    expect(upgradePrefs(null, DEFAULTS, ['clima'])).toEqual(DEFAULTS)
+    expect(upgradePrefs(null, DEFAULTS, NEW)).toEqual(DEFAULTS)
   })
 
-  it('a lo guardado de antes le suma una vez los tipos nuevos', () => {
+  it('a lo guardado de antes le suma una vez los tipos de cada version que le falta', () => {
     const old = { kinds: ['lineas'], quiet: false }
-    expect(upgradePrefs(old, DEFAULTS, ['clima'])).toEqual({ version: 2, kinds: ['lineas', 'clima'], quiet: false })
+    expect(upgradePrefs(old, DEFAULTS, NEW)).toEqual({ version: 3, kinds: ['lineas', 'clima', 'colectivos'], quiet: false })
+  })
+
+  it('de la version 2 solo suma lo de la 3 (si apagó el clima, sigue apagado)', () => {
+    const v2 = { version: 2, kinds: ['lineas'] }
+    expect(upgradePrefs(v2, DEFAULTS, NEW).kinds).toEqual(['lineas', 'colectivos'])
   })
 
   it('si ya es de esta version respeta lo que apagó', () => {
-    const saved = { version: 2, kinds: ['lineas'] }
-    expect(upgradePrefs(saved, DEFAULTS, ['clima']).kinds).toEqual(['lineas'])
+    const saved = { version: 3, kinds: ['lineas'] }
+    expect(upgradePrefs(saved, DEFAULTS, NEW).kinds).toEqual(['lineas'])
   })
 })
 

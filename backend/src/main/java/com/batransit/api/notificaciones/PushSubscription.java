@@ -34,7 +34,7 @@ public class PushSubscription {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String favorites = "{}";
 
-    @Column(nullable = false, length = 60)
+    @Column(nullable = false, length = 160)
     private String kinds = "lineas,estaciones,accesos";
 
     @Column(name = "notify_resolved", nullable = false)

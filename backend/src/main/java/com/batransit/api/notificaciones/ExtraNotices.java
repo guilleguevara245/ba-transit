@@ -36,9 +36,10 @@ public final class ExtraNotices {
     /**
      * Lo que hace falta de una suscripcion. lines: sus lineas favoritas mas
      * las lineas de sus estaciones favoritas; kinds: tipos de aviso elegidos;
-     * lastTrainMinutes: cuanto antes del ultimo tren (null = no).
+     * lastTrainMinutes: cuanto antes del ultimo tren (null = no); buses: los
+     * carteles de sus colectivos favoritos ("152", "53A").
      */
-    public record Target(long id, Set<Long> lines, Set<String> kinds, Integer lastTrainMinutes) {
+    public record Target(long id, Set<Long> lines, Set<String> kinds, Integer lastTrainMinutes, Set<String> buses) {
     }
 
     /** Separador entre el precio de antes y el nuevo: los chevrones del sitio. */
@@ -276,6 +277,65 @@ public final class ExtraNotices {
             }
         }
         return out;
+    }
+
+    // ---- Colectivos ----
+
+    /** Un aviso de la API Transporte: los numeros de linea que nombra, titulo y texto. */
+    public record BusNotice(List<String> lines, String title, String description) {
+    }
+
+    /** "53A" -> "53"; "152" -> "152" (los avisos nombran el numero, sin cartel). */
+    static String busNumber(String line) {
+        String digits = line == null ? "" : line.replaceAll("^\\D*(\\d{1,3}).*$", "$1");
+        return digits.matches("\\d{1,3}") ? String.valueOf(Integer.parseInt(digits)) : null;
+    }
+
+    /**
+     * Un aviso por cada aviso de colectivo que nombra una linea favorita, a
+     * quien eligio "colectivos". La clave sale del texto: si el aviso cambia,
+     * es otro aviso; si sigue igual, no se repite.
+     */
+    public static List<Planned> busNotices(List<BusNotice> notices, List<Target> targets, String siteUrl) {
+        List<Planned> out = new ArrayList<>();
+        for (BusNotice n : notices) {
+            String text = NotificationTexts.clean(n.title()) + "|" + NotificationTexts.clean(n.description());
+            String key = "colectivo:" + Integer.toHexString(text.hashCode());
+            for (Target t : targets) {
+                if (!t.kinds().contains("colectivos")) {
+                    continue;
+                }
+                // Si sigue varios carteles de la misma linea (53A y 53B), uno solo.
+                String line = t.buses().stream().filter(b -> n.lines().contains(busNumber(b))).sorted().findFirst().orElse(null);
+                if (line == null) {
+                    continue;
+                }
+                String number = busNumber(line);
+                String title = withoutLinePrefix(NotificationTexts.clean(n.title()));
+                String body = NotificationTexts.clean(n.description());
+                PushMessage message = new PushMessage(
+                        "Línea " + number + ": " + (title.isEmpty() ? "aviso" : lowerFirst(title)),
+                        NotificationTexts.shorten(body.isEmpty() ? title : body),
+                        siteUrl + "/notif/colectivo.png",
+                        siteUrl + "/colectivos?linea=" + java.net.URLEncoder.encode(line, java.nio.charset.StandardCharsets.UTF_8),
+                        "colectivo-" + number, "Ver la línea", false);
+                out.add(new Planned(t.id(), key, message));
+            }
+        }
+        return out;
+    }
+
+    /** "Línea 152: desvío por obras" -> "desvío por obras" (el aviso ya dice la linea en el titulo). */
+    static String withoutLinePrefix(String title) {
+        return title.replaceFirst("(?i)^l[ií]neas?\\s+[\\d,\\sye]+[:.\\-–]*\\s*", "").strip();
+    }
+
+    /** "Desvío por obras" -> "desvío por obras" (salvo siglas: "AUSA" queda igual). */
+    static String lowerFirst(String text) {
+        if (text.length() > 1 && Character.isUpperCase(text.charAt(1))) {
+            return text;
+        }
+        return Character.toLowerCase(text.charAt(0)) + text.substring(1);
     }
 
     // ---- Ultimo tren ----

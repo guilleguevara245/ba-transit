@@ -2,14 +2,19 @@
 
 /**
  * Une lo guardado con los valores por defecto. Si lo guardado es de una
- * version anterior, suma una vez los tipos de aviso nuevos (despues, si
- * la persona los apaga, quedan apagados).
+ * version anterior, suma una vez los tipos de aviso de las versiones que
+ * le faltan (newKinds: { version: [tipos] }); despues, si la persona los
+ * apaga, quedan apagados.
  */
 export function upgradePrefs(saved, defaults, newKinds) {
   if (!saved || typeof saved !== 'object') return { ...defaults }
   const prefs = { ...defaults, ...saved }
-  if ((saved.version ?? 1) < defaults.version) {
-    prefs.kinds = [...new Set([...(Array.isArray(saved.kinds) ? saved.kinds : []), ...newKinds])]
+  const from = saved.version ?? 1
+  if (from < defaults.version) {
+    const added = Object.entries(newKinds)
+      .filter(([version]) => Number(version) > from && Number(version) <= defaults.version)
+      .flatMap(([, kinds]) => kinds)
+    prefs.kinds = [...new Set([...(Array.isArray(saved.kinds) ? saved.kinds : []), ...added])]
     prefs.version = defaults.version
   }
   return prefs

@@ -40,20 +40,24 @@ describe('favoritos', () => {
     globalThis.window = fakeWindow({ 'ba-transit:mis-estaciones': '{roto' })
     expect(readList('estaciones')).toEqual([])
     globalThis.window = { localStorage: { getItem: () => { throw new Error('bloqueado') } } }
-    expect(readAll()).toEqual({ lineas: [], estaciones: [], accesos: [] })
+    expect(readAll()).toEqual({ lineas: [], estaciones: [], accesos: [], colectivos: [] })
   })
 
   it('une dos juegos sin repetir', () => {
-    expect(mergeFavorites({ lineas: [1, 2], accesos: ['norte'] }, { lineas: [2, 5], estaciones: [9] })).toEqual({
+    expect(
+      mergeFavorites({ lineas: [1, 2], accesos: ['norte'], colectivos: ['152'] }, { lineas: [2, 5], estaciones: [9] }),
+    ).toEqual({
       lineas: [1, 2, 5],
       estaciones: [9],
       accesos: ['norte'],
+      colectivos: ['152'],
     })
   })
 
   it('writeList limpia lo invalido', () => {
     globalThis.window = fakeWindow()
     expect(writeList('accesos', ['sur', 'sur', 3])).toEqual(['sur'])
+    expect(writeList('colectivos', ['152', '53A', '53a', 'no vale', 7])).toEqual(['152', '53A'])
     expect(window.data['ba-transit:mis-accesos']).toBe('["sur"]')
   })
 })

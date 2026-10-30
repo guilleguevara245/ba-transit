@@ -36,7 +36,8 @@ public class NotificationService {
 
     private static final Logger log = LoggerFactory.getLogger(NotificationService.class);
     static final ZoneId BUENOS_AIRES = ZoneId.of("America/Argentina/Buenos_Aires");
-    static final Set<String> KINDS = Set.of("lineas", "estaciones", "accesos", "clima", "tarifas", "especiales");
+    static final Set<String> KINDS = Set.of("lineas", "estaciones", "accesos", "clima", "tarifas", "especiales",
+            "colectivos");
     /** Opciones de pausa: una hora, hasta mañana a la mañana, hasta el lunes a la mañana. */
     static final Set<String> PAUSES = Set.of("hora", "manana", "lunes");
     /** A que hora termina la pausa "hasta mañana" o "hasta el lunes". */
@@ -168,8 +169,10 @@ public class NotificationService {
                 }
             });
             Set<String> kinds = new HashSet<>(List.of(s.getKinds().split(",")));
+            Favorites f = favoritesOf(s);
             return new ExtraNotices.Target(s.getId(), lines, kinds,
-                    s.getLastTrainMinutes() == null ? null : s.getLastTrainMinutes().intValue());
+                    s.getLastTrainMinutes() == null ? null : s.getLastTrainMinutes().intValue(),
+                    new HashSet<>(f.colectivos()));
         }).toList();
     }
 
@@ -179,13 +182,16 @@ public class NotificationService {
         return subscriptions.findAll().stream().map(this::toSubscriber).toList();
     }
 
-    Subscriber toSubscriber(PushSubscription s) {
-        Favorites f;
+    private Favorites favoritesOf(PushSubscription s) {
         try {
-            f = AccountService.sanitize(mapper.readValue(s.getFavorites(), Favorites.class));
+            return AccountService.sanitize(mapper.readValue(s.getFavorites(), Favorites.class));
         } catch (JsonProcessingException e) {
-            f = Favorites.empty();
+            return Favorites.empty();
         }
+    }
+
+    Subscriber toSubscriber(PushSubscription s) {
+        Favorites f = favoritesOf(s);
         Set<String> kinds = new HashSet<>(List.of(s.getKinds().split(",")));
         return new Subscriber(s.getId(), new HashSet<>(f.lineas()), new HashSet<>(f.estaciones()), new HashSet<>(f.accesos()),
                 kinds.contains("lineas"), kinds.contains("estaciones"), kinds.contains("accesos"), s.isNotifyResolved());

@@ -1,5 +1,5 @@
 /**
- * Favoritos guardados en este navegador: lineas, estaciones y accesos.
+ * Favoritos guardados en este navegador: lineas, estaciones, accesos y colectivos.
  * Cada lista se guarda aparte (las lineas conservan su clave de siempre,
  * asi nadie pierde las que ya tenia). Al cambiar una lista se avisa con un
  * evento, para que todos los componentes que la muestran se actualicen,
@@ -16,6 +16,12 @@ export const FAVORITE_KINDS = {
     key: 'ba-transit:mis-accesos',
     valid: (id) => typeof id === 'string' && /^[a-z0-9-]{1,40}$/.test(id),
     title: 'Mis accesos',
+  },
+  // carteles de colectivo ("152", "53A")
+  colectivos: {
+    key: 'ba-transit:mis-colectivos',
+    valid: (id) => typeof id === 'string' && /^[0-9A-Z]{1,8}$/.test(id),
+    title: 'Mis colectivos',
   },
 }
 

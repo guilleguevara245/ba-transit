@@ -1,6 +1,9 @@
 package com.batransit.api.notificaciones;
 
 import com.batransit.api.clima.WeatherAlertService;
+import com.batransit.api.colectivos.BusAlertController;
+import com.batransit.api.colectivos.BusAlertParser;
+import com.batransit.api.live.TransporteLiveClient;
 import com.batransit.api.domain.Fare;
 import com.batransit.api.domain.SpecialService;
 import com.batransit.api.domain.TransportLine;
@@ -39,6 +42,8 @@ import java.util.Objects;
  * - Servicios especiales: cada 30 minutos, de 7 a 21, los que empiezan o se
  *   cargaron hace poco, a quien sigue esa linea.
  * - Ultimo tren: cada 2 minutos.
+ * - Colectivos: cada 5 minutos, si alguien sigue un colectivo, los avisos
+ *   de la API Transporte que nombran sus lineas.
  */
 @Component
 public class ExtraNoticeJobs {
@@ -55,6 +60,7 @@ public class ExtraNoticeJobs {
     private final StationRepository stations;
     private final NotificationService notifications;
     private final PushStore store;
+    private final TransporteLiveClient transporte;
     private final TransactionTemplate tx;
 
     private Map<Long, Long> stationLine = Map.of();
@@ -62,7 +68,8 @@ public class ExtraNoticeJobs {
 
     public ExtraNoticeJobs(WeatherAlertService weather, FareRepository fares, SpecialServiceRepository specials,
                            TransportLineRepository lines, StationRepository stations, NotificationService notifications,
-                           PushStore store, PlatformTransactionManager tm) {
+                           PushStore store, TransporteLiveClient transporte, PlatformTransactionManager tm) {
+        this.transporte = transporte;
         this.weather = weather;
         this.fares = fares;
         this.specials = specials;
@@ -171,6 +178,28 @@ public class ExtraNoticeJobs {
             notifications.deliver(ExtraNotices.lastTrains(targets, info, now().toLocalDateTime(), notifications.siteUrl()), null);
         } catch (RuntimeException e) {
             log.warn("Avisos del ultimo tren: fallo la revision ({})", e.getClass().getSimpleName());
+        }
+    }
+
+    @Scheduled(initialDelay = 330_000L, fixedDelay = 5 * 60_000L)
+    public void checkBusAlerts() {
+        try {
+            List<Target> targets = targets().stream()
+                    .filter(t -> t.kinds().contains("colectivos") && !t.buses().isEmpty()).toList();
+            if (targets.isEmpty() || !transporte.isConfigured()) {
+                return;
+            }
+            var fetched = transporte.get(BusAlertController.PATH, BusAlertController.MAX_AGE);
+            if (fetched.isEmpty()) {
+                return;
+            }
+            List<ExtraNotices.BusNotice> notices = BusAlertParser.parse(fetched.get().body(), Instant.now()).stream()
+                    .filter(a -> !a.lines().isEmpty())
+                    .map(a -> new ExtraNotices.BusNotice(a.lines(), a.title(), a.description()))
+                    .toList();
+            notifications.deliver(ExtraNotices.busNotices(notices, targets, notifications.siteUrl()), null);
+        } catch (RuntimeException e) {
+            log.warn("Avisos de colectivos: fallo la revision ({})", e.getClass().getSimpleName());
         }
     }
 

@@ -24,6 +24,7 @@ export default function AccountPage() {
   const lines = useFavoriteList('lineas').ids.length
   const stations = useFavoriteList('estaciones').ids.length
   const accesses = useFavoriteList('accesos').ids.length
+  const buses = useFavoriteList('colectivos').ids.length
   const { places } = useSavedPlaces()
   const [confirming, setConfirming] = useState(false)
   const [error, setError] = useState(null)
@@ -99,8 +100,8 @@ export default function AccountPage() {
           )}
           <dt>Guardados</dt>
           <dd>
-            {plural(lines, 'línea', 'líneas')}, {plural(stations, 'estación', 'estaciones')} y{' '}
-            {plural(accesses, 'acceso', 'accesos')}. Se sincronizan solos en todos tus dispositivos, igual que tus
+            {plural(lines, 'línea', 'líneas')}, {plural(stations, 'estación', 'estaciones')},{' '}
+            {plural(accesses, 'acceso', 'accesos')} y {plural(buses, 'colectivo', 'colectivos')}. Se sincronizan solos en todos tus dispositivos, igual que tus
             lugares, el tema y tus preferencias de avisos.
           </dd>
         </dl>

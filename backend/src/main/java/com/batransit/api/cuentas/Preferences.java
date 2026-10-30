@@ -29,7 +29,8 @@ public final class Preferences {
     }
 
     static final Set<String> THEMES = Set.of("light", "dark");
-    static final Set<String> KINDS = Set.of("lineas", "estaciones", "accesos", "clima", "tarifas", "especiales");
+    static final Set<String> KINDS = Set.of("lineas", "estaciones", "accesos", "clima", "tarifas", "especiales",
+            "colectivos");
     static final Set<Integer> LAST_TRAIN = Set.of(15, 30, 45, 60);
     private static final Pattern TIME = Pattern.compile("^([01]\\d|2[0-3]):[0-5]\\d$");
 

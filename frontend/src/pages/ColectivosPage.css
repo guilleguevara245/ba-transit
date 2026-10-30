@@ -267,3 +267,24 @@
 .bus-live-note {
   color: var(--text-faint);
 }
+
+.bus-detail-head .favorite-button {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.bus-detail-head > div {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
+@media (max-width: 560px) {
+  .bus-detail-head {
+    flex-wrap: wrap;
+  }
+
+  /* La estrella baja a su renglon: el nombre de la linea no se aprieta. */
+  .bus-detail-head .favorite-button {
+    margin-left: 0;
+  }
+}

@@ -43,6 +43,16 @@ public class BusPositionsController {
     public record MovingResponse(boolean available, Instant updatedAt, List<MovingBus> buses) {
     }
 
+    /** Cuantos colectivos de cada linea hay en movimiento ahora (para "Mis colectivos" del inicio). */
+    public record LineCount(String line, int moving) {
+    }
+
+    public record LineCountsResponse(boolean available, Instant updatedAt, List<LineCount> lines) {
+    }
+
+    /** Como mucho estas lineas por pedido (las favoritas de una persona). */
+    static final int MAX_LINES = 50;
+
     private final TransporteLiveClient client;
 
     public BusPositionsController(TransporteLiveClient client) {
@@ -79,6 +89,40 @@ public class BusPositionsController {
                     v.path("direction").asInt(0)));
         }
         return result;
+    }
+
+    /**
+     * Cuantos colectivos se mueven ahora por linea. lineas: carteles
+     * separados por coma ("152,53A"); se compara con route_short_name sin
+     * distinguir mayusculas. Mucho mas liviano que /vivo para el inicio.
+     */
+    @GetMapping("/vivo/lineas")
+    public LineCountsResponse movingByLine(@org.springframework.web.bind.annotation.RequestParam(name = "lineas", required = false) String lines) {
+        List<String> wanted = parseLines(lines);
+        Optional<Fetched> feed = wanted.isEmpty() ? Optional.empty() : client.get("/colectivos/vehiclePositionsSimple", MAX_AGE);
+        if (feed.isEmpty()) {
+            return new LineCountsResponse(false, null, List.of());
+        }
+        return new LineCountsResponse(true, feed.get().fetchedAt(),
+                countByLine(movingOf(feed.get().body(), Instant.now().getEpochSecond()), wanted));
+    }
+
+    static List<String> parseLines(String lines) {
+        if (lines == null || lines.isBlank()) {
+            return List.of();
+        }
+        return java.util.Arrays.stream(lines.split(","))
+                .map(l -> l.replaceAll("\\s+", "").toUpperCase(java.util.Locale.ROOT))
+                .filter(l -> l.matches("[0-9A-Z]{1,8}"))
+                .distinct().limit(MAX_LINES).toList();
+    }
+
+    static List<LineCount> countByLine(List<MovingBus> moving, List<String> wanted) {
+        java.util.Map<String, Integer> counts = new java.util.HashMap<>();
+        for (MovingBus bus : moving) {
+            counts.merge(bus.line().replaceAll("\\s+", "").toUpperCase(java.util.Locale.ROOT), 1, Integer::sum);
+        }
+        return wanted.stream().map(l -> new LineCount(l, counts.getOrDefault(l, 0))).toList();
     }
 
     @GetMapping("/{routeId}/vivo")

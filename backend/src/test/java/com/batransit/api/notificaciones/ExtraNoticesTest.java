@@ -33,7 +33,7 @@ class ExtraNoticesTest {
     private static final LineInfo MITRE = new LineInfo(9, TransportMode.TREN, "MITRE", "Mitre");
 
     private static Target target(long id, Set<Long> lines, Set<String> kinds, Integer lastTrain) {
-        return new Target(id, lines, kinds, lastTrain);
+        return new Target(id, lines, kinds, lastTrain, Set.of());
     }
 
     private static OffsetDateTime at(int day, int hour) {
@@ -182,5 +182,33 @@ class ExtraNoticesTest {
         ZonedDateTime early = NOW.withHour(2);
         assertThat(NotificationService.pauseEnd("manana", early))
                 .isEqualTo(ZonedDateTime.of(2026, 10, 29, 6, 0, 0, 0, NotificationService.BUENOS_AIRES).toInstant());
+    }
+
+    @Test
+    void avisosDeColectivos() {
+        List<ExtraNotices.BusNotice> notices = List.of(
+                new ExtraNotices.BusNotice(List.of("152"), "Línea 152: Desvío por obras", "Por obras en Av. Santa Fe, desvío por Charcas."),
+                new ExtraNotices.BusNotice(List.of("12", "37"), "AUSA corte parcial", "Las líneas 12 y 37 no pasan por Pueyrredón."),
+                new ExtraNotices.BusNotice(List.of("60"), "Línea 60", ""));
+        List<Target> targets = List.of(
+                new Target(1, Set.of(), Set.of("colectivos"), null, Set.of("152", "37")),
+                new Target(2, Set.of(), Set.of("lineas"), null, Set.of("152")),
+                new Target(3, Set.of(), Set.of("colectivos"), null, Set.of("53A")));
+        List<Planned> out = ExtraNotices.busNotices(notices, targets, SITE);
+        assertThat(out.size()).isEqualTo(2);
+        assertThat(out.get(0).subscriptionId()).isEqualTo(1L);
+        assertThat(out.get(0).message().title()).isEqualTo("Línea 152: desvío por obras");
+        assertThat(out.get(0).message().body()).isEqualTo("Por obras en Av. Santa Fe, desvío por Charcas.");
+        assertThat(out.get(0).message().url()).isEqualTo(SITE + "/colectivos?linea=152");
+        assertThat(out.get(0).message().icon()).isEqualTo(SITE + "/notif/colectivo.png");
+        assertThat(out.get(1).message().title()).isEqualTo("Línea 37: AUSA corte parcial");
+        // La clave sale del texto: el mismo aviso no se repite.
+        assertThat(out.get(0).eventKey()).isEqualTo(ExtraNotices.busNotices(notices.subList(0, 1), targets, SITE).get(0).eventKey());
+
+        assertThat(ExtraNotices.busNumber("53A")).isEqualTo("53");
+        assertThat(ExtraNotices.busNumber("007")).isEqualTo("7");
+        assertThat(ExtraNotices.busNumber("BSAS")).isEqualTo(null);
+        assertThat(ExtraNotices.withoutLinePrefix("Líneas 12, 37 y 60 - Corte")).isEqualTo("Corte");
+        assertThat(ExtraNotices.withoutLinePrefix("Línea 60")).isEqualTo("");
     }
 }

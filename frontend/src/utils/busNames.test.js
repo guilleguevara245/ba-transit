@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { busDescription, busParams, busTitle, parseBusShortName, stopName } from './busNames.js'
+import {
+  alertsForBus,
+  busDescription,
+  busFavoriteId,
+  busParams,
+  busTitle,
+  movingLabel,
+  parseBusShortName,
+  stopName,
+} from './busNames.js'
 
 describe('parseBusShortName', () => {
   it('separa numero y cartel', () => {
@@ -36,5 +45,30 @@ describe('busParams', () => {
   it('pone el numero a la vista y el id aparte', () => {
     expect(busParams('53A', '283')).toEqual({ linea: '53A', id: '283' })
     expect(busParams(null, '283')).toEqual({ linea: '283' })
+  })
+})
+
+describe('colectivos favoritos', () => {
+  it('busFavoriteId normaliza el cartel', () => {
+    expect(busFavoriteId(' 53a')).toBe('53A')
+    expect(busFavoriteId('152')).toBe('152')
+    expect(busFavoriteId('no vale!')).toBeNull()
+    expect(busFavoriteId(null)).toBeNull()
+  })
+
+  it('movingLabel', () => {
+    expect(movingLabel(null)).toBeNull()
+    expect(movingLabel(0)).toBe('Ninguno en la calle ahora')
+    expect(movingLabel(1234)).toBe('1.234 en la calle ahora')
+  })
+
+  it('alertsForBus busca por numero, sin cartel', () => {
+    const alerts = [
+      { title: 'a', lines: ['53', '60'] },
+      { title: 'b', lines: ['7'] },
+    ]
+    expect(alertsForBus(alerts, '53A').map((a) => a.title)).toEqual(['a'])
+    expect(alertsForBus(alerts, '007').map((a) => a.title)).toEqual(['b'])
+    expect(alertsForBus(undefined, '152')).toEqual([])
   })
 })

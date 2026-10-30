@@ -19,10 +19,13 @@ public final class AccountModels {
     public record GoogleRequest(String credential) {
     }
 
-    /** Favoritos: los mismos tres grupos que guarda el sitio en el navegador. */
-    public record Favorites(List<Long> lineas, List<Long> estaciones, List<String> accesos) {
+    /**
+     * Favoritos: los mismos grupos que guarda el sitio en el navegador.
+     * colectivos: el cartel de cada linea ("152", "53A").
+     */
+    public record Favorites(List<Long> lineas, List<Long> estaciones, List<String> accesos, List<String> colectivos) {
         public static Favorites empty() {
-            return new Favorites(List.of(), List.of(), List.of());
+            return new Favorites(List.of(), List.of(), List.of(), List.of());
         }
     }
 

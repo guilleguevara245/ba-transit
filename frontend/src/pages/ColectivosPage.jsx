@@ -7,10 +7,11 @@ import { useSearchParams } from 'react-router-dom'
 import BackButton from '../components/BackButton.jsx'
 import BusRouteMap from '../components/BusRouteMap.jsx'
 import BusAlerts from '../components/BusAlerts.jsx'
+import FavoriteButton from '../components/FavoriteButton.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { useDebounce } from '../hooks/useDebounce.js'
-import { busDescription, busParams, busTitle } from '../utils/busNames.js'
+import { busDescription, busFavoriteId, busParams, busTitle } from '../utils/busNames.js'
 import { formatDuration } from '../utils/travelTime.js'
 import './ModePage.css'
 import './ColectivosPage.css'
@@ -91,6 +92,9 @@ function RouteDetail({ routeId, line, headsign, initialDirection }) {
           {busDescription(route) && <div className="bus-detail-agency">{busDescription(route)}</div>}
           {route.agency && <div className="bus-detail-agency">{route.agency}</div>}
         </div>
+        {busFavoriteId(route.shortName) && (
+          <FavoriteButton kind="colectivos" id={busFavoriteId(route.shortName)} name={busTitle(route)} />
+        )}
       </header>
 
       <BusAlerts shortName={route.shortName} />

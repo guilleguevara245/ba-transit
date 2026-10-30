@@ -21,6 +21,7 @@ const KINDS = [
   { key: 'lineas', label: 'Mis líneas', hint: 'Demoras, interrupciones y obras en tus líneas.' },
   { key: 'estaciones', label: 'Mis estaciones', hint: 'Cuando una alerta nombra a tu estación (cerrada, sin parada…).' },
   { key: 'accesos', label: 'Mis accesos', hint: 'Cuando un acceso se congestiona o se corta, y en qué mano.' },
+  { key: 'colectivos', label: 'Mis colectivos', hint: 'Desvíos, cortes y cambios de recorrido de tus líneas de colectivo.' },
 ]
 // Avisos que no dependen de un favorito puntual (los servicios especiales, de tus líneas).
 const EXTRA_KINDS = [
@@ -69,6 +70,7 @@ export default function NotificationsPage() {
   const lines = useFavoriteList('lineas').ids.length
   const stations = useFavoriteList('estaciones').ids.length
   const accesses = useFavoriteList('accesos').ids.length
+  const buses = useFavoriteList('colectivos').ids.length
   const denied = support === 'ok' && window.Notification.permission === 'denied'
 
   useEffect(() => {
@@ -121,12 +123,12 @@ export default function NotificationsPage() {
         </h1>
         <p className="auth-subtitle">
           Te avisamos en este dispositivo cuando hay problemas en tus favoritos (seguís{' '}
-          {plural(lines, 'línea', 'líneas')}, {plural(stations, 'estación', 'estaciones')} y{' '}
-          {plural(accesses, 'acceso', 'accesos')}) y, si querés, del clima, las tarifas y el último subte.
+          {plural(lines, 'línea', 'líneas')}, {plural(stations, 'estación', 'estaciones')},{' '}
+          {plural(accesses, 'acceso', 'accesos')} y {plural(buses, 'colectivo', 'colectivos')}) y, si querés, del clima, las tarifas y el último subte.
         </p>
-        {lines + stations + accesses === 0 && (
+        {lines + stations + accesses + buses === 0 && (
           <p className="auth-note">
-            Todavía no tenés favoritos: tocá la ★ en una línea, estación o acceso para que te avisemos de ellos.
+            Todavía no tenés favoritos: tocá la ★ en una línea, estación, acceso o colectivo para que te avisemos de ellos.
           </p>
         )}
 
