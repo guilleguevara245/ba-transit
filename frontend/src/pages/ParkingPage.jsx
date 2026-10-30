@@ -9,7 +9,7 @@ import ModeIcon from '../components/ModeIcon.jsx'
 import { MOTO_GARAGES, MOTO_STREET, PARKING_SOURCE, PUBLIC_LOTS, PUBLIC_LOTS_SOURCE } from '../data/parking.js'
 import { GARAGES, GARAGES_SOURCE } from '../data/garages.js'
 import { AMBA_PARTIDOS, OSM_PARKING } from '../data/parkingAmba.js'
-import { LOW_COVERAGE, PARKING_LAYERS, coverageByPartido, formatDistance, nearestPlaces, parkingPlaces, parkingTotals, placeDetail } from '../utils/parking.js'
+import { LOW_COVERAGE, coverageByPartido, formatDistance, nearestPlaces, parkingPlaces, parkingTotals, placeDetail } from '../utils/parking.js'
 import '../components/MapPopup.css'
 import './MapPage.css'
 import './ModePage.css'
@@ -98,6 +98,15 @@ function FlyToPoint({ point }) {
   return null
 }
 
+// Referencias del mapa, que tambien sirven de filtro (como en EcoBici y el mapa de la red).
+const LEGEND = [
+  { key: 'car', label: 'Garaje' },
+  { key: 'lot', label: 'Playa de la Ciudad' },
+  { key: 'garage', label: 'Cochera para motos' },
+  { key: 'street', label: 'Motos en la calle' },
+  { key: 'osm', label: 'Conurbano' },
+]
+
 /** Estacionamiento: garajes y playas de la Ciudad, y lugares para motos, en un mapa. */
 export default function ParkingPage() {
   const places = useMemo(
@@ -130,6 +139,11 @@ export default function ParkingPage() {
     [places, partido],
   )
   const visible = partidoPlaces ?? (layer === 'all' ? places : places.filter((p) => p.layer === layer))
+  const countByLayer = useMemo(() => {
+    const counts = Object.fromEntries(LEGEND.map((l) => [l.key, 0]))
+    for (const p of places) if (p.layer in counts) counts[p.layer] += 1
+    return counts
+  }, [places])
 
   function choosePartido(name) {
     setSelectedId(null)
@@ -189,22 +203,32 @@ export default function ParkingPage() {
       </div>
 
       <div className="parking-toolbar">
-        <div className="map-filters" role="group" aria-label="Qué mostrar">
-          {[{ key: 'all', label: 'Todos' }, ...PARKING_LAYERS].map((l) => (
-            <button
-              key={l.key}
-              type="button"
-              className={!partido && l.key === layer ? 'map-filter active' : 'map-filter'}
-              aria-pressed={!partido && l.key === layer}
-              onClick={() => {
-                setLayer(l.key)
-                setPartido(null)
-                setSelectedId(null)
-              }}
-            >
-              {l.label}
+        <div className="ecobici-legend filters" role="group" aria-label="Filtrar el mapa">
+          {LEGEND.map((l) => {
+            const active = !partido && layer === l.key
+            return (
+              <button
+                key={l.key}
+                type="button"
+                className={active ? 'active' : undefined}
+                aria-pressed={active}
+                onClick={() => {
+                  setLayer(active ? 'all' : l.key)
+                  setPartido(null)
+                  setSelectedId(null)
+                }}
+              >
+                <MapBadge {...BADGES[l.key]} />
+                {l.label}
+                <small>{countByLayer[l.key].toLocaleString('es-AR')}</small>
+              </button>
+            )
+          })}
+          {layer !== 'all' && !partido && (
+            <button type="button" className="ecobici-legend-all" onClick={() => setLayer('all')}>
+              Ver todos
             </button>
-          ))}
+          )}
         </div>
         <button type="button" className="parking-locate" onClick={locate} disabled={locating}>
           <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -252,29 +276,6 @@ export default function ParkingPage() {
           </ul>
         </>
       )}
-
-      <div className="ecobici-legend" aria-label="Referencias">
-        <span>
-          <MapBadge {...BADGES.car} />
-          Garaje
-        </span>
-        <span>
-          <MapBadge {...BADGES.lot} />
-          Playa de la Ciudad
-        </span>
-        <span>
-          <MapBadge {...BADGES.garage} />
-          Cochera para motos
-        </span>
-        <span>
-          <MapBadge {...BADGES.street} />
-          Motos en la calle
-        </span>
-        <span>
-          <MapBadge {...BADGES.osm} />
-          Conurbano (OpenStreetMap)
-        </span>
-      </div>
 
       <MapContainer className="ecobici-map parking-map" center={CENTER} zoom={ZOOM} scrollWheelZoom preferCanvas>
         <TileLayer

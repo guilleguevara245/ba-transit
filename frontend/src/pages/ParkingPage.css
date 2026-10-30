@@ -71,9 +71,10 @@
   color: var(--accent-text);
 }
 
-/* Cuatro filtros: en celular pasan a dos renglones. */
-.parking-toolbar .map-filters {
-  flex-wrap: wrap;
+/* Las referencias (que filtran) ocupan el renglon; "Cerca de mi" va a la derecha. */
+.parking-toolbar .ecobici-legend {
+  flex: 1;
+  margin-bottom: 0;
 }
 
 /* Cobertura por partido del conurbano: panel fijo con un chip por partido. */
@@ -176,4 +177,15 @@
   font-weight: 600;
   text-decoration: underline;
   cursor: pointer;
+}
+
+.parking-toolbar .ecobici-legend button {
+  white-space: nowrap;
+}
+
+/* Celular: las referencias en su renglon y "Cerca de mi" abajo. */
+@media (max-width: 600px) {
+  .parking-toolbar .ecobici-legend {
+    flex-basis: 100%;
+  }
 }
