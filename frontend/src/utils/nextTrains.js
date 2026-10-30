@@ -46,3 +46,8 @@ export function scheduleLabel(direction, now = new Date()) {
   if (direction.headwayMinutes == null) return `Primer tren ${clockIn(first.minutes, now)}`
   return direction.arrivals.map(formatArrival).join(' · ')
 }
+
+/** Si la linea tiene proximos trenes (en vivo u horario): subte, Premetro, Belgrano Norte y Urquiza. */
+export function hasTrainTimes(mode, lineCode) {
+  return mode === 'SUBTE' || mode === 'PREMETRO' || (mode === 'TREN' && (LIVE_TRAIN_LINES.has(lineCode) || lineCode === 'URQUIZA'))
+}

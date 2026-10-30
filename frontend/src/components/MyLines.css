@@ -153,3 +153,31 @@
     min-width: 0;
   }
 }
+
+.mini-trains-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mini-trains-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+/* Sentido del tren: los chevrones del sitio en chico, en vez de una flecha. */
+.mini-trains-towards {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.mini-trains-chevrons {
+  width: 1.1em;
+  height: 0.75em;
+  color: var(--line-color, var(--accent-text));
+  vertical-align: 0;
+}

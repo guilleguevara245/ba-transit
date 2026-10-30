@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useApi } from '../hooks/useApi.js'
 import WeatherIcon from './WeatherIcon.jsx'
 import { ALERT_ICONS, ALERT_LEVELS, alertTitle, periodText, travelTip } from '../utils/weatherAlerts.js'
@@ -6,6 +7,8 @@ import './WeatherAlertBanner.css'
 
 const REFRESH_MS = 10 * 60_000
 const STORAGE_KEY = 'ba-transit:alertas-clima-cerradas'
+// Pantallas donde la alerta no aporta (ingresar, cuenta, avisos, legales): ahi distrae.
+const HIDDEN_ON = ['/ingresar', '/cuenta', '/recuperar', '/restablecer', '/notificaciones', '/privacidad', '/condiciones']
 
 function readDismissed() {
   try {
@@ -23,11 +26,12 @@ function readDismissed() {
  * llega con otro id y se ve de nuevo).
  */
 export default function WeatherAlertBanner() {
+  const { pathname } = useLocation()
   const { data } = useApi('/api/v1/clima/alertas', { refreshMs: REFRESH_MS })
   const [dismissed, setDismissed] = useState(readDismissed)
 
   const alerts = (data?.alerts ?? []).filter((a) => !dismissed.includes(a.id))
-  if (alerts.length === 0) return null
+  if (alerts.length === 0 || HIDDEN_ON.includes(pathname)) return null
 
   function dismiss(id) {
     // Se guardan solo los ultimos 30 ids para no acumular para siempre.

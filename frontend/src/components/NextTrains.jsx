@@ -1,4 +1,5 @@
 import { useApi } from '../hooks/useApi.js'
+import Chevrons from './Chevrons.jsx'
 import { useNow } from '../hooks/useNow.js'
 import { urquizaNextTrains } from '../utils/urquizaSchedule.js'
 import { STALE_TEXT } from '../utils/staleness.js'
@@ -15,23 +16,61 @@ const SCHEDULE_REFRESH_MS = 60_000
  * nada (tampoco la tarjeta: con asCard el contenedor lo pone este
  * componente, asi no queda un cuadro vacio en la pagina de la estacion).
  */
-export default function NextTrains({ mode = 'SUBTE', lineCode, stationName, asCard = false }) {
+export default function NextTrains({ mode = 'SUBTE', lineCode, stationName, asCard = false, compact = false, color }) {
   if (mode === 'TREN' && lineCode === 'URQUIZA') {
-    return <UrquizaTrains stationName={stationName} asCard={asCard} />
+    return <UrquizaTrains stationName={stationName} asCard={asCard} compact={compact} color={color} />
   }
-  return <ApiTrains mode={mode} lineCode={lineCode} stationName={stationName} asCard={asCard} />
+  return <ApiTrains mode={mode} lineCode={lineCode} stationName={stationName} asCard={asCard} compact={compact} color={color} />
+}
+
+/**
+ * Version chica, para las tarjetas del inicio (Mis lineas y Mis
+ * estaciones): un renglon por sentido con los dos proximos.
+ */
+function CompactTrains({ directions, scheduled = false, live = false, color }) {
+  // Los chevrones van del color de la linea.
+  return (
+    <div className="mini-trains-box" style={color ? { '--line-color': color } : undefined}>
+      <ul className="mini-trains">
+        {directions.map((d, i) => (
+          <li key={d.directionId ?? d.towards}>
+            <span className="mini-trains-towards">
+              {/* Ida y vuelta: el primer sentido (hacia la cabecera inicial) apunta a la izquierda. */}
+              <Chevrons className="mini-trains-chevrons" direction={i === 0 && directions.length > 1 ? 'left' : 'right'} />
+              {d.towards}
+            </span>
+            <strong>
+              {scheduled
+                ? (d.label ?? scheduleLabel(d))
+                : d.arrivals.slice(0, 2).map(formatArrival).join(' · ')}
+            </strong>
+          </li>
+        ))}
+      </ul>
+      <span className="mini-trains-tag">
+        {live ? (
+          <>
+            En vivo <span className="live-dot" aria-hidden="true" />
+          </>
+        ) : (
+          'Según horario'
+        )}
+      </span>
+    </div>
+  )
 }
 
 /** Urquiza: sin datos en vivo, se calcula con el horario de Metrovias que trae el sitio. */
-function UrquizaTrains({ stationName, asCard }) {
+function UrquizaTrains({ stationName, asCard, compact, color }) {
   const now = useNow(30_000)
   const schedule = urquizaNextTrains(stationName, now)
   if (!schedule?.available) return null
+  if (compact) return <CompactTrains directions={schedule.directions} scheduled color={color} />
   const content = <ScheduledTrains directions={schedule.directions} source={schedule.source} stale={schedule.stale} />
   return asCard ? <section className="station-card">{content}</section> : content
 }
 
-function ApiTrains({ mode, lineCode, stationName, asCard }) {
+function ApiTrains({ mode, lineCode, stationName, asCard, compact, color }) {
   const livePath = nextTrainsPath(mode, lineCode, stationName)
   const live = useApi(livePath, { refreshMs: REFRESH_MS })
   const liveUsable = hasLiveArrivals(live.data)
@@ -40,6 +79,16 @@ function ApiTrains({ mode, lineCode, stationName, asCard }) {
   const schedule = useApi(wantsSchedule ? schedulePath(mode, lineCode, stationName) : null, {
     refreshMs: SCHEDULE_REFRESH_MS,
   })
+
+  if (compact) {
+    if (liveUsable) return <CompactTrains directions={live.data.directions.filter((d) => d.arrivals.length > 0)} live color={color} />
+    if (schedule.data?.available && schedule.data.directions.length > 0) {
+      return <CompactTrains directions={schedule.data.directions} scheduled color={color} />
+    }
+    if (live.loading || schedule.loading) return <div className="mini-trains-empty">Buscando trenes…</div>
+    if (live.data?.available) return <div className="mini-trains-empty">Sin trenes informados ahora.</div>
+    return null
+  }
 
   let content = null
   if (liveUsable) {

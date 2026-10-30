@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import Select from './Select.jsx'
 import LineBadge from './LineBadge.jsx'
 import FavoriteButton from './FavoriteButton.jsx'
-import MiniNextTrains from './MiniNextTrains.jsx'
+import NextTrains from './NextTrains.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { useFavorites } from '../hooks/useFavorites.js'
 import { useFavoriteStations } from '../hooks/useFavoriteStations.js'
@@ -10,10 +10,12 @@ import { useFavoriteList } from '../hooks/useFavoriteList.js'
 import { statusFor, worstAlertType } from '../utils/network.js'
 import './MyLines.css'
 import { linePath } from '../utils/lineSlug.js'
+import { hasTrainTimes } from '../utils/nextTrains.js'
 
 /**
  * Seccion "Mis lineas" del inicio: las favoritas con su estado actual.
- * En las de subte se puede elegir una estacion para ver sus proximos trenes.
+ * En las que tienen proximos trenes (subte, Premetro, Belgrano Norte y
+ * Urquiza) se puede elegir una estacion para verlos.
  */
 export default function MyLines({ lines, alerts }) {
   const { favorites } = useFavorites()
@@ -22,8 +24,9 @@ export default function MyLines({ lines, alerts }) {
   const { ids: favoriteAccesses } = useFavoriteList('accesos')
   const lineById = new Map(lines.map((line) => [line.id, line]))
   const myLines = favorites.map((id) => lineById.get(id)).filter(Boolean)
-  const hasSubte = myLines.some((line) => line.mode === 'SUBTE')
-  const { data: subteStations } = useApi(hasSubte ? '/api/v1/map/stations?mode=SUBTE' : null)
+  // Lineas con proximos trenes (subte, Premetro, Belgrano Norte, Urquiza): se puede elegir una estacion.
+  const withTimes = myLines.some((line) => hasTrainTimes(line.mode, line.code))
+  const { data: subteStations } = useApi(withTimes ? '/api/v1/map/stations' : null)
   // Sin lineas pero con estaciones o accesos favoritos, la seccion no hace falta.
   if (myLines.length === 0 && (favoriteStations.length > 0 || favoriteAccesses.length > 0)) return null
 
@@ -59,7 +62,7 @@ export default function MyLines({ lines, alerts }) {
                   <FavoriteButton lineId={line.id} lineName={line.name} compact />
                 </div>
 
-                {line.mode === 'SUBTE' && options.length > 0 && (
+                {hasTrainTimes(line.mode, line.code) && options.length > 0 && (
                   <div className="my-line-trains">
                     <Select
                       label={`Estación de la ${line.name} para ver los próximos trenes`}
@@ -68,10 +71,10 @@ export default function MyLines({ lines, alerts }) {
                       onChange={(name) => setStation(line.id, name)}
                       options={[
                         ...(station ? [{ value: '', label: 'Ninguna (ocultar próximos trenes)' }] : []),
-                        ...options.map((s) => ({ value: s.stationName, label: s.stationName, color: line.colorHex })),
+                        ...[...new Set(options.map((s) => s.stationName))].map((name) => ({ value: name, label: name, color: line.colorHex })),
                       ]}
                     />
-                    {station && <MiniNextTrains lineCode={line.code} stationName={station} />}
+                    {station && <NextTrains mode={line.mode} lineCode={line.code} stationName={station} color={line.colorHex} compact />}
                   </div>
                 )}
               </div>

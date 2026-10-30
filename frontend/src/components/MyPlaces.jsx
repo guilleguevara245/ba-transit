@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom'
 import LineBadge from './LineBadge.jsx'
 import FavoriteButton from './FavoriteButton.jsx'
-import MiniNextTrains from './MiniNextTrains.jsx'
+import NextTrains from './NextTrains.jsx'
+import { hasTrainTimes } from '../utils/nextTrains.js'
 import { useApi } from '../hooks/useApi.js'
 import { useFavoriteList } from '../hooks/useFavoriteList.js'
 import { statusFor, worstAlertType } from '../utils/network.js'
@@ -11,7 +12,8 @@ import './MyLines.css'
 
 /**
  * "Mis estaciones" del inicio: cada estacion favorita con el estado de su
- * linea y, en el subte, los proximos trenes. Solo aparece si hay alguna.
+ * linea y sus proximos trenes (subte, Premetro, Belgrano Norte y Urquiza:
+ * las que tienen datos en vivo u horario). Solo aparece si hay alguna.
  */
 export function MyStations({ lines, alerts }) {
   const { ids } = useFavoriteList('estaciones')
@@ -54,9 +56,9 @@ export function MyStations({ lines, alerts }) {
                     compact
                   />
                 </div>
-                {line.mode === 'SUBTE' && (
+                {hasTrainTimes(line.mode, line.code) && (
                   <div className="my-line-trains">
-                    <MiniNextTrains lineCode={line.code} stationName={station.stationName} />
+                    <NextTrains mode={line.mode} lineCode={line.code} stationName={station.stationName} color={line.colorHex} compact />
                   </div>
                 )}
               </div>

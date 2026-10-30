@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import BackButton from '../components/BackButton.jsx'
+import Chevrons from '../components/Chevrons.jsx'
 import { useFavoriteList } from '../hooks/useFavoriteList.js'
 import { useSession } from '../hooks/useSession.js'
 import { deleteAccount, logout } from '../utils/account.js'
@@ -73,8 +74,8 @@ export default function AccountPage() {
           </dd>
         </dl>
 
-        <Link className="notif-account-link" to="/notificaciones">
-          Avisos de tus favoritos en este dispositivo →
+        <Link className="notif-account-link chevrons-host" to="/notificaciones">
+          Avisos de tus favoritos en este dispositivo <Chevrons />
         </Link>
 
         <div className="account-actions">
