@@ -7,7 +7,7 @@ import UpdatedAt from './UpdatedAt.jsx'
 import { useApi } from '../hooks/useApi.js'
 import Skeleton from './Skeleton.jsx'
 import { useFavoriteList } from '../hooks/useFavoriteList.js'
-import { busFavoriteId } from '../utils/busNames.js'
+import { busFavoriteId, headsignTo } from '../utils/busNames.js'
 import '../pages/EcobiciPage.css'
 
 const REFRESH_MS = 30_000
@@ -101,10 +101,14 @@ export default function LiveBusesMap({ onSelectRoute }) {
             badge={<span className="map-card-bus">{selected.line || '?'}</span>}
             kicker="Colectivo en vivo"
             title={`Línea ${selected.line || '?'}`}
-            subtitle={selected.headsign ? `Hacia ${selected.headsign.replace(/^a\s+/i, '')}` : null}
+            subtitle={selected.headsign ? `Hacia ${headsignTo(selected.headsign)}` : null}
             actions={
               selected.routeId && (
-                <button type="button" className="station-popup-link chevrons-host" onClick={() => onSelectRoute(selected)}>
+                <button
+                  type="button"
+                  className="station-popup-link chevrons-host"
+                  onClick={() => onSelectRoute(selected)}
+                >
                   Ver el recorrido <Chevrons />
                 </button>
               )
@@ -113,7 +117,11 @@ export default function LiveBusesMap({ onSelectRoute }) {
         )}
       </MapContainer>
       {favorites.length > 0 && (
-        <div className="ecobici-legend filters live-buses-filter" role="group" aria-label="Ver en el mapa solo un colectivo">
+        <div
+          className="ecobici-legend filters live-buses-filter"
+          role="group"
+          aria-label="Ver en el mapa solo un colectivo"
+        >
           {favorites.map((line) => {
             const active = filter === line
             return (

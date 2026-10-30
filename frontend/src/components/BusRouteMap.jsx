@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { CircleMarker, MapContainer, Marker, Polyline, TileLayer, useMap } from 'react-leaflet'
 import { badgeIcon } from '../utils/mapIcons.js'
 import MapCard from './MapCard.jsx'
-import { parseBusShortName, stopName } from '../utils/busNames.js'
+import { headsignTo, parseBusShortName, stopName } from '../utils/busNames.js'
 
 function FitToRoute({ positions }) {
   const map = useMap()
@@ -29,10 +29,7 @@ export default function BusRouteMap({ route, directionIndex, className, vehicles
   const vehiclesRef = useRef(vehicles)
   vehiclesRef.current = vehicles
   const positions = useMemo(
-    () => [
-      ...(active?.shape ?? []),
-      ...(hasVehicles ? vehiclesRef.current.map((v) => [v.latitude, v.longitude]) : []),
-    ],
+    () => [...(active?.shape ?? []), ...(hasVehicles ? vehiclesRef.current.map((v) => [v.latitude, v.longitude]) : [])],
     [active, hasVehicles],
   )
   const busBadge = (
@@ -76,7 +73,9 @@ export default function BusRouteMap({ route, directionIndex, className, vehicles
                   title={stopName(stop.name)}
                   subtitle={[
                     `Parada ${index + 1} de ${active.stops.length}`,
-                    index > 0 && active.minutes?.[index] != null ? `+${active.minutes[index]} min desde la cabecera` : null,
+                    index > 0 && active.minutes?.[index] != null
+                      ? `+${active.minutes[index]} min desde la cabecera`
+                      : null,
                   ]
                     .filter(Boolean)
                     .join(' · ')}
@@ -99,7 +98,7 @@ export default function BusRouteMap({ route, directionIndex, className, vehicles
             kicker="Colectivo en vivo"
             title={`Línea ${route.shortName || '?'}`}
             subtitle={[
-              v.headsign ? `Hacia ${v.headsign.replace(/^a\s+/i, '')}` : null,
+              v.headsign ? `Hacia ${headsignTo(v.headsign)}` : null,
               v.ageSeconds > 60 ? `posición de hace ${Math.round(v.ageSeconds / 60)} min` : 'posición actual',
             ]
               .filter(Boolean)

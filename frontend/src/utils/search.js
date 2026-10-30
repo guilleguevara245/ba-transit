@@ -1,5 +1,5 @@
 import { MODE_LABELS } from '../constants.js'
-import { busDescription, busParams, busTitle } from './busNames.js'
+import { busDescription, busParams, busTitle, plainText } from './busNames.js'
 import { linePath } from './lineSlug.js'
 
 /** Como mucho estas lineas de colectivo en el desplegable (una linea puede tener varios carteles). */
@@ -36,7 +36,7 @@ export function toSearchOptions(results, buses = null, query = '') {
     key: `bus-${route.id}`,
     group: 'Colectivos',
     name: busTitle(route),
-    meta: busDescription(route) ?? route.agency ?? 'Colectivo',
+    meta: busDescription(route) ?? (route.agency ? plainText(route.agency) : 'Colectivo'),
     color: route.color || '#17171a',
     href: `/colectivos?${new URLSearchParams(busParams(route.shortName, route.id))}`,
   }))

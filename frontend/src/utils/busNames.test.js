@@ -8,6 +8,7 @@ import {
   headsignTo,
   movingLabel,
   parseBusShortName,
+  plainText,
   stopName,
 } from './busNames.js'
 
@@ -76,9 +77,20 @@ describe('colectivos favoritos', () => {
 
 describe('headsignTo', () => {
   it('saca la "a" del principio', () => {
-    expect(headsignTo('A EST. MORÓN')).toBe('EST. MORÓN')
+    expect(headsignTo('A EST. MORÓN')).toBe('EST. MORON')
+    expect(headsignTo('A EST. MORÃ³N')).toBe('EST. MORON')
     expect(headsignTo('a Est. Lanus')).toBe('Est. Lanus')
     expect(headsignTo('Alem')).toBe('Alem')
     expect(headsignTo(null)).toBe('')
+  })
+})
+
+describe('plainText', () => {
+  it('rearma lo mal codificado y saca los acentos', () => {
+    expect(plainText('EST. MORÃ³N')).toBe('EST. MORON')
+    expect(plainText('CAÃ‘UELAS')).toBe('CANUELAS')
+    expect(plainText('Estación Constitución')).toBe('Estacion Constitucion')
+    expect(plainText('  Av.   Corrientes ')).toBe('Av. Corrientes')
+    expect(plainText(null)).toBe('')
   })
 })

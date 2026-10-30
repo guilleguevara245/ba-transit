@@ -12,7 +12,7 @@ import FavoriteButton from '../components/FavoriteButton.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { useDebounce } from '../hooks/useDebounce.js'
-import { busDescription, busFavoriteId, busParams, busTitle, headsignTo } from '../utils/busNames.js'
+import { busDescription, busFavoriteId, busParams, busTitle, headsignTo, plainText } from '../utils/busNames.js'
 import { formatDuration } from '../utils/travelTime.js'
 import './ModePage.css'
 import './ColectivosPage.css'
@@ -63,8 +63,8 @@ function RouteDetail({ routeId, line, headsign, initialDirection }) {
   if (String(error ?? '').includes('respondió 404')) {
     return (
       <div className="bus-unavailable">
-        No encontramos el recorrido {line ? `de la línea ${line}` : 'de esta línea'} en los datos de hoy. Probá
-        buscarla por número.
+        No encontramos el recorrido {line ? `de la línea ${line}` : 'de esta línea'} en los datos de hoy. Probá buscarla
+        por número.
       </div>
     )
   }
@@ -97,7 +97,7 @@ function RouteDetail({ routeId, line, headsign, initialDirection }) {
         <div>
           <h2 className="bus-detail-name">{busTitle(route)}</h2>
           {busDescription(route) && <div className="bus-detail-agency">{busDescription(route)}</div>}
-          {route.agency && <div className="bus-detail-agency">{route.agency}</div>}
+          {route.agency && <div className="bus-detail-agency">{plainText(route.agency)}</div>}
         </div>
         {busFavoriteId(route.shortName) && (
           <FavoriteButton kind="colectivos" id={busFavoriteId(route.shortName)} name={busTitle(route)} />
@@ -167,7 +167,7 @@ function RouteDetail({ routeId, line, headsign, initialDirection }) {
             <ol className="bus-stop-list" style={{ '--bus-color': route.color ?? '#17171a' }}>
               {direction.stops.map((stop, index) => (
                 <li key={`${stop.id}-${index}`}>
-                  <span>{stop.name}</span>
+                  <span>{plainText(stop.name)}</span>
                   {direction.minutes?.[index] != null && index > 0 && (
                     <span className="bus-stop-minutes">+{direction.minutes[index]} min</span>
                   )}
@@ -216,15 +216,23 @@ export default function ColectivosPage() {
       {status.loading && <Skeleton variant="block" label="Cargando…" />}
       {status.data && !available && (
         <div className="bus-unavailable">
-          Los datos de colectivos todavía no están disponibles. El servidor los descarga del feed oficial
-          al arrancar y una vez por día; probá de nuevo en unos minutos.
+          Los datos de colectivos todavía no están disponibles. El servidor los descarga del feed oficial al arrancar y
+          una vez por día; probá de nuevo en unos minutos.
         </div>
       )}
 
       {available && (
         <>
           <div className="search-box bus-search">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              aria-hidden="true"
+            >
               <circle cx="11" cy="11" r="7" />
               <line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
@@ -254,7 +262,7 @@ export default function ColectivosPage() {
                   <span className="bus-result-text">
                     <span className="bus-result-name">{busTitle(route)}</span>
                     {busDescription(route) && <span className="bus-result-agency">{busDescription(route)}</span>}
-                    {route.agency && <span className="bus-result-agency">{route.agency}</span>}
+                    {route.agency && <span className="bus-result-agency">{plainText(route.agency)}</span>}
                   </span>
                 </button>
               ))}
