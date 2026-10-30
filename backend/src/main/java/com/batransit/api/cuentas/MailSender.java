@@ -106,8 +106,24 @@ public class MailSender {
     }
 
     private static String reason(RestClientException e) {
-        return e instanceof RestClientResponseException r
-                ? "HTTP " + r.getStatusCode().value()
-                : e.getMostSpecificCause().getClass().getSimpleName();
+        if (e instanceof RestClientResponseException r) {
+            return describe(r.getStatusCode().value(), r.getResponseBodyAsString());
+        }
+        return e.getMostSpecificCause().getClass().getSimpleName();
+    }
+
+    /**
+     * Motivo corto para la pagina de Estado, a partir de la respuesta de
+     * Brevo ({"code":"unauthorized","message":"..."}). Solo se usa el codigo
+     * (texto fijo de Brevo) y se reconoce el bloqueo por IP; nunca la clave.
+     */
+    static String describe(int status, String body) {
+        String text = body == null ? "" : body.toLowerCase(java.util.Locale.ROOT);
+        if (text.contains("unrecognised ip") || text.contains("unrecognized ip") || text.contains("ip not authorized")
+                || text.contains("ip address")) {
+            return "HTTP " + status + ": la IP del servidor no está autorizada en Brevo";
+        }
+        java.util.regex.Matcher code = java.util.regex.Pattern.compile("\"code\"\\s*:\\s*\"([a-z_]{1,40})\"").matcher(text);
+        return code.find() ? "HTTP " + status + ": " + code.group(1) : "HTTP " + status;
     }
 }

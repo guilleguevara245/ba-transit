@@ -24,6 +24,7 @@ import './LinePage.css'
 import './MapPage.css'
 import './StationPage.css'
 import { findStation, linePath, stationPath } from '../utils/lineSlug.js'
+import { photoFor } from '../data/stationPhotos.js'
 
 /** Paradas de colectivo a esta distancia cuentan como cerca de la estacion. */
 const BUS_RADIUS_M = 300
@@ -156,6 +157,7 @@ export default function StationPage() {
   }
   const nearbyEvents = eventsNear(eventsState.data?.events, station)
   const lastTrains = station.lineMode === 'SUBTE' ? lastTrainsAt(station.lineCode, branch, station) : null
+  const photo = photoFor(station)
 
   return (
     <div className="wrap content">
@@ -173,11 +175,25 @@ export default function StationPage() {
       />
 
       <div className="line-hero" style={{ '--line-color': station.lineColorHex }}>
-        <LineBadge line={asLine(station)} size="lg" />
+        {photo ? (
+          <img className="station-photo" src={photo.file} alt={`Estación ${station.stationName}`} width="56" height="56" />
+        ) : (
+          <LineBadge line={asLine(station)} size="lg" />
+        )}
         <div className="line-hero-text">
-          <div className="line-mode">
-            {MODE_LABELS[station.lineMode] ?? station.lineMode} · {station.lineName}
-          </div>
+          {photo ? (
+            // Con foto, el icono de la linea pasa chico al rotulo. En subte y Premetro la letra ya
+            // dice la linea ("Subte · Línea [B]"); en los trenes el icono es igual para todas: va el nombre.
+            <div className="line-mode line-mode-badge">
+              {MODE_LABELS[station.lineMode] ?? station.lineMode} ·{' '}
+              {station.lineMode === 'SUBTE' || station.lineMode === 'PREMETRO' ? 'Línea' : station.lineName}
+              <LineBadge line={asLine(station)} size="sm" />
+            </div>
+          ) : (
+            <div className="line-mode">
+              {MODE_LABELS[station.lineMode] ?? station.lineMode} · {station.lineName}
+            </div>
+          )}
           <h1 className="line-title">{station.stationName}</h1>
           <div className="line-facts">
             {branches.length === 1 ? (

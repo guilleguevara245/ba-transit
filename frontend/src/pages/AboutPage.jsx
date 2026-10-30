@@ -1,4 +1,5 @@
 import BackButton from '../components/BackButton.jsx'
+import { photoCredits } from '../data/stationPhotos.js'
 import './ModePage.css'
 import './AboutPage.css'
 
@@ -139,6 +140,7 @@ const SOURCES = [
 ]
 
 export default function AboutPage() {
+  const credits = photoCredits()
   return (
     <div className="wrap content about">
       <BackButton />
@@ -171,6 +173,34 @@ export default function AboutPage() {
           ))}
         </ul>
       </section>
+
+      {credits.length > 0 && (
+        <section className="about-block">
+          <h2 className="about-heading">Fotos de las estaciones</h2>
+          <p>Las fotos son de Wikimedia Commons y se usan según su licencia. Gracias a sus autores.</p>
+          <ul className="about-sources about-photos">
+            {credits.map((c) => (
+              <li key={c.file}>
+                <span className="about-what">{c.name}</span>
+                <span className="about-detail">
+                  Foto: {c.author} ·{' '}
+                  {c.licenseUrl ? (
+                    <a href={c.licenseUrl} target="_blank" rel="noreferrer">
+                      {c.license}
+                    </a>
+                  ) : (
+                    c.license
+                  )}{' '}
+                  ·{' '}
+                  <a href={c.source} target="_blank" rel="noreferrer">
+                    Ver en Wikimedia Commons ↗
+                  </a>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="about-block about-note">
         <h2 className="about-heading">Aviso</h2>

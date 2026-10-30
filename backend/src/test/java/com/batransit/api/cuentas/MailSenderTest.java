@@ -17,4 +17,14 @@ class MailSenderTest {
         // Con clave pero sin remitente: no manda mails.
         assertThat(new MailSender("clave", " ", "BA Transit").isConfigured()).isEqualTo(false);
     }
+
+    @Test
+    void motivoDelError() {
+        assertThat(MailSender.describe(401, "{\"code\":\"unauthorized\",\"message\":\"We have detected you are using an unrecognised IP address 1.2.3.4\"}"))
+                .isEqualTo("HTTP 401: la IP del servidor no está autorizada en Brevo");
+        assertThat(MailSender.describe(403, "{\"code\":\"permission_denied\",\"message\":\"Key not allowed\"}"))
+                .isEqualTo("HTTP 403: permission_denied");
+        assertThat(MailSender.describe(503, "<html>caido</html>")).isEqualTo("HTTP 503");
+        assertThat(MailSender.describe(500, null)).isEqualTo("HTTP 500");
+    }
 }

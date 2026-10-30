@@ -18,7 +18,9 @@ export function errorLabel(reason) {
   if (!reason) return null
   if (/Timeout/i.test(reason)) return 'tardó demasiado en responder'
   if (/Connect|UnknownHost|NoRouteToHost/i.test(reason)) return 'no se pudo conectar'
-  const http = /^HTTP (\d{3})$/.exec(reason)
+  // "HTTP 403" o "HTTP 403: detalle" (el detalle lo arma el backend, por ejemplo el de Brevo).
+  const http = /^HTTP (\d{3})(?:: (.+))?$/.exec(reason)
+  if (http?.[2]) return `${http[2]} (HTTP ${http[1]})`
   if (http) return Number(http[1]) >= 500 ? `error del servidor (HTTP ${http[1]})` : `rechazó la consulta (HTTP ${http[1]})`
   return reason
 }

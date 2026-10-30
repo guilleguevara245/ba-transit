@@ -21,6 +21,9 @@ describe('errorLabel', () => {
     expect(errorLabel('ConnectException')).toBe('no se pudo conectar')
     expect(errorLabel('HTTP 503')).toBe('error del servidor (HTTP 503)')
     expect(errorLabel('HTTP 401')).toBe('rechazó la consulta (HTTP 401)')
+    expect(errorLabel('HTTP 403: la IP del servidor no está autorizada en Brevo')).toBe(
+      'la IP del servidor no está autorizada en Brevo (HTTP 403)',
+    )
     expect(errorLabel('sin respuesta')).toBe('sin respuesta')
     expect(errorLabel(null)).toBe(null)
   })
