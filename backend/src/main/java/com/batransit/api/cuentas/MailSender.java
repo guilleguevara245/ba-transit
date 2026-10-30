@@ -1,5 +1,6 @@
 package com.batransit.api.cuentas;
 
+import com.batransit.api.estado.SourceHealth;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,11 +25,19 @@ public class MailSender {
 
     private static final Logger log = LoggerFactory.getLogger(MailSender.class);
     static final String URL = "https://api.brevo.com/v3/smtp/email";
+    static final String ACCOUNT_URL = "https://api.brevo.com/v3/account";
 
     private final String apiKey;
     private final String from;
     private final String fromName;
     private final RestClient restClient;
+    private SourceHealth health = SourceHealth.NOOP;
+
+    /** Registro del estado de la fuente (pagina "Estado de los datos"); opcional para los tests. */
+    @Autowired(required = false)
+    void setHealth(SourceHealth health) {
+        this.health = health;
+    }
 
     @Autowired
     public MailSender(@Value("${app.mail.brevo-api-key:}") String apiKey,
@@ -65,13 +74,40 @@ public class MailSender {
                     .body(body)
                     .retrieve()
                     .toBodilessEntity();
+            health.ok(SourceHealth.Source.BREVO);
             return true;
         } catch (RestClientException e) {
-            String reason = e instanceof RestClientResponseException r
-                    ? "HTTP " + r.getStatusCode().value()
-                    : e.getMostSpecificCause().getClass().getSimpleName();
+            String reason = reason(e);
+            health.fail(SourceHealth.Source.BREVO, reason);
             log.warn("No se pudo enviar un mail ({})", reason);
             return false;
         }
+    }
+
+    /**
+     * Una consulta liviana a la cuenta de Brevo (no manda mails ni gasta el
+     * cupo). Brevo da de baja las claves que pasan 90 dias sin usarse: esta
+     * consulta cuenta como uso. true si la clave sigue valiendo.
+     */
+    public boolean ping() {
+        if (apiKey.isEmpty()) {
+            return false;
+        }
+        try {
+            restClient.get().uri(ACCOUNT_URL).header("api-key", apiKey).retrieve().toBodilessEntity();
+            health.ok(SourceHealth.Source.BREVO);
+            return true;
+        } catch (RestClientException e) {
+            String reason = reason(e);
+            health.fail(SourceHealth.Source.BREVO, reason);
+            log.warn("La clave de Brevo no respondio bien ({})", reason);
+            return false;
+        }
+    }
+
+    private static String reason(RestClientException e) {
+        return e instanceof RestClientResponseException r
+                ? "HTTP " + r.getStatusCode().value()
+                : e.getMostSpecificCause().getClass().getSimpleName();
     }
 }
