@@ -553,6 +553,18 @@
   padding-top: 12px;
 }
 
+/* Cerrar sesion en rojo (el del tema oscuro: el menu siempre es oscuro). */
+.account-menu .account-menu-out,
+.account-menu .account-menu-out:hover,
+.account-menu .account-menu-out:focus-visible {
+  color: #ef6b62;
+}
+
+.account-menu .account-menu-out:hover,
+.account-menu .account-menu-out:focus-visible {
+  border-left-color: #ef6b62;
+}
+
 /* Celular: logo, hora, tema y cuenta en un solo renglon. */
 @media (max-width: 480px) {
   .header .header-row {
