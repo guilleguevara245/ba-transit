@@ -67,7 +67,7 @@ public class AccountController {
     @PostMapping("/api/v1/auth/registro")
     public ResponseEntity<SessionResponse> register(@RequestBody RegisterRequest body, HttpServletRequest request) {
         limit("registro:" + clientIp(request));
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.register(body.email(), body.password(), body.name()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.register(body.email(), body.password(), body.name(), body.lastName()));
     }
 
     @PostMapping("/api/v1/auth/ingreso")
@@ -114,7 +114,7 @@ public class AccountController {
     @PutMapping("/api/v1/cuenta/nombre")
     public UserView rename(@RequestHeader(name = "Authorization", required = false) String authorization,
                            @RequestBody AccountModels.NameRequest body) {
-        return service.rename(userId(authorization), body.name());
+        return service.rename(userId(authorization), body.name(), body.lastName());
     }
 
     /** Agrega o cambia la contraseña; cierra las otras sesiones y devuelve una nueva. */

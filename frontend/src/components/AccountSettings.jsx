@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
-import { changePassword, closeDevice, closeOtherSessions, downloadMyData, listDevices, rename } from '../utils/account.js'
+import {
+  changePassword,
+  closeDevice,
+  closeOtherSessions,
+  downloadMyData,
+  listDevices,
+  rename,
+} from '../utils/account.js'
 import { formatLongDate, formatRelativeTime } from '../utils/format.js'
 
 const MIN_PASSWORD = 8
@@ -42,10 +49,11 @@ function Feedback({ error, done }) {
   ) : null
 }
 
-/** El nombre de la cuenta, con "Cambiar" para editarlo ahi mismo. */
+/** Nombre y apellido de la cuenta, con "Cambiar" para editarlos ahi mismo. */
 export function NameEditor({ user, short = false }) {
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState(user.name ?? '')
+  const [lastName, setLastName] = useState(user.lastName ?? '')
   const { busy, error, run, setError } = useAction()
 
   if (!editing) {
@@ -55,6 +63,7 @@ export function NameEditor({ user, short = false }) {
         className="account-inline-link"
         onClick={() => {
           setName(user.name ?? '')
+          setLastName(user.lastName ?? '')
           setError(null)
           setEditing(true)
         }}
@@ -70,13 +79,33 @@ export function NameEditor({ user, short = false }) {
       onSubmit={async (event) => {
         event.preventDefault()
         if (!name.trim()) return setError('Escribí tu nombre.')
-        if (await run(() => rename(name))) setEditing(false)
+        if (await run(() => rename(name, lastName))) setEditing(false)
       }}
     >
-      <label className="auth-field">
-        <span>Tu nombre</span>
-        <input value={name} maxLength={80} autoComplete="name" onChange={(e) => setName(e.target.value)} autoFocus />
-      </label>
+      <div className="auth-name-row">
+        <label className="auth-field">
+          <span>Nombre</span>
+          <input
+            value={name}
+            maxLength={80}
+            autoComplete="given-name"
+            onChange={(e) => setName(e.target.value)}
+            autoFocus
+          />
+          <span className="auth-hint">Con este te saludamos en el inicio.</span>
+        </label>
+        <label className="auth-field">
+          <span>
+            Apellido <small>(opcional)</small>
+          </span>
+          <input
+            value={lastName}
+            maxLength={80}
+            autoComplete="family-name"
+            onChange={(e) => setLastName(e.target.value)}
+          />
+        </label>
+      </div>
       <Feedback error={error} />
       <div className="account-form-actions">
         <button type="submit" className="auth-submit" disabled={busy}>
@@ -96,7 +125,13 @@ function PasswordInput({ id, label, value, onChange, autoComplete, hint }) {
     <label className="auth-field" htmlFor={id}>
       <span>{label}</span>
       <span className="auth-password">
-        <input id={id} type={show ? 'text' : 'password'} value={value} onChange={onChange} autoComplete={autoComplete} />
+        <input
+          id={id}
+          type={show ? 'text' : 'password'}
+          value={value}
+          onChange={onChange}
+          autoComplete={autoComplete}
+        />
         <button type="button" className="auth-show" aria-pressed={show} onClick={() => setShow((v) => !v)}>
           {show ? 'Ocultar' : 'Mostrar'}
         </button>
@@ -226,8 +261,8 @@ export function DevicesSection() {
   return (
     <div className="account-subsection">
       <p className="account-help">
-        Dónde está abierta tu cuenta. Si no reconocés alguno, cerrá su sesión: en ese dispositivo vas a tener que volver a
-        entrar.
+        Dónde está abierta tu cuenta. Si no reconocés alguno, cerrá su sesión: en ese dispositivo vas a tener que volver
+        a entrar.
       </p>
       {devices === null && <p className="account-help">Cargando…</p>}
       {devices && (
@@ -252,10 +287,12 @@ export function DevicesSection() {
                   className="account-secondary"
                   disabled={busy}
                   aria-label={`Cerrar la sesión de ${d.device}`}
-                  onClick={() => run(async () => {
-                    await closeDevice(d.id)
-                    await load()
-                  }, `Cerramos la sesión de ${d.device}.`)}
+                  onClick={() =>
+                    run(async () => {
+                      await closeDevice(d.id)
+                      await load()
+                    }, `Cerramos la sesión de ${d.device}.`)
+                  }
                 >
                   Cerrar sesión
                 </button>

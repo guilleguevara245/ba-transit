@@ -23,8 +23,13 @@ public class AppUser {
     @Column(nullable = false, length = 254)
     private String email;
 
+    /** El nombre (el que se usa para saludar). */
     @Column(name = "display_name", length = 80)
     private String displayName;
+
+    /** El apellido (opcional). */
+    @Column(name = "last_name", length = 80)
+    private String lastName;
 
     /** Null si la cuenta solo entra con Google. */
     @Column(name = "password_hash", length = 200)
@@ -112,6 +117,14 @@ public class AppUser {
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public String getPasswordHash() {

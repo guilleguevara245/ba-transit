@@ -885,3 +885,17 @@
     border-top: none;
   }
 }
+
+/* Nombre y apellido lado a lado (uno abajo del otro en pantallas chicas). */
+.auth-name-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 12px;
+  align-items: start;
+}
+
+@media (max-width: 480px) {
+  .auth-name-row {
+    grid-template-columns: 1fr;
+  }
+}

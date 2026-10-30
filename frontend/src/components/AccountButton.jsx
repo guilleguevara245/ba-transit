@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useSession } from '../hooks/useSession.js'
 import { logout } from '../utils/account.js'
+import { fullName } from '../utils/session.js'
 import { ACCOUNT_ICONS } from '../utils/accountIcons.js'
 import EmailText from './EmailText.jsx'
 import UserAvatar from './UserAvatar.jsx'
@@ -108,7 +109,7 @@ export default function AccountButton() {
           <div className="account-menu-me">
             <UserAvatar user={user} size={44} />
             <div>
-              <strong>{user.name || 'Tu cuenta'}</strong>
+              <strong>{fullName(user) || 'Tu cuenta'}</strong>
               <small>
                 <EmailText email={user.email} />
               </small>

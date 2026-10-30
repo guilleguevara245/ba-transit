@@ -185,4 +185,30 @@ class AccountServiceTest {
         // El token sigue firmado, pero la cuenta ya no existe.
         assertThat(statusOf(() -> service.me(claims(s)))).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
+
+    @Test
+    void nombreYApellidoPorSeparado() {
+        SessionResponse s = service.register("ana@gmail.com", "contraseña1", " Ana  María ", "  Pérez ");
+        assertThat(s.user().name()).isEqualTo("Ana María");
+        assertThat(s.user().lastName()).isEqualTo("Pérez");
+        // Sin apellido: null.
+        assertThat(service.register("beto@gmail.com", "contraseña1", "Beto", "  ").user().lastName()).isNull();
+        // Cambiarlos desde Tu cuenta (apellido vacio lo borra).
+        var renamed = service.rename(claims(s), "Anita", "");
+        assertThat(renamed.name()).isEqualTo("Anita");
+        assertThat(renamed.lastName()).isNull();
+    }
+
+    @Test
+    void conGoogleSeparaNombreYApellido() {
+        // Google da el nombre completo: se corta en el primer espacio.
+        SessionResponse s = service.loginWithGoogle("g-5|carla@gmail.com|Carla Gómez");
+        assertThat(s.user().name()).isEqualTo("Carla");
+        assertThat(s.user().lastName()).isEqualTo("Gómez");
+        // Con nombre y apellido por separado, se usan esos.
+        var split = AccountService.splitGoogleName(
+                new GoogleTokenVerifier.GoogleIdentity("g", "x@gmail.com", "Juan Pablo Paz", null, "Juan Pablo", "Paz"));
+        assertThat(split[0]).isEqualTo("Juan Pablo");
+        assertThat(split[1]).isEqualTo("Paz");
+    }
 }

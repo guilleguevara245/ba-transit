@@ -36,7 +36,15 @@ export function subscribeSession(listener) {
   return () => listeners.delete(listener)
 }
 
-/** Primer nombre para el saludo ("Ana Pérez" -> "Ana"). */
+/** El nombre para el saludo (el apellido va aparte: "Juan Pablo" sale entero). */
 export function firstName(user) {
-  return user?.name?.trim().split(/\s+/)[0] ?? ''
+  return user?.name?.trim() ?? ''
+}
+
+/** Nombre y apellido ("Ana Pérez"), para la cuenta. */
+export function fullName(user) {
+  return [user?.name, user?.lastName]
+    .map((part) => part?.trim())
+    .filter(Boolean)
+    .join(' ')
 }

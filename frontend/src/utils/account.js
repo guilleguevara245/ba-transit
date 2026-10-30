@@ -28,8 +28,8 @@ async function start(session) {
 
 export const authConfig = () => apiSend('GET', '/api/v1/auth/config')
 
-export async function register({ email, password, name }) {
-  await start(await apiSend('POST', '/api/v1/auth/registro', { body: { email, password, name } }))
+export async function register({ email, password, name, lastName }) {
+  await start(await apiSend('POST', '/api/v1/auth/registro', { body: { email, password, name, lastName } }))
 }
 
 export async function login({ email, password }) {
@@ -65,9 +65,9 @@ export async function uploadPhoto(dataUrl) {
 }
 
 /** Cambia el nombre de la cuenta. */
-export async function rename(name) {
+export async function rename(name, lastName = '') {
   const session = getSession()
-  const user = await apiSend('PUT', '/api/v1/cuenta/nombre', { body: { name }, token: session.token })
+  const user = await apiSend('PUT', '/api/v1/cuenta/nombre', { body: { name, lastName }, token: session.token })
   setSession({ ...session, user })
 }
 

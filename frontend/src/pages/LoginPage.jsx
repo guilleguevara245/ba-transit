@@ -30,7 +30,7 @@ export default function LoginPage() {
   const { theme } = useTheme()
   const { data: config } = useApi('/api/v1/auth/config')
   const [mode, setMode] = useState('ingreso')
-  const [form, setForm] = useState({ name: '', email: '', password: '' })
+  const [form, setForm] = useState({ name: '', lastName: '', email: '', password: '' })
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState(null)
   const [busy, setBusy] = useState(false)
@@ -65,7 +65,12 @@ export default function LoginPage() {
       document.getElementById(`auth-${problem.field}`)?.focus()
       return
     }
-    const data = { email: form.email.trim(), password: form.password, name: form.name.trim() }
+    const data = {
+      email: form.email.trim(),
+      password: form.password,
+      name: form.name.trim(),
+      lastName: form.lastName.trim(),
+    }
     run(() => (mode === 'registro' ? register(data) : login(data)))
   }
 
@@ -118,23 +123,41 @@ export default function LoginPage() {
 
         <form className="auth-form" noValidate onSubmit={submit}>
           {mode === 'registro' && (
-            <label className="auth-field">
-              <span>Nombre</span>
-              <input
-                id="auth-name"
-                value={form.name}
-                onChange={update('name')}
-                autoComplete="given-name"
-                maxLength={80}
-                aria-invalid={Boolean(fieldError('name')) || undefined}
-                aria-describedby={fieldError('name') ? 'auth-name-error' : undefined}
-              />
-              {fieldError('name') && (
-                <span className="auth-error" id="auth-name-error" role="alert">
-                  {fieldError('name')}
+            <div className="auth-name-row">
+              <label className="auth-field">
+                <span>Nombre</span>
+                <input
+                  id="auth-name"
+                  value={form.name}
+                  onChange={update('name')}
+                  autoComplete="given-name"
+                  maxLength={80}
+                  aria-invalid={Boolean(fieldError('name')) || undefined}
+                  aria-describedby={fieldError('name') ? 'auth-name-error' : 'auth-name-hint'}
+                />
+                {fieldError('name') ? (
+                  <span className="auth-error" id="auth-name-error" role="alert">
+                    {fieldError('name')}
+                  </span>
+                ) : (
+                  <span className="auth-hint" id="auth-name-hint">
+                    Es el que usamos para saludarte en el inicio.
+                  </span>
+                )}
+              </label>
+              <label className="auth-field">
+                <span>
+                  Apellido <small>(opcional)</small>
                 </span>
-              )}
-            </label>
+                <input
+                  id="auth-last-name"
+                  value={form.lastName}
+                  onChange={update('lastName')}
+                  autoComplete="family-name"
+                  maxLength={80}
+                />
+              </label>
+            </div>
           )}
           <label className="auth-field">
             <span>Mail</span>

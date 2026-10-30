@@ -9,7 +9,7 @@ public final class AccountModels {
     private AccountModels() {
     }
 
-    public record RegisterRequest(String email, String password, String name) {
+    public record RegisterRequest(String email, String password, String name, String lastName) {
     }
 
     public record LoginRequest(String email, String password) {
@@ -52,8 +52,9 @@ public final class AccountModels {
     }
 
     /** hasPassword / hasGoogle: con que puede entrar. */
+    /** name: el nombre (con el que se saluda); lastName: el apellido, o null. */
     public record UserView(long id, String email, String name, boolean hasPassword, boolean hasGoogle, Instant createdAt,
-                           UserImage image) {
+                           UserImage image, String lastName) {
     }
 
     /** Elegir la imagen: kind 'avatar' (con value), 'google' o null (la inicial). */
@@ -67,7 +68,7 @@ public final class AccountModels {
     public record SessionResponse(String token, UserView user) {
     }
 
-    public record NameRequest(String name) {
+    public record NameRequest(String name, String lastName) {
     }
 
     /** current: la contraseña actual (no hace falta si la cuenta todavia no tiene, por ejemplo solo Google). */

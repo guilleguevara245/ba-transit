@@ -58,6 +58,12 @@ public class AccountService {
 
     @Transactional
     public SessionResponse register(String rawEmail, String password, String rawName) {
+        return register(rawEmail, password, rawName, null);
+    }
+
+    /** Crear la cuenta con mail y contraseña. El nombre es obligatorio; el apellido, no. */
+    @Transactional
+    public SessionResponse register(String rawEmail, String password, String rawName, String rawLastName) {
         String email = normalizeEmail(rawEmail);
         String name = cleanName(rawName);
         if (name == null) {
@@ -70,6 +76,7 @@ public class AccountService {
                     : "Ya hay una cuenta con ese mail: ingresá con tu contraseña.");
         });
         AppUser user = new AppUser(email, name);
+        user.setLastName(cleanName(rawLastName));
         user.setPasswordHash(PasswordHasher.hash(password));
         user.setLastLoginAt(Instant.now());
         try {
@@ -103,12 +110,16 @@ public class AccountService {
                 .orElseThrow(() -> new AccountException(HttpStatus.UNAUTHORIZED, "No se pudo confirmar tu cuenta de Google. Probá de nuevo."));
         AppUser user = users.findByGoogleSub(identity.sub())
                 .or(() -> users.findByEmail(identity.email()))
-                .orElseGet(() -> new AppUser(identity.email(), cleanName(identity.name())));
+                .orElseGet(() -> new AppUser(identity.email(), null));
         if (user.getGoogleSub() == null) {
             user.setGoogleSub(identity.sub());
         }
         if (user.getDisplayName() == null) {
-            user.setDisplayName(cleanName(identity.name()));
+            String[] split = splitGoogleName(identity);
+            user.setDisplayName(split[0]);
+            if (user.getLastName() == null) {
+                user.setLastName(split[1]);
+            }
         }
         if (identity.picture() != null) {
             user.setGooglePicture(identity.picture());
@@ -130,16 +141,40 @@ public class AccountService {
         return readFavorites(find(session).getFavorites());
     }
 
-    /** Cambia el nombre de la cuenta. */
+    /** Cambia el nombre de la cuenta (y el apellido: vacio lo borra). */
     @Transactional
     public UserView rename(Claims session, String rawName) {
+        return rename(session, rawName, null);
+    }
+
+    @Transactional
+    public UserView rename(Claims session, String rawName, String rawLastName) {
         String name = cleanName(rawName);
         if (name == null) {
             throw bad("Escribí tu nombre.");
         }
         AppUser user = find(session);
         user.setDisplayName(name);
+        user.setLastName(cleanName(rawLastName));
         return view(user);
+    }
+
+    /**
+     * Nombre y apellido de una cuenta de Google: los que da Google por
+     * separado; si no, el nombre completo cortado en el primer espacio.
+     */
+    static String[] splitGoogleName(GoogleIdentity identity) {
+        String given = cleanName(identity.givenName());
+        if (given != null) {
+            return new String[] {given, cleanName(identity.familyName())};
+        }
+        String full = cleanName(identity.name());
+        if (full == null) {
+            return new String[] {null, null};
+        }
+        int space = full.indexOf(' ');
+        return space < 0 ? new String[] {full, null}
+                : new String[] {full.substring(0, space), cleanName(full.substring(space + 1))};
     }
 
     /**
@@ -248,6 +283,7 @@ public class AccountService {
         account.put("id", user.getId());
         account.put("mail", user.getEmail());
         account.put("nombre", user.getDisplayName());
+        account.put("apellido", user.getLastName());
         account.put("entraConContrasena", user.getPasswordHash() != null);
         account.put("entraConGoogle", user.getGoogleSub() != null);
         account.put("creada", user.getCreatedAt());
@@ -321,7 +357,7 @@ public class AccountService {
 
     static UserView view(AppUser user) {
         return new UserView(user.getId(), user.getEmail(), user.getDisplayName(), user.getPasswordHash() != null,
-                user.getGoogleSub() != null, user.getCreatedAt(), image(user));
+                user.getGoogleSub() != null, user.getCreatedAt(), image(user), user.getLastName());
     }
 
     static UserImage image(AppUser user) {

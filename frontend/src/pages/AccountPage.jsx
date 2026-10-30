@@ -13,6 +13,7 @@ import { useSession } from '../hooks/useSession.js'
 import { deleteAccount, logout } from '../utils/account.js'
 import { ACCOUNT_ICONS } from '../utils/accountIcons.js'
 import { formatLongDate } from '../utils/format.js'
+import { fullName } from '../utils/session.js'
 import './AccountPage.css'
 
 function plural(n, one, many) {
@@ -93,7 +94,7 @@ export default function AccountPage() {
           <div className="account-nav-me">
             <UserAvatar user={user} size={48} />
             <div>
-              <strong>{user.name || 'Tu cuenta'}</strong>
+              <strong>{fullName(user) || 'Tu cuenta'}</strong>
               <small>
                 <EmailText email={user.email} />
               </small>
@@ -122,7 +123,7 @@ export default function AccountPage() {
               <UserAvatar user={user} size={72} />
               <div className="account-hero-text">
                 <h1 className="auth-title" id="account-title">
-                  {user.name || 'Tu cuenta'}
+                  {fullName(user) || 'Tu cuenta'}
                 </h1>
                 <span>{user.email}</span>
               </div>
@@ -133,8 +134,8 @@ export default function AccountPage() {
             <dl className="account-rows">
               <dt>Nombre</dt>
               <dd>
-                <span>{user.name || 'Sin nombre'}</span>
-                <NameEditor key={user.name ?? ''} user={user} short />
+                <span>{fullName(user) || 'Sin nombre'}</span>
+                <NameEditor key={fullName(user)} user={user} short />
               </dd>
               <dt>Mail</dt>
               <dd>{user.email}</dd>
