@@ -34,7 +34,7 @@ function readDismissed() {
  * Franja con las alertas meteorologicas del SMN vigentes para el AMBA
  * (tormentas, lluvias y calor), en una linea: tipo, cuando y un consejo
  * para viajar (sin el texto largo del SMN). Solo aparece cuando hay alguna,
- * bajando como una persiana la primera vez. Cerrada, no vuelve en el dia
+ * apareciendo con un barrido desde la raya de color la primera vez. Cerrada, no vuelve en el dia
  * aunque el SMN la renueve; vuelve si sube de nivel (ver dismissKey).
  */
 export default function WeatherAlertBanner() {
@@ -65,21 +65,23 @@ export default function WeatherAlertBanner() {
         shown.add(key)
         return (
           <div key={alert.id} className={`weather-alert ${level.className}${enter ? ' weather-alert-enter' : ''}`}>
-            <div className="wrap weather-alert-row">
-              <WeatherIcon kind={ALERT_ICONS[alert.kind] ?? 'storm'} className="weather-alert-icon" />
-              <div className="weather-alert-text">
-                <strong>{alertTitle(alert)}</strong>
-                {periodText(alert) && <span className="weather-alert-period">: {periodText(alert)}.</span>}
-                {travelTip(alert) && <span className="weather-alert-tip"> {travelTip(alert)}</span>}
+            <div className="weather-alert-inner">
+              <div className="wrap weather-alert-row">
+                <WeatherIcon kind={ALERT_ICONS[alert.kind] ?? 'storm'} className="weather-alert-icon" />
+                <div className="weather-alert-text">
+                  <strong>{alertTitle(alert)}</strong>
+                  {periodText(alert) && <span className="weather-alert-period">: {periodText(alert)}.</span>}
+                  {travelTip(alert) && <span className="weather-alert-tip"> {travelTip(alert)}</span>}
+                </div>
+                <button
+                  type="button"
+                  className="weather-alert-close"
+                  aria-label={`Cerrar ${alertTitle(alert).toLowerCase()}`}
+                  onClick={() => dismiss(alert)}
+                >
+                  ×
+                </button>
               </div>
-              <button
-                type="button"
-                className="weather-alert-close"
-                aria-label={`Cerrar ${alertTitle(alert).toLowerCase()}`}
-                onClick={() => dismiss(alert)}
-              >
-                ×
-              </button>
             </div>
           </div>
         )

@@ -105,28 +105,68 @@
   }
 }
 
-/* Al aparecer, baja como una persiana (una vez por visita). */
-@keyframes weather-alert-blind {
+/*
+ * Al aparecer (una vez por visita): la franja se abre de a poco empujando
+ * la pagina, con solo la raya de color visible; despues el fondo se barre
+ * de izquierda a derecha y al final aparece el texto.
+ */
+.weather-alert-enter {
+  display: grid;
+  animation:
+    weather-alert-open 0.25s ease-out both,
+    weather-alert-sweep 0.55s 0.2s cubic-bezier(0.6, 0, 0.2, 1) both;
+}
+
+.weather-alert-enter > .weather-alert-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.weather-alert-enter .weather-alert-row {
+  animation: weather-alert-text 0.3s 0.55s both;
+}
+
+.weather-alert-enter + .weather-alert-enter,
+.weather-alert-enter + .weather-alert-enter .weather-alert-row {
+  animation-delay: 0.15s, 0.35s;
+}
+
+.weather-alert-enter + .weather-alert-enter .weather-alert-row {
+  animation-delay: 0.7s;
+}
+
+@keyframes weather-alert-open {
   from {
-    clip-path: inset(0 0 100% 0);
-    transform: translateY(-8px);
+    grid-template-rows: 0fr;
   }
   to {
-    clip-path: inset(0 0 0 0);
-    transform: translateY(0);
+    grid-template-rows: 1fr;
   }
 }
 
-.weather-alert-enter {
-  animation: weather-alert-blind 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+@keyframes weather-alert-sweep {
+  from {
+    clip-path: inset(0 calc(100% - 4px) 0 0);
+  }
+  to {
+    clip-path: inset(0);
+  }
 }
 
-.weather-alert-enter + .weather-alert-enter {
-  animation-delay: 0.12s;
+@keyframes weather-alert-text {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .weather-alert-enter {
+  .weather-alert-enter,
+  .weather-alert-enter .weather-alert-row {
     animation: none;
   }
 }
