@@ -1,6 +1,8 @@
 import { apiGetWithToken, apiSend } from '../api.js'
 import { mergeFavorites, readAll, writeList, FAVORITE_KINDS } from './favoritesStore.js'
 import { mergePlaces, readPlaces, writePlaces } from './placesStore.js'
+import { applyNoticePrefs, hasSavedPrefs, readPrefs } from './push.js'
+import { applyTheme, THEME_KEY } from '../hooks/useTheme.js'
 import { firstName, getSession, setSession } from './session.js'
 
 /** Acciones de la cuenta. Los errores (ApiError) traen el mensaje para mostrar. */
@@ -21,6 +23,7 @@ async function start(session) {
   adoptName(session.user)
   await syncFavorites()
   await syncPlaces()
+  await syncPreferences()
 }
 
 export const authConfig = () => apiSend('GET', '/api/v1/auth/config')
@@ -59,6 +62,43 @@ export async function uploadPhoto(dataUrl) {
   const session = getSession()
   const user = await apiSend('PUT', '/api/v1/cuenta/foto', { body: { dataUrl }, token: session.token })
   setSession({ ...session, user })
+}
+
+/** Cambia el nombre de la cuenta. */
+export async function rename(name) {
+  const session = getSession()
+  const user = await apiSend('PUT', '/api/v1/cuenta/nombre', { body: { name }, token: session.token })
+  setSession({ ...session, user })
+}
+
+/**
+ * Agrega o cambia la contraseña (current: la actual, si la cuenta ya tenia).
+ * Las demas sesiones se cierran; este dispositivo sigue con una nueva.
+ */
+export async function changePassword(current, password) {
+  const session = getSession()
+  setSession(await apiSend('PUT', '/api/v1/cuenta/contrasena', { body: { current, password }, token: session.token }))
+}
+
+/** Cierra la sesion en todos los demas dispositivos. */
+export async function closeOtherSessions() {
+  const session = getSession()
+  setSession(await apiSend('POST', '/api/v1/cuenta/cerrar-sesiones', { token: session.token }))
+}
+
+/** Descarga todo lo que guarda la cuenta, como archivo JSON. */
+export async function downloadMyData() {
+  const session = getSession()
+  const data = await apiGetWithToken('/api/v1/cuenta/datos', session.token)
+  const blob = new window.Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+  const url = window.URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'ba-transit-mis-datos.json'
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  setTimeout(() => window.URL.revokeObjectURL(url), 1000)
 }
 
 /** Cierra la sesion en este navegador; los favoritos quedan en el dispositivo. */
@@ -161,4 +201,87 @@ export function schedulePlacesPush(event) {
   if (event?.detail?.silent || !getSession()) return
   clearTimeout(placesTimer)
   placesTimer = setTimeout(pushPlaces, 500)
+}
+
+// ---- Preferencias (tema y avisos) ----
+
+const PREFS_SYNC_KEY = 'ba-transit:preferencias-cuenta'
+/** Las preferencias de avisos que se sincronizan (la pausa es de cada dispositivo). */
+const NOTICE_KEYS = [
+  'version',
+  'kinds',
+  'notifyResolved',
+  'quiet',
+  'quietFrom',
+  'quietTo',
+  'summary',
+  'summaryTime',
+  'summaryDays',
+  'lastTrain',
+  'lastTrainMinutes',
+]
+let prefsTimer = null
+
+/** Lo de este dispositivo: el tema elegido (no el del sistema) y las preferencias de avisos guardadas. */
+export function localPreferences() {
+  let tema = null
+  try {
+    tema = window.localStorage.getItem(THEME_KEY)
+  } catch {
+    // Sin almacenamiento.
+  }
+  const prefs = readPrefs()
+  return {
+    tema: tema === 'light' || tema === 'dark' ? tema : null,
+    avisos: hasSavedPrefs() ? Object.fromEntries(NOTICE_KEYS.map((k) => [k, prefs[k]])) : null,
+  }
+}
+
+/** Sin nulls: solo lo que la cuenta tiene guardado. */
+const definedOnly = (obj) => Object.fromEntries(Object.entries(obj ?? {}).filter(([, v]) => v !== null && v !== undefined))
+
+/**
+ * Al entrar: si este dispositivo ya estaba sincronizado con esta cuenta, o
+ * la cuenta ya tiene preferencias, se usan las de la cuenta. Si la cuenta
+ * no tiene, se suben las de este dispositivo.
+ */
+export async function syncPreferences() {
+  const session = getSession()
+  if (!session) return
+  const remote = await apiGetWithToken('/api/v1/cuenta/preferencias', session.token)
+  let synced = false
+  try {
+    synced = window.localStorage.getItem(PREFS_SYNC_KEY) === String(session.user.id)
+  } catch {
+    // Sin almacenamiento.
+  }
+  const hasRemote = Boolean(remote?.tema || remote?.avisos)
+  if (hasRemote) {
+    if (remote.tema) applyTheme(remote.tema, { silent: true })
+    if (remote.avisos) await applyNoticePrefs(definedOnly(remote.avisos)).catch(() => {})
+  } else if (!synced) {
+    await pushPreferences()
+  }
+  try {
+    window.localStorage.setItem(PREFS_SYNC_KEY, String(session.user.id))
+  } catch {
+    // Sin almacenamiento.
+  }
+}
+
+export async function pushPreferences() {
+  const session = getSession()
+  if (!session) return
+  try {
+    await apiSend('PUT', '/api/v1/cuenta/preferencias', { body: localPreferences(), token: session.token })
+  } catch (error) {
+    if (error.status === 401) setSession(null)
+  }
+}
+
+/** Sube el tema y las preferencias de avisos un momento despues del ultimo cambio. */
+export function schedulePrefsPush() {
+  if (!getSession()) return
+  clearTimeout(prefsTimer)
+  prefsTimer = setTimeout(pushPreferences, 800)
 }

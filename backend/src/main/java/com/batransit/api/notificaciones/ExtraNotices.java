@@ -60,6 +60,9 @@ public final class ExtraNotices {
     public static List<Planned> weather(List<WeatherAlert> alerts, List<Target> targets, String siteUrl, ZonedDateTime now) {
         List<Planned> out = new ArrayList<>();
         for (WeatherAlert a : alerts) {
+            if (a.kind() == null) {
+                continue;
+            }
             if (a.expires() != null && !a.expires().toInstant().isAfter(now.toInstant())) {
                 continue;
             }
@@ -80,8 +83,9 @@ public final class ExtraNotices {
 
     /** "Alerta amarilla por tormentas". */
     static String weatherTitle(WeatherAlert a) {
-        String level = WEATHER_LEVELS.get(a.level());
-        String kind = WEATHER_KINDS.get(a.kind());
+        // Map.of no acepta get(null).
+        String level = a.level() == null ? null : WEATHER_LEVELS.get(a.level());
+        String kind = a.kind() == null ? null : WEATHER_KINDS.get(a.kind());
         String base = level == null ? "Alerta" : "Alerta " + level;
         return kind == null ? (a.title() == null || a.title().isBlank() ? base : a.title()) : base + " por " + kind;
     }

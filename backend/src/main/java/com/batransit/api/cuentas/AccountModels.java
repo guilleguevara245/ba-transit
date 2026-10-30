@@ -64,6 +64,13 @@ public final class AccountModels {
     public record SessionResponse(String token, UserView user) {
     }
 
+    public record NameRequest(String name) {
+    }
+
+    /** current: la contraseña actual (no hace falta si la cuenta todavia no tiene, por ejemplo solo Google). */
+    public record PasswordRequest(String current, String password) {
+    }
+
     /** Para que el sitio sepa si mostrar "Continuar con Google" y "¿Olvidaste tu contraseña?". */
     public record AuthConfig(String googleClientId, boolean passwordReset) {
     }

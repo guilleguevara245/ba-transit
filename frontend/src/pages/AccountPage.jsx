@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { DataSection, NameEditor, PasswordSection, SessionsSection } from '../components/AccountSettings.jsx'
 import BackButton from '../components/BackButton.jsx'
 import Chevrons from '../components/Chevrons.jsx'
 import ImagePicker from '../components/ImagePicker.jsx'
@@ -59,6 +60,7 @@ export default function AccountPage() {
               {user.name || 'Tu cuenta'}
             </h1>
             <span>{user.email}</span>
+            <NameEditor key={user.name ?? ''} user={user} />
           </div>
         </div>
 
@@ -98,13 +100,21 @@ export default function AccountPage() {
           <dt>Guardados</dt>
           <dd>
             {plural(lines, 'línea', 'líneas')}, {plural(stations, 'estación', 'estaciones')} y{' '}
-            {plural(accesses, 'acceso', 'accesos')}. Se sincronizan solos en todos tus dispositivos.
+            {plural(accesses, 'acceso', 'accesos')}. Se sincronizan solos en todos tus dispositivos, igual que tus
+            lugares, el tema y tus preferencias de avisos.
           </dd>
         </dl>
 
         <Link className="notif-account-link chevrons-host" to="/notificaciones">
           Avisos de tus favoritos en este dispositivo <Chevrons />
         </Link>
+
+        <div className="account-section">
+          <h2>Seguridad y datos</h2>
+          <PasswordSection user={user} />
+          <SessionsSection />
+          <DataSection />
+        </div>
 
         <div className="account-actions">
           <button

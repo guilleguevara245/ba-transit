@@ -121,6 +121,95 @@ public class AccountService {
         return readFavorites(find(session).getFavorites());
     }
 
+    /** Cambia el nombre de la cuenta. */
+    @Transactional
+    public UserView rename(Claims session, String rawName) {
+        String name = cleanName(rawName);
+        if (name == null) {
+            throw bad("Escribí tu nombre.");
+        }
+        AppUser user = find(session);
+        user.setDisplayName(name);
+        return view(user);
+    }
+
+    /**
+     * Agrega o cambia la contraseña. Si la cuenta ya tenia, hay que dar la
+     * actual. Cierra las demas sesiones y devuelve una nueva para este dispositivo.
+     */
+    @Transactional
+    public SessionResponse changePassword(Claims session, String current, String password) {
+        AppUser user = find(session);
+        if (user.getPasswordHash() != null && (current == null || !PasswordHasher.matches(current, user.getPasswordHash()))) {
+            throw bad("La contraseña actual no es correcta.");
+        }
+        checkPassword(password);
+        user.setPasswordHash(PasswordHasher.hash(password));
+        return closeOthers(user);
+    }
+
+    /** Cierra la sesion en todos los demas dispositivos; este sigue con una sesion nueva. */
+    @Transactional
+    public SessionResponse closeOtherSessions(Claims session) {
+        return closeOthers(find(session));
+    }
+
+    private SessionResponse closeOthers(AppUser user) {
+        // Las sesiones guardan el segundo en que se crearon: la nueva, del mismo segundo, sigue valiendo.
+        user.setSessionsValidAfter(Instant.now().truncatedTo(java.time.temporal.ChronoUnit.SECONDS));
+        return session(user);
+    }
+
+    @Transactional(readOnly = true)
+    public Preferences.Prefs preferences(Claims session) {
+        return readPreferences(find(session).getPreferences());
+    }
+
+    @Transactional
+    public Preferences.Prefs savePreferences(Claims session, Preferences.Prefs prefs) {
+        AppUser user = find(session);
+        Preferences.Prefs clean = Preferences.sanitize(prefs);
+        try {
+            user.setPreferences(mapper.writeValueAsString(clean), Instant.now());
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException(e);
+        }
+        return clean;
+    }
+
+    Preferences.Prefs readPreferences(String json) {
+        try {
+            return Preferences.sanitize(mapper.readValue(json == null || json.isBlank() ? "{}" : json, Preferences.Prefs.class));
+        } catch (JsonProcessingException e) {
+            return Preferences.Prefs.empty();
+        }
+    }
+
+    /**
+     * Todo lo que la cuenta guarda, para descargar (derecho de acceso). La
+     * foto propia va como data URL; los avisos los suma AccountDataExport.
+     */
+    @Transactional(readOnly = true)
+    public java.util.Map<String, Object> exportData(Claims session) {
+        AppUser user = find(session);
+        java.util.Map<String, Object> account = new java.util.LinkedHashMap<>();
+        account.put("id", user.getId());
+        account.put("mail", user.getEmail());
+        account.put("nombre", user.getDisplayName());
+        account.put("entraConContrasena", user.getPasswordHash() != null);
+        account.put("entraConGoogle", user.getGoogleSub() != null);
+        account.put("creada", user.getCreatedAt());
+        account.put("ultimoIngreso", user.getLastLoginAt());
+        UserImage image = image(user);
+        account.put("imagen", image);
+        java.util.Map<String, Object> out = new java.util.LinkedHashMap<>();
+        out.put("cuenta", account);
+        out.put("favoritos", readFavorites(user.getFavorites()));
+        out.put("lugares", readPlaces(user.getPlaces()).lugares());
+        out.put("preferencias", readPreferences(user.getPreferences()));
+        return out;
+    }
+
     @Transactional(readOnly = true)
     public Places places(Claims session) {
         return readPlaces(find(session).getPlaces());

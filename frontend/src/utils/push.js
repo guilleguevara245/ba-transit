@@ -2,6 +2,7 @@ import { apiSend } from '../api.js'
 import { readAll } from './favoritesStore.js'
 import { getSession } from './session.js'
 import { upgradePrefs } from './notifPrefs.js'
+import { PREFS_CHANGED } from './prefsEvents.js'
 
 /**
  * Avisos (Web Push) de este navegador: activar, actualizar los favoritos y
@@ -69,17 +70,39 @@ export async function upgradeSubscription() {
   const saved = readSaved()
   if (!saved || (saved.version ?? 1) >= DEFAULT_PREFS.version) return
   const prefs = readPrefs()
-  savePrefs(prefs)
+  savePrefs(prefs, { silent: true })
   const subscription = await currentSubscription()
   if (subscription) await send(subscription, prefs)
 }
 
-function savePrefs(prefs) {
+function savePrefs(prefs, { silent = false } = {}) {
   try {
     window.localStorage.setItem(PREFS_KEY, JSON.stringify(prefs))
   } catch {
     // Sin almacenamiento: las preferencias igual quedan en el servidor.
   }
+  if (!silent) window.dispatchEvent(new window.CustomEvent(PREFS_CHANGED))
+}
+
+/** Si este dispositivo ya guardo preferencias de avisos alguna vez. */
+export function hasSavedPrefs() {
+  return readSaved() !== null
+}
+
+/**
+ * Preferencias que llegan de la cuenta: se guardan sin volver a subirlas y,
+ * si este dispositivo tiene los avisos activos, se le pasan al servidor.
+ * La pausa es de cada dispositivo: se conserva la de aca.
+ */
+export async function applyNoticePrefs(fromAccount) {
+  const current = readPrefs()
+  const prefs = { ...current, ...fromAccount, pausedUntil: current.pausedUntil }
+  // Ya estaban iguales (lo comun al abrir el sitio): nada que guardar ni mandar.
+  if (hasSavedPrefs() && JSON.stringify(prefs) === JSON.stringify(current)) return current
+  savePrefs(prefs, { silent: true })
+  const subscription = await currentSubscription()
+  if (subscription) await send(subscription, prefs)
+  return prefs
 }
 
 /** La clave publica del servidor (base64url) en el formato que pide PushManager. */
@@ -168,7 +191,7 @@ export async function pausePush(option) {
     body: { endpoint: subscription.endpoint, option },
   })
   const prefs = { ...readPrefs(), pausedUntil: pausedUntil ?? null }
-  savePrefs(prefs)
+  savePrefs(prefs, { silent: true })
   return prefs
 }
 

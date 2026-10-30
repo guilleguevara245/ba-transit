@@ -470,3 +470,91 @@
   font-size: 13px;
   color: var(--text-dim);
 }
+
+/* Opciones de la cuenta: nombre, contraseña, dispositivos y datos. */
+.account-inline-link {
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.account-inline-link:hover {
+  text-decoration: underline;
+}
+
+.account-name-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.account-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.account-subsection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.account-subsection + .account-subsection {
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+}
+
+.account-subsection h3 {
+  font-size: 15px;
+  color: var(--text);
+}
+
+.account-help {
+  margin-top: -4px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+.account-password-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.account-secondary {
+  align-self: flex-start;
+  padding: 9px 14px;
+  border: 1px solid var(--ink);
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.account-secondary:hover:not(:disabled) {
+  background: var(--ink);
+  color: var(--yellow);
+}
+
+.account-secondary:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.account-inline-link:focus-visible,
+.account-secondary:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+}

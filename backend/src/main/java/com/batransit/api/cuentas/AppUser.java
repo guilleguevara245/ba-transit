@@ -46,6 +46,13 @@ public class AppUser {
     @Column(name = "favorites_updated_at")
     private Instant favoritesUpdatedAt;
 
+    /** Tema y preferencias de avisos, en JSON (ver Preferences). */
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String preferences = "{}";
+
+    @Column(name = "preferences_updated_at")
+    private Instant preferencesUpdatedAt;
+
     /** Mis lugares, en JSON ({"lugares":[...]}). */
     @Column(nullable = false, columnDefinition = "TEXT")
     private String places = "{}";
@@ -142,6 +149,19 @@ public class AppUser {
 
     public void setLastLoginAt(Instant lastLoginAt) {
         this.lastLoginAt = lastLoginAt;
+    }
+
+    public String getPreferences() {
+        return preferences;
+    }
+
+    public void setPreferences(String preferences, Instant at) {
+        this.preferences = preferences;
+        this.preferencesUpdatedAt = at;
+    }
+
+    public Instant getPreferencesUpdatedAt() {
+        return preferencesUpdatedAt;
     }
 
     public String getPlaces() {

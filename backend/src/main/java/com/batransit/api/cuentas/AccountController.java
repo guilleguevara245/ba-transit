@@ -32,9 +32,11 @@ public class AccountController {
     private final GoogleTokenVerifier google;
     private final LoginRateLimiter limiter;
     private final PasswordResetService resets;
+    private final AccountDataExport export;
 
     public AccountController(AccountService service, TokenService tokens, GoogleTokenVerifier google,
-                             LoginRateLimiter limiter, PasswordResetService resets) {
+                             LoginRateLimiter limiter, PasswordResetService resets, AccountDataExport export) {
+        this.export = export;
         this.service = service;
         this.tokens = tokens;
         this.google = google;
@@ -107,6 +109,47 @@ public class AccountController {
     public AccountModels.Places savePlaces(@RequestHeader(name = "Authorization", required = false) String authorization,
                                            @RequestBody AccountModels.Places body) {
         return service.savePlaces(userId(authorization), body);
+    }
+
+    @PutMapping("/api/v1/cuenta/nombre")
+    public UserView rename(@RequestHeader(name = "Authorization", required = false) String authorization,
+                           @RequestBody AccountModels.NameRequest body) {
+        return service.rename(userId(authorization), body.name());
+    }
+
+    /** Agrega o cambia la contraseña; cierra las otras sesiones y devuelve una nueva. */
+    @PutMapping("/api/v1/cuenta/contrasena")
+    public SessionResponse changePassword(@RequestHeader(name = "Authorization", required = false) String authorization,
+                                          @RequestBody AccountModels.PasswordRequest body) {
+        TokenService.Claims claims = userId(authorization);
+        limit("contrasena:" + claims.userId());
+        return service.changePassword(claims, body.current(), body.password());
+    }
+
+    /** Cierra la sesion en todos los demas dispositivos. */
+    @PostMapping("/api/v1/cuenta/cerrar-sesiones")
+    public SessionResponse closeOtherSessions(@RequestHeader(name = "Authorization", required = false) String authorization) {
+        return service.closeOtherSessions(userId(authorization));
+    }
+
+    @GetMapping("/api/v1/cuenta/preferencias")
+    public Preferences.Prefs preferences(@RequestHeader(name = "Authorization", required = false) String authorization) {
+        return service.preferences(userId(authorization));
+    }
+
+    @PutMapping("/api/v1/cuenta/preferencias")
+    public Preferences.Prefs savePreferences(@RequestHeader(name = "Authorization", required = false) String authorization,
+                                             @RequestBody Preferences.Prefs body) {
+        return service.savePreferences(userId(authorization), body);
+    }
+
+    /** Todo lo guardado de la cuenta, en JSON para descargar. */
+    @GetMapping("/api/v1/cuenta/datos")
+    public ResponseEntity<java.util.Map<String, Object>> data(
+            @RequestHeader(name = "Authorization", required = false) String authorization) {
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"ba-transit-mis-datos.json\"")
+                .body(export.export(userId(authorization)));
     }
 
     /** Elige la imagen de la cuenta: un avatar, la foto de Google o la inicial. */

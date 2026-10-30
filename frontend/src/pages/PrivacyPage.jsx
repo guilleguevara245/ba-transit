@@ -75,9 +75,11 @@ export default function PrivacyPage() {
         <h2 className="about-heading">Si creás una cuenta</h2>
         <p>
           Se guardan en el servidor tu mail, el nombre que elijas (o el de tu cuenta de Google), tus líneas, estaciones y
-          accesos favoritos, tus lugares guardados (la estación o dirección de Casa, Trabajo y los otros que agregues), la imagen que elijas (un avatar, la dirección de tu foto de Google o una foto que subas,
+          accesos favoritos, tus lugares guardados (la estación o dirección de Casa, Trabajo y los otros que agregues), el tema y tus
+          preferencias de avisos, la imagen que elijas (un avatar, la dirección de tu foto de Google o una foto que subas,
           achicada a 256 píxeles) y las fechas en que creaste la cuenta e ingresaste por última vez. Se usan solo para que
           puedas ingresar y ver tus favoritos en cualquier dispositivo: no se usan para nada más ni se comparten.
+          Desde Tu cuenta podés descargar todo en un archivo y borrarlo cuando quieras.
         </p>
         <p>
           Si usás mail y contraseña, la contraseña se guarda cifrada (con PBKDF2 y una sal propia), nunca tal cual. Si
