@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import BothWays from './BothWays.jsx'
 import AccessibleBadge from './AccessibleBadge.jsx'
 import Chevrons from './Chevrons.jsx'
 import LineBadge from './LineBadge.jsx'
@@ -43,7 +44,9 @@ export default function StationPopup({ station, stations, alerts, mode }) {
       {station.accessible && <AccessibleBadge />}
 
       <div className="station-popup-route">
-        Estación {route.position} de {route.total} · {route.from} ↔ {route.to}
+        Estación {route.position} de {route.total} · {route.from}
+        <BothWays color={station.lineColorHex} />
+        {route.to}
       </div>
 
       {station.openedOn && (

@@ -6,6 +6,9 @@ import MapCard from './MapCard.jsx'
 import UpdatedAt from './UpdatedAt.jsx'
 import { useApi } from '../hooks/useApi.js'
 import Skeleton from './Skeleton.jsx'
+import { useFavoriteList } from '../hooks/useFavoriteList.js'
+import { busFavoriteId } from '../utils/busNames.js'
+import '../pages/EcobiciPage.css'
 
 const REFRESH_MS = 30_000
 const ZOOM = 11
@@ -30,12 +33,23 @@ function ViewTracker({ onChange }) {
  */
 export default function LiveBusesMap({ onSelectRoute }) {
   const { data, loading, reload, refreshing } = useApi('/api/v1/colectivos/vivo', { refreshMs: REFRESH_MS })
+  const { ids: favorites } = useFavoriteList('colectivos')
+  // Debajo del mapa, tus colectivos como filtro (como las leyendas de los otros mapas).
+  const [lineFilter, setLineFilter] = useState(null)
   const [selected, setSelected] = useState(null)
   const [view, setView] = useState({ zoom: ZOOM, bounds: null })
   const showIcons = view.zoom >= ICON_ZOOM && view.bounds
 
   if (loading) return <Skeleton variant="map" label="Cargando colectivos en vivo…" />
   if (!data?.available) return null
+
+  const counts = {}
+  for (const bus of data.buses) {
+    const id = busFavoriteId(bus.line)
+    if (id) counts[id] = (counts[id] ?? 0) + 1
+  }
+  const filter = lineFilter && favorites.includes(lineFilter) ? lineFilter : null
+  const buses = filter ? data.buses.filter((bus) => busFavoriteId(bus.line) === filter) : data.buses
 
   return (
     <section className="live-buses" aria-label="Colectivos en movimiento">
@@ -45,7 +59,7 @@ export default function LiveBusesMap({ onSelectRoute }) {
         </span>
         <span className="live-buses-meta">
           <span>
-            <strong>{data.buses.length.toLocaleString('es-AR')}</strong> colectivos
+            <strong>{buses.length.toLocaleString('es-AR')}</strong> {filter ? `de la línea ${filter}` : 'colectivos'}
           </span>
           <UpdatedAt at={data.updatedAt} onRefresh={reload} refreshing={refreshing} />
         </span>
@@ -56,7 +70,7 @@ export default function LiveBusesMap({ onSelectRoute }) {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         <ViewTracker onChange={setView} />
-        {data.buses.map((bus, index) => {
+        {buses.map((bus, index) => {
           if (showIcons) {
             if (!view.bounds.contains([bus.latitude, bus.longitude])) return null
             return (
@@ -98,6 +112,33 @@ export default function LiveBusesMap({ onSelectRoute }) {
           />
         )}
       </MapContainer>
+      {favorites.length > 0 && (
+        <div className="ecobici-legend filters live-buses-filter" role="group" aria-label="Ver en el mapa solo un colectivo">
+          {favorites.map((line) => {
+            const active = filter === line
+            return (
+              <button
+                key={line}
+                type="button"
+                className={active ? 'active' : undefined}
+                aria-pressed={active}
+                onClick={() => {
+                  setSelected(null)
+                  setLineFilter(active ? null : line)
+                }}
+              >
+                <span className="live-buses-filter-number">{line}</span>
+                <small>{counts[line] ?? 0}</small>
+              </button>
+            )
+          })}
+          {filter && (
+            <button type="button" className="ecobici-legend-all" onClick={() => setLineFilter(null)}>
+              Ver todos
+            </button>
+          )}
+        </div>
+      )}
       <p className="live-buses-hint">
         Tocá un colectivo para ver su línea y su recorrido.
         {!showIcons && ' Acercá el mapa para verlos con su dibujo.'}

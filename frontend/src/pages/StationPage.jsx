@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import BothWays from '../components/BothWays.jsx'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import AccessibleBadge from '../components/AccessibleBadge.jsx'
 import FavoriteButton from '../components/FavoriteButton.jsx'
@@ -198,16 +199,24 @@ export default function StationPage() {
           <div className="line-facts">
             {branches.length === 1 ? (
               <>
-                Estación {branches[0].position} de {branches[0].total} · {branches[0].from} ↔ {branches[0].to}
+                Estación {branches[0].position} de {branches[0].total} · {branches[0].from}
+                <BothWays color={station.lineColorHex} />
+                {branches[0].to}
               </>
             ) : (
               <>
                 Parada de {branches.length} ramales:
                 <ul className="station-branches">
                   {/* Bosques vía Quilmes y vía Temperley tienen las mismas cabeceras: se muestra una vez. */}
-                  {[...new Set(branches.map((b) => `${b.from} ↔ ${b.to}`))].map((label) => (
-                    <li key={label}>{label}</li>
-                  ))}
+                  {branches
+                    .filter((b, i) => branches.findIndex((o) => o.from === b.from && o.to === b.to) === i)
+                    .map((b) => (
+                      <li key={`${b.from}|${b.to}`}>
+                        {b.from}
+                        <BothWays color={station.lineColorHex} />
+                        {b.to}
+                      </li>
+                    ))}
                 </ul>
               </>
             )}

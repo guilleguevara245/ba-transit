@@ -1,5 +1,6 @@
 import LiveBusesMap from '../components/LiveBusesMap.jsx'
 import UpdatedAt from '../components/UpdatedAt.jsx'
+import MyBuses from '../components/MyBuses.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import ModeIcon from '../components/ModeIcon.jsx'
 import { useEffect, useState } from 'react'
@@ -273,16 +274,19 @@ export default function ColectivosPage() {
               />
             </>
           ) : (
-            <LiveBusesMap
-              onSelectRoute={(bus) =>
-                setSearchParams({
-                  ...busParams(bus.line, bus.routeId),
-                  ...(bus.line ? { numero: bus.line } : {}),
-                  ...(bus.headsign ? { destino: bus.headsign } : {}),
-                  ...(Number.isInteger(bus.direction) ? { sentido: String(bus.direction) } : {}),
-                })
-              }
-            />
+            <>
+              <MyBuses />
+              <LiveBusesMap
+                onSelectRoute={(bus) =>
+                  setSearchParams({
+                    ...busParams(bus.line, bus.routeId),
+                    ...(bus.line ? { numero: bus.line } : {}),
+                    ...(bus.headsign ? { destino: bus.headsign } : {}),
+                    ...(Number.isInteger(bus.direction) ? { sentido: String(bus.direction) } : {}),
+                  })
+                }
+              />
+            </>
           )}
 
           <p className="airports-source">

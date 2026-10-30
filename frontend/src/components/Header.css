@@ -63,6 +63,13 @@
 .nav-tabs {
   display: flex;
   gap: 4px;
+  /* Son botones: el texto no se selecciona (al tocar o arrastrar se marcaba como para copiar). */
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.nav-tab {
+  -webkit-user-drag: none;
 }
 
 .nav-tab {

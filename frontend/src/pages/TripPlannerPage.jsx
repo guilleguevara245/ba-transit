@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import BackButton from '../components/BackButton.jsx'
 import Chevrons from '../components/Chevrons.jsx'
+import BothWays from '../components/BothWays.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
 import LineBadge from '../components/LineBadge.jsx'
 import ModeIcon from '../components/ModeIcon.jsx'
@@ -108,7 +109,9 @@ function Leg({ leg }) {
   }
   return (
     <li className="planner-leg planner-walk">
-      <span className="planner-walk-icon" aria-hidden="true">↔</span>
+      <span className="planner-walk-icon" aria-hidden="true">
+        <BothWays />
+      </span>
       <div>
         <strong>Cambiá de ramal en {leg.to.stationName}</strong>
         <span>Esperá el tren hacia el otro ramal (≈ {formatDuration(leg.minutes)}).</span>

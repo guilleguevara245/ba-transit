@@ -1,4 +1,5 @@
 import LineBadge from './LineBadge.jsx'
+import BothWays from './BothWays.jsx'
 import { connectingLineCodes, lineSummary } from '../utils/map.js'
 import { DAY_TYPES, OPERATOR_SITES, serviceHoursFor } from '../utils/serviceHours.js'
 import './LineInfoCard.css'
@@ -54,7 +55,9 @@ export default function LineInfoCard({ line, stations, branches = [], allLines =
           <Row label="Recorrido">
             {summary.branches.map((b) => (
               <span className="info-branch" key={`${b.from}-${b.to}-${b.via}`}>
-                {b.from} ↔ {b.to}
+                {b.from}
+                <BothWays color={line.colorHex} />
+                {b.to}
                 {b.via && <span className="info-sub inline"> ({b.via})</span>}
                 <span className="info-sub inline"> · ≈ {Math.round(b.km)} km</span>
               </span>
