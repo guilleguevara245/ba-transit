@@ -1,20 +1,27 @@
 import { useState } from 'react'
 import { useNow } from '../hooks/useNow.js'
+import { useSession } from '../hooks/useSession.js'
 import { useVisitorName } from '../hooks/useVisitorName.js'
 import { MAX_NAME_LENGTH, greetingFor, longToday } from '../utils/greeting.js'
 import { festiveFor } from '../utils/festive.js'
+import { firstName } from '../utils/session.js'
 import './Greeting.css'
 
 const PENCIL = 'M4 20h4L19 9l-4-4L4 16v4zm10-14 4 4'
 
 /**
- * Saludo del inicio segun la hora ("Buenas tardes, Guillermo"). El
- * nombre es opcional: se pide con un enlace chico y se guarda en el
+ * Saludo del inicio segun la hora ("Buenas tardes, Guillermo"). Con
+ * cuenta, el nombre es el de la cuenta (se cambia en Tu cuenta). Sin
+ * cuenta es opcional: se pide con un enlace chico y se guarda en el
  * navegador.
  */
 export default function Greeting() {
   const now = useNow(60_000)
-  const { name, setName } = useVisitorName()
+  const session = useSession()
+  const visitor = useVisitorName()
+  const signedIn = Boolean(session?.user)
+  const name = signedIn ? (firstName(session.user) ?? '') : visitor.name
+  const setName = visitor.setName
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
   // Fechas especiales: saludo y frase propios (ver utils/festive.js).
@@ -61,7 +68,7 @@ export default function Greeting() {
           {festive.greeting ?? greetingFor(now)}
           {showName && `, ${name}`}
           {festive.wave && <WavingHand />}
-          {name ? (
+          {signedIn ? null : name ? (
             <button type="button" className="greeting-edit" onClick={startEditing} aria-label="Cambiar el nombre">
               <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                 <path d={PENCIL} />
@@ -76,7 +83,9 @@ export default function Greeting() {
       )}
       <p className="greeting-sub">
         {longToday(now)} · {festive.phrase ?? 'Así está el transporte ahora.'}
-        {name && !editing && <span className="greeting-private"> Tu nombre se guarda solo en este navegador.</span>}
+        {name && !editing && !signedIn && (
+          <span className="greeting-private"> Tu nombre se guarda solo en este navegador.</span>
+        )}
       </p>
     </div>
   )
