@@ -6,7 +6,8 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
- * Preferencias que se sincronizan con la cuenta: el tema y las de avisos.
+ * Preferencias que se sincronizan con la cuenta: el tema, las de avisos y
+ * la zona del clima.
  * Lo que no es valido se descarta (queda null y el sitio usa su valor por
  * defecto). La pausa no se sincroniza: es de cada dispositivo.
  */
@@ -15,12 +16,25 @@ public final class Preferences {
     private Preferences() {
     }
 
-    /** tema: "light" | "dark" | null (el del sistema). */
-    public record Prefs(String tema, Notices avisos) {
+    /** tema: "light" | "dark" | null (el del sistema). clima: la zona del clima (o null). */
+    public record Prefs(String tema, Notices avisos, Zone clima) {
+        public Prefs(String tema, Notices avisos) {
+            this(tema, avisos, null);
+        }
+
         public static Prefs empty() {
-            return new Prefs(null, null);
+            return new Prefs(null, null, null);
         }
     }
+
+    /**
+     * Zona del clima de quien no tiene Casa guardada: un nombre y la celda de
+     * la grilla de 0,05 grados (unos 5 km), nunca un punto exacto.
+     */
+    public record Zone(String nombre, Double lat, Double lon) {
+    }
+
+    static final int MAX_ZONE_NAME = 40;
 
     /** Las mismas claves que guarda el sitio (frontend/src/utils/push.js). */
     public record Notices(Integer version, List<String> kinds, Boolean notifyResolved, Boolean quiet, Integer quietFrom,
@@ -38,7 +52,21 @@ public final class Preferences {
         if (p == null) {
             return Prefs.empty();
         }
-        return new Prefs(p.tema() != null && THEMES.contains(p.tema()) ? p.tema() : null, notices(p.avisos()));
+        return new Prefs(p.tema() != null && THEMES.contains(p.tema()) ? p.tema() : null, notices(p.avisos()),
+                zone(p.clima()));
+    }
+
+    /** La zona valida (nombre corto, dentro del AMBA) y redondeada a la grilla, o null. */
+    static Zone zone(Zone z) {
+        if (z == null || z.nombre() == null || z.lat() == null || z.lon() == null) {
+            return null;
+        }
+        String name = z.nombre().replaceAll("\\p{Cntrl}", " ").replaceAll("\\s+", " ").strip();
+        if (name.isEmpty() || !com.batransit.api.clima.ForecastService.inArea(z.lat(), z.lon())) {
+            return null;
+        }
+        name = name.length() > MAX_ZONE_NAME ? name.substring(0, MAX_ZONE_NAME).strip() : name;
+        return new Zone(name, Math.round(z.lat() * 20) / 20.0, Math.round(z.lon() * 20) / 20.0);
     }
 
     static Notices notices(Notices n) {

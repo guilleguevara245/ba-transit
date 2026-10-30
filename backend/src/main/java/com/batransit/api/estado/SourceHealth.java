@@ -41,6 +41,7 @@ public class SourceHealth {
         FERROVIAS("Próximos trenes del Belgrano Norte", "Ferrovías"),
         METROVIAS("Estado del Urquiza", "Metrovías"),
         SMN("Alertas meteorológicas", "Servicio Meteorológico Nacional"),
+        PRONOSTICO("Pronóstico del clima", "Open-Meteo"),
         TOMTOM("Tránsito en los accesos", "TomTom"),
         ADSB_LOL("Aviones en vivo", "adsb.lol"),
         NOTICIAS("Noticias del transporte", "enelSubte y Google Noticias"),

@@ -92,6 +92,15 @@ public class WeatherAlertService {
         return current;
     }
 
+    /**
+     * Las alertas vigentes que alcanzan un punto (Casa, Trabajo o la zona
+     * elegida): las que tienen un poligono que lo contiene. Las que no traen
+     * poligono se incluyen si nombran al AMBA (no se puede saber mas).
+     */
+    public List<WeatherAlert> forPoint(double lat, double lon) {
+        return select(documents.values(), OffsetDateTime.now(), a -> affectsPoint(a, lat, lon));
+    }
+
     public Instant updatedAt() {
         return updatedAt;
     }
@@ -134,6 +143,11 @@ public class WeatherAlertService {
      * por una actualizacion, una por tipo (la de mayor nivel).
      */
     static List<WeatherAlert> select(Iterable<CapAlert> alerts, OffsetDateTime now) {
+        return select(alerts, now, WeatherAlertService::affectsAmba);
+    }
+
+    static List<WeatherAlert> select(Iterable<CapAlert> alerts, OffsetDateTime now,
+                                     java.util.function.Predicate<CapAlert> where) {
         Set<String> superseded = new HashSet<>();
         List<CapAlert> all = new ArrayList<>();
         for (CapAlert alert : alerts) {
@@ -146,7 +160,7 @@ public class WeatherAlertService {
                 .filter(a -> !superseded.contains(a.identifier()))
                 .filter(a -> a.level() != null && KINDS.contains(a.kind()))
                 .filter(a -> a.expires() == null || a.expires().isAfter(now))
-                .filter(WeatherAlertService::affectsAmba)
+                .filter(where)
                 .sorted(Comparator.comparingInt((CapAlert a) -> rank(a.level())).reversed())
                 .forEach(a -> byKind.putIfAbsent(a.kind(), new WeatherAlert(a.identifier(), a.kind(), a.level(),
                         a.headline().isBlank() ? a.event() : a.headline(), a.description(), a.instruction(),
@@ -163,6 +177,13 @@ public class WeatherAlertService {
             }
         }
         return alert.areas().stream().map(CapParser::normalize).anyMatch(a -> AMBA_NAMES.stream().anyMatch(a::contains));
+    }
+
+    static boolean affectsPoint(CapAlert alert, double lat, double lon) {
+        if (alert.polygons().isEmpty()) {
+            return affectsAmba(alert);
+        }
+        return alert.polygons().stream().anyMatch(polygon -> CapParser.contains(polygon, lat, lon));
     }
 
     /** Zonas del AMBA nombradas en la alerta (para el texto), o todas si no se reconoce ninguna. */

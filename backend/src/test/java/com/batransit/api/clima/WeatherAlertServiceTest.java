@@ -55,4 +55,22 @@ class WeatherAlertServiceTest {
                 NOW);
         assertThat(cancelled).isEmpty();
     }
+
+    /** Un cuadrado que cubre solo la Ciudad. */
+    static final String CABA_POLYGON = "-34.53,-58.53 -34.53,-58.33 -34.71,-58.33 -34.71,-58.53 -34.53,-58.53";
+
+    @Test
+    void porPuntoSoloLasQueLoAlcanzan() {
+        List<CapAlert> docs = List.of(
+                parse(cap("C1", "Alert", "", "Tormentas", "Alerta naranja por tormentas", "Severe", LATER,
+                        "Ciudad Autonoma de Buenos Aires", CABA_POLYGON)),
+                parse(cap("C2", "Alert", "", "Calor", "Alerta amarilla por calor extremo", "Moderate", LATER,
+                        "Conurbano", AMBA_POLYGON)));
+        // Obelisco: las dos.
+        assertThat(WeatherAlertService.select(docs, NOW, a -> WeatherAlertService.affectsPoint(a, -34.60, -58.38)))
+                .extracting(WeatherAlert::id).containsExactly("C1", "C2");
+        // San Miguel: solo la del conurbano, no la naranja de la Ciudad.
+        assertThat(WeatherAlertService.select(docs, NOW, a -> WeatherAlertService.affectsPoint(a, -34.54, -58.71)))
+                .extracting(WeatherAlert::id).containsExactly("C2");
+    }
 }

@@ -92,6 +92,19 @@ class AccountSettingsTest {
     }
 
     @Test
+    void zonaDelClimaRedondeadaYSoloEnElAmba() {
+        TokenService.Claims me = claims(service.register("ana@gmail.com", "contraseña1", "Ana"));
+        Prefs saved = service.savePreferences(me, new Prefs(null, null,
+                new Preferences.Zone("  San   Miguel ", -34.5426, -58.7121)));
+        // Se guarda la celda de la grilla, no el punto.
+        assertThat(saved.clima()).isEqualTo(new Preferences.Zone("San Miguel", -34.55, -58.7));
+        assertThat(service.preferences(me).clima()).isEqualTo(saved.clima());
+        // Fuera del AMBA (Cordoba) o sin nombre: no se guarda.
+        assertThat(Preferences.zone(new Preferences.Zone("Córdoba", -31.42, -64.18))).isNull();
+        assertThat(Preferences.zone(new Preferences.Zone(" ", -34.6, -58.4))).isNull();
+    }
+
+    @Test
     void descargarLosDatos() {
         TokenService.Claims me = claims(service.register("ana@gmail.com", "contraseña1", "Ana"));
         Map<String, Object> data = service.exportData(me);
