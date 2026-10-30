@@ -161,7 +161,11 @@ export default function StationPage() {
     <div className="wrap content">
       <BackTrail
         links={[
-          { to: linePath({ id: station.lineId, mode: station.lineMode, code: station.lineCode }), label: `Volver a la ${station.lineName}` },
+          {
+            to: linePath({ id: station.lineId, mode: station.lineMode, code: station.lineCode }),
+            label: `Volver a la ${station.lineName}`,
+            color: station.lineColorHex,
+          },
           ...(MODE_SLUGS[station.lineMode]
             ? [{ to: `/red/${MODE_SLUGS[station.lineMode]}`, label: `Volver a ${MODE_LABELS_PLURAL[station.lineMode]}` }]
             : []),

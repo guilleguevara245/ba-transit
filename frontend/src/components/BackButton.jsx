@@ -2,9 +2,10 @@ import { Link } from 'react-router-dom'
 import Chevrons from './Chevrons.jsx'
 import './BackButton.css'
 
-export default function BackButton({ to = '/', children = 'Volver al inicio' }) {
+/** color: el de la linea a la que se vuelve (borde y chevrones al pasar el mouse); sin color, el amarillo del sitio. */
+export default function BackButton({ to = '/', children = 'Volver al inicio', color }) {
   return (
-    <Link to={to} className="back-button chevrons-host">
+    <Link to={to} className="back-button chevrons-host" style={color ? { '--back-color': color } : undefined}>
       <Chevrons direction="left" />
       {children}
     </Link>
@@ -19,7 +20,7 @@ export function BackTrail({ links }) {
   return (
     <nav className="back-trail" aria-label="Volver">
       {links.map((link) => (
-        <BackButton key={link.to} to={link.to}>
+        <BackButton key={link.to} to={link.to} color={link.color}>
           {link.label}
         </BackButton>
       ))}

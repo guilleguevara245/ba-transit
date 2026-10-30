@@ -21,16 +21,17 @@
 }
 
 .back-button:hover {
-  border-color: var(--yellow);
+  border-color: var(--back-color, var(--yellow));
   color: var(--text);
 }
 
-.back-button:hover .chevrons {
-  color: var(--accent-text);
+.back-button:hover .chevrons,
+.back-button:focus-visible .chevrons {
+  color: var(--back-color, var(--accent-text));
 }
 
 .back-button:focus-visible {
-  outline: 2px solid var(--yellow);
+  outline: 2px solid var(--back-color, var(--yellow));
   outline-offset: 2px;
 }
 
