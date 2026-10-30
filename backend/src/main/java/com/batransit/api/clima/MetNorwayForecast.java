@@ -111,9 +111,12 @@ final class MetNorwayForecast {
             throw new IllegalArgumentException("Respuesta de MET sin horas");
         }
         Hour first = hours.get(0);
+        JsonNode firstDetails = series.get(0).path("data").path("instant").path("details");
+        Integer humidity = firstDetails.path("relative_humidity").isNumber()
+                ? (int) Math.round(firstDetails.path("relative_humidity").asDouble()) : null;
         Current current = new Current(first.time(), first.temperature(), first.feelsLike(), first.code(), first.isDay(),
-                first.rain(), first.wind());
-        return new Forecast(lat, lon, current, List.copyOf(hours), new Day(max, min, null, null, null, chanceMax),
+                first.rain(), first.wind(), humidity);
+        return new Forecast(lat, lon, current, List.copyOf(hours), new Day(max, min, null, null, null, chanceMax, null),
                 updatedAt);
     }
 }

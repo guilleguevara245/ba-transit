@@ -64,6 +64,7 @@ class ForecastServiceTest {
         assertThat(f.today().max()).isEqualTo(22.1);
         assertThat(f.today().sunset()).isEqualTo("2026-10-30T19:22");
         assertThat(f.today().rainChanceMax()).isEqualTo(98);
+        assertThat(f.today().sunriseTomorrow()).isEqualTo("2026-10-31T05:54");
     }
 
     @Test
@@ -110,6 +111,7 @@ class ForecastServiceTest {
         assertThat(f.today().max()).isEqualTo(17.1);
         // 00:00 UTC del 31 todavia es el 30 en Buenos Aires (21 h).
         assertThat(f.today().min()).isEqualTo(15.2);
+        assertThat(f.current().humidity()).isEqualTo(88);
     }
 
     @Test

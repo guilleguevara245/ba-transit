@@ -142,3 +142,35 @@ export function headline(entries) {
   }
   return { tone: 'ok', text: `Sin lluvia en las próximas ${WINDOW_HOURS} horas.` }
 }
+
+/** Los horarios del recuadro: ahora y cada 2 horas (6 en total). */
+export function hourSlots(forecast, count = 6, step = 2) {
+  return (forecast?.hours ?? [])
+    .filter((_, i) => i % step === 0)
+    .slice(0, count)
+    .map((h, i) => ({ ...h, label: i === 0 ? 'Ahora' : `${hourOf(h.time)} h` }))
+}
+
+const clock = (time) => time?.slice(11, 16).replace(/^0/, '')
+
+/**
+ * El dato del sol que sirve ahora: "Atardece 19:22" de dia, "Amanece 5:54"
+ * de noche (la de mañana si ya paso la de hoy). null si no hay datos.
+ */
+export function sunText(forecast) {
+  const now = forecast?.current?.time
+  const day = forecast?.today
+  if (!now || !day) return null
+  if (day.sunrise && now < day.sunrise) return `Amanece ${clock(day.sunrise)}`
+  if (day.sunset && now < day.sunset) return `Atardece ${clock(day.sunset)}`
+  if (day.sunriseTomorrow) return `Amanece ${clock(day.sunriseTomorrow)}`
+  return null
+}
+
+/** "UV 8 al mediodía" si el indice va a ser alto (6 o mas) y todavia no paso la tarde. */
+export function uvText(forecast) {
+  const uv = forecast?.today?.uvMax
+  const now = forecast?.current
+  if (!Number.isFinite(uv) || uv < 6 || !now?.isDay || hourOf(now.time) >= 16) return null
+  return `UV ${Math.round(uv)} al mediodía`
+}

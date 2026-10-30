@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { headline, hourLabel, isRainy } from './dayWeather.js'
+import { headline, hourLabel, hourSlots, isRainy, sunText, uvText } from './dayWeather.js'
 
 /** 12 horas desde las 8 de hoy; cambios: { indice: { ...campos } }. */
 function forecast(changes = {}, start = 8) {
@@ -87,5 +87,27 @@ describe('headline', () => {
     expect(isRainy({ code: 3, rainChance: 10, rain: 0.5 })).toBe(true)
     expect(isRainy({ code: 61, rainChance: 40, rain: 0 })).toBe(true)
     expect(isRainy({ code: 61, rainChance: 20, rain: 0 })).toBe(false)
+  })
+})
+
+describe('datos del recuadro', () => {
+  it('seis horarios: ahora y cada 2 horas', () => {
+    const slots = hourSlots(forecast())
+    expect(slots.map((s) => s.label)).toEqual(['Ahora', '10 h', '12 h', '14 h', '16 h', '18 h'])
+  })
+
+  it('el sol: atardecer de dia, amanecer de noche', () => {
+    const today = { sunrise: '2026-10-30T05:55', sunset: '2026-10-30T19:22', sunriseTomorrow: '2026-10-31T05:54' }
+    expect(sunText({ current: { time: '2026-10-30T15:00' }, today })).toBe('Atardece 19:22')
+    expect(sunText({ current: { time: '2026-10-30T21:00' }, today })).toBe('Amanece 5:54')
+    expect(sunText({ current: { time: '2026-10-30T04:00' }, today })).toBe('Amanece 5:55')
+  })
+
+  it('UV solo si es alto y es de dia antes de las 16', () => {
+    expect(uvText({ current: { time: '2026-10-30T10:00', isDay: true }, today: { uvMax: 8.4 } })).toBe(
+      'UV 8 al mediodía',
+    )
+    expect(uvText({ current: { time: '2026-10-30T17:00', isDay: true }, today: { uvMax: 8.4 } })).toBeNull()
+    expect(uvText({ current: { time: '2026-10-30T10:00', isDay: true }, today: { uvMax: 4 } })).toBeNull()
   })
 })

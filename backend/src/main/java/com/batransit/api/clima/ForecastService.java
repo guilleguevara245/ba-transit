@@ -58,9 +58,12 @@ public class ForecastService {
                            Instant updatedAt) {
     }
 
-    /** Ahora. code: codigo de tiempo de la OMM (el mismo que usa el sitio para el icono). */
+    /**
+     * Ahora. code: codigo de tiempo de la OMM (el mismo que usa el sitio para
+     * el icono). humidity: humedad relativa en % (null si no viene).
+     */
     public record Current(String time, double temperature, double feelsLike, int code, boolean isDay,
-                          double precipitation, double wind) {
+                          double precipitation, double wind, Integer humidity) {
     }
 
     /** Una hora. rainChance: probabilidad de lluvia en % (null si el modelo no la da). */
@@ -68,8 +71,9 @@ public class ForecastService {
                        double wind, boolean isDay) {
     }
 
-    /** El dia de hoy. */
-    public record Day(Double max, Double min, String sunrise, String sunset, Double uvMax, Integer rainChanceMax) {
+    /** El dia de hoy (y la salida del sol de mañana, para la noche). */
+    public record Day(Double max, Double min, String sunrise, String sunset, Double uvMax, Integer rainChanceMax,
+                      String sunriseTomorrow) {
     }
 
     private record Cached(Forecast forecast, Instant fetchedAt) {
@@ -170,7 +174,8 @@ public class ForecastService {
 
     String url(double lat, double lon) {
         return baseUrl + String.format(Locale.ROOT, "?latitude=%.2f&longitude=%.2f", lat, lon)
-                + "&current=temperature_2m,apparent_temperature,weather_code,is_day,precipitation,wind_speed_10m"
+                + "&current=temperature_2m,apparent_temperature,weather_code,is_day,precipitation,wind_speed_10m,"
+                + "relative_humidity_2m"
                 + "&hourly=temperature_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,"
                 + "wind_speed_10m,is_day"
                 + "&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,precipitation_probability_max"
@@ -291,7 +296,8 @@ public class ForecastService {
         Current current = new Current(nowTime, c.path("temperature_2m").asDouble(),
                 c.path("apparent_temperature").asDouble(c.path("temperature_2m").asDouble()),
                 c.path("weather_code").asInt(0), c.path("is_day").asInt(1) != 0,
-                c.path("precipitation").asDouble(0), c.path("wind_speed_10m").asDouble(0));
+                c.path("precipitation").asDouble(0), c.path("wind_speed_10m").asDouble(0),
+                c.path("relative_humidity_2m").isNumber() ? (int) Math.round(c.path("relative_humidity_2m").asDouble()) : null);
 
         JsonNode h = root.path("hourly");
         JsonNode times = h.path("time");
@@ -324,7 +330,8 @@ public class ForecastService {
         Day today = new Day(number(d.path("temperature_2m_max").path(0)), number(d.path("temperature_2m_min").path(0)),
                 text(d.path("sunrise").path(0)), text(d.path("sunset").path(0)), number(d.path("uv_index_max").path(0)),
                 d.path("precipitation_probability_max").path(0).isNumber()
-                        ? d.path("precipitation_probability_max").path(0).asInt() : null);
+                        ? d.path("precipitation_probability_max").path(0).asInt() : null,
+                text(d.path("sunrise").path(1)));
         return new Forecast(lat, lon, current, List.copyOf(hours), today, updatedAt);
     }
 

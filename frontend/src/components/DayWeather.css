@@ -4,27 +4,71 @@
   border: 1px solid var(--line);
   border-top: 3px solid var(--yellow);
   box-shadow: var(--shadow);
-  padding: 12px 16px 10px;
+  padding: 12px 16px 12px;
 }
 
 .dw-top {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
+  min-height: 28px;
 }
 
-.dw-title {
-  margin: 0;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+.dw-place {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  font-size: 13px;
+}
+
+.dw-place strong {
+  color: var(--text);
+}
+
+.dw-place span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-faint);
+}
+
+/* Casa / Trabajo: pastillas con la temperatura de cada uno. */
+.dw-switch {
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+}
+
+.dw-switch button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
   color: var(--text-dim);
+  font: inherit;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.dw-switch button.on {
+  border-color: var(--yellow);
+  background: color-mix(in srgb, var(--yellow) 16%, transparent);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.dw-switch .mode-icon {
+  transform: scale(0.85);
 }
 
 .dw-link {
+  flex-shrink: 0;
   padding: 0;
   border: none;
   background: none;
@@ -48,12 +92,64 @@
   color: var(--text-dim);
 }
 
+/* Ahora: icono y temperatura grandes. */
+.dw-hero {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.dw-icon {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+}
+
+.dw-temp {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text);
+}
+
+.dw-sky {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.dw-sky span {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+/* La frase del dia, con su icono. */
 .dw-headline {
-  margin: 4px 0 6px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 10px 0 8px;
   font-size: 14px;
   font-weight: 600;
   line-height: 1.35;
   color: var(--text);
+}
+
+.dw-tone-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .dw-tone-rain,
@@ -69,107 +165,113 @@
   color: color-mix(in srgb, #3b82c4 60%, var(--text));
 }
 
-.dw-row {
+.dw-tone-ok {
+  color: var(--normal);
+}
+
+/* Los proximos horarios. */
+.dw-hours {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(120px, 150px);
-  align-items: center;
-  gap: 12px;
-  padding: 7px 0;
+  grid-template-columns: repeat(6, 1fr);
+  padding: 8px 0;
   border-top: 1px solid var(--line);
-}
-
-.dw-place {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-.dw-place > div {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.dw-place strong {
-  font-size: 13px;
-  color: var(--text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.dw-place small,
-.dw-now small {
-  font-size: 11px;
-  color: var(--text-faint);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.dw-now {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.dw-now > div {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.1;
-}
-
-.dw-icon {
-  width: 30px;
-  height: 30px;
-  flex-shrink: 0;
-}
-
-.dw-temp {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text);
-}
-
-/* Tira de las proximas horas: la altura de cada barra es la probabilidad de lluvia. */
-.dw-strip {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: 2px;
+  border-bottom: 1px solid var(--line);
 }
 
 .dw-hour {
   display: flex;
   flex-direction: column;
-  align-items: stretch;
+  align-items: center;
   gap: 2px;
-}
-
-.dw-bar-box {
-  display: flex;
-  align-items: flex-end;
-  height: 24px;
-}
-
-.dw-bar {
-  width: 100%;
-  min-height: 2px;
-  border-radius: 2px 2px 0 0;
-  background: var(--line);
-}
-
-.dw-bar-rain {
-  background: #3b82c4;
+  font-size: 12px;
 }
 
 .dw-hour small {
-  height: 12px;
-  font-size: 10px;
-  line-height: 12px;
-  text-align: center;
+  font-size: 11px;
   color: var(--text-faint);
+}
+
+.dw-hour-icon {
+  width: 26px;
+  height: 26px;
+}
+
+.dw-hour strong {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.dw-hour span {
+  min-height: 14px;
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+.dw-hour span.dw-wet {
+  color: #3b82c4;
+  font-weight: 700;
+}
+
+/* Datos utiles. */
+.dw-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.dw-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg);
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.dw-chip svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* De noche: el cielo oscuro de fondo y el texto claro (en los dos temas). */
+.day-weather.dw-night {
+  --text: #f5f4ef;
+  --text-dim: rgba(245, 244, 239, 0.82);
+  --text-faint: rgba(245, 244, 239, 0.62);
+  --line: rgba(255, 255, 255, 0.16);
+  --bg: rgba(255, 255, 255, 0.08);
+  --normal: #8fd694;
+  background: linear-gradient(160deg, #1d2b4f 0%, #2f4174 60%, #44568b 100%);
+  border-color: #1d2b4f;
+  border-top-color: var(--yellow);
+}
+
+.dw-night .dw-tone-rain,
+.dw-night .dw-tone-storm,
+.dw-night .dw-hour span.dw-wet {
+  color: #9cc6f0;
+}
+
+.dw-night .dw-tone-heat {
+  color: #f6a58f;
+}
+
+.dw-night .dw-link {
+  color: var(--yellow);
+}
+
+.dw-night .dw-switch button.on {
+  background: rgba(244, 193, 27, 0.18);
 }
 
 /* Elegir la zona */
@@ -231,17 +333,5 @@
     grid-column: 1;
     grid-row: auto;
     order: 2;
-  }
-}
-
-/* Celular: la tira de horas pasa abajo, a todo el ancho. */
-@media (max-width: 520px) {
-  .dw-row {
-    grid-template-columns: minmax(0, 1fr) auto;
-    row-gap: 6px;
-  }
-
-  .dw-strip {
-    grid-column: 1 / -1;
   }
 }
