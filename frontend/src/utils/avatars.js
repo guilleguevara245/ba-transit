@@ -1,30 +1,17 @@
+import { AVATAR_ART } from '../data/avatarArt.js'
+
 /**
- * Avatares de la cuenta: las lineas (con su letra o el tren, en su color),
- * el colectivo, la bici y el avion. Los ids son los que acepta el servidor
+ * Avatares de la cuenta: dibujos propios en tres grupos (Buenos Aires,
+ * fauna argentina y patrones). Los ids son los que acepta el servidor
  * (AccountService.AVATARS).
  */
-const TRAIN = 'train'
+export const AVATARS = AVATAR_ART
 
-export const AVATARS = [
-  { id: 'subte-a', bg: '#00A8E1', letter: 'A', name: 'Línea A' },
-  { id: 'subte-b', bg: '#EE1C25', letter: 'B', name: 'Línea B' },
-  { id: 'subte-c', bg: '#0057A8', letter: 'C', name: 'Línea C' },
-  { id: 'subte-d', bg: '#00A94F', letter: 'D', name: 'Línea D' },
-  { id: 'subte-e', bg: '#92278F', letter: 'E', name: 'Línea E' },
-  { id: 'subte-h', bg: '#FFD100', letter: 'H', name: 'Línea H' },
-  { id: 'premetro', bg: '#B26FAF', letter: 'P', name: 'Premetro' },
-  { id: 'mitre', bg: '#1F8FD1', icon: TRAIN, name: 'Mitre' },
-  { id: 'sarmiento', bg: '#5BC2E7', icon: TRAIN, name: 'Sarmiento' },
-  { id: 'roca', bg: '#6E9FB8', icon: TRAIN, name: 'Roca' },
-  { id: 'san-martin', bg: '#0033A0', icon: TRAIN, name: 'San Martín' },
-  { id: 'urquiza', bg: '#F2C200', icon: TRAIN, name: 'Urquiza' },
-  { id: 'belgrano-norte', bg: '#D52B1E', icon: TRAIN, name: 'Belgrano Norte' },
-  { id: 'belgrano-sur', bg: '#1A2B6D', icon: TRAIN, name: 'Belgrano Sur' },
-  { id: 'tren-de-la-costa', bg: '#8E9AA3', icon: TRAIN, name: 'Tren de la Costa' },
-  { id: 'colectivo', bg: '#17171a', icon: 'bus', name: 'Colectivo' },
-  { id: 'bici', bg: '#2f8a3c', icon: 'bike', name: 'Bici' },
-  { id: 'avion', bg: '#f4c11b', icon: 'plane', name: 'Avión' },
-]
+/** Los grupos en orden, con sus avatares: [{ name, avatars }]. */
+export const AVATAR_GROUPS = [...new Set(AVATARS.map((a) => a.group))].map((name) => ({
+  name,
+  avatars: AVATARS.filter((a) => a.group === name),
+}))
 
 export function avatarById(id) {
   return AVATARS.find((a) => a.id === id) ?? null

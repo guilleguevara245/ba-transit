@@ -143,7 +143,9 @@ class AccountServiceTest {
         TokenService.Claims c = claims(s);
         assertThat(s.user().image().kind()).isNull(); // de entrada, la inicial
 
-        assertThat(service.setImage(c, "avatar", "subte-b").image().value()).isEqualTo("subte-b");
+        assertThat(service.setImage(c, "avatar", "carpincho").image().value()).isEqualTo("carpincho");
+        // Los avatares viejos (las lineas) ya no existen.
+        assertThat(statusOf(() -> service.setImage(c, "avatar", "subte-b"))).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(statusOf(() -> service.setImage(c, "avatar", "no-existe"))).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(statusOf(() -> service.setImage(c, "google", null))).isEqualTo(HttpStatus.BAD_REQUEST); // sin Google
 
@@ -168,8 +170,8 @@ class AccountServiceTest {
         assertThat(s.user().image().kind()).isEqualTo("google");
         assertThat(s.user().image().url()).isEqualTo(pic);
         // Si despues elige un avatar, volver a entrar con Google no lo pisa.
-        service.setImage(claims(s), "avatar", "colectivo");
-        assertThat(service.loginWithGoogle("g-9|carla@gmail.com|Carla|" + pic).user().image().value()).isEqualTo("colectivo");
+        service.setImage(claims(s), "avatar", "hornero");
+        assertThat(service.loginWithGoogle("g-9|carla@gmail.com|Carla|" + pic).user().image().value()).isEqualTo("hornero");
     }
 
     @Test

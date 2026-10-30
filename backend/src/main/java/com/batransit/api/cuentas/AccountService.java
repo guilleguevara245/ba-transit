@@ -282,9 +282,11 @@ public class AccountService {
     }
 
     /** Avatares del sitio: las lineas, el colectivo, la bici y el avion. */
-    static final Set<String> AVATARS = Set.of("subte-a", "subte-b", "subte-c", "subte-d", "subte-e", "subte-h", "premetro",
-            "belgrano-norte", "belgrano-sur", "mitre", "roca", "san-martin", "sarmiento", "tren-de-la-costa", "urquiza",
-            "colectivo", "bici", "avion");
+    /** Los avatares del sitio (frontend/src/data/avatarArt.js): Buenos Aires, fauna argentina y patrones. */
+    static final Set<String> AVATARS = Set.of(
+            "obelisco", "mate", "farol", "bandoneon", "jacaranda", "puente", "sol-de-mayo", "fileteado",
+            "carpincho", "hornero", "yaguarete", "pinguino", "zorro", "ballena", "buho", "tortuga",
+            "chevrones", "rayas", "ondas", "puntos", "cuadros", "sol", "montanas", "grilla");
     /** La foto ya llega achicada (256 px); esto deja margen y frena archivos grandes. */
     static final int MAX_PHOTO_BYTES = 150_000;
 

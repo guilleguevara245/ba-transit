@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { AvatarGlyph } from './UserAvatar.jsx'
-import { AVATARS, photoToDataUrl } from '../utils/avatars.js'
+import { AVATAR_GROUPS, photoToDataUrl } from '../utils/avatars.js'
 import { setImage, uploadPhoto } from '../utils/account.js'
 
 /** "Tu imagen": avatar del sitio, foto de Google, foto propia o la inicial. */
@@ -62,28 +62,34 @@ export default function ImagePicker({ user }) {
         }}
       />
 
-      {tab === 'avatar' && (
-        <div className="image-picker-grid" role="radiogroup" aria-label="Avatares">
-          {AVATARS.map((a) => {
-            const chosen = image.kind === 'avatar' && image.value === a.id
-            return (
-              <button
-                key={a.id}
-                type="button"
-                role="radio"
-                aria-checked={chosen}
-                aria-label={a.name}
-                title={a.name}
-                className={chosen ? 'chosen' : undefined}
-                disabled={busy}
-                onClick={() => run(() => setImage('avatar', a.id))}
-              >
-                <AvatarGlyph avatar={a} size={44} />
-              </button>
-            )
-          })}
-        </div>
-      )}
+      {tab === 'avatar' &&
+        AVATAR_GROUPS.map((group) => (
+          <div key={group.name} className="image-picker-group">
+            <div className="image-picker-group-name" id={`avatares-${group.name.replace(/\s+/g, '-')}`}>
+              {group.name}
+            </div>
+            <div className="image-picker-grid" role="radiogroup" aria-labelledby={`avatares-${group.name.replace(/\s+/g, '-')}`}>
+              {group.avatars.map((a) => {
+                const chosen = image.kind === 'avatar' && image.value === a.id
+                return (
+                  <button
+                    key={a.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={chosen}
+                    aria-label={a.name}
+                    title={a.name}
+                    className={chosen ? 'chosen' : undefined}
+                    disabled={busy}
+                    onClick={() => run(() => setImage('avatar', a.id))}
+                  >
+                    <AvatarGlyph avatar={a} size={44} />
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        ))}
       {tab === 'foto' && (
         <p className="auth-note">
           {image.kind === 'foto' ? 'Esa es tu foto. ' : ''}
