@@ -34,6 +34,15 @@
   display: flex;
   justify-content: center;
   min-height: 44px;
+  /* El boton es un iframe de Google: si la pagina esta en modo oscuro y el iframe
+     no, el navegador le pinta un fondo blanco opaco. Con el mismo esquema queda
+     transparente (el boton sigue negro por theme: 'filled_black'). */
+  color-scheme: light;
+}
+
+.google-button iframe {
+  color-scheme: light;
+  background: transparent;
 }
 
 .auth-divider {
