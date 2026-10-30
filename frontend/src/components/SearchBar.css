@@ -98,3 +98,19 @@
   font-size: 13px;
   color: var(--text-faint);
 }
+
+/* Numero de colectivo en el desplegable del buscador. */
+.result-bus {
+  display: inline-grid;
+  place-items: center;
+  min-width: 34px;
+  height: 22px;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: var(--ink);
+  color: #fff;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}

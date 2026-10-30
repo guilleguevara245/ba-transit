@@ -11,11 +11,12 @@ const MIN_CHARS = 2
  * Buscador con desplegable navegable (patron "combobox" de ARIA):
  * flechas para moverse, Enter para abrir el resultado, Escape para
  * cerrar. Una linea lleva a su pagina; una estacion, a la pagina de
- * su linea con la estacion resaltada.
+ * su linea con la estacion resaltada; un colectivo, a su recorrido.
  */
 export default function SearchBar() {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState(null)
+  const [buses, setBuses] = useState(null)
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
   const containerRef = useRef(null)
@@ -23,26 +24,30 @@ export default function SearchBar() {
   const listboxId = useId()
 
   const debouncedQuery = useDebounce(query.trim(), 300)
-  const options = toSearchOptions(results)
+  const options = toSearchOptions(results, buses, debouncedQuery)
 
   useEffect(() => {
     if (debouncedQuery.length < MIN_CHARS) {
       setResults(null)
+      setBuses(null)
       return
     }
 
     let cancelled = false
-    apiGet(`/api/v1/search?q=${encodeURIComponent(debouncedQuery)}`)
-      .then((data) => {
-        if (!cancelled) {
-          setResults(data)
-          setActiveIndex(-1)
-          setOpen(true)
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setResults(null)
-      })
+    const q = encodeURIComponent(debouncedQuery)
+    // Lineas y estaciones, y en paralelo las lineas de colectivo ("Línea 53" busca lo mismo que "53").
+    // Si los colectivos no estan disponibles, se muestra lo demas.
+    const busQuery = encodeURIComponent(debouncedQuery.replace(/^l[ií]nea\s*/i, ''))
+    Promise.all([
+      apiGet(`/api/v1/search?q=${q}`).catch(() => null),
+      apiGet(`/api/v1/colectivos?q=${busQuery}`).catch(() => null),
+    ]).then(([data, busData]) => {
+      if (cancelled) return
+      setResults(data)
+      setBuses(Array.isArray(busData) ? busData : null)
+      setActiveIndex(-1)
+      setOpen(true)
+    })
 
     return () => {
       cancelled = true
@@ -64,6 +69,7 @@ export default function SearchBar() {
     setOpen(false)
     setQuery('')
     setResults(null)
+    setBuses(null)
     navigate(option.href)
   }
 
@@ -97,19 +103,19 @@ export default function SearchBar() {
         <input
           type="text"
           role="combobox"
-          aria-label="Buscar líneas o estaciones"
+          aria-label="Buscar líneas, estaciones o colectivos"
           aria-autocomplete="list"
           aria-expanded={showDropdown}
           aria-controls={listboxId}
           aria-activedescendant={activeOption ? `${listboxId}-${activeOption.key}` : undefined}
-          placeholder="Buscar líneas o estaciones"
+          placeholder="Buscar líneas, estaciones o colectivos"
           value={query}
           onChange={(event) => {
             setQuery(event.target.value)
             setOpen(true)
           }}
           onFocus={() => {
-            if (results) setOpen(true)
+            if (results || buses) setOpen(true)
           }}
           onKeyDown={handleKeyDown}
         />
@@ -134,7 +140,13 @@ export default function SearchBar() {
                 onMouseEnter={() => setActiveIndex(index)}
                 onClick={() => choose(option)}
               >
-                <span className="result-dot" style={{ background: option.color }}></span>
+                {option.group === 'Colectivos' ? (
+                  <span className="result-bus" style={{ background: option.color }}>
+                    {option.name.replace(/^Línea\s+/, '').replace(' · Cartel ', '')}
+                  </span>
+                ) : (
+                  <span className="result-dot" style={{ background: option.color }}></span>
+                )}
                 <span className="result-name">{option.name}</span>
                 <span className="result-meta">{option.meta}</span>
               </div>

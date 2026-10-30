@@ -22,13 +22,16 @@ export default function MyLines({ lines, alerts }) {
   const { stations: chosen, setStation } = useFavoriteStations()
   const { ids: favoriteStations } = useFavoriteList('estaciones')
   const { ids: favoriteAccesses } = useFavoriteList('accesos')
+  const { ids: favoriteBuses } = useFavoriteList('colectivos')
   const lineById = new Map(lines.map((line) => [line.id, line]))
   const myLines = favorites.map((id) => lineById.get(id)).filter(Boolean)
   // Lineas con proximos trenes (subte, Premetro, Belgrano Norte, Urquiza): se puede elegir una estacion.
   const withTimes = myLines.some((line) => hasTrainTimes(line.mode, line.code))
   const { data: subteStations } = useApi(withTimes ? '/api/v1/map/stations' : null)
-  // Sin lineas pero con estaciones o accesos favoritos, la seccion no hace falta.
-  if (myLines.length === 0 && (favoriteStations.length > 0 || favoriteAccesses.length > 0)) return null
+  // Sin lineas pero con estaciones, accesos o colectivos favoritos, la seccion no hace falta.
+  if (myLines.length === 0 && (favoriteStations.length > 0 || favoriteAccesses.length > 0 || favoriteBuses.length > 0)) {
+    return null
+  }
 
   return (
     <section className="my-lines" aria-label="Mis líneas">
@@ -36,7 +39,7 @@ export default function MyLines({ lines, alerts }) {
 
       {myLines.length === 0 ? (
         <div className="my-lines-empty">
-          Tocá la <span className="star">★</span> en cualquier línea, estación o acceso para seguir su estado desde
+          Tocá la <span className="star">★</span> en cualquier línea, estación, acceso o colectivo para seguir su estado desde
           acá. Se guardan en este navegador.
         </div>
       ) : (

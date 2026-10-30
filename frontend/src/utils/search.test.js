@@ -15,6 +15,31 @@ describe('toSearchOptions', () => {
 
   it('sin resultados devuelve lista vacia', () => {
     expect(toSearchOptions(null)).toEqual([])
+    expect(toSearchOptions(null, [])).toEqual([])
+  })
+
+  it('suma los colectivos: primero si se busco un numero', () => {
+    const results = { lines: [{ id: 1, name: 'Línea A', mode: 'SUBTE', colorHex: '#00A8E1' }], stations: [] }
+    const buses = [
+      { id: '283', shortName: '203A', longName: 'JNAMBA203', agency: 'Empresa X', color: null },
+      { id: '284', shortName: '203B', longName: 'Retiro - Moreno', agency: 'Empresa X', color: '#123456' },
+    ]
+    const byNumber = toSearchOptions(results, buses, '203')
+    expect(byNumber.map((o) => o.group)).toEqual(['Colectivos', 'Colectivos', 'Líneas'])
+    expect(byNumber[0]).toMatchObject({
+      name: 'Línea 203 · Cartel A',
+      meta: 'Empresa X',
+      color: '#17171a',
+      href: '/colectivos?linea=203A&id=283',
+    })
+    expect(byNumber[1].meta).toBe('Retiro - Moreno')
+    expect(toSearchOptions(results, buses, 'línea a').map((o) => o.group)).toEqual(['Líneas', 'Colectivos', 'Colectivos'])
+    expect(toSearchOptions(null, buses, '203')).toHaveLength(2)
+  })
+
+  it('como mucho MAX_BUSES colectivos', () => {
+    const many = Array.from({ length: 20 }, (_, i) => ({ id: String(i), shortName: `60${i}` }))
+    expect(toSearchOptions({ lines: [], stations: [] }, many, '60')).toHaveLength(6)
   })
 })
 

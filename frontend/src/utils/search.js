@@ -1,15 +1,20 @@
 import { MODE_LABELS } from '../constants.js'
+import { busDescription, busParams, busTitle } from './busNames.js'
 import { linePath } from './lineSlug.js'
 
-/**
- * Convierte la respuesta de /api/v1/search en una lista plana de
- * opciones navegables (primero lineas, despues estaciones), cada una
- * con el destino al que lleva.
- */
-export function toSearchOptions(results) {
-  if (!results) return []
+/** Como mucho estas lineas de colectivo en el desplegable (una linea puede tener varios carteles). */
+export const MAX_BUSES = 6
 
-  const lines = results.lines.map((line) => ({
+/**
+ * Convierte la respuesta de /api/v1/search (y la de colectivos, si hay)
+ * en una lista plana de opciones navegables, cada una con el destino al
+ * que lleva. Orden: lineas, estaciones y colectivos; si se busco un
+ * numero ("203"), los colectivos van primero.
+ */
+export function toSearchOptions(results, buses = null, query = '') {
+  if (!results && !buses?.length) return []
+
+  const lines = (results?.lines ?? []).map((line) => ({
     key: `line-${line.id}`,
     group: 'Líneas',
     name: line.name,
@@ -18,7 +23,7 @@ export function toSearchOptions(results) {
     href: linePath(line),
   }))
 
-  const stations = results.stations.map((station) => ({
+  const stations = (results?.stations ?? []).map((station) => ({
     key: `station-${station.stationId}`,
     group: 'Estaciones',
     name: station.stationName,
@@ -27,7 +32,18 @@ export function toSearchOptions(results) {
     href: `/lineas/${station.lineId}?estacion=${station.stationId}`,
   }))
 
-  return [...lines, ...stations]
+  const busOptions = (buses ?? []).slice(0, MAX_BUSES).map((route) => ({
+    key: `bus-${route.id}`,
+    group: 'Colectivos',
+    name: busTitle(route),
+    meta: busDescription(route) ?? route.agency ?? 'Colectivo',
+    color: route.color || '#17171a',
+    href: `/colectivos?${new URLSearchParams(busParams(route.shortName, route.id))}`,
+  }))
+
+  return /^\d+[a-z]?$/i.test(query.trim())
+    ? [...busOptions, ...lines, ...stations]
+    : [...lines, ...stations, ...busOptions]
 }
 
 /** Siguiente indice activo al moverse con las flechas (da la vuelta). */
