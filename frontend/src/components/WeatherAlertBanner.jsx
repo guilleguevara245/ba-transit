@@ -29,8 +29,21 @@ const HIDDEN_ON = [
   '/condiciones',
 ]
 
-// Las alertas que ya bajaron con la animacion en esta visita (no se repite al cambiar de pagina).
-const shown = new Set()
+// Cuando aparecio cada alerta en esta visita (la animacion no se repite al cambiar de pagina).
+const shownAt = new Map()
+/** Lo que dura la animacion de entrada (con el escalonado de la segunda y tercera). */
+const ENTER_MS = 1500
+
+/**
+ * true mientras la alerta esta entrando. Se decide la primera vez que se ve
+ * y se mantiene durante la animacion: si se calculara en cada render, el
+ * primer re-render (otra respuesta, un cambio de pagina) le sacaba la clase
+ * y la animacion se cortaba al instante.
+ */
+function isEntering(key, now = Date.now()) {
+  if (!shownAt.has(key)) shownAt.set(key, now)
+  return now - shownAt.get(key) < ENTER_MS
+}
 
 function readDismissed() {
   try {
@@ -80,8 +93,7 @@ export default function WeatherAlertBanner() {
       {alerts.map((alert) => {
         const level = ALERT_LEVELS[alert.level] ?? ALERT_LEVELS.AMARILLA
         const key = dismissKey(alert)
-        const enter = !shown.has(key)
-        shown.add(key)
+        const enter = isEntering(key)
         return (
           <div key={alert.id} className={`weather-alert ${level.className}${enter ? ' weather-alert-enter' : ''}`}>
             <div className="weather-alert-inner">
