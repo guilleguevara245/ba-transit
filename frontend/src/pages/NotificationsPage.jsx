@@ -13,6 +13,21 @@ const KINDS = [
   { key: 'accesos', label: 'Mis accesos', hint: 'Cuando un acceso se congestiona o se corta, y en qué mano.' },
 ]
 const HOURS = Array.from({ length: 24 }, (_, h) => ({ value: h, label: `${String(h).padStart(2, '0')}:00` }))
+// Resumen: cada 15 minutos, de 05:00 a 23:45.
+const SUMMARY_TIMES = Array.from({ length: 76 }, (_, i) => {
+  const minutes = 5 * 60 + i * 15
+  const label = `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`
+  return { value: label, label }
+})
+const DAYS = [
+  [1, 'L', 'lunes'],
+  [2, 'M', 'martes'],
+  [3, 'M', 'miércoles'],
+  [4, 'J', 'jueves'],
+  [5, 'V', 'viernes'],
+  [6, 'S', 'sábado'],
+  [7, 'D', 'domingo'],
+]
 
 function plural(n, one, many) {
   return `${n} ${n === 1 ? one : many}`
@@ -129,6 +144,53 @@ export default function NotificationsPage() {
           <p className={status.kind === 'ok' ? 'auth-success' : 'auth-error auth-error-box'} role="status">
             {status.text}
           </p>
+        )}
+
+        {support !== 'no' && (
+          <fieldset className="notif-prefs" disabled={busy}>
+            <legend>Resumen de tus favoritos</legend>
+            <label className="notif-check">
+              <input type="checkbox" checked={prefs.summary} onChange={() => change({ ...prefs, summary: !prefs.summary })} />
+              <span>
+                Resumen diario
+                <small>Un solo aviso con el estado de todas tus líneas, estaciones y accesos.</small>
+              </span>
+            </label>
+            {prefs.summary && (
+              <div className="notif-summary">
+                <div className="auth-field">
+                  <span id="summary-time">A las</span>
+                  <Select
+                    labelledBy="summary-time"
+                    value={prefs.summaryTime}
+                    options={SUMMARY_TIMES}
+                    onChange={(v) => change({ ...prefs, summaryTime: v })}
+                  />
+                </div>
+                <div className="notif-days" role="group" aria-label="Días del resumen">
+                  {DAYS.map(([day, letter, name]) => {
+                    const on = prefs.summaryDays.includes(day)
+                    return (
+                      <button
+                        key={day}
+                        type="button"
+                        className={on ? 'notif-day on' : 'notif-day'}
+                        aria-pressed={on}
+                        aria-label={name}
+                        title={name}
+                        onClick={() => {
+                          const days = on ? prefs.summaryDays.filter((d) => d !== day) : [...prefs.summaryDays, day]
+                          if (days.length > 0) change({ ...prefs, summaryDays: days.sort((a, b) => a - b) })
+                        }}
+                      >
+                        {letter}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </fieldset>
         )}
 
         {support !== 'no' && (

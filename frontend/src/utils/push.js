@@ -14,6 +14,19 @@ export const DEFAULT_PREFS = {
   quiet: true,
   quietFrom: 23,
   quietTo: 7,
+  // Resumen diario de los favoritos (1 = lunes ... 7 = domingo).
+  summary: false,
+  summaryTime: '07:30',
+  summaryDays: [1, 2, 3, 4, 5],
+}
+
+/** El nombre del saludo del inicio, para el resumen ("Buen día, Guille"). */
+function greetingName() {
+  try {
+    return window.localStorage.getItem('ba-transit:nombre') || null
+  } catch {
+    return null
+  }
 }
 
 /** Que puede este navegador: 'ok', 'ios-sin-instalar' o 'no'. */
@@ -70,6 +83,9 @@ function body(subscription, prefs) {
     notifyResolved: prefs.notifyResolved,
     quietFrom: prefs.quiet ? prefs.quietFrom : null,
     quietTo: prefs.quiet ? prefs.quietTo : null,
+    summaryTime: prefs.summary ? prefs.summaryTime : null,
+    summaryDays: prefs.summaryDays,
+    greetingName: greetingName(),
   }
 }
 

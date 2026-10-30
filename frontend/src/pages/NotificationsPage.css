@@ -102,3 +102,48 @@
   padding-left: 18px;
   color: var(--text);
 }
+
+.notif-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px 14px;
+  padding-left: 28px;
+}
+
+.notif-summary .auth-field {
+  width: 120px;
+}
+
+.notif-days {
+  display: flex;
+  flex-basis: 100%;
+  gap: 5px;
+}
+
+.notif-day {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 34px;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text-dim);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.notif-day.on {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--yellow);
+}
+
+.notif-day:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+}

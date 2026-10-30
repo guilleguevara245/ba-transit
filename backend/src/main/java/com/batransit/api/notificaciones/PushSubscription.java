@@ -55,6 +55,23 @@ public class PushSubscription {
     @Column(name = "last_sent_at")
     private Instant lastSentAt;
 
+    /** Hora del resumen diario ("07:30"); null = sin resumen. */
+    @Column(name = "summary_time", length = 5)
+    private String summaryTime;
+
+    /** Dias del resumen: 1 = lunes ... 7 = domingo ("12345"). */
+    @Column(name = "summary_days", nullable = false, length = 7)
+    private String summaryDays = "12345";
+
+    @Column(name = "greeting_name", length = 40)
+    private String greetingName;
+
+    @Column(name = "paused_until")
+    private Instant pausedUntil;
+
+    @Column(name = "last_train_minutes")
+    private Short lastTrainMinutes;
+
     protected PushSubscription() {
         // Para JPA.
     }
@@ -132,6 +149,38 @@ public class PushSubscription {
         this.quietFrom = quietFrom;
         this.quietTo = quietTo;
         this.updatedAt = now;
+    }
+
+    public String getSummaryTime() {
+        return summaryTime;
+    }
+
+    public String getSummaryDays() {
+        return summaryDays;
+    }
+
+    public String getGreetingName() {
+        return greetingName;
+    }
+
+    public Instant getPausedUntil() {
+        return pausedUntil;
+    }
+
+    public Short getLastTrainMinutes() {
+        return lastTrainMinutes;
+    }
+
+    /** Resumen diario, nombre para saludar y aviso del ultimo tren. */
+    public void updateExtras(String summaryTime, String summaryDays, String greetingName, Short lastTrainMinutes) {
+        this.summaryTime = summaryTime;
+        this.summaryDays = summaryDays;
+        this.greetingName = greetingName;
+        this.lastTrainMinutes = lastTrainMinutes;
+    }
+
+    public void pauseUntil(Instant until) {
+        this.pausedUntil = until;
     }
 
     public void markSent(Instant at) {

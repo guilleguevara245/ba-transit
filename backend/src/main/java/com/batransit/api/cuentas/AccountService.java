@@ -197,7 +197,7 @@ public class AccountService {
         return email;
     }
 
-    static String cleanName(String raw) {
+    public static String cleanName(String raw) {
         if (raw == null) {
             return null;
         }

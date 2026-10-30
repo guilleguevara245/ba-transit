@@ -85,6 +85,8 @@ public class NotificationService {
                 .orElseGet(() -> new PushSubscription(r.endpoint(), r.keys().p256dh(), r.keys().auth()));
         sub.update(r.keys().p256dh(), r.keys().auth(), userId, favorites, String.join(",", kinds),
                 r.notifyResolved() == null || r.notifyResolved(), from, to, Instant.now());
+        sub.updateExtras(summaryTime(r.summaryTime()), summaryDays(r.summaryDays()), greeting(r.greetingName()),
+                lastTrainMinutes(r.lastTrainMinutes()));
         subscriptions.save(sub);
     }
 
@@ -157,8 +159,9 @@ public class NotificationService {
         Instant now = Instant.now();
         for (Planned p : planned) {
             PushSubscription sub = byId.get(p.subscriptionId());
-            if (sub == null || inQuietHours(sub, now)) {
-                continue;
+            boolean summary = p.eventKey().startsWith("resumen:");
+            if (sub == null || isPaused(sub, now) || (!summary && inQuietHours(sub, now))) {
+                continue; // el resumen se pidio a esa hora a proposito: no lo frena el horario sin avisos
             }
             if (!store.claim(sub.getId(), p.eventKey())) {
                 continue; // ya se mando
@@ -182,6 +185,16 @@ public class NotificationService {
         return sent;
     }
 
+    static boolean isPaused(PushSubscription s, Instant now) {
+        return s.getPausedUntil() != null && s.getPausedUntil().isAfter(now);
+    }
+
+    /** Las suscripciones con resumen diario (para el trabajo que los manda). */
+    @Transactional(readOnly = true)
+    public List<PushSubscription> withSummary() {
+        return subscriptions.findAll().stream().filter(s -> s.getSummaryTime() != null).toList();
+    }
+
     /** Si ahora es horario sin avisos para esa suscripcion (puede cruzar la medianoche: 23 a 7). */
     static boolean inQuietHours(PushSubscription s, Instant now) {
         if (s.getQuietFrom() == null || s.getQuietTo() == null) {
@@ -194,6 +207,44 @@ public class NotificationService {
             return false;
         }
         return from < to ? hour >= from && hour < to : hour >= from || hour < to;
+    }
+
+    private static final java.util.regex.Pattern TIME = java.util.regex.Pattern.compile("^([01]\\d|2[0-3]):[0-5]\\d$");
+    static final Set<Integer> LAST_TRAIN_OPTIONS = Set.of(15, 30, 45, 60);
+
+    static String summaryTime(String time) {
+        if (time == null || time.isBlank()) {
+            return null;
+        }
+        if (!TIME.matcher(time).matches()) {
+            throw bad("La hora del resumen no es válida.");
+        }
+        return time;
+    }
+
+    /** [1, 3, 5] -> "135" (sin repetidos, en orden); vacio = todos los dias habiles. */
+    static String summaryDays(List<Integer> days) {
+        if (days == null || days.isEmpty()) {
+            return "12345";
+        }
+        String out = days.stream().filter(d -> d != null && d >= 1 && d <= 7).distinct().sorted()
+                .map(String::valueOf).collect(Collectors.joining());
+        return out.isEmpty() ? "12345" : out;
+    }
+
+    static String greeting(String name) {
+        String clean = AccountService.cleanName(name);
+        return clean == null ? null : clean.length() > 40 ? clean.substring(0, 40) : clean;
+    }
+
+    static Short lastTrainMinutes(Integer minutes) {
+        if (minutes == null) {
+            return null;
+        }
+        if (!LAST_TRAIN_OPTIONS.contains(minutes)) {
+            throw bad("Elegí 15, 30, 45 o 60 minutos antes del último tren.");
+        }
+        return minutes.shortValue();
     }
 
     private static Short hour(Integer h) {

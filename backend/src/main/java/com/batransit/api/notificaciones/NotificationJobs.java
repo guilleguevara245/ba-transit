@@ -177,6 +177,71 @@ public class NotificationJobs {
         }
     }
 
+    /**
+     * Resumen diario: cada 2 minutos se fija que suscripciones tienen el
+     * resumen en este rato (hasta 10 minutos despues de su hora, por si el
+     * servidor estaba ocupado) y se lo manda una sola vez por dia.
+     */
+    @Scheduled(initialDelay = 120_000L, fixedDelay = 2 * 60_000L)
+    public void checkSummaries() {
+        try {
+            runSummaries(ZonedDateTime.now(NotificationService.BUENOS_AIRES));
+        } catch (RuntimeException e) {
+            log.warn("Resumen diario: fallo la revision ({})", e.getClass().getSimpleName());
+        }
+    }
+
+    void runSummaries(ZonedDateTime now) {
+        List<PushSubscription> due = notifications.withSummary().stream()
+                .filter(s -> isDue(s.getSummaryTime(), s.getSummaryDays(), now))
+                .toList();
+        if (due.isEmpty()) {
+            return;
+        }
+        String day = now.format(DateTimeFormatter.BASIC_ISO_DATE);
+        record Data(Map<Long, LineInfo> lines, List<SummaryBuilder.ActiveAlert> alerts) {
+        }
+        Data data = tx.execute(status -> {
+            Map<Long, LineInfo> info = new HashMap<>();
+            for (TransportLine l : lines.findAll()) {
+                info.put(l.getId(), new LineInfo(l.getId(), l.getMode(), l.getCode(), l.getName()));
+            }
+            List<SummaryBuilder.ActiveAlert> active = alerts.findByActiveTrueOrderByPublishedAtDesc().stream()
+                    .map(a -> new SummaryBuilder.ActiveAlert(a.transportLineId(), a.getType(),
+                            a.getDescription() == null ? "" : a.getDescription()))
+                    .toList();
+            return new Data(info, active);
+        });
+        if (data == null) {
+            return;
+        }
+        Map<Long, SummaryBuilder.StationRef> stationRefs = new HashMap<>();
+        stationsByLine(now.toInstant()).forEach((lineId, list) ->
+                list.forEach(st -> stationRefs.put(st.id(), new SummaryBuilder.StationRef(lineId, st))));
+        boolean wantsAccesses = due.stream().anyMatch(s -> notifications.toSubscriber(s).wantAccesses()
+                && !notifications.toSubscriber(s).accesses().isEmpty());
+        var accessReport = wantsAccesses ? accesses.report() : null;
+
+        List<Planned> planned = new ArrayList<>();
+        for (PushSubscription s : due) {
+            Subscriber sub = notifications.toSubscriber(s);
+            SummaryBuilder.build(sub, s.getGreetingName(), now.getHour(), data.lines(), data.alerts(), stationRefs,
+                            accessReport, notifications.siteUrl())
+                    .ifPresent(m -> planned.add(new Planned(s.getId(), "resumen:" + day, m)));
+        }
+        notifications.deliver(planned, null);
+    }
+
+    /** Si el resumen toca ahora: es uno de sus dias y estamos entre su hora y 10 minutos despues. */
+    static boolean isDue(String time, String days, ZonedDateTime now) {
+        if (time == null || days == null || !days.contains(String.valueOf(now.getDayOfWeek().getValue()))) {
+            return false;
+        }
+        int at = Integer.parseInt(time.substring(0, 2)) * 60 + Integer.parseInt(time.substring(3, 5));
+        int minute = now.getHour() * 60 + now.getMinute();
+        return minute >= at && minute < at + 10;
+    }
+
     /** Una vez por dia se borra el registro de avisos de hace mas de 30 dias. */
     @Scheduled(initialDelay = 600_000L, fixedDelay = 24 * 3600_000L)
     public void cleanup() {

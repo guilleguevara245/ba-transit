@@ -94,8 +94,8 @@ export default function PrivacyPage() {
         <p>
           Tu navegador le da al sitio una dirección para mandarte avisos (la crea el servicio de notificaciones del
           navegador: Google, Mozilla, Apple o Microsoft) y unas claves para cifrarlos. Se guardan en el servidor junto
-          con tus favoritos y tus preferencias (qué avisar y el horario sin avisos), y un registro de qué avisos ya te
-          llegaron, que se borra a los 30 días. No hace falta cuenta; si ingresaste, quedan asociados a ella.
+          con tus favoritos y tus preferencias (qué avisar, el horario sin avisos y el resumen diario, con el nombre del
+          saludo si lo escribiste), y un registro de qué avisos ya te llegaron, que se borra a los 30 días. No hace falta cuenta; si ingresaste, quedan asociados a ella.
         </p>
         <p>
           Los avisos viajan cifrados: el servicio del navegador los entrega pero no puede leerlos. Podés apagarlos
