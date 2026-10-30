@@ -4,7 +4,7 @@ import './ModePage.css'
 import './AboutPage.css'
 
 // Fecha de la ultima revision: actualizarla con cada cambio de esta pagina.
-const UPDATED = '29 de octubre de 2026'
+const UPDATED = '30 de octubre de 2026'
 const CONTACT_URL = 'https://github.com/guilleguevara245/ba-transit/issues'
 
 /** Lo que se guarda en el navegador de cada visitante (localStorage). */
@@ -16,7 +16,11 @@ const BROWSER_DATA = [
     what: 'Mis lugares (Casa, Trabajo y otros)',
     why: 'Para armar el viaje con un toque en Cómo llegar. Son la estación o la dirección que vos elegiste.',
   },
-  { what: 'Alertas del clima que cerraste', why: 'Para no volver a mostrártelas.' },
+  {
+    what: 'Tu zona del clima, si la elegiste',
+    why: 'Para "Tu día" y las alertas del clima. Es el nombre y una zona de unos 5 km, no tu ubicación exacta.',
+  },
+  { what: 'Alertas del clima que cerraste', why: 'Para no volver a mostrártelas ese día.' },
   { what: 'Tu sesión, si ingresaste', why: 'Para que no tengas que ingresar cada vez. Se borra al cerrar sesión.' },
   { what: 'Tus preferencias de avisos', why: 'Qué avisar y el horario sin avisos.' },
 ]
@@ -25,7 +29,6 @@ const BROWSER_DATA = [
 const THIRD_PARTIES = [
   { who: 'OpenStreetMap', why: 'Las imágenes de los mapas.', url: 'https://osmfoundation.org/wiki/Privacy_Policy' },
   { who: 'Google Fonts', why: 'Las tipografías del sitio.', url: 'https://policies.google.com/privacy' },
-  { who: 'Open-Meteo', why: 'El clima de los aeropuertos.', url: 'https://open-meteo.com/en/terms' },
   {
     who: 'Google (ingreso)',
     why: 'Solo si tocás "Continuar con Google" para ingresar.',
@@ -50,8 +53,8 @@ export default function PrivacyPage() {
         <h2 className="about-heading">En pocas palabras</h2>
         <p>
           BA Transit se puede usar sin cuenta y sin dar ningún dato personal. La cuenta es opcional y sirve solo para
-          tener los favoritos en todos tus dispositivos. No hay publicidad, no se venden datos y no se usan
-          herramientas de seguimiento ni de estadísticas de visitas.
+          tener los favoritos en todos tus dispositivos. No hay publicidad, no se venden datos y no se usan herramientas
+          de seguimiento ni de estadísticas de visitas.
         </p>
       </section>
 
@@ -74,14 +77,14 @@ export default function PrivacyPage() {
       <section className="about-block">
         <h2 className="about-heading">Si creás una cuenta</h2>
         <p>
-          Se guardan en el servidor tu mail, el nombre que elijas (o el de tu cuenta de Google), tus líneas, estaciones,
-          accesos y colectivos favoritos, tus lugares guardados (la estación o dirección de Casa, Trabajo y los otros que agregues), el tema y tus
-          preferencias de avisos, la imagen que elijas (un avatar, la dirección de tu foto de Google o una foto que subas,
-          achicada a 256 píxeles), las fechas en que creaste la cuenta e ingresaste por última vez y, de cada dispositivo con
-          la sesión abierta, el navegador y el sistema (por ejemplo, “Chrome en Windows”) y cuándo se usó; no se guarda la
-          IP ni la ubicación. Se usan solo para que
-          puedas ingresar y ver tus favoritos en cualquier dispositivo: no se usan para nada más ni se comparten.
-          Desde Tu cuenta podés descargar todo en un archivo y borrarlo cuando quieras.
+          Se guardan en el servidor tu mail, tu nombre y apellido (o los de tu cuenta de Google), tus líneas,
+          estaciones, accesos y colectivos favoritos, tus lugares guardados (la estación o dirección de Casa, Trabajo y
+          los otros que agregues), el tema, tus preferencias de avisos y tu zona del clima (una zona de unos 5 km), la
+          imagen que elijas (un avatar, la dirección de tu foto de Google o una foto que subas, achicada a 256 píxeles),
+          las fechas en que creaste la cuenta e ingresaste por última vez y, de cada dispositivo con la sesión abierta,
+          el navegador y el sistema (por ejemplo, “Chrome en Windows”) y cuándo se usó; no se guarda la IP ni la
+          ubicación. Se usan solo para que puedas ingresar y ver tus favoritos en cualquier dispositivo: no se usan para
+          nada más ni se comparten. Desde Tu cuenta podés descargar todo en un archivo y borrarlo cuando quieras.
         </p>
         <p>
           Si usás mail y contraseña, la contraseña se guarda cifrada (con PBKDF2 y una sal propia), nunca tal cual. Si
@@ -93,8 +96,8 @@ export default function PrivacyPage() {
           mail se envía a través de Brevo, un servicio de envío de correos, que recibe solo tu dirección y el mensaje.
         </p>
         <p>
-          Podés borrar tu cuenta cuando quieras desde <Link to="/cuenta">Tu cuenta</Link>: se borran todos sus datos
-          del servidor en el momento.
+          Podés borrar tu cuenta cuando quieras desde <Link to="/cuenta">Tu cuenta</Link>: se borran todos sus datos del
+          servidor en el momento.
         </p>
       </section>
 
@@ -103,8 +106,9 @@ export default function PrivacyPage() {
         <p>
           Tu navegador le da al sitio una dirección para mandarte avisos (la crea el servicio de notificaciones del
           navegador: Google, Mozilla, Apple o Microsoft) y unas claves para cifrarlos. Se guardan en el servidor junto
-          con tus favoritos y tus preferencias (qué avisar, el horario sin avisos, la pausa, cuánto antes del último subte y el resumen
-          diario, con el nombre del saludo si lo escribiste), y un registro de qué avisos ya te llegaron, que se borra a los 30 días. No hace falta cuenta; si ingresaste, quedan asociados a ella.
+          con tus favoritos y tus preferencias (qué avisar, el horario sin avisos, la pausa, cuánto antes del último
+          subte y el resumen diario, con el nombre del saludo si lo escribiste), y un registro de qué avisos ya te
+          llegaron, que se borra a los 30 días. No hace falta cuenta; si ingresaste, quedan asociados a ella.
         </p>
         <p>
           Los avisos viajan cifrados: el servicio del navegador los entrega pero no puede leerlos. Podés apagarlos
@@ -124,11 +128,11 @@ export default function PrivacyPage() {
       <section className="about-block">
         <h2 className="about-heading">El servidor</h2>
         <p>
-          El servidor de BA Transit consulta las fuentes de datos (ver <Link to="/acerca">Acerca de y fuentes de
-          datos</Link>) y le responde al sitio. Fuera de las cuentas, no guarda información de quienes lo visitan. Las
-          cuentas están en una base de datos PostgreSQL alojada en Neon. Como cualquier sitio web,
-          el proveedor donde está alojado (Render) puede registrar por un tiempo la dirección IP y la hora de cada
-          pedido, para su funcionamiento y seguridad.
+          El servidor de BA Transit consulta las fuentes de datos (ver{' '}
+          <Link to="/acerca">Acerca de y fuentes de datos</Link>) y le responde al sitio. Fuera de las cuentas, no
+          guarda información de quienes lo visitan. Las cuentas están en una base de datos PostgreSQL alojada en Neon.
+          Como cualquier sitio web, el proveedor donde está alojado (Render) puede registrar por un tiempo la dirección
+          IP y la hora de cada pedido, para su funcionamiento y seguridad.
         </p>
         <p>
           El estado de cada fuente se puede ver en <Link to="/estado">Estado de los datos</Link>.
@@ -152,6 +156,10 @@ export default function PrivacyPage() {
             </li>
           ))}
         </ul>
+        <p>
+          El pronóstico del clima se lo pide el servidor de BA Transit a Open-Meteo, con una zona de unos 5 km: tu
+          navegador no se conecta con ellos, así que no reciben tu IP ni tu ubicación.
+        </p>
       </section>
 
       <section className="about-block">

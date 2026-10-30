@@ -1,8 +1,18 @@
 import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useApi } from '../hooks/useApi.js'
+import { useWeatherPlaces } from '../hooks/useWeatherPlaces.js'
 import WeatherIcon from './WeatherIcon.jsx'
-import { ALERT_ICONS, ALERT_LEVELS, alertTitle, dismissKey, periodText, travelTip } from '../utils/weatherAlerts.js'
+import {
+  ALERT_ICONS,
+  ALERT_LEVELS,
+  alertTitle,
+  alertsForPlaces,
+  dismissKey,
+  periodText,
+  travelTip,
+} from '../utils/weatherAlerts.js'
+import { gridQuery } from '../utils/weatherPlaces.js'
 import './WeatherAlertBanner.css'
 
 const REFRESH_MS = 10 * 60_000
@@ -30,19 +40,28 @@ function readDismissed() {
   }
 }
 
+const alertsPath = (place) => (place ? `/api/v1/clima/alertas?${gridQuery(place)}` : null)
+
 /**
- * Franja con las alertas meteorologicas del SMN vigentes para el AMBA
- * (tormentas, lluvias y calor), en una linea: tipo, cuando y un consejo
+ * Franja con las alertas meteorologicas del SMN vigentes en tus lugares
+ * (Casa y Trabajo, tu zona o Capital: la naranja de Capital no le aparece
+ * a quien vive en San Miguel), en una linea: tipo, cuando y un consejo
  * para viajar (sin el texto largo del SMN). Solo aparece cuando hay alguna,
  * apareciendo con un barrido desde la raya de color la primera vez. Cerrada, no vuelve en el dia
  * aunque el SMN la renueve; vuelve si sube de nivel (ver dismissKey).
  */
 export default function WeatherAlertBanner() {
   const { pathname } = useLocation()
-  const { data } = useApi('/api/v1/clima/alertas', { refreshMs: REFRESH_MS })
+  const { places, ready } = useWeatherPlaces()
+  const first = useApi(ready ? alertsPath(places[0]) : null, { refreshMs: REFRESH_MS })
+  const second = useApi(ready ? alertsPath(places[1]) : null, { refreshMs: REFRESH_MS })
   const [dismissed, setDismissed] = useState(readDismissed)
 
-  const alerts = (data?.alerts ?? []).filter((a) => !dismissed.includes(dismissKey(a)))
+  const lists = [
+    { place: places[0], alerts: first.data?.alerts },
+    ...(places[1] ? [{ place: places[1], alerts: second.data?.alerts }] : []),
+  ]
+  const alerts = alertsForPlaces(lists).filter((a) => !dismissed.includes(dismissKey(a)))
   if (alerts.length === 0 || HIDDEN_ON.includes(pathname)) return null
 
   function dismiss(alert) {
@@ -69,7 +88,10 @@ export default function WeatherAlertBanner() {
               <div className="wrap weather-alert-row">
                 <WeatherIcon kind={ALERT_ICONS[alert.kind] ?? 'storm'} className="weather-alert-icon" />
                 <div className="weather-alert-text">
-                  <strong>{alertTitle(alert)}</strong>
+                  <strong>
+                    {alertTitle(alert)}
+                    {alert.where && ` en ${alert.where}`}
+                  </strong>
                   {periodText(alert) && <span className="weather-alert-period">: {periodText(alert)}.</span>}
                   {travelTip(alert) && <span className="weather-alert-tip"> {travelTip(alert)}</span>}
                 </div>

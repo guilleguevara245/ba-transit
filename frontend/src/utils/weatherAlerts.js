@@ -95,3 +95,32 @@ export function travelTip(alert, now = new Date()) {
 export function dismissKey(alert, now = new Date()) {
   return `${alert.kind}:${alert.level}:${dayKey(now)}`
 }
+
+const LEVEL_RANK = { AMARILLA: 1, NARANJA: 2, ROJA: 3 }
+
+/**
+ * Junta las alertas de tus lugares: lists = [{ place: { label }, alerts }].
+ * Una por tipo (la de mayor nivel), la mas grave primero. where: el lugar al que afecta ("Trabajo"),
+ * o null si afecta a todos tus lugares (o hay uno solo).
+ */
+export function alertsForPlaces(lists) {
+  const byKind = new Map()
+  for (const { place, alerts } of lists) {
+    for (const alert of alerts ?? []) {
+      const current = byKind.get(alert.kind)
+      const rank = LEVEL_RANK[alert.level] ?? 0
+      if (!current || rank > current.rank) {
+        byKind.set(alert.kind, { alert, rank, places: [place.label] })
+      } else if (rank === current.rank && !current.places.includes(place.label)) {
+        current.places.push(place.label)
+      }
+    }
+  }
+  // La mas grave arriba.
+  return [...byKind.values()]
+    .sort((a, b) => b.rank - a.rank)
+    .map(({ alert, places }) => ({
+      ...alert,
+      where: lists.length > 1 && places.length < lists.length ? places.join(' y ') : null,
+    }))
+}

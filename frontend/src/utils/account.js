@@ -4,6 +4,7 @@ import { mergePlaces, readPlaces, writePlaces } from './placesStore.js'
 import { applyNoticePrefs, hasSavedPrefs, readPrefs } from './push.js'
 import { applyTheme, THEME_KEY } from '../hooks/useTheme.js'
 import { firstName, getSession, setSession } from './session.js'
+import { readZone, saveZone } from './weatherZone.js'
 
 /** Acciones de la cuenta. Los errores (ApiError) traen el mensaje para mostrar. */
 
@@ -12,7 +13,8 @@ const NAME_KEY = 'ba-transit:nombre'
 /** Si el saludo todavia no tiene nombre, usa el de la cuenta. */
 function adoptName(user) {
   try {
-    if (!window.localStorage.getItem(NAME_KEY) && firstName(user)) window.localStorage.setItem(NAME_KEY, firstName(user))
+    if (!window.localStorage.getItem(NAME_KEY) && firstName(user))
+      window.localStorage.setItem(NAME_KEY, firstName(user))
   } catch {
     // Sin almacenamiento.
   }
@@ -251,11 +253,13 @@ export function localPreferences() {
   return {
     tema: tema === 'light' || tema === 'dark' ? tema : null,
     avisos: hasSavedPrefs() ? Object.fromEntries(NOTICE_KEYS.map((k) => [k, prefs[k]])) : null,
+    clima: readZone(),
   }
 }
 
 /** Sin nulls: solo lo que la cuenta tiene guardado. */
-const definedOnly = (obj) => Object.fromEntries(Object.entries(obj ?? {}).filter(([, v]) => v !== null && v !== undefined))
+const definedOnly = (obj) =>
+  Object.fromEntries(Object.entries(obj ?? {}).filter(([, v]) => v !== null && v !== undefined))
 
 /**
  * Al entrar: si este dispositivo ya estaba sincronizado con esta cuenta, o
@@ -272,9 +276,10 @@ export async function syncPreferences() {
   } catch {
     // Sin almacenamiento.
   }
-  const hasRemote = Boolean(remote?.tema || remote?.avisos)
+  const hasRemote = Boolean(remote?.tema || remote?.avisos || remote?.clima)
   if (hasRemote) {
     if (remote.tema) applyTheme(remote.tema, { silent: true })
+    if (remote.clima) saveZone(remote.clima, { silent: true })
     if (remote.avisos) await applyNoticePrefs(definedOnly(remote.avisos)).catch(() => {})
   } else if (!synced) {
     await pushPreferences()

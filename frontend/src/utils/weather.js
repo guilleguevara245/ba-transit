@@ -1,5 +1,5 @@
 /**
- * Codigos de tiempo de la OMM que devuelve Open-Meteo (weather_code),
+ * Codigos de tiempo de la OMM (weather_code, los del pronostico del servidor),
  * agrupados en descripciones cortas. "icon" es el dibujo de WeatherIcon;
  * de noche (is_day = 0) el sol se cambia por la luna.
  */
@@ -20,15 +20,4 @@ export function describeWeather(code, isDay = true) {
   const group = GROUPS.find((g) => g.codes.includes(code))
   if (!group) return { label: 'Sin datos', icon: null }
   return { label: group.label, icon: isDay ? group.icon : (NIGHT_ICONS[group.icon] ?? group.icon) }
-}
-
-/** URL de Open-Meteo para el tiempo actual en un punto. */
-export function weatherUrl(latitude, longitude) {
-  const params = new URLSearchParams({
-    latitude: String(latitude),
-    longitude: String(longitude),
-    current: 'temperature_2m,wind_speed_10m,weather_code,is_day',
-    timezone: 'America/Argentina/Buenos_Aires',
-  })
-  return `https://api.open-meteo.com/v1/forecast?${params}`
 }

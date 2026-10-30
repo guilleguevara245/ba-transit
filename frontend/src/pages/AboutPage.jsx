@@ -103,10 +103,11 @@ const SOURCES = [
       'Posición, altura y velocidad de los aviones alrededor de Buenos Aires, con las señales que reciben antenas voluntarias. Datos abiertos bajo licencia ODbL.',
   },
   {
-    what: 'Clima en los aeropuertos',
-    source: 'Open-Meteo',
+    what: 'Pronóstico del clima (Tu día y aeropuertos)',
+    source: 'Open-Meteo (datos con licencia CC BY 4.0)',
     url: 'https://open-meteo.com/',
-    detail: 'Temperatura, viento y estado del cielo actuales.',
+    detail:
+      'Temperatura, lluvia y viento hora por hora, a partir de modelos meteorológicos globales. Las alertas son las oficiales del SMN.',
   },
   {
     what: 'Avisos de los trenes',

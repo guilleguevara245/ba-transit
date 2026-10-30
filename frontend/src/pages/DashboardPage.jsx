@@ -1,6 +1,7 @@
 import Skeleton from '../components/Skeleton.jsx'
 import Greeting from '../components/Greeting.jsx'
 import SearchBar from '../components/SearchBar.jsx'
+import DayWeather from '../components/DayWeather.jsx'
 import ModeGrid from '../components/ModeGrid.jsx'
 import MyLines from '../components/MyLines.jsx'
 import { MyAccesses, MyStations } from '../components/MyPlaces.jsx'
@@ -36,8 +37,12 @@ export default function DashboardPage() {
 
   return (
     <div className="wrap content">
-      <Greeting />
-      <SearchBar />
+      {/* Saludo y busqueda a la izquierda; "Tu dia" a la derecha (abajo en el celular). */}
+      <div className="home-top">
+        <Greeting />
+        <DayWeather />
+        <SearchBar />
+      </div>
       <AccountInvite />
       {ready && <MyLines lines={lines} alerts={alerts} />}
       {ready && <MyStations lines={lines} alerts={alerts} />}

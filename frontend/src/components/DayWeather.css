@@ -1,0 +1,247 @@
+/* "Tu dia": el clima de tus lugares, al lado de la busqueda en computadora. */
+.day-weather {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--yellow);
+  box-shadow: var(--shadow);
+  padding: 12px 16px 10px;
+}
+
+.dw-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dw-title {
+  margin: 0;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.dw-link {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--yellow-deep);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dw-link:hover {
+  text-decoration: underline;
+}
+
+.dw-link:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.dw-link-muted {
+  color: var(--text-dim);
+}
+
+.dw-headline {
+  margin: 4px 0 6px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--text);
+}
+
+.dw-tone-rain,
+.dw-tone-storm {
+  color: color-mix(in srgb, #3b82c4 75%, var(--text));
+}
+
+.dw-tone-heat {
+  color: color-mix(in srgb, #e0573a 80%, var(--text));
+}
+
+.dw-tone-cold {
+  color: color-mix(in srgb, #3b82c4 60%, var(--text));
+}
+
+.dw-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(120px, 150px);
+  align-items: center;
+  gap: 12px;
+  padding: 7px 0;
+  border-top: 1px solid var(--line);
+}
+
+.dw-place {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.dw-place > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dw-place strong {
+  font-size: 13px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dw-place small,
+.dw-now small {
+  font-size: 11px;
+  color: var(--text-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dw-now {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dw-now > div {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.dw-icon {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+}
+
+.dw-temp {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Tira de las proximas horas: la altura de cada barra es la probabilidad de lluvia. */
+.dw-strip {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 2px;
+}
+
+.dw-hour {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+}
+
+.dw-bar-box {
+  display: flex;
+  align-items: flex-end;
+  height: 24px;
+}
+
+.dw-bar {
+  width: 100%;
+  min-height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--line);
+}
+
+.dw-bar-rain {
+  background: #3b82c4;
+}
+
+.dw-hour small {
+  height: 12px;
+  font-size: 10px;
+  line-height: 12px;
+  text-align: center;
+  color: var(--text-faint);
+}
+
+/* Elegir la zona */
+.dw-picker {
+  padding-top: 6px;
+}
+
+.dw-picker-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 8px;
+}
+
+.dw-picker-status,
+.dw-picker-note {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.dw-picker-note {
+  color: var(--text-faint);
+}
+
+/* Inicio: saludo y busqueda a la izquierda, "Tu dia" a la derecha. */
+.home-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 420px);
+  /* Si "Tu dia" es mas alto, el espacio de mas queda debajo de la busqueda. */
+  grid-template-rows: auto 1fr;
+  gap: 0 24px;
+  align-items: start;
+}
+
+/* Saludo y busqueda siempre en la primera columna (si "Tu dia" no esta, ocupan todo el ancho). */
+.home-top > :not(.day-weather) {
+  grid-column: 1;
+}
+
+.home-top:not(:has(> .day-weather)) {
+  grid-template-columns: 1fr;
+}
+
+.home-top > .day-weather {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 960px) {
+  .home-top {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+  }
+
+  /* En una columna: saludo, busqueda y despues "Tu dia". */
+  .home-top > .day-weather {
+    grid-column: 1;
+    grid-row: auto;
+    order: 2;
+  }
+}
+
+/* Celular: la tira de horas pasa abajo, a todo el ancho. */
+@media (max-width: 520px) {
+  .dw-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 6px;
+  }
+
+  .dw-strip {
+    grid-column: 1 / -1;
+  }
+}

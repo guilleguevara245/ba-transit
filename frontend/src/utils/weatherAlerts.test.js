@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { alertTitle, dismissKey, periodText, travelTip, untilText } from './weatherAlerts.js'
+import { alertTitle, alertsForPlaces, dismissKey, periodText, travelTip, untilText } from './weatherAlerts.js'
 
 describe('alertTitle', () => {
   it('arma el titulo con nivel y fenomeno', () => {
@@ -57,5 +57,28 @@ describe('dismissKey', () => {
     const roja = { kind: 'TORMENTAS', level: 'ROJA' }
     expect(dismissKey(roja, now) === dismissKey(naranja, now)).toBe(false)
     expect(dismissKey(naranja, new Date('2026-10-31T12:00:00Z')) === dismissKey(naranja, now)).toBe(false)
+  })
+})
+
+describe('alertsForPlaces', () => {
+  const casa = { label: 'Casa' }
+  const trabajo = { label: 'Trabajo' }
+  const naranja = { id: 'n', kind: 'TORMENTAS', level: 'NARANJA' }
+  const amarilla = { id: 'a', kind: 'TORMENTAS', level: 'AMARILLA' }
+  const calor = { id: 'c', kind: 'CALOR', level: 'AMARILLA' }
+
+  it('con un solo lugar no dice donde', () => {
+    expect(alertsForPlaces([{ place: casa, alerts: [naranja] }])).toEqual([{ ...naranja, where: null }])
+  })
+
+  it('una por tipo, la de mayor nivel, con el lugar al que afecta', () => {
+    const result = alertsForPlaces([
+      { place: casa, alerts: [amarilla, calor] },
+      { place: trabajo, alerts: [naranja, calor] },
+    ])
+    expect(result).toEqual([
+      { ...naranja, where: 'Trabajo' },
+      { ...calor, where: null },
+    ])
   })
 })
