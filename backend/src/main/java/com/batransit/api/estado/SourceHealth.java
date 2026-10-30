@@ -43,6 +43,7 @@ public class SourceHealth {
         SMN("Alertas meteorológicas", "Servicio Meteorológico Nacional"),
         TOMTOM("Tránsito en los accesos", "TomTom"),
         ADSB_LOL("Aviones en vivo", "adsb.lol"),
+        NOTICIAS("Noticias del transporte", "enelSubte y Google Noticias"),
         BREVO("Mails de la cuenta (recuperar la contraseña)", "Brevo");
 
         private final String what;

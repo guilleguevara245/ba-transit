@@ -141,3 +141,118 @@
   font-size: 12px;
   color: var(--text-dim);
 }
+
+/* Pestañas Eventos y cortes / Noticias */
+.panel-title.events-tabs {
+  justify-content: flex-start;
+  gap: 4px;
+  border-bottom: 1px solid var(--line);
+}
+
+.events-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: -1px;
+  padding: 0 4px 8px;
+  border: none;
+  border-bottom: 3px solid transparent;
+  background: none;
+  color: var(--text-dim);
+  font: inherit;
+  cursor: pointer;
+}
+
+.events-tabs button + button {
+  margin-left: 14px;
+}
+
+.events-tabs button.active {
+  border-bottom-color: var(--yellow);
+  color: var(--text);
+}
+
+.events-tabs button:focus-visible,
+.news-filters button:focus-visible,
+.news-more:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+}
+
+/* Noticias */
+.news-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.news-filters button {
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.news-filters button span {
+  margin-left: 2px;
+  color: var(--text-faint);
+  font-weight: 500;
+}
+
+.news-filters button.active {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--yellow);
+}
+
+.news-filters button.active span {
+  color: inherit;
+}
+
+.news-meta {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.news-kind-subte {
+  --c: #0057a8;
+  --t: rgba(0, 87, 168, 0.12);
+}
+
+.news-kind-trenes {
+  --c: #1f7a3d;
+  --t: rgba(31, 122, 61, 0.12);
+}
+
+.news-kind-colectivos {
+  --c: var(--delayed);
+  --t: var(--delayed-tint);
+}
+
+:root[data-theme='dark'] .news-kind-subte {
+  --c: #7fb4ea;
+  --t: rgba(127, 180, 234, 0.14);
+}
+
+:root[data-theme='dark'] .news-kind-trenes {
+  --c: #7fcf98;
+  --t: rgba(127, 207, 152, 0.14);
+}
+
+.news-more {
+  margin-top: 6px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
