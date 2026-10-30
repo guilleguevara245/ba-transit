@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { DataSection, DevicesSection, NameEditor, PasswordSection } from '../components/AccountSettings.jsx'
 import BackButton from '../components/BackButton.jsx'
 import Chevrons from '../components/Chevrons.jsx'
+import EmailText from '../components/EmailText.jsx'
 import ImagePicker from '../components/ImagePicker.jsx'
 import PlaceIcon from '../components/PlaceIcon.jsx'
 import UserAvatar from '../components/UserAvatar.jsx'
@@ -10,6 +11,7 @@ import { useFavoriteList } from '../hooks/useFavoriteList.js'
 import { useSavedPlaces } from '../hooks/useSavedPlaces.js'
 import { useSession } from '../hooks/useSession.js'
 import { deleteAccount, logout } from '../utils/account.js'
+import { ACCOUNT_ICONS } from '../utils/accountIcons.js'
 import { formatLongDate } from '../utils/format.js'
 import './AccountPage.css'
 
@@ -17,14 +19,14 @@ function plural(n, one, many) {
   return `${n} ${n === 1 ? one : many}`
 }
 
-/** Iconos del menu de la cuenta (trazos de 24x24, como los del sitio). */
+/** Secciones del menu de la cuenta. */
 const NAV = [
-  ['perfil', 'Perfil', 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c1-4 4-6 8-6s7 2 8 6'],
-  ['lugares', 'Mis lugares', 'M12 21s-6-5.6-6-10a6 6 0 1 1 12 0c0 4.4-6 10-6 10zm0-8a2 2 0 1 0 0-4 2 2 0 0 0 0 4z'],
-  ['avisos', 'Avisos', 'M6 9a6 6 0 1 1 12 0c0 6 2 7 2 7H4s2-1 2-7M10 20a2 2 0 0 0 4 0'],
-  ['seguridad', 'Seguridad', 'M7 11h10a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2zM8 11V8a4 4 0 0 1 8 0v3'],
-  ['dispositivos', 'Dispositivos', 'M3 5h13v10H3zM17 9h4v10h-4zM7 19h6'],
-  ['datos', 'Tus datos', 'M12 4v11M7 10l5 5 5-5M5 20h14'],
+  ['perfil', 'Perfil'],
+  ['lugares', 'Mis lugares'],
+  ['avisos', 'Avisos'],
+  ['seguridad', 'Seguridad'],
+  ['dispositivos', 'Dispositivos'],
+  ['datos', 'Tus datos'],
 ]
 
 function NavIcon({ d }) {
@@ -51,9 +53,16 @@ export default function AccountPage() {
   const [error, setError] = useState(null)
   const [busy, setBusy] = useState(false)
 
+  const { hash } = useLocation()
+
   useEffect(() => {
     if (!session) navigate('/ingresar', { replace: true })
   }, [session, navigate])
+
+  // Desde el menu del header ("/cuenta#dispositivos"): va directo a esa seccion.
+  useEffect(() => {
+    if (session && hash) document.getElementById(hash.slice(1))?.scrollIntoView()
+  }, [hash, session])
   if (!session) return null
   const { user } = session
 
@@ -85,21 +94,23 @@ export default function AccountPage() {
             <UserAvatar user={user} size={48} />
             <div>
               <strong>{user.name || 'Tu cuenta'}</strong>
-              <small>{user.email}</small>
+              <small>
+                <EmailText email={user.email} />
+              </small>
             </div>
           </div>
-          {NAV.map(([id, label, icon]) => (
+          {NAV.map(([id, label]) => (
             <a key={id} href={`#${id}`}>
-              <NavIcon d={icon} />
+              <NavIcon d={ACCOUNT_ICONS[id]} />
               {label}
             </a>
           ))}
           <button type="button" onClick={signOut}>
-            <NavIcon d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10" />
+            <NavIcon d={ACCOUNT_ICONS.salir} />
             Cerrar sesión
           </button>
           <a href="#borrar" className="account-nav-danger">
-            <NavIcon d="M12 9v4M12 17h.01M10.3 3.9 2 18a2 2 0 0 0 1.7 3h16.6A2 2 0 0 0 22 18L13.7 3.9a2 2 0 0 0-3.4 0z" />
+            <NavIcon d={ACCOUNT_ICONS.borrar} />
             Borrar la cuenta
           </a>
         </nav>
@@ -205,8 +216,8 @@ export default function AccountPage() {
           <section className="account-card account-danger" id="borrar">
             <h2 className="account-card-title">Borrar la cuenta</h2>
             <p>
-              Se borran tu cuenta y los favoritos guardados en ella. En este navegador los favoritos quedan hasta que los
-              quites. No se puede deshacer.
+              Se borran tu cuenta y los favoritos guardados en ella. En este navegador los favoritos quedan hasta que
+              los quites. No se puede deshacer.
             </p>
             {error && (
               <p className="auth-error auth-error-box" role="alert">

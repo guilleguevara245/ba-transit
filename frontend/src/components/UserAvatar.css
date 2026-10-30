@@ -19,10 +19,13 @@
   color: #17171a;
 }
 
-/* El dibujo del avatar ocupa siempre todo el circulo (otras reglas fijan el tamaño de los iconos del menu o el encabezado). */
+/* El dibujo del avatar ocupa siempre todo el circulo. Las reglas de los iconos
+   del menu y del encabezado (".account-nav svg": sin relleno y con trazo) no
+   tienen que tocarlo: con ese trazo se veian lineas negras en el borde. */
 .user-avatar > svg {
   display: block;
   width: 100% !important;
   height: 100% !important;
-  stroke: none;
+  fill: #000 !important;
+  stroke: none !important;
 }
