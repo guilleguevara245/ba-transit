@@ -37,7 +37,8 @@ final class GtfsCsv {
             if (index == null || index >= values.size()) {
                 return "";
             }
-            return values.get(index).trim();
+            // Algunos textos del feed vienen doblemente codificados ("MORÃ³N"): se arreglan aca.
+            return TextRepair.fix(values.get(index).trim());
         }
     }
 

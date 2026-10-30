@@ -75,3 +75,8 @@ export function alertsForBus(alerts, line) {
   const n = String(Number.parseInt(number, 10))
   return (alerts ?? []).filter((a) => (a.lines ?? []).includes(n))
 }
+
+/** El destino sin la "a" del feed ("A EST. MORÓN" -> "EST. MORÓN"), para escribir "Hacia ...". */
+export function headsignTo(headsign) {
+  return (headsign ?? '').trim().replace(/^a\s+/i, '')
+}

@@ -5,6 +5,7 @@ import {
   busFavoriteId,
   busParams,
   busTitle,
+  headsignTo,
   movingLabel,
   parseBusShortName,
   stopName,
@@ -70,5 +71,14 @@ describe('colectivos favoritos', () => {
     expect(alertsForBus(alerts, '53A').map((a) => a.title)).toEqual(['a'])
     expect(alertsForBus(alerts, '007').map((a) => a.title)).toEqual(['b'])
     expect(alertsForBus(undefined, '152')).toEqual([])
+  })
+})
+
+describe('headsignTo', () => {
+  it('saca la "a" del principio', () => {
+    expect(headsignTo('A EST. MORÓN')).toBe('EST. MORÓN')
+    expect(headsignTo('a Est. Lanus')).toBe('Est. Lanus')
+    expect(headsignTo('Alem')).toBe('Alem')
+    expect(headsignTo(null)).toBe('')
   })
 })

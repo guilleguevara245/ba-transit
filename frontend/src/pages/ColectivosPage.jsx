@@ -11,7 +11,7 @@ import FavoriteButton from '../components/FavoriteButton.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { useDebounce } from '../hooks/useDebounce.js'
-import { busDescription, busFavoriteId, busParams, busTitle } from '../utils/busNames.js'
+import { busDescription, busFavoriteId, busParams, busTitle, headsignTo } from '../utils/busNames.js'
 import { formatDuration } from '../utils/travelTime.js'
 import './ModePage.css'
 import './ColectivosPage.css'
@@ -43,7 +43,13 @@ function detailPath(routeId, line, headsign) {
 function RouteDetail({ routeId, line, headsign, initialDirection }) {
   const { data: route, loading, error } = useApi(detailPath(routeId, line, headsign))
   const [directionIndex, setDirectionIndex] = useState(0)
-  const live = useApi(`/api/v1/colectivos/${encodeURIComponent(routeId)}/vivo`, { refreshMs: LIVE_REFRESH_MS })
+  // Con el numero de la linea, el servidor descarta los colectivos de otra linea con el mismo id.
+  const live = useApi(
+    route
+      ? `/api/v1/colectivos/${encodeURIComponent(routeId)}/vivo${route.shortName ? `?numero=${encodeURIComponent(route.shortName)}` : ''}`
+      : null,
+    { refreshMs: LIVE_REFRESH_MS },
+  )
 
   // Si se llego tocando un colectivo del mapa en vivo, se abre el sentido
   // en el que iba ese colectivo (si no, el primero).
@@ -109,7 +115,7 @@ function RouteDetail({ routeId, line, headsign, initialDirection }) {
               aria-pressed={index === directionIndex}
               onClick={() => setDirectionIndex(index)}
             >
-              Hacia {d.headsign || `sentido ${index + 1}`}
+              Hacia {headsignTo(d.headsign) || `sentido ${index + 1}`}
             </button>
           ))}
         </div>
@@ -136,7 +142,7 @@ function RouteDetail({ routeId, line, headsign, initialDirection }) {
             <>
               Ninguno en este sentido ahora, pero hay {otherCount} en vivo{' '}
               <button type="button" className="bus-live-switch" onClick={() => setDirectionIndex(otherIndex)}>
-                hacia {route.directions[otherIndex].headsign || 'el otro sentido'}
+                hacia {headsignTo(route.directions[otherIndex].headsign) || 'el otro sentido'}
               </button>
             </>
           )}

@@ -85,7 +85,8 @@ public class BusPositionsController {
             }
             // Se redondea a 5 decimales (~1 m): alcanza para el mapa y achica la respuesta.
             result.add(new MovingBus(v.path("id").asText(""), v.path("route_id").asText(""), v.path("route_short_name").asText(""),
-                    Math.round(lat * 1e5) / 1e5, Math.round(lon * 1e5) / 1e5, v.path("trip_headsign").asText(""),
+                    Math.round(lat * 1e5) / 1e5, Math.round(lon * 1e5) / 1e5,
+                    com.batransit.api.colectivos.TextRepair.fix(v.path("trip_headsign").asText("")),
                     v.path("direction").asInt(0)));
         }
         return result;
@@ -125,21 +126,43 @@ public class BusPositionsController {
         return wanted.stream().map(l -> new LineCount(l, counts.getOrDefault(l, 0))).toList();
     }
 
+    /**
+     * Los colectivos de una linea. numero (opcional): el cartel ("303A");
+     * si el feed en vivo trae otro cartel con el mismo route_id (pasa
+     * cuando el GTFS del dia y el feed en vivo numeran distinto), se
+     * descarta, asi no aparecen colectivos de otra linea en el mapa.
+     */
     @GetMapping("/{routeId}/vivo")
-    public VehiclesResponse vehicles(@PathVariable String routeId) {
+    public VehiclesResponse vehicles(@PathVariable String routeId,
+                                     @org.springframework.web.bind.annotation.RequestParam(name = "numero", required = false) String line) {
         Optional<Fetched> feed = client.get("/colectivos/vehiclePositionsSimple", MAX_AGE);
         if (feed.isEmpty()) {
             return new VehiclesResponse(false, null, List.of());
         }
         return new VehiclesResponse(true, feed.get().fetchedAt(),
-                vehiclesOf(feed.get().body(), routeId, Instant.now().getEpochSecond()));
+                vehiclesOf(feed.get().body(), routeId, line, Instant.now().getEpochSecond()));
     }
 
     static List<Vehicle> vehiclesOf(JsonNode feed, String routeId, long nowEpochSeconds) {
+        return vehiclesOf(feed, routeId, null, nowEpochSeconds);
+    }
+
+    /** "303 a" -> "303A"; null si no hay. */
+    static String lineKey(String line) {
+        String key = line == null ? "" : line.replaceAll("\\s+", "").toUpperCase(java.util.Locale.ROOT);
+        return key.isEmpty() ? null : key;
+    }
+
+    static List<Vehicle> vehiclesOf(JsonNode feed, String routeId, String line, long nowEpochSeconds) {
+        String wanted = lineKey(line);
         List<Vehicle> result = new ArrayList<>();
         for (JsonNode v : feed) {
             if (!routeId.equals(v.path("route_id").asText(""))) {
                 continue;
+            }
+            String vehicleLine = lineKey(v.path("route_short_name").asText(""));
+            if (wanted != null && vehicleLine != null && !wanted.equals(vehicleLine)) {
+                continue; // mismo id, otra linea
             }
             double lat = v.path("latitude").asDouble(0);
             double lon = v.path("longitude").asDouble(0);
@@ -152,7 +175,7 @@ public class BusPositionsController {
                 continue;
             }
             result.add(new Vehicle(v.path("id").asText(""), lat, lon, v.path("direction").asInt(0),
-                    v.path("trip_headsign").asText(""), age));
+                    com.batransit.api.colectivos.TextRepair.fix(v.path("trip_headsign").asText("")), age));
         }
         return result;
     }

@@ -63,4 +63,22 @@ class BusPositionsControllerTest {
                 new BusPositionsController.LineCount("7", 0)))).isEqualTo(true);
         assertThat(BusPositionsController.parseLines(null).isEmpty()).isEqualTo(true);
     }
+
+    @Test
+    void descartaColectivosDeOtraLineaConElMismoId() throws Exception {
+        String json = """
+                [{"route_id": "500", "latitude": -34.6, "longitude": -58.6, "timestamp": 1776129290, "id": "1",
+                  "route_short_name": "303A", "trip_headsign": "A EST. MORÃ³N"},
+                 {"route_id": "500", "latitude": -34.7, "longitude": -58.5, "timestamp": 1776129290, "id": "2",
+                  "route_short_name": "155"},
+                 {"route_id": "500", "latitude": -34.7, "longitude": -58.5, "timestamp": 1776129290, "id": "3"}]
+                """;
+        var feed = new ObjectMapper().readTree(json);
+        List<Vehicle> mine = BusPositionsController.vehiclesOf(feed, "500", "303a", NOW);
+        // El de otra linea se descarta; el que no dice linea se conserva.
+        assertThat(mine).extracting(Vehicle::id).containsExactly("1", "3");
+        assertThat(mine.get(0).headsign()).isEqualTo("A EST. MORÓN");
+        // Sin numero, como antes: todos los del id.
+        assertThat(BusPositionsController.vehiclesOf(feed, "500", NOW).size()).isEqualTo(3);
+    }
 }
