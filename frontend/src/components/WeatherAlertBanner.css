@@ -104,3 +104,29 @@
     flex-basis: calc(100% - 70px);
   }
 }
+
+/* Al aparecer, baja como una persiana (una vez por visita). */
+@keyframes weather-alert-blind {
+  from {
+    clip-path: inset(0 0 100% 0);
+    transform: translateY(-8px);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+    transform: translateY(0);
+  }
+}
+
+.weather-alert-enter {
+  animation: weather-alert-blind 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.weather-alert-enter + .weather-alert-enter {
+  animation-delay: 0.12s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .weather-alert-enter {
+    animation: none;
+  }
+}

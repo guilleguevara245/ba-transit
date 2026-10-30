@@ -84,3 +84,14 @@ export function travelTip(alert, now = new Date()) {
   }
   return `${lead}, ${tip}.`
 }
+
+/**
+ * Clave para recordar que cerraste una alerta: tipo, nivel y dia (en
+ * Buenos Aires). El SMN reemplaza sus alertas seguido (cambia el horario y
+ * con eso el id), asi que el id no sirve: cerrada la naranja por tormentas
+ * de hoy, no vuelve hoy aunque la renueven. Vuelve si sube de nivel o al
+ * dia siguiente.
+ */
+export function dismissKey(alert, now = new Date()) {
+  return `${alert.kind}:${alert.level}:${dayKey(now)}`
+}

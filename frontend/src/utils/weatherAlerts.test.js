@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { alertTitle, periodText, travelTip, untilText } from './weatherAlerts.js'
+import { alertTitle, dismissKey, periodText, travelTip, untilText } from './weatherAlerts.js'
 
 describe('alertTitle', () => {
   it('arma el titulo con nivel y fenomeno', () => {
@@ -38,7 +38,24 @@ describe('travelTip', () => {
     expect(travelTip({ kind: 'TORMENTAS', onset: '2026-10-26T21:00:00-03:00' }, now)).toBe(
       'Si viajás mañana, llevá paraguas y salí con tiempo: puede haber demoras.',
     )
-    expect(travelTip({ kind: 'CALOR', onset: '2026-10-25T10:00:00-03:00' }, now)).toMatch(/^Si vas a viajar, llevá agua/)
+    expect(travelTip({ kind: 'CALOR', onset: '2026-10-25T10:00:00-03:00' }, now)).toMatch(
+      /^Si vas a viajar, llevá agua/,
+    )
     expect(travelTip({ kind: 'OTRO' }, now)).toBeNull()
+  })
+})
+
+describe('dismissKey', () => {
+  const now = new Date('2026-10-30T21:30:00Z') // 18:30 en Buenos Aires
+  it('una renovacion del SMN (otro id, otro horario) se recuerda como cerrada', () => {
+    const before = { id: 'a1', kind: 'TORMENTAS', level: 'NARANJA' }
+    const renewed = { id: 'a2', kind: 'TORMENTAS', level: 'NARANJA' }
+    expect(dismissKey(renewed, now)).toBe(dismissKey(before, now))
+  })
+  it('si sube de nivel o es otro dia, vuelve a aparecer', () => {
+    const naranja = { kind: 'TORMENTAS', level: 'NARANJA' }
+    const roja = { kind: 'TORMENTAS', level: 'ROJA' }
+    expect(dismissKey(roja, now) === dismissKey(naranja, now)).toBe(false)
+    expect(dismissKey(naranja, new Date('2026-10-31T12:00:00Z')) === dismissKey(naranja, now)).toBe(false)
   })
 })
