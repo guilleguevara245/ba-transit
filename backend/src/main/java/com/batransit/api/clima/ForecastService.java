@@ -25,12 +25,13 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Pronostico por hora de Open-Meteo para un punto del AMBA.
+ * Pronostico por hora para un punto del AMBA: Open-Meteo y, si no responde,
+ * MET Norway como respaldo (ver MetNorwayForecast).
  *
  * El navegador nunca le pide a Open-Meteo: pide aca, con las coordenadas ya
  * redondeadas a una grilla de 0,05 grados (unos 5 km), y el servidor vuelve
  * a redondear. Cada celda de la grilla se consulta como mucho una vez cada
- * 30 minutos, asi que muchos usuarios de la misma zona comparten una sola
+ * 45 minutos, asi que muchos usuarios de la misma zona comparten una sola
  * consulta. Si Open-Meteo falla se devuelve lo ultimo que se tenga (hasta 6
  * horas). Las coordenadas no se loguean.
  */
@@ -41,7 +42,7 @@ public class ForecastService {
 
     /** Tamaño de la celda en grados (1/20 = 0,05). */
     static final int GRID_PER_DEGREE = 20;
-    static final Duration FRESH = Duration.ofMinutes(30);
+    static final Duration FRESH = Duration.ofMinutes(45);
     static final Duration STALE_LIMIT = Duration.ofHours(6);
     /** Celdas guardadas como mucho (el AMBA entero son unas 1.000; en la practica, muchas menos). */
     static final int MAX_CELLS = 600;
@@ -85,6 +86,18 @@ public class ForecastService {
     private final ObjectMapper objectMapper;
     private final RestClient restClient;
     private final Map<String, Cached> cache = new ConcurrentHashMap<>();
+    /**
+     * Pausa de cada proveedor despues de una falla: si responde 429 (limite
+     * de consultas: en Render la IP de salida es compartida con otros sitios)
+     * se respeta su Retry-After o se espera cada vez mas (1, 2, 5, 10 y 30
+     * minutos), en vez de insistir con cada visita.
+     */
+    private final Map<String, Instant> pausedUntil = new ConcurrentHashMap<>();
+    private final Map<String, Integer> strikes = new ConcurrentHashMap<>();
+    static final Duration[] BACKOFF = {Duration.ofMinutes(1), Duration.ofMinutes(2), Duration.ofMinutes(5),
+            Duration.ofMinutes(10), Duration.ofMinutes(30)};
+    static final String OPEN_METEO = "Open-Meteo";
+    static final String MET_NORWAY = "MET Norway";
     private final Map<String, Object> locks = new ConcurrentHashMap<>();
 
     public ForecastService(@Value("${app.open-meteo.url:https://api.open-meteo.com/v1/forecast}") String baseUrl,
@@ -164,29 +177,104 @@ public class ForecastService {
                 + "&timezone=America%2FArgentina%2FBuenos_Aires&forecast_days=2";
     }
 
-    /** La consulta a Open-Meteo (los tests la reemplazan por una respuesta grabada). */
+    /** La consulta HTTP (los tests la reemplazan por respuestas grabadas). */
     protected String fetch(String url) {
         return restClient.get().uri(URI.create(url)).retrieve().body(String.class);
     }
 
+    @FunctionalInterface
+    private interface Download {
+        Forecast get() throws Exception;
+    }
+
+    /** Open-Meteo y, si no responde, MET Norway. */
     private Optional<Forecast> download(double lat, double lon) {
-        try {
-            Forecast forecast = parse(objectMapper.readTree(fetch(url(lat, lon))), lat, lon, Instant.now());
+        Instant now = Instant.now();
+        String[] reason = {null};
+        Optional<Forecast> forecast = attempt(OPEN_METEO, reason,
+                () -> parse(objectMapper.readTree(fetch(url(lat, lon))), lat, lon, now));
+        if (forecast.isEmpty()) {
+            forecast = attempt(MET_NORWAY, reason,
+                    () -> MetNorwayForecast.parse(objectMapper.readTree(fetch(MetNorwayForecast.url(lat, lon))), lat, lon, now));
+        }
+        if (forecast.isPresent()) {
             health.ok(SourceHealth.Source.PRONOSTICO);
+        } else {
+            health.fail(SourceHealth.Source.PRONOSTICO, reason[0]);
+        }
+        return forecast;
+    }
+
+    private Optional<Forecast> attempt(String provider, String[] reason, Download download) {
+        Instant paused = pausedUntil.get(provider);
+        if (paused != null && paused.isAfter(Instant.now())) {
+            if (reason[0] == null) {
+                reason[0] = provider + " en pausa";
+            }
+            return Optional.empty();
+        }
+        try {
+            Forecast forecast = download.get();
+            strikes.remove(provider);
+            pausedUntil.remove(provider);
             return Optional.of(forecast);
         } catch (RestClientResponseException e) {
-            fail("HTTP " + e.getStatusCode().value());
+            int status = e.getStatusCode().value();
+            String why = "HTTP " + status;
+            pause(provider, status == 429 ? retryAfter(e) : null);
+            if (reason[0] == null) {
+                reason[0] = why;
+            }
+            // El motivo que da el proveedor (por ejemplo, "Hourly API request limit exceeded") va al log.
+            log.warn("{} no respondio bien ({}): {}", provider, why, shortBody(e.getResponseBodyAsString()));
         } catch (RestClientException e) {
-            fail(e.getMostSpecificCause().getClass().getSimpleName());
+            pause(provider, null);
+            if (reason[0] == null) {
+                reason[0] = e.getMostSpecificCause().getClass().getSimpleName();
+            }
+            log.warn("{} no respondio ({})", provider, e.getMostSpecificCause().getClass().getSimpleName());
         } catch (Exception e) {
-            fail(e.getClass().getSimpleName());
+            pause(provider, null);
+            if (reason[0] == null) {
+                reason[0] = e.getClass().getSimpleName();
+            }
+            log.warn("{}: respuesta que no se pudo leer ({})", provider, e.getClass().getSimpleName());
         }
         return Optional.empty();
     }
 
-    private void fail(String reason) {
-        health.fail(SourceHealth.Source.PRONOSTICO, reason);
-        log.warn("Open-Meteo no respondio bien ({})", reason);
+    /** Pausa al proveedor: lo que pidio (Retry-After) o cada vez mas larga. */
+    void pause(String provider, Duration requested) {
+        int n = strikes.merge(provider, 1, Integer::sum);
+        Duration wait = requested != null ? requested : BACKOFF[Math.min(n, BACKOFF.length) - 1];
+        pausedUntil.put(provider, Instant.now().plus(wait));
+    }
+
+    boolean isPaused(String provider) {
+        Instant until = pausedUntil.get(provider);
+        return until != null && until.isAfter(Instant.now());
+    }
+
+    /** El Retry-After en segundos (entre 1 minuto y 1 hora), o null si no vino. */
+    static Duration retryAfter(RestClientResponseException e) {
+        try {
+            String value = e.getResponseHeaders() == null ? null : e.getResponseHeaders().getFirst("Retry-After");
+            if (value == null) {
+                return null;
+            }
+            long seconds = Long.parseLong(value.trim());
+            return Duration.ofSeconds(Math.max(60, Math.min(3600, seconds)));
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+    }
+
+    private static String shortBody(String body) {
+        if (body == null) {
+            return "";
+        }
+        String flat = body.replaceAll("\\s+", " ").trim();
+        return flat.length() > 160 ? flat.substring(0, 160) : flat;
     }
 
     /**
