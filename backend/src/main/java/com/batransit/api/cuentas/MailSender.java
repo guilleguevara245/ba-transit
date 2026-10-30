@@ -25,7 +25,13 @@ public class MailSender {
 
     private static final Logger log = LoggerFactory.getLogger(MailSender.class);
     static final String URL = "https://api.brevo.com/v3/smtp/email";
-    static final String ACCOUNT_URL = "https://api.brevo.com/v3/account";
+    /**
+     * Consulta liviana para mantener viva la clave: el resumen de mails
+     * transaccionales del dia. Esta dentro del permiso "Emails transaccionales"
+     * (la clave del sitio es restringida a eso; /v3/account necesita otro permiso
+     * y respondia 403 permission_denied).
+     */
+    static final String PING_URL = "https://api.brevo.com/v3/smtp/statistics/aggregatedReport?days=1";
 
     private final String apiKey;
     private final String from;
@@ -85,18 +91,29 @@ public class MailSender {
     }
 
     /**
-     * Una consulta liviana a la cuenta de Brevo (no manda mails ni gasta el
-     * cupo). Brevo da de baja las claves que pasan 90 dias sin usarse: esta
-     * consulta cuenta como uso. true si la clave sigue valiendo.
+     * Una consulta liviana a Brevo (no manda mails ni gasta el cupo). Brevo da
+     * de baja las claves que pasan 90 dias sin usarse: esta consulta cuenta
+     * como uso. true si la clave sigue valiendo.
      */
     public boolean ping() {
         if (apiKey.isEmpty()) {
             return false;
         }
         try {
-            restClient.get().uri(ACCOUNT_URL).header("api-key", apiKey).retrieve().toBodilessEntity();
+            restClient.get().uri(PING_URL).header("api-key", apiKey).retrieve().toBodilessEntity();
             health.ok(SourceHealth.Source.BREVO);
             return true;
+        } catch (RestClientResponseException e) {
+            if (onlyOutOfScope(e.getStatusCode().value(), e.getResponseBodyAsString())) {
+                // La clave vale (una clave mala da 401); solo esta consulta no entra en su permiso.
+                log.info("La clave de Brevo vale, pero su permiso no incluye la consulta de control");
+                health.ok(SourceHealth.Source.BREVO);
+                return true;
+            }
+            String reason = reason(e);
+            health.fail(SourceHealth.Source.BREVO, reason);
+            log.warn("La clave de Brevo no respondio bien ({})", reason);
+            return false;
         } catch (RestClientException e) {
             String reason = reason(e);
             health.fail(SourceHealth.Source.BREVO, reason);
@@ -116,6 +133,18 @@ public class MailSender {
             return describe(r.getStatusCode().value(), body);
         }
         return e.getMostSpecificCause().getClass().getSimpleName();
+    }
+
+    /**
+     * true si Brevo rechazo la consulta solo por el permiso de la clave (403
+     * permission_denied sin aviso de cuenta sin activar o suspendida).
+     */
+    static boolean onlyOutOfScope(int status, String body) {
+        if (status != 403 || body == null) {
+            return false;
+        }
+        String text = body.toLowerCase(java.util.Locale.ROOT);
+        return text.contains("permission_denied") && describe(status, body).endsWith(": permission_denied");
     }
 
     /** El "message" de la respuesta de Brevo, corto (no trae la clave). */

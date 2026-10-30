@@ -31,6 +31,12 @@ class MailSenderTest {
         assertThat(MailSender.message("{\"code\":\"permission_denied\",\"message\":\"Key \\\"x\\\" not allowed\"}"))
                 .isEqualTo("Key \\\"x\\\" not allowed");
         assertThat(MailSender.message("<html>caido</html>")).isNull();
+
+        // Un 403 solo por el permiso de la clave no es una falla; la cuenta sin activar si.
+        assertThat(MailSender.onlyOutOfScope(403, "{\"code\":\"permission_denied\",\"message\":\"Key not allowed for this endpoint\"}")).isEqualTo(true);
+        assertThat(MailSender.onlyOutOfScope(403, "{\"code\":\"permission_denied\",\"message\":\"Your SMTP account is not yet activated\"}")).isEqualTo(false);
+        assertThat(MailSender.onlyOutOfScope(401, "{\"code\":\"unauthorized\",\"message\":\"Key not found\"}")).isEqualTo(false);
+        assertThat(MailSender.onlyOutOfScope(403, null)).isEqualTo(false);
         assertThat(MailSender.describe(503, "<html>caido</html>")).isEqualTo("HTTP 503");
         assertThat(MailSender.describe(500, null)).isEqualTo("HTTP 500");
     }
