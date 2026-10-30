@@ -2,9 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { divIcon } from 'leaflet'
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet'
 import MapCard, { MapCardIcon } from './MapCard.jsx'
+import UpdatedAt from './UpdatedAt.jsx'
 import { useApi } from '../hooks/useApi.js'
-import { useNow } from '../hooks/useNow.js'
-import { formatRelativeTime } from '../utils/format.js'
 import { GLYPHS } from '../utils/mapIcons.js'
 import {
   FLIGHT_GROUPS,
@@ -116,8 +115,7 @@ function FlightCard({ flight }) {
  * bounds: encuadre inicial del mapa.
  */
 export default function LiveFlights({ bounds, children }) {
-  const { data, error } = useApi('/api/v1/vuelos', { refreshMs: REFRESH_MS })
-  const now = useNow(15_000)
+  const { data, error, reload, refreshing } = useApi('/api/v1/vuelos', { refreshMs: REFRESH_MS })
   const [groupFilter, setGroupFilter] = useState(null)
   const [selectedId, setSelectedId] = useState(null)
   // Al elegir un avion de la lista el mapa va hasta el; tocandolo en el mapa, no hace falta.
@@ -141,7 +139,7 @@ export default function LiveFlights({ bounds, children }) {
           Aviones en vivo {data?.updatedAt && <span className="live-dot" aria-hidden="true" />}
         </h2>
         {data?.updatedAt && (
-          <span className="flights-updated">Actualizado {formatRelativeTime(data.updatedAt, now)}</span>
+          <UpdatedAt className="flights-updated" at={data.updatedAt} onRefresh={reload} refreshing={refreshing} />
         )}
       </div>
 

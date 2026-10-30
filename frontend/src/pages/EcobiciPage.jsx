@@ -5,9 +5,8 @@ import BackButton from '../components/BackButton.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
 import ModeIcon from '../components/ModeIcon.jsx'
 import Skeleton from '../components/Skeleton.jsx'
+import UpdatedAt from '../components/UpdatedAt.jsx'
 import { useApi } from '../hooks/useApi.js'
-import { useNow } from '../hooks/useNow.js'
-import { formatRelativeTime } from '../utils/format.js'
 import { AVAILABILITY_BADGES, availability, normalizeText, stationLabel } from '../utils/ecobici.js'
 import { badgeIcon } from '../utils/mapIcons.js'
 import MapBadge from '../components/MapBadge.jsx'
@@ -31,8 +30,7 @@ function FlyTo({ station }) {
 
 /** EcoBici: estaciones con bicis y anclajes libres en vivo. */
 export default function EcobiciPage() {
-  const { data, loading, error } = useApi('/api/v1/ecobici', { refreshMs: REFRESH_MS })
-  const now = useNow()
+  const { data, loading, error, reload, refreshing } = useApi('/api/v1/ecobici', { refreshMs: REFRESH_MS })
   const [query, setQuery] = useState('')
   const [selectedId, setSelectedId] = useState(null)
   // Referencia elegida: el mapa muestra solo esas estaciones (null = todas).
@@ -69,8 +67,10 @@ export default function EcobiciPage() {
       </h1>
       <p className="page-subtitle">
         Bicis y anclajes libres en cada estación.
-        {data?.updatedAt && ` Actualizado ${formatRelativeTime(data.updatedAt, now)}.`}
       </p>
+      {data?.available && (
+        <UpdatedAt className="page-updated" at={data.updatedAt} onRefresh={reload} refreshing={refreshing} />
+      )}
 
       {loading && <Skeleton variant="map" label="Cargando estaciones de EcoBici…" />}
       {error && !data && <ErrorMessage what="las estaciones de EcoBici" error={error} />}

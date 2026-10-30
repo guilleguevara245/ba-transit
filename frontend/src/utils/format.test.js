@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatClock, formatDayDate, formatLongDate, formatRelativeTime, formatShortDate, yearsSince } from './format.js'
+import { formatClock, formatDayDate, formatLongDate, formatRelativeTime, formatShortDate, updatedLabel, yearsSince } from './format.js'
 
 const NOW = new Date('2026-10-23T15:00:00Z')
 
@@ -49,5 +49,22 @@ describe('yearsSince', () => {
   it('cuenta los años cumplidos', () => {
     expect(yearsSince('1913-12-01', new Date(2026, 9, 25))).toBe(112)
     expect(yearsSince('1913-10-01', new Date(2026, 9, 25))).toBe(113)
+  })
+})
+
+describe('updatedLabel', () => {
+  // Jueves 29/10/2026, 23:40 en Buenos Aires.
+  const now = new Date('2026-10-30T02:40:00Z')
+
+  it('de hoy, solo la hora', () => {
+    expect(updatedLabel('2026-10-30T02:31:00Z', now)).toBe('a las 23:31')
+  })
+
+  it('de otro dia, con la fecha', () => {
+    expect(updatedLabel('2026-10-29T02:31:00Z', now)).toBe('el mié 28 oct a las 23:31')
+  })
+
+  it('una fecha rota no muestra nada', () => {
+    expect(updatedLabel('no es fecha', now)).toBeNull()
   })
 })

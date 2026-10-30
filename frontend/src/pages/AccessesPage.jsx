@@ -4,13 +4,14 @@ import AccessesMap from '../components/AccessesMap.jsx'
 import BackButton from '../components/BackButton.jsx'
 import FavoriteButton from '../components/FavoriteButton.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
+import UpdatedAt from '../components/UpdatedAt.jsx'
 import { useApi } from '../hooks/useApi.js'
 import EventCard from '../components/EventCard.jsx'
 import { eventsOnAccesses } from '../utils/events.js'
 import { PEAK_HOURS, TOLLS, formatToll, peakNow } from '../data/tolls.js'
 import { holidayOn } from '../utils/holidays.js'
 import { useNow } from '../hooks/useNow.js'
-import { formatLongDate, formatRelativeTime } from '../utils/format.js'
+import { formatLongDate } from '../utils/format.js'
 import { speedPercent, trafficStatus, worstStatus } from '../utils/traffic.js'
 import './ModePage.css'
 import './AirportsPage.css'
@@ -178,10 +179,9 @@ function AccessCard({ access, configured }) {
  * entran a la Ciudad, medido con la API de trafico de TomTom.
  */
 export default function AccessesPage() {
-  const { data, loading, error } = useApi('/api/v1/accesos', { refreshMs: REFRESH_MS })
+  const { data, loading, error, reload, refreshing } = useApi('/api/v1/accesos', { refreshMs: REFRESH_MS })
   const eventsState = useApi('/api/v1/eventos', { refreshMs: REFRESH_MS })
   const closures = data ? eventsOnAccesses(eventsState.data?.events, data.accesses) : []
-  const now = useNow()
   const hasGeometry = data?.accesses.some((a) => a.segments.some((s) => s.geometry.length > 1))
 
   return (
@@ -193,8 +193,16 @@ export default function AccessesPage() {
       </h1>
       <p className="page-subtitle">
         Estado del tránsito en las autopistas que entran a la Ciudad.
-        {data?.updatedAt && ` Medido ${formatRelativeTime(data.updatedAt, now)}.`}
       </p>
+      {data && (
+        <UpdatedAt
+          className="page-updated"
+          verb="Medido"
+          at={data.updatedAt}
+          onRefresh={reload}
+          refreshing={refreshing}
+        />
+      )}
 
       {loading && <Skeleton variant="cards" count={4} label="Cargando accesos…" />}
       {error && !data && <ErrorMessage what="el estado de los accesos" error={error} />}

@@ -3,9 +3,8 @@ import { CircleMarker, MapContainer, Marker, TileLayer, useMapEvents } from 'rea
 import { badgeIcon } from '../utils/mapIcons.js'
 import Chevrons from './Chevrons.jsx'
 import MapCard from './MapCard.jsx'
+import UpdatedAt from './UpdatedAt.jsx'
 import { useApi } from '../hooks/useApi.js'
-import { useNow } from '../hooks/useNow.js'
-import { formatRelativeTime } from '../utils/format.js'
 import Skeleton from './Skeleton.jsx'
 
 const REFRESH_MS = 30_000
@@ -30,8 +29,7 @@ function ViewTracker({ onChange }) {
  * al recorrido de la linea.
  */
 export default function LiveBusesMap({ onSelectRoute }) {
-  const { data, loading } = useApi('/api/v1/colectivos/vivo', { refreshMs: REFRESH_MS })
-  const now = useNow()
+  const { data, loading, reload, refreshing } = useApi('/api/v1/colectivos/vivo', { refreshMs: REFRESH_MS })
   const [selected, setSelected] = useState(null)
   const [view, setView] = useState({ zoom: ZOOM, bounds: null })
   const showIcons = view.zoom >= ICON_ZOOM && view.bounds
@@ -46,8 +44,10 @@ export default function LiveBusesMap({ onSelectRoute }) {
           <span className="live-dot" aria-hidden="true" /> Colectivos en movimiento ahora
         </span>
         <span className="live-buses-meta">
-          <strong>{data.buses.length.toLocaleString('es-AR')}</strong> colectivos
-          {data.updatedAt && ` · actualizado ${formatRelativeTime(data.updatedAt, now)}`}
+          <span>
+            <strong>{data.buses.length.toLocaleString('es-AR')}</strong> colectivos
+          </span>
+          <UpdatedAt at={data.updatedAt} onRefresh={reload} refreshing={refreshing} />
         </span>
       </div>
       <MapContainer className="live-buses-map" center={[-34.62, -58.45]} zoom={ZOOM} scrollWheelZoom preferCanvas>

@@ -1,0 +1,67 @@
+.updated-at {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 4px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.updated-at-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px;
+  margin: -2px -4px;
+  border: none;
+  background: none;
+  color: var(--accent-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.updated-at-button:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.updated-at-button:disabled {
+  cursor: wait;
+}
+
+.updated-at-button:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+}
+
+.updated-at-button svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.updated-at-button.spinning svg {
+  animation: updated-spin 0.9s linear infinite;
+}
+
+@keyframes updated-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .updated-at-button.spinning svg {
+    animation: none;
+  }
+}
+
+/* Debajo del subtitulo de la pagina. */
+.updated-at.page-updated {
+  display: flex;
+  margin: -6px 0 14px;
+}

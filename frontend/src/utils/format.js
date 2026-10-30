@@ -72,3 +72,11 @@ export function yearsSince(isoDate, now = new Date()) {
   if (now.getMonth() + 1 < month || (now.getMonth() + 1 === month && now.getDate() < day)) years -= 1
   return years
 }
+
+/** "a las 23:31" si es de hoy; si no, "el mié 28 oct a las 23:31" (hora de Buenos Aires). */
+export function updatedLabel(at, now = new Date()) {
+  const date = at instanceof Date ? at : new Date(at)
+  if (Number.isNaN(date.getTime())) return null
+  const sameDay = formatShortDate(date) === formatShortDate(now)
+  return sameDay ? `a las ${formatClock(date)}` : `el ${formatShortDate(date).toLowerCase()} a las ${formatClock(date)}`
+}

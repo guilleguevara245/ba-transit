@@ -186,8 +186,16 @@
 }
 
 .live-buses-meta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 12px;
   font-size: 12px;
   color: var(--text-faint);
+}
+
+.live-buses-meta .updated-at {
+  font-size: 12px;
 }
 
 .live-buses-meta strong {

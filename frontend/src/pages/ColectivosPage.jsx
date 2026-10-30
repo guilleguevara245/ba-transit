@@ -1,4 +1,5 @@
 import LiveBusesMap from '../components/LiveBusesMap.jsx'
+import UpdatedAt from '../components/UpdatedAt.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import ModeIcon from '../components/ModeIcon.jsx'
 import { useEffect, useState } from 'react'
@@ -118,6 +119,14 @@ function RouteDetail({ routeId, line, headsign, initialDirection }) {
           {vehicles.length === 0 && otherCount === 0 && 'Sin colectivos en vivo de esta línea ahora.'}
           {vehicles.length > 0 && route.id !== routeId && (
             <span className="bus-live-note"> · pueden ir por un ramal distinto del recorrido dibujado</span>
+          )}
+          {live.data.updatedAt && (
+            <UpdatedAt
+              className="bus-live-updated"
+              at={live.data.updatedAt}
+              onRefresh={live.reload}
+              refreshing={live.refreshing}
+            />
           )}
           {vehicles.length === 0 && otherCount > 0 && (
             <>
