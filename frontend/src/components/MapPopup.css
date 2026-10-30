@@ -28,6 +28,10 @@
   color: var(--text-dim);
 }
 
+.station-popup-line .station-icon {
+  margin-right: 2px;
+}
+
 .station-popup-name {
   margin: 6px 0 2px;
   font-family: 'Barlow Condensed', sans-serif;
@@ -274,7 +278,6 @@ button.station-popup-link {
   font: inherit;
   cursor: pointer;
 }
-
 
 .station-popup-alert-here strong {
   color: var(--interrupted);

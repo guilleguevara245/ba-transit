@@ -4,6 +4,7 @@ import AccessibleBadge from './AccessibleBadge.jsx'
 import Chevrons from './Chevrons.jsx'
 import LineBadge from './LineBadge.jsx'
 import NextTrains from './NextTrains.jsx'
+import StationIcon from './StationIcon.jsx'
 import { findTransfers, routeInfo } from '../utils/map.js'
 import { splitAlertsForStation } from '../utils/stationAlerts.js'
 import { formatLongDate, yearsSince } from '../utils/format.js'
@@ -35,9 +36,12 @@ export default function StationPopup({ station, stations, alerts, mode }) {
 
   return (
     <div className="station-popup">
+      {/* Icono de estacion; la linea va al lado: en subte y Premetro la letra ya la nombra
+          ("Línea [B]"), en los trenes el icono es igual para todas y va el nombre. */}
       <div className="station-popup-line">
+        <StationIcon color={station.lineColorHex} size={26} />
+        {mode === 'SUBTE' || mode === 'PREMETRO' ? 'Línea' : station.lineName}
         <LineBadge line={asLine(station, mode)} size="sm" />
-        {station.lineName}
       </div>
 
       <h3 className="station-popup-name">{station.stationName}</h3>
