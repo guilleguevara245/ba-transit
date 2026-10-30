@@ -62,8 +62,9 @@
   flex: 1;
 }
 
+/* Los chevrones, del color de la linea con la que se combina. */
 .station-transfers .chevrons {
-  color: var(--text-faint);
+  color: var(--transfer-color, var(--text-faint));
   font-size: 11px;
 }
 

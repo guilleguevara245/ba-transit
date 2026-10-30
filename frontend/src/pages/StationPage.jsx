@@ -299,7 +299,7 @@ export default function StationPage() {
               <ul className="station-transfers">
                 {transfers.map((t) => (
                   <li key={t.stationId}>
-                    <Link to={stationPath(t)} className="chevrons-host">
+                    <Link to={stationPath(t)} className="chevrons-host" style={{ '--transfer-color': t.lineColorHex }}>
                       <LineBadge line={asLine(t)} size="sm" />
                       <span className="station-transfer-name">
                         {t.stationName} <span className="station-dim">· {t.lineName}</span>
