@@ -12,14 +12,30 @@
   font-size: 13px;
 }
 
+/* Naranja y roja con su propio tono (el ambar de "demoras" se confundia con la amarilla). */
 .weather-alert-orange {
-  --level: var(--delayed);
-  --level-tint: var(--delayed-tint);
+  --level: #c2560c;
+  --level-tint: rgba(240, 115, 20, 0.22);
 }
 
 .weather-alert-red {
-  --level: var(--interrupted);
-  --level-tint: var(--interrupted-tint);
+  --level: #c4241c;
+  --level-tint: rgba(214, 40, 32, 0.17);
+}
+
+:root[data-theme='dark'] .weather-alert-orange {
+  --level: #f59a4e;
+  --level-tint: rgba(240, 130, 40, 0.2);
+}
+
+:root[data-theme='dark'] .weather-alert-red {
+  --level: #f2716a;
+  --level-tint: rgba(235, 70, 60, 0.2);
+}
+
+/* Una raya del color del nivel a la izquierda: se nota sin leer. */
+.weather-alert {
+  box-shadow: inset 4px 0 0 var(--level);
 }
 
 .weather-alert-row {
