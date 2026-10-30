@@ -25,7 +25,9 @@ export default function LineInfoCard({ line, stations, branches = [], allLines =
   const summary = stations.length > 0 ? lineSummary(stations, branchNames) : null
   const isMetro = line.mode === 'SUBTE' || line.mode === 'PREMETRO'
   const connections = isMetro ? connectingLineCodes(line.code) : []
-  const linesByCode = new Map(allLines.filter((l) => l.mode === 'SUBTE' || l.mode === 'PREMETRO').map((l) => [l.code, l]))
+  const linesByCode = new Map(
+    allLines.filter((l) => l.mode === 'SUBTE' || l.mode === 'PREMETRO').map((l) => [l.code, l]),
+  )
   const hours = serviceHoursFor(line)
   const operatorSite = OPERATOR_SITES[line.operator]
 
@@ -56,7 +58,7 @@ export default function LineInfoCard({ line, stations, branches = [], allLines =
             {summary.branches.map((b) => (
               <span className="info-branch" key={`${b.from}-${b.to}-${b.via}`}>
                 {b.from}
-                <BothWays color={line.colorHex} />
+                <BothWays />
                 {b.to}
                 {b.via && <span className="info-sub inline"> ({b.via})</span>}
                 <span className="info-sub inline"> · ≈ {Math.round(b.km)} km</span>

@@ -141,11 +141,18 @@ export default function StationPage() {
   // Las estaciones compartidas entre ramales (Roca, Mitre) muestran todos.
   const branches = stationBranches(allStations, station)
   const transfers = findTransfers(allStations, station)
-  const landmarks = (station.landmarks ?? '').split(';').map((p) => p.trim()).filter(Boolean)
+  const landmarks = (station.landmarks ?? '')
+    .split(';')
+    .map((p) => p.trim())
+    .filter(Boolean)
   const alerts = alertsState.data ?? []
   // Las alertas que nombran una estacion (por ejemplo "Estacion Medrano
   // cerrada") se muestran como aviso de esa estacion, no de toda la linea.
-  const alertSplit = splitAlertsForStation(alerts, station, lineStations.map((s) => s.stationName))
+  const alertSplit = splitAlertsForStation(
+    alerts,
+    station,
+    lineStations.map((s) => s.stationName),
+  )
   const closed = alertSplit.here.some((a) => /cerrad/i.test(a.description ?? ''))
   const years = yearsSince(station.openedOn)
   const branch = allStations
@@ -170,14 +177,25 @@ export default function StationPage() {
             color: station.lineColorHex,
           },
           ...(MODE_SLUGS[station.lineMode]
-            ? [{ to: `/red/${MODE_SLUGS[station.lineMode]}`, label: `Volver a ${MODE_LABELS_PLURAL[station.lineMode]}` }]
+            ? [
+                {
+                  to: `/red/${MODE_SLUGS[station.lineMode]}`,
+                  label: `Volver a ${MODE_LABELS_PLURAL[station.lineMode]}`,
+                },
+              ]
             : []),
         ]}
       />
 
       <div className="line-hero" style={{ '--line-color': station.lineColorHex }}>
         {photo ? (
-          <img className="station-photo" src={photo.file} alt={`Estación ${station.stationName}`} width="56" height="56" />
+          <img
+            className="station-photo"
+            src={photo.file}
+            alt={`Estación ${station.stationName}`}
+            width="56"
+            height="56"
+          />
         ) : (
           <LineBadge line={asLine(station)} size="lg" />
         )}
@@ -200,7 +218,7 @@ export default function StationPage() {
             {branches.length === 1 ? (
               <>
                 Estación {branches[0].position} de {branches[0].total} · {branches[0].from}
-                <BothWays color={station.lineColorHex} />
+                <BothWays />
                 {branches[0].to}
               </>
             ) : (
@@ -213,7 +231,7 @@ export default function StationPage() {
                     .map((b) => (
                       <li key={`${b.from}|${b.to}`}>
                         {b.from}
-                        <BothWays color={station.lineColorHex} />
+                        <BothWays />
                         {b.to}
                       </li>
                     ))}
@@ -233,7 +251,11 @@ export default function StationPage() {
           )}
         </div>
         <div className="station-hero-actions">
-          <FavoriteButton kind="estaciones" id={station.stationId} name={`${station.stationName}, ${station.lineName}`} />
+          <FavoriteButton
+            kind="estaciones"
+            id={station.stationId}
+            name={`${station.stationName}, ${station.lineName}`}
+          />
           <ShareButton title={`${station.stationName} · ${station.lineName}`} />
         </div>
       </div>

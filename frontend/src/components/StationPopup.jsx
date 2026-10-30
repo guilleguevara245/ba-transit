@@ -45,7 +45,7 @@ export default function StationPopup({ station, stations, alerts, mode }) {
 
       <div className="station-popup-route">
         Estación {route.position} de {route.total} · {route.from}
-        <BothWays color={station.lineColorHex} />
+        <BothWays />
         {route.to}
       </div>
 
@@ -76,9 +76,13 @@ export default function StationPopup({ station, stations, alerts, mode }) {
         <div className="station-popup-section">
           <div className="station-popup-label">Cerca</div>
           <ul className="station-popup-landmarks">
-            {station.landmarks.split(';').map((place) => place.trim()).filter(Boolean).map((place) => (
-              <li key={place}>{place}</li>
-            ))}
+            {station.landmarks
+              .split(';')
+              .map((place) => place.trim())
+              .filter(Boolean)
+              .map((place) => (
+                <li key={place}>{place}</li>
+              ))}
           </ul>
         </div>
       )}
@@ -101,8 +105,8 @@ export default function StationPopup({ station, stations, alerts, mode }) {
             Sin alertas en esta estación
             {split.elsewhere.length > 0 && (
               <span className="station-popup-elsewhere">
-                {split.elsewhere.length === 1 ? '1 aviso' : `${split.elsewhere.length} avisos`} en otras estaciones de la
-                línea
+                {split.elsewhere.length === 1 ? '1 aviso' : `${split.elsewhere.length} avisos`} en otras estaciones de
+                la línea
               </span>
             )}
           </div>

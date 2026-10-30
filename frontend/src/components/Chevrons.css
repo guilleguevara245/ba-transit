@@ -53,23 +53,3 @@
     opacity: 1;
   }
 }
-
-/* Ida y vuelta (BothWays): dos chevrones espalda con espalda, macizos. */
-.both-ways {
-  display: inline-flex;
-  align-items: center;
-  gap: 1px;
-  margin: 0 0.3em;
-  vertical-align: -0.08em;
-  color: var(--text-faint);
-}
-
-.both-ways .chevrons {
-  width: 1.15em;
-  height: 0.8em;
-  vertical-align: 0;
-}
-
-.both-ways .chevrons polygon {
-  opacity: 1;
-}
