@@ -25,8 +25,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Pronostico por hora para un punto del AMBA: Open-Meteo y, si no responde,
- * MET Norway como respaldo (ver MetNorwayForecast).
+ * Pronostico por hora para un punto del AMBA, de Open-Meteo.
  *
  * El navegador nunca le pide a Open-Meteo: pide aca, con las coordenadas ya
  * redondeadas a una grilla de 0,05 grados (unos 5 km), y el servidor vuelve
@@ -101,7 +100,6 @@ public class ForecastService {
     static final Duration[] BACKOFF = {Duration.ofMinutes(1), Duration.ofMinutes(2), Duration.ofMinutes(5),
             Duration.ofMinutes(10), Duration.ofMinutes(30)};
     static final String OPEN_METEO = "Open-Meteo";
-    static final String MET_NORWAY = "MET Norway";
     private final Map<String, Object> locks = new ConcurrentHashMap<>();
 
     public ForecastService(@Value("${app.open-meteo.url:https://api.open-meteo.com/v1/forecast}") String baseUrl,
@@ -192,16 +190,12 @@ public class ForecastService {
         Forecast get() throws Exception;
     }
 
-    /** Open-Meteo y, si no responde, MET Norway. */
+    /** El pronostico de Open-Meteo (vacio si no responde o esta en pausa). */
     private Optional<Forecast> download(double lat, double lon) {
         Instant now = Instant.now();
         String[] reason = {null};
         Optional<Forecast> forecast = attempt(OPEN_METEO, reason,
                 () -> parse(objectMapper.readTree(fetch(url(lat, lon))), lat, lon, now));
-        if (forecast.isEmpty()) {
-            forecast = attempt(MET_NORWAY, reason,
-                    () -> MetNorwayForecast.parse(objectMapper.readTree(fetch(MetNorwayForecast.url(lat, lon))), lat, lon, now));
-        }
         if (forecast.isPresent()) {
             health.ok(SourceHealth.Source.PRONOSTICO);
         } else {

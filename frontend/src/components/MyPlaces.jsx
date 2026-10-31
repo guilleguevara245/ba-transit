@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import LineBadge from './LineBadge.jsx'
+import StationIcon from './StationIcon.jsx'
 import FavoriteButton from './FavoriteButton.jsx'
 import NextTrains from './NextTrains.jsx'
 import { hasTrainTimes } from '../utils/nextTrains.js'
@@ -35,7 +35,7 @@ export function MyStations({ lines, alerts, inPanel = false }) {
         <div className="my-line">
           {inPanel && <span className="fav-kind">Estación</span>}
           <Link to={stationPath(station)} className="my-line-link">
-            <LineBadge line={line} size="md" />
+            <StationIcon color={line.colorHex} size={32} />
             <span className="my-place-text">
               <span className="my-line-name">{station.stationName}</span>
               <small>{line.name}</small>
@@ -45,7 +45,12 @@ export function MyStations({ lines, alerts, inPanel = false }) {
             <span className="dot"></span>
             {status.label}
           </span>
-          <FavoriteButton kind="estaciones" id={station.stationId} name={`${station.stationName}, ${line.name}`} compact />
+          <FavoriteButton
+            kind="estaciones"
+            id={station.stationId}
+            name={`${station.stationName}, ${line.name}`}
+            compact
+          />
         </div>
         {hasTrainTimes(line.mode, line.code) && (
           <div className="my-line-trains">

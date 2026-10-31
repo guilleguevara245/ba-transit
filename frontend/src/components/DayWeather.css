@@ -251,8 +251,9 @@
   --line: rgba(255, 255, 255, 0.16);
   --bg: rgba(255, 255, 255, 0.08);
   --normal: #8fd694;
-  background: linear-gradient(160deg, #1d2b4f 0%, #2f4174 60%, #44568b 100%);
-  border-color: #1d2b4f;
+  /* El negro del header y del pie, con un toque de azul de cielo arriba. */
+  background: linear-gradient(180deg, #1f2230 0%, #17171a 70%);
+  border-color: #17171a;
   border-top-color: var(--yellow);
 }
 

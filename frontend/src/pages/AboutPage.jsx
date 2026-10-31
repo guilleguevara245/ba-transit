@@ -104,10 +104,10 @@ const SOURCES = [
   },
   {
     what: 'Pronóstico del clima (Tu día y aeropuertos)',
-    source: 'Open-Meteo y, de respaldo, MET Norway (datos con licencia CC BY 4.0)',
+    source: 'Open-Meteo (datos con licencia CC BY 4.0)',
     url: 'https://open-meteo.com/',
     detail:
-      'Temperatura, lluvia y viento hora por hora, a partir de modelos meteorológicos globales. Si Open-Meteo no responde se usa el pronóstico del Instituto Meteorológico de Noruega (api.met.no). Las alertas son las oficiales del SMN.',
+      'Temperatura, lluvia y viento hora por hora, a partir de modelos meteorológicos. Las alertas son las oficiales del SMN.',
   },
   {
     what: 'Direcciones de Mis lugares',

@@ -41,7 +41,7 @@ public class SourceHealth {
         FERROVIAS("Próximos trenes del Belgrano Norte", "Ferrovías"),
         METROVIAS("Estado del Urquiza", "Metrovías"),
         SMN("Alertas meteorológicas", "Servicio Meteorológico Nacional"),
-        PRONOSTICO("Pronóstico del clima", "Open-Meteo (respaldo: MET Norway)"),
+        PRONOSTICO("Pronóstico del clima", "Open-Meteo"),
         GEOREF("Búsqueda de direcciones (Mis lugares)", "Georef (datos.gob.ar)"),
         TOMTOM("Tránsito en los accesos", "TomTom"),
         ADSB_LOL("Aviones en vivo", "adsb.lol"),

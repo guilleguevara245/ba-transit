@@ -160,8 +160,8 @@ export default function PrivacyPage() {
           ))}
         </ul>
         <p>
-          El pronóstico del clima se lo pide el servidor de BA Transit a Open-Meteo (o, de respaldo, a MET Norway), con
-          una zona de unos 5 km: tu navegador no se conecta con ellos, así que no reciben tu IP ni tu ubicación.
+          El pronóstico del clima se lo pide el servidor de BA Transit a Open-Meteo, con una zona de unos 5 km: tu
+          navegador no se conecta con ellos, así que no reciben tu IP ni tu ubicación.
         </p>
         <p>
           Para confirmar una dirección de Mis lugares, el servidor de BA Transit le pregunta a Georef (el servicio de
