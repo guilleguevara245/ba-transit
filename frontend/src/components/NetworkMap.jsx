@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { divIcon } from 'leaflet'
-import { CircleMarker, MapContainer, Marker, Polyline, Popup, TileLayer, useMap } from 'react-leaflet'
+import { CircleMarker, MapContainer, Marker, Polyline, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet'
 import StationPopup from './StationPopup.jsx'
 import { buildRoutes } from '../utils/map.js'
 import { mentionsStation } from '../utils/stationAlerts.js'
@@ -10,6 +10,12 @@ import './NetworkMap.css'
 const CENTER = [-34.6083, -58.4]
 const ZOOM = 12
 const FOCUS_ZOOM = 15
+/**
+ * Con el mapa mas lejos que esto, las estaciones con aviso van como un
+ * punto con borde naranja (o rojo si estan cerradas) en lugar del
+ * triangulo: muchos triangulos juntos tapaban el centro del mapa.
+ */
+const WARNING_ICON_ZOOM = 13
 
 const toLatLng = (s) => [Number(s.latitude), Number(s.longitude)]
 
@@ -45,6 +51,13 @@ function stationNotices(stations, alerts) {
     if (alert) notices[station.stationId] = { closed: /cerrad/i.test(alert.description ?? ''), text: alert.description }
   }
   return notices
+}
+
+/** Avisa el zoom actual cada vez que cambia. */
+function ZoomTracker({ onZoom }) {
+  const map = useMapEvents({ zoomend: () => onZoom(map.getZoom()) })
+  useEffect(() => onZoom(map.getZoom()), [map, onZoom])
+  return null
 }
 
 /** Encuadra el mapa para que entren todas las estaciones mostradas. */
@@ -144,6 +157,7 @@ export default function NetworkMap({
   const positions = useMemo(() => stations.map(toLatLng), [stations])
   const focused = stations.find((s) => s.stationId === focusId) ?? null
   const notices = useMemo(() => stationNotices(stations, alerts), [stations, alerts])
+  const [zoom, setZoom] = useState(ZOOM)
 
   return (
     <MapContainer center={CENTER} zoom={ZOOM} className={className} scrollWheelZoom>
@@ -172,8 +186,9 @@ export default function NetworkMap({
             <StationPopup station={station} stations={allStations} alerts={alerts} mode={station.lineMode} />
           </Popup>
         )
-        // Estacion con aviso propio (por ejemplo, cerrada): la senal de precaucion en lugar del punto.
-        if (notice) {
+        // Estacion con aviso propio (por ejemplo, cerrada): la senal de precaucion en lugar del punto
+        // (de lejos, el punto con borde naranja o rojo).
+        if (notice && (zoom >= WARNING_ICON_ZOOM || isFocused)) {
           return (
             <Marker
               key={station.stationId}
@@ -189,17 +204,18 @@ export default function NetworkMap({
             </Marker>
           )
         }
+        const ring = notice ? (notice.closed ? '#d62828' : '#f07314') : null
         return (
           <CircleMarker
             key={station.stationId}
             ref={ref}
             center={toLatLng(station)}
-            radius={isFocused ? 9 : 5.5}
+            radius={isFocused ? 9 : ring ? 6.5 : 5.5}
             pathOptions={{
-              color: isFocused ? '#17171a' : '#ffffff',
+              color: isFocused ? '#17171a' : (ring ?? '#ffffff'),
               fillColor: station.lineColorHex,
               fillOpacity: 1,
-              weight: isFocused ? 3 : 1.5,
+              weight: isFocused || ring ? 3 : 1.5,
             }}
             eventHandlers={handlers}
           >
@@ -208,6 +224,7 @@ export default function NetworkMap({
         )
       })}
 
+      <ZoomTracker onZoom={setZoom} />
       <FitToStations positions={positions} skip={Boolean(focused)} />
       <FocusOnStation station={focused} markers={markers} openPopup={openFocusedPopup} />
       <KeepPopupInView />

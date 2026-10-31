@@ -66,7 +66,9 @@ function UrquizaTrains({ stationName, asCard, compact, color }) {
   const schedule = urquizaNextTrains(stationName, now)
   if (!schedule?.available) return null
   if (compact) return <CompactTrains directions={schedule.directions} scheduled color={color} />
-  const content = <ScheduledTrains directions={schedule.directions} source={schedule.source} stale={schedule.stale} />
+  const content = (
+    <ScheduledTrains directions={schedule.directions} source={schedule.source} stale={schedule.stale} color={color} />
+  )
   return asCard ? <section className="station-card">{content}</section> : content
 }
 
@@ -92,9 +94,9 @@ function ApiTrains({ mode, lineCode, stationName, asCard, compact, color }) {
 
   let content = null
   if (liveUsable) {
-    content = <LiveTrains data={live.data} />
+    content = <LiveTrains data={live.data} color={color} />
   } else if (schedule.data?.available && schedule.data.directions.length > 0) {
-    content = <ScheduledTrains directions={schedule.data.directions} />
+    content = <ScheduledTrains directions={schedule.data.directions} color={color} />
   } else if (live.data?.available) {
     content = (
       <div className="station-popup-section next-trains">
@@ -109,16 +111,32 @@ function ApiTrains({ mode, lineCode, stationName, asCard, compact, color }) {
   return asCard ? <section className="station-card">{content}</section> : content
 }
 
-function LiveTrains({ data }) {
+/**
+ * "Hacia ..." con los chevrones del color de la linea, como en Tus
+ * favoritos: el primer sentido (hacia la cabecera inicial) apunta a la
+ * izquierda.
+ */
+function Towards({ index, count, children }) {
+  return (
+    <span className="next-trains-towards">
+      <Chevrons className="next-trains-chevrons" direction={index === 0 && count > 1 ? 'left' : 'right'} />
+      {children}
+    </span>
+  )
+}
+
+function LiveTrains({ data, color }) {
   return (
     <div className="station-popup-section next-trains">
       <div className="station-popup-label">
         Próximos trenes <span className="live-dot" aria-hidden="true" />
       </div>
-      <ul className="next-trains-list">
-        {data.directions.map((d) => (
+      <ul className="next-trains-list" style={color ? { '--line-color': color } : undefined}>
+        {data.directions.map((d, i) => (
           <li key={d.directionId}>
-            <span className="next-trains-towards">Hacia {d.towards}</span>
+            <Towards index={i} count={data.directions.length}>
+              Hacia {d.towards}
+            </Towards>
             <span className="next-trains-times">
               {d.arrivals.map((a, i) => (
                 <span key={i}>
@@ -141,19 +159,19 @@ function LiveTrains({ data }) {
   )
 }
 
-function ScheduledTrains({ directions, source, stale = false }) {
+function ScheduledTrains({ directions, source, stale = false, color }) {
   return (
     <div className="station-popup-section next-trains">
       <div className="station-popup-label">
         Próximos trenes <span className="next-trains-tag">según horario</span>
       </div>
-      <ul className="next-trains-list">
-        {directions.map((d) => (
+      <ul className="next-trains-list" style={color ? { '--line-color': color } : undefined}>
+        {directions.map((d, i) => (
           <li key={d.towards}>
-            <span className="next-trains-towards">
+            <Towards index={i} count={directions.length}>
               Hacia {d.towards}
               {d.headwayMinutes != null && <span className="next-trains-every">cada {d.headwayMinutes} min</span>}
-            </span>
+            </Towards>
             <span className="next-trains-times">{d.label ?? scheduleLabel(d)}</span>
           </li>
         ))}

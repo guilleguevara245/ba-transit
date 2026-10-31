@@ -3,9 +3,11 @@ import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import ErrorMessage from '../components/ErrorMessage.jsx'
 import NetworkMap from '../components/NetworkMap.jsx'
+import StationPicker from '../components/StationPicker.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { MODE_LABELS_PLURAL } from '../constants.js'
 import { buildLegend } from '../utils/map.js'
+import { buildPlaces } from '../utils/places.js'
 import './MapPage.css'
 
 const MODE_ORDER = ['SUBTE', 'PREMETRO', 'TREN']
@@ -14,7 +16,7 @@ export default function MapPage() {
   const { data: stations, loading, error } = useApi('/api/v1/map/stations')
   // Las alertas solo enriquecen los popups; si fallan, el mapa se muestra igual.
   const { data: alerts } = useApi('/api/v1/alerts', { refreshMs: 60_000 })
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [modeFilter, setModeFilter] = useState('TODOS')
   const [accessibleOnly, setAccessibleOnly] = useState(false)
   // Linea elegida en la referencia: el mapa muestra solo esa (null = todas).
@@ -22,10 +24,7 @@ export default function MapPage() {
 
   const focusId = Number(searchParams.get('estacion')) || null
 
-  const modes = useMemo(
-    () => MODE_ORDER.filter((mode) => stations?.some((s) => s.lineMode === mode)),
-    [stations],
-  )
+  const modes = useMemo(() => MODE_ORDER.filter((mode) => stations?.some((s) => s.lineMode === mode)), [stations])
   const byMode = useMemo(
     () =>
       (stations ?? []).filter(
@@ -33,8 +32,21 @@ export default function MapPage() {
       ),
     [stations, modeFilter, lineFilter],
   )
-  const visible = useMemo(() => (accessibleOnly ? byMode.filter((s) => s.accessible) : byMode), [byMode, accessibleOnly])
+  const visible = useMemo(
+    () => (accessibleOnly ? byMode.filter((s) => s.accessible) : byMode),
+    [byMode, accessibleOnly],
+  )
   const focusMissing = focusId && stations && !stations.some((s) => s.stationId === focusId)
+  // Buscador de estaciones: al elegir una, se muestran todas las lineas y el mapa va a esa estacion.
+  const places = useMemo(() => buildPlaces(stations), [stations])
+  function goTo(place) {
+    const id = place?.stations?.[0]?.stationId
+    if (!id) return
+    setModeFilter('TODOS')
+    setLineFilter(null)
+    setAccessibleOnly(false)
+    setSearchParams({ estacion: String(id) }, { replace: true })
+  }
 
   return (
     <div className="wrap content">
@@ -58,18 +70,29 @@ export default function MapPage() {
             ))}
           </div>
         )}
-        <button
-          type="button"
-          className={accessibleOnly ? 'map-filter active' : 'map-filter'}
-          aria-pressed={accessibleOnly}
-          onClick={() => setAccessibleOnly((value) => !value)}
-        >
-          Solo accesibles
-        </button>
+        <div className="map-toolbar-end">
+          {stations && (
+            <div className="map-search">
+              <StationPicker
+                id="mapa-buscar"
+                title="Buscar una estación en el mapa"
+                stations={places}
+                value={null}
+                onChange={goTo}
+              />
+            </div>
+          )}
+          <button
+            type="button"
+            className={accessibleOnly ? 'map-filter active' : 'map-filter'}
+            aria-pressed={accessibleOnly}
+            onClick={() => setAccessibleOnly((value) => !value)}
+          >
+            Solo accesibles
+          </button>
+        </div>
       </div>
-      {accessibleOnly && (
-        <div className="map-note">Estaciones de subte que Emova informa como accesibles.</div>
-      )}
+      {accessibleOnly && <div className="map-note">Estaciones de subte que Emova informa como accesibles.</div>}
 
       {loading && <Skeleton variant="map" label="Cargando estaciones…" />}
       {error && <ErrorMessage what="el mapa" error={error} />}
@@ -111,6 +134,16 @@ export default function MapPage() {
                 Ver todas las líneas
               </button>
             )}
+            <div className="map-legend-foot">
+              <span className="map-legend-warning">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M12 2.5 1.5 21h21L12 2.5z" />
+                  <path className="mark" d="M12 9v5.5M12 17.6v.1" />
+                </svg>
+                Aviso en la estación (de lejos, un punto con borde naranja; rojo si está cerrada)
+              </span>
+              <span className="map-legend-hint">Tocá una línea para verla sola.</span>
+            </div>
           </div>
         </>
       )}

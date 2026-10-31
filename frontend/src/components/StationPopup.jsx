@@ -132,7 +132,12 @@ export default function StationPopup({ station, stations, alerts, mode }) {
         </div>
       )}
 
-      <NextTrains mode={mode} lineCode={station.lineCode} stationName={station.stationName} />
+      <NextTrains
+        mode={mode}
+        lineCode={station.lineCode}
+        stationName={station.stationName}
+        color={station.lineColorHex}
+      />
 
       {transfers.length > 0 && (
         <div className="station-popup-section">

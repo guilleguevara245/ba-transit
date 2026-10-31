@@ -273,7 +273,13 @@ export default function StationPage() {
             </section>
           )}
 
-          <NextTrains mode={station.lineMode} lineCode={station.lineCode} stationName={station.stationName} asCard />
+          <NextTrains
+            mode={station.lineMode}
+            lineCode={station.lineCode}
+            stationName={station.stationName}
+            color={station.lineColorHex}
+            asCard
+          />
 
           {nearbyEvents.length > 0 && (
             <section className="station-card station-events">

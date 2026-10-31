@@ -246,6 +246,15 @@
   color: var(--text-dim);
 }
 
+/* Chevrones del color de la linea delante de cada sentido. */
+.next-trains-chevrons {
+  width: 1.1em;
+  height: 0.75em;
+  margin-right: 4px;
+  color: var(--line-color, var(--accent-text));
+  vertical-align: 0;
+}
+
 .next-trains-times {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
