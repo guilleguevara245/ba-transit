@@ -2,6 +2,7 @@ import { URQUIZA_PATTERNS, URQUIZA_STATIONS, URQUIZA_TRIPS, URQUIZA_VALID_FROM }
 import { formatLongDate } from './format.js'
 import { isStale } from './staleness.js'
 import { holidayOn, localDateKey } from './holidays.js'
+import { formatDuration } from './travelTime.js'
 
 const TIME_ZONE = 'America/Argentina/Buenos_Aires'
 const DAY = 24 * 60
@@ -86,7 +87,7 @@ export function urquizaNextTrains(stationName, now = new Date()) {
     const label =
       upcoming[0] > SHOW_CLOCK_AFTER
         ? `Próximo tren ${clock(nowMinutes + upcoming[0])}`
-        : upcoming.map((m) => (m < 1 ? 'llegando' : `${m} min`)).join(' · ')
+        : upcoming.map((m) => (m < 1 ? 'llegando' : formatDuration(m))).join(' · ')
     directions.push({ towards, arrivals: upcoming.map((minutes) => ({ minutes })), label })
   }
   return {

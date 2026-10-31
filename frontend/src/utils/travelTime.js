@@ -34,10 +34,10 @@ export function estimateTrip(stations, fromIndex, toIndex, mode) {
   return { minutes: Math.round(minutes), stops: end - start, km }
 }
 
-/** "1 h 05 min" o "12 min". */
+/** "1 h 5 min", "2 h" o "12 min". */
 export function formatDuration(minutes) {
   if (minutes < 60) return `${minutes} min`
   const h = Math.floor(minutes / 60)
   const m = minutes % 60
-  return m === 0 ? `${h} h` : `${h} h ${String(m).padStart(2, '0')} min`
+  return m === 0 ? `${h} h` : `${h} h ${m} min`
 }

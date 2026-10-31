@@ -25,7 +25,8 @@ describe('estimateTrip', () => {
 describe('formatDuration', () => {
   it('formatea minutos y horas', () => {
     expect(formatDuration(12)).toBe('12 min')
-    expect(formatDuration(65)).toBe('1 h 05 min')
+    expect(formatDuration(65)).toBe('1 h 5 min')
+    expect(formatDuration(177)).toBe('2 h 57 min')
     expect(formatDuration(120)).toBe('2 h')
   })
 })

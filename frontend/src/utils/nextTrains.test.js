@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { clockIn, hasLiveArrivals, nextTrainsPath, scheduleLabel, schedulePath } from './nextTrains.js'
+import { clockIn, formatArrival, hasLiveArrivals, nextTrainsPath, scheduleLabel, schedulePath } from './nextTrains.js'
 
 describe('nextTrainsPath / schedulePath', () => {
   it('subte y Belgrano Norte tienen vivo; subte y premetro tienen horario', () => {
@@ -31,5 +31,15 @@ describe('scheduleLabel', () => {
   })
   it('sin mas trenes', () => {
     expect(scheduleLabel({ headwayMinutes: null, arrivals: [] }, now)).toBe('Sin más trenes hoy')
+  })
+})
+
+describe('formatArrival', () => {
+  it('minutos, y desde la hora en horas y minutos', () => {
+    expect(formatArrival({ minutes: 0 })).toBe('llegando')
+    expect(formatArrival({ minutes: 26 })).toBe('26 min')
+    expect(formatArrival({ minutes: 87 })).toBe('1 h 27 min')
+    expect(formatArrival({ minutes: 120 })).toBe('2 h')
+    expect(formatArrival({ minutes: 65, estimated: true })).toBe('~1 h 5 min')
   })
 })

@@ -1,3 +1,5 @@
+import { formatDuration } from './travelTime.js'
+
 /**
  * De donde salen los proximos trenes de una estacion: el subte usa el
  * pronostico de la API Transporte y el Belgrano Norte la pantalla de
@@ -13,9 +15,9 @@ export function nextTrainsPath(mode, lineCode, stationName) {
   return null
 }
 
-/** "8 min", "llegando" o "~8 min" si es estimado. */
+/** "8 min", "1 h 27 min" (desde la hora), "llegando" o "~8 min" si es estimado. */
 export function formatArrival({ minutes, estimated }) {
-  const text = minutes < 1 ? 'llegando' : `${minutes} min`
+  const text = minutes < 1 ? 'llegando' : formatDuration(minutes)
   return estimated ? `~${text}` : text
 }
 
