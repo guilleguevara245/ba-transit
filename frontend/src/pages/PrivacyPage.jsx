@@ -79,13 +79,13 @@ export default function PrivacyPage() {
         <p>
           Se guardan en el servidor tu mail, tu nombre y apellido (o los de tu cuenta de Google), tus líneas,
           estaciones, accesos y colectivos favoritos, tus lugares guardados (la dirección de Casa, Trabajo y los otros
-          que agregues, con su zona y la estación más cercana), el tema, tus preferencias de avisos y tu zona del clima
-          (una zona de unos 5 km), la imagen que elijas (un avatar, la dirección de tu foto de Google o una foto que
-          subas, achicada a 256 píxeles), las fechas en que creaste la cuenta e ingresaste por última vez y, de cada
-          dispositivo con la sesión abierta, el navegador y el sistema (por ejemplo, “Chrome en Windows”) y cuándo se
-          usó; no se guarda la IP ni la ubicación. Se usan solo para que puedas ingresar y ver tus favoritos en
-          cualquier dispositivo: no se usan para nada más ni se comparten. Desde Tu cuenta podés descargar todo en un
-          archivo y borrarlo cuando quieras.
+          que agregues, con su zona y la estación más cercana), el tema, cómo querés ver el reloj, tus preferencias de
+          avisos y tu zona del clima (una zona de unos 5 km), la imagen que elijas (un avatar, la dirección de tu foto
+          de Google o una foto que subas, achicada a 256 píxeles), las fechas en que creaste la cuenta e ingresaste por
+          última vez y, de cada dispositivo con la sesión abierta, el navegador y el sistema (por ejemplo, “Chrome en
+          Windows”) y cuándo se usó; no se guarda la IP ni la ubicación. Se usan solo para que puedas ingresar y ver tus
+          favoritos en cualquier dispositivo: no se usan para nada más ni se comparten. Desde Tu cuenta podés descargar
+          todo en un archivo y borrarlo cuando quieras.
         </p>
         <p>
           Si usás mail y contraseña, la contraseña se guarda cifrada (con PBKDF2 y una sal propia), nunca tal cual. Si

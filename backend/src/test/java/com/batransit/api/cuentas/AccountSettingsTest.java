@@ -105,6 +105,17 @@ class AccountSettingsTest {
     }
 
     @Test
+    void relojDelHeader() {
+        TokenService.Claims me = claims(service.register("ana@gmail.com", "contraseña1", "Ana"));
+        Prefs saved = service.savePreferences(me, new Prefs(null, null, null, new Preferences.Clock("12", "corta")));
+        assertThat(saved.reloj()).isEqualTo(new Preferences.Clock("12", "corta"));
+        assertThat(service.preferences(me).reloj()).isEqualTo(saved.reloj());
+        // Lo que no se entiende queda afuera.
+        assertThat(Preferences.clock(new Preferences.Clock("13", "sin"))).isEqualTo(new Preferences.Clock(null, "sin"));
+        assertThat(Preferences.clock(new Preferences.Clock("x", "y"))).isNull();
+    }
+
+    @Test
     void descargarLosDatos() {
         TokenService.Claims me = claims(service.register("ana@gmail.com", "contraseña1", "Ana"));
         Map<String, Object> data = service.exportData(me);

@@ -7,6 +7,10 @@
   --text-dim: #9c9a94;
   --text-faint: #8a877f;
   --normal: #6fbf73;
+  --surface-hover: #212125;
+  --accent-text: #f4c11b;
+  --interrupted: #ef6b62;
+  --delayed: #e3a24a;
 
   background: var(--bg);
   border-bottom: 3px solid var(--yellow);
@@ -124,6 +128,44 @@
   display: flex;
   align-items: center;
   gap: 14px;
+}
+
+/* La hora es un boton: abre el panel del reloj. */
+.clock-wrap {
+  position: relative;
+}
+
+.clock-button {
+  display: block;
+  margin: -4px -6px;
+  padding: 4px 6px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.clock-button:hover,
+.clock-button.open {
+  border-color: var(--line);
+  background: var(--surface-hover);
+}
+
+.clock-button:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 1px;
+}
+
+/* "a. m." / "p. m." chiquito al lado de la hora de 12 horas. */
+.clock-ampm {
+  margin-left: 3px;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--text-faint);
 }
 
 .clock-time {

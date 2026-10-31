@@ -1,11 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
+import ClockPanel from './ClockPanel.jsx'
 import Logo from './Logo.jsx'
 import ThemeToggle from './ThemeToggle.jsx'
 import AccountButton from './AccountButton.jsx'
+import { useClockPrefs } from '../hooks/useClockPrefs.js'
 import { useNow } from '../hooks/useNow.js'
-import { formatClock, formatDayDate, formatShortDate } from '../utils/format.js'
-import { holidayOn } from '../utils/holidays.js'
+import { formatClock, formatClock12, formatDayDate, formatNumericDate, formatShortDate } from '../utils/format.js'
+import { holidayOn, localDateKey } from '../utils/holidays.js'
 import './Header.css'
 
 // Iconos de trazo (24x24) de cada seccion.
@@ -41,11 +43,94 @@ function tabClass({ isActive }) {
   return isActive ? 'nav-tab active' : 'nav-tab'
 }
 
+/**
+ * La hora y la fecha del header, como las eligio la persona. Al tocarla se
+ * abre el panel del reloj (formato y calendario con feriados). Se cierra
+ * con Escape, al tocar afuera o al cambiar de pagina.
+ */
+function Clock({ now }) {
+  const { clock, setClock } = useClockPrefs()
+  const [open, setOpen] = useState(false)
+  const box = useRef(null)
+  const button = useRef(null)
+  const panelId = useId()
+  const { pathname } = useLocation()
+  const holiday = holidayOn(now)
+
+  useEffect(() => setOpen(false), [pathname])
+
+  useEffect(() => {
+    if (!open) return undefined
+    const onPointer = (event) => {
+      if (box.current && !box.current.contains(event.target)) setOpen(false)
+    }
+    const onKey = (event) => {
+      if (event.key === 'Escape') {
+        setOpen(false)
+        button.current?.focus()
+      }
+    }
+    document.addEventListener('pointerdown', onPointer)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('pointerdown', onPointer)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+
+  const time12 = clock.formato === '12' ? formatClock12(now) : null
+  let date = null
+  if (clock.fecha === 'larga') {
+    date = (
+      <>
+        <span className="clock-date-long">{formatDayDate(now)}</span>
+        <span className="clock-date-short">{formatShortDate(now)}</span>
+      </>
+    )
+  } else if (clock.fecha === 'corta') {
+    date = <span>{formatNumericDate(now)}</span>
+  }
+
+  return (
+    <div className="clock-wrap" ref={box}>
+      <button
+        ref={button}
+        type="button"
+        className={open ? 'clock-button open' : 'clock-button'}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-controls={open ? panelId : undefined}
+        title={holiday ? `Feriado: ${holiday}` : 'Reloj y calendario'}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <time className={holiday ? 'clock-time holiday' : 'clock-time'} dateTime={now.toISOString()}>
+          <strong>
+            {time12 ? (
+              <>
+                {time12.time}
+                <span className="clock-ampm">{time12.suffix}</span>
+              </>
+            ) : (
+              formatClock(now)
+            )}
+          </strong>
+          {(date || holiday) && (
+            <small>
+              {date}
+              {holiday && <span className="clock-holiday">{date ? ' · Feriado' : 'Feriado'}</span>}
+            </small>
+          )}
+        </time>
+      </button>
+      {open && <ClockPanel id={panelId} now={now} todayKey={localDateKey(now)} clock={clock} onChange={setClock} />}
+    </div>
+  )
+}
+
 export default function Header() {
   const now = useNow(15_000)
   const navRef = useRef(null)
   const { pathname } = useLocation()
-  const holiday = holidayOn(now)
 
   // En pantallas angostas las pestañas se desplazan de costado: se
   // centra la activa para que no quede fuera de la vista.
@@ -90,18 +175,7 @@ export default function Header() {
         </nav>
 
         <div className="clock">
-          <time
-            className={holiday ? 'clock-time holiday' : 'clock-time'}
-            dateTime={now.toISOString()}
-            title={holiday ? `Feriado: ${holiday}` : undefined}
-          >
-            <strong>{formatClock(now)}</strong>
-            <small>
-              <span className="clock-date-long">{formatDayDate(now)}</span>
-              <span className="clock-date-short">{formatShortDate(now)}</span>
-              {holiday && <span className="clock-holiday"> · Feriado</span>}
-            </small>
-          </time>
+          <Clock now={now} />
           <ThemeToggle />
           <AccountButton />
         </div>

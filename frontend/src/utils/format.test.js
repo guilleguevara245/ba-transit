@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { formatClock, formatDayDate, formatLongDate, formatRelativeTime, formatShortDate, updatedLabel, yearsSince } from './format.js'
+import {
+  formatClock,
+  formatClock12,
+  formatDayDate,
+  formatLongDate,
+  formatNumericDate,
+  formatRelativeTime,
+  formatShortDate,
+  updatedLabel,
+  yearsSince,
+} from './format.js'
 
 const NOW = new Date('2026-10-23T15:00:00Z')
 
@@ -66,5 +76,13 @@ describe('updatedLabel', () => {
 
   it('una fecha rota no muestra nada', () => {
     expect(updatedLabel('no es fecha', now)).toBeNull()
+  })
+})
+
+describe('formatClock12 y formatNumericDate', () => {
+  it('hora de 12 horas y fecha con numeros, en Buenos Aires', () => {
+    expect(formatClock12(new Date('2026-10-31T02:49:00Z'))).toEqual({ time: '11:49', suffix: 'p. m.' })
+    expect(formatClock12(new Date('2026-10-30T11:05:00Z'))).toEqual({ time: '8:05', suffix: 'a. m.' })
+    expect(formatNumericDate(new Date('2026-10-31T02:49:00Z'))).toBe('30/10/26')
   })
 })

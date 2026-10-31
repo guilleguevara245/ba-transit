@@ -27,6 +27,29 @@ export function formatClock(date) {
   })
 }
 
+/** { time: '11:49', suffix: 'p. m.' }: la hora en formato de 12 horas. */
+export function formatClock12(date) {
+  const parts = new Intl.DateTimeFormat('es-AR', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: TIME_ZONE,
+  }).formatToParts(date)
+  const get = (type) => parts.find((p) => p.type === type)?.value ?? ''
+  const period = get('dayPeriod').replace(/\s+/g, ' ').trim()
+  return { time: `${get('hour')}:${get('minute')}`, suffix: period }
+}
+
+/** "30/10/26": la fecha corta con numeros. */
+export function formatNumericDate(date) {
+  return new Intl.DateTimeFormat('es-AR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit',
+    timeZone: TIME_ZONE,
+  }).format(date)
+}
+
 /** sáb 24 oct */
 const capitalize = (text) => text.charAt(0).toUpperCase() + text.slice(1)
 

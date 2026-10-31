@@ -1,0 +1,255 @@
+/* Panel del reloj: formato de la hora, fecha y calendario del mes. */
+
+.clock-panel {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  z-index: 1200;
+  width: 320px;
+  max-width: calc(100vw - 24px);
+  padding: 14px 16px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--yellow);
+  border-radius: 6px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  color: var(--text);
+  text-align: left;
+  white-space: normal;
+}
+
+.clock-panel-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.clock-panel-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.clock-panel-label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.clock-panel-sample {
+  align-self: flex-end;
+  margin-bottom: 6px;
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+
+.clock-seg {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg);
+}
+
+.clock-seg button {
+  padding: 4px 11px;
+  border: none;
+  border-radius: 999px;
+  background: none;
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.clock-seg button.on {
+  background: var(--yellow);
+  color: #17171a;
+}
+
+.clock-seg button:focus-visible,
+.clock-cal-nav:focus-visible,
+.clock-cal-day:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 1px;
+}
+
+/* ---- Calendario ---- */
+
+.clock-cal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.clock-cal-head strong {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.clock-cal-nav {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 26px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
+  cursor: pointer;
+}
+
+.clock-cal-nav .chevrons {
+  width: 18px;
+  height: 12px;
+  fill: var(--accent-text);
+}
+
+.clock-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  text-align: center;
+}
+
+.clock-cal-letter {
+  padding: 2px 0 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-faint);
+}
+
+.clock-cal-day {
+  position: relative;
+  height: 32px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.clock-cal-day:hover {
+  background: var(--surface-hover);
+}
+
+.clock-cal-day.k-sabado,
+.clock-cal-day.k-domingo {
+  color: var(--text-dim);
+}
+
+.clock-cal-day.k-feriado {
+  color: var(--interrupted);
+  font-weight: 700;
+}
+
+.clock-cal-day.k-no-laborable {
+  color: var(--delayed);
+  font-weight: 700;
+}
+
+/* Puntito debajo del numero en los feriados y dias no laborables. */
+.clock-cal-day.k-feriado::after,
+.clock-cal-day.k-no-laborable::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 3px;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.clock-cal-day.today {
+  border-color: var(--yellow);
+}
+
+.clock-cal-day.selected {
+  background: var(--yellow);
+  color: #17171a;
+}
+
+.clock-cal-pick {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-top: 10px;
+  padding: 8px 10px;
+  border-left: 3px solid var(--line);
+  border-radius: 4px;
+  background: var(--bg);
+  font-size: 12.5px;
+  color: var(--text-dim);
+}
+
+.clock-cal-pick strong {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.clock-cal-pick.k-feriado {
+  border-left-color: var(--interrupted);
+}
+
+.clock-cal-pick.k-no-laborable {
+  border-left-color: var(--delayed);
+}
+
+.clock-cal-name {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.clock-cal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.clock-cal-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.clock-cal-list b {
+  color: var(--text);
+}
+
+.clock-cal-dot {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--interrupted);
+}
+
+.clock-cal-list .k-no-laborable .clock-cal-dot {
+  background: var(--delayed);
+}
+
+@media (max-width: 640px) {
+  .clock-panel {
+    position: fixed;
+    top: 64px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-width: none;
+  }
+}

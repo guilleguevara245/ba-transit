@@ -4,6 +4,7 @@ import { mergePlaces, readPlaces, writePlaces } from './placesStore.js'
 import { applyNoticePrefs, hasSavedPrefs, readPrefs } from './push.js'
 import { applyTheme, THEME_KEY } from '../hooks/useTheme.js'
 import { firstName, getSession, setSession } from './session.js'
+import { readSavedClock, saveClock } from './clockPrefs.js'
 import { readZone, saveZone } from './weatherZone.js'
 
 /** Acciones de la cuenta. Los errores (ApiError) traen el mensaje para mostrar. */
@@ -243,7 +244,7 @@ const NOTICE_KEYS = [
 ]
 let prefsTimer = null
 
-/** Lo de este dispositivo: el tema elegido (no el del sistema) y las preferencias de avisos guardadas. */
+/** Lo de este dispositivo: el tema elegido (no el del sistema), las preferencias de avisos guardadas, la zona del clima y el reloj. */
 export function localPreferences() {
   let tema = null
   try {
@@ -256,6 +257,7 @@ export function localPreferences() {
     tema: tema === 'light' || tema === 'dark' ? tema : null,
     avisos: hasSavedPrefs() ? Object.fromEntries(NOTICE_KEYS.map((k) => [k, prefs[k]])) : null,
     clima: readZone(),
+    reloj: readSavedClock(),
   }
 }
 
@@ -278,10 +280,11 @@ export async function syncPreferences() {
   } catch {
     // Sin almacenamiento.
   }
-  const hasRemote = Boolean(remote?.tema || remote?.avisos || remote?.clima)
+  const hasRemote = Boolean(remote?.tema || remote?.avisos || remote?.clima || remote?.reloj)
   if (hasRemote) {
     if (remote.tema) applyTheme(remote.tema, { silent: true })
     if (remote.clima) saveZone(remote.clima, { silent: true })
+    if (remote.reloj) saveClock(remote.reloj, { silent: true })
     if (remote.avisos) await applyNoticePrefs(definedOnly(remote.avisos)).catch(() => {})
   } else if (!synced) {
     await pushPreferences()

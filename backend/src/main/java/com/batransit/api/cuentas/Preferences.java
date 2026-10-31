@@ -6,8 +6,8 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
- * Preferencias que se sincronizan con la cuenta: el tema, las de avisos y
- * la zona del clima.
+ * Preferencias que se sincronizan con la cuenta: el tema, las de avisos,
+ * la zona del clima y el reloj.
  * Lo que no es valido se descarta (queda null y el sitio usa su valor por
  * defecto). La pausa no se sincroniza: es de cada dispositivo.
  */
@@ -16,16 +16,30 @@ public final class Preferences {
     private Preferences() {
     }
 
-    /** tema: "light" | "dark" | null (el del sistema). clima: la zona del clima (o null). */
-    public record Prefs(String tema, Notices avisos, Zone clima) {
+    /**
+     * tema: "light" | "dark" | null (el del sistema). clima: la zona del clima (o null).
+     * reloj: como se muestra la hora del header (o null).
+     */
+    public record Prefs(String tema, Notices avisos, Zone clima, Clock reloj) {
         public Prefs(String tema, Notices avisos) {
-            this(tema, avisos, null);
+            this(tema, avisos, null, null);
+        }
+
+        public Prefs(String tema, Notices avisos, Zone clima) {
+            this(tema, avisos, clima, null);
         }
 
         public static Prefs empty() {
-            return new Prefs(null, null, null);
+            return new Prefs(null, null, null, null);
         }
     }
+
+    /** El reloj del header. formato: "24" | "12"; fecha: "larga" | "corta" | "sin". */
+    public record Clock(String formato, String fecha) {
+    }
+
+    static final Set<String> CLOCK_FORMATS = Set.of("24", "12");
+    static final Set<String> CLOCK_DATES = Set.of("larga", "corta", "sin");
 
     /**
      * Zona del clima de quien no tiene Casa guardada: un nombre y la celda de
@@ -60,7 +74,7 @@ public final class Preferences {
             return Prefs.empty();
         }
         return new Prefs(p.tema() != null && THEMES.contains(p.tema()) ? p.tema() : null, notices(p.avisos()),
-                zone(p.clima()));
+                zone(p.clima()), clock(p.reloj()));
     }
 
     /** La zona valida (nombre corto, dentro del AMBA) y redondeada a la grilla, o null. */
@@ -74,6 +88,16 @@ public final class Preferences {
         }
         name = name.length() > MAX_ZONE_NAME ? name.substring(0, MAX_ZONE_NAME).strip() : name;
         return new Zone(name, Math.round(z.lat() * 20) / 20.0, Math.round(z.lon() * 20) / 20.0);
+    }
+
+    /** El reloj valido (lo que no se entiende queda null), o null si no queda nada. */
+    static Clock clock(Clock c) {
+        if (c == null) {
+            return null;
+        }
+        String formato = c.formato() != null && CLOCK_FORMATS.contains(c.formato()) ? c.formato() : null;
+        String fecha = c.fecha() != null && CLOCK_DATES.contains(c.fecha()) ? c.fecha() : null;
+        return formato == null && fecha == null ? null : new Clock(formato, fecha);
     }
 
     static Notices notices(Notices n) {
