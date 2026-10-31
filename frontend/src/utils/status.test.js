@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { errorLabel, lastAttemptFailed, statusSummary } from './status.js'
+import { errorLabel, lastAttemptFailed, statusGroups, statusSummary } from './status.js'
 
 describe('statusSummary', () => {
   it('todas bien (las que no se consultaron no cuentan como falla)', () => {
@@ -9,9 +9,34 @@ describe('statusSummary', () => {
   it('una o varias fallando', () => {
     expect(statusSummary([{ status: 'ERROR', what: 'Estado del Urquiza' }, { status: 'OK' }])).toEqual({
       tone: 'error',
-      text: 'Estado del Urquiza: la fuente no está respondiendo.',
+      title: 'Estado del Urquiza: con problemas',
+      text: 'Mientras tanto, el sitio muestra los últimos datos que tiene.',
     })
-    expect(statusSummary([{ status: 'ERROR' }, { status: 'ERROR' }]).text).toBe('2 fuentes no están respondiendo.')
+    expect(statusSummary([{ status: 'ERROR' }, { status: 'ERROR' }]).title).toBe('2 servicios con problemas')
+  })
+})
+
+describe('statusGroups', () => {
+  const sources = [
+    { key: 'subte-alertas', what: 'Alertas del subte', status: 'OK' },
+    { key: 'subte-horario', what: 'Horario programado del subte', status: 'ERROR' },
+    { key: 'ferrovias', what: 'Próximos trenes del Belgrano Norte', status: 'SIN_DATOS' },
+    { key: 'nueva', what: 'Fuente nueva', status: 'OK' },
+  ]
+
+  it('agrupa con nombres cortos y el peor estado de cada grupo', () => {
+    const groups = statusGroups(sources)
+    expect(groups.map((g) => [g.id, g.status])).toEqual([
+      ['subte', 'ERROR'],
+      ['trenes', 'SIN_DATOS'],
+      ['otros', 'OK'],
+    ])
+    expect(groups[0].sources.map((s) => s.name)).toEqual(['Alertas', 'Horarios programados'])
+    expect(groups[2].sources[0].name).toBe('Fuente nueva')
+  })
+
+  it('sin fuentes, sin grupos', () => {
+    expect(statusGroups([])).toEqual([])
   })
 })
 
