@@ -93,6 +93,7 @@ public class NotificationService {
         sub.updateExtras(summaryTime(r.summaryTime()), summaryDays(r.summaryDays()), greeting(r.greetingName()),
                 lastTrainMinutes(r.lastTrainMinutes()));
         sub.updateZones(NoticeZones.encode(NoticeZones.sanitize(r.zones())));
+        sub.updateTripWeather(tripWeatherTime(r.tripWeatherTime()));
         subscriptions.save(sub);
     }
 
@@ -222,8 +223,10 @@ public class NotificationService {
         Instant now = Instant.now();
         for (Planned p : planned) {
             PushSubscription sub = byId.get(p.subscriptionId());
-            // El resumen y el ultimo tren se pidieron para esa hora a proposito: no los frena el horario sin avisos.
-            boolean scheduled = p.eventKey().startsWith("resumen:") || p.eventKey().startsWith("ultimo:");
+            // El resumen, el ultimo tren y el clima del viaje se pidieron para esa hora a proposito:
+            // no los frena el horario sin avisos.
+            boolean scheduled = p.eventKey().startsWith("resumen:") || p.eventKey().startsWith("ultimo:")
+                    || p.eventKey().startsWith(TripWeatherJob.KEY_PREFIX);
             if (sub == null || isPaused(sub, now) || (!scheduled && inQuietHours(sub, now))) {
                 continue;
             }
@@ -259,6 +262,12 @@ public class NotificationService {
         return subscriptions.findAll().stream().filter(s -> s.getSummaryTime() != null).toList();
     }
 
+    /** Las suscripciones con "El clima y tu viaje" (para el trabajo que lo manda). */
+    @Transactional(readOnly = true)
+    public List<PushSubscription> withTripWeather() {
+        return subscriptions.findAll().stream().filter(s -> s.getTripWeatherTime() != null).toList();
+    }
+
     /** Si ahora es horario sin avisos para esa suscripcion (puede cruzar la medianoche: 23 a 7). */
     static boolean inQuietHours(PushSubscription s, Instant now) {
         if (s.getQuietFrom() == null || s.getQuietTo() == null) {
@@ -282,6 +291,16 @@ public class NotificationService {
         }
         if (!TIME.matcher(time).matches()) {
             throw bad("La hora del resumen no es válida.");
+        }
+        return time;
+    }
+
+    static String tripWeatherTime(String time) {
+        if (time == null || time.isBlank()) {
+            return null;
+        }
+        if (!TIME.matcher(time).matches()) {
+            throw bad("La hora del aviso del clima no es válida.");
         }
         return time;
     }

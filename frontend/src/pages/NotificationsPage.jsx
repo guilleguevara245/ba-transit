@@ -317,6 +317,33 @@ export default function NotificationsPage() {
                 </div>
               </div>
             )}
+            <label className="notif-check">
+              <input
+                type="checkbox"
+                checked={prefs.tripWeather}
+                onChange={() => change({ ...prefs, tripWeather: !prefs.tripWeather })}
+              />
+              <span>
+                El clima y tu viaje
+                <small>
+                  De lunes a viernes, solo los días con lluvia, tormenta, calor, frío o viento fuerte en Casa o Trabajo
+                  (o en tu zona del clima). Usa los lugares de <Link to="/mis-lugares">Mis lugares</Link>.
+                </small>
+              </span>
+            </label>
+            {prefs.tripWeather && (
+              <div className="notif-summary">
+                <div className="auth-field">
+                  <span id="trip-weather-time">A las</span>
+                  <Select
+                    labelledBy="trip-weather-time"
+                    value={prefs.tripWeatherTime}
+                    options={SUMMARY_TIMES}
+                    onChange={(v) => change({ ...prefs, tripWeatherTime: v })}
+                  />
+                </div>
+              </div>
+            )}
           </fieldset>
         )}
 

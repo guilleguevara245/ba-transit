@@ -190,3 +190,9 @@
 .notif-pause .image-picker-tabs button {
   padding: 6px 11px;
 }
+
+/* Enlaces dentro de las aclaraciones (por ejemplo, a Mis lugares). */
+.notif-check small a {
+  color: var(--accent-text);
+  font-weight: 600;
+}

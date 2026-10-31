@@ -20,12 +20,14 @@ public final class NotificationModels {
      * summaryTime: hora del resumen diario ("07:30", null = sin resumen) y
      * summaryDays sus dias (1 = lunes ... 7 = domingo); greetingName: para
      * saludar; lastTrainMinutes: cuanto antes del ultimo tren avisar (null = no);
-     * zones: Casa, Trabajo y la zona del clima, para filtrar las alertas del SMN.
+     * zones: Casa, Trabajo y la zona del clima, para filtrar las alertas del SMN;
+     * tripWeatherTime: hora de "El clima y tu viaje" (null = no).
      */
     public record SubscribeRequest(String endpoint, Keys keys, Favorites favorites, java.util.List<String> kinds,
                                    Boolean notifyResolved, Integer quietFrom, Integer quietTo,
                                    String summaryTime, java.util.List<Integer> summaryDays, String greetingName,
-                                   Integer lastTrainMinutes, java.util.List<NoticeZones.Zone> zones) {
+                                   Integer lastTrainMinutes, java.util.List<NoticeZones.Zone> zones,
+                                   String tripWeatherTime) {
     }
 
     public record EndpointRequest(String endpoint) {

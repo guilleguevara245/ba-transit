@@ -39,7 +39,14 @@ public final class Preferences {
     /** Las mismas claves que guarda el sitio (frontend/src/utils/push.js). */
     public record Notices(Integer version, List<String> kinds, Boolean notifyResolved, Boolean quiet, Integer quietFrom,
                           Integer quietTo, Boolean summary, String summaryTime, List<Integer> summaryDays,
-                          Boolean lastTrain, Integer lastTrainMinutes) {
+                          Boolean lastTrain, Integer lastTrainMinutes, Boolean tripWeather, String tripWeatherTime) {
+
+        public Notices(Integer version, List<String> kinds, Boolean notifyResolved, Boolean quiet, Integer quietFrom,
+                       Integer quietTo, Boolean summary, String summaryTime, List<Integer> summaryDays,
+                       Boolean lastTrain, Integer lastTrainMinutes) {
+            this(version, kinds, notifyResolved, quiet, quietFrom, quietTo, summary, summaryTime, summaryDays, lastTrain,
+                    lastTrainMinutes, null, null);
+        }
     }
 
     static final Set<String> THEMES = Set.of("light", "dark");
@@ -88,7 +95,9 @@ public final class Preferences {
                 n.summaryTime() != null && TIME.matcher(n.summaryTime()).matches() ? n.summaryTime() : null,
                 days == null || days.isEmpty() ? null : days,
                 n.lastTrain(),
-                n.lastTrainMinutes() != null && LAST_TRAIN.contains(n.lastTrainMinutes()) ? n.lastTrainMinutes() : null);
+                n.lastTrainMinutes() != null && LAST_TRAIN.contains(n.lastTrainMinutes()) ? n.lastTrainMinutes() : null,
+                n.tripWeather(),
+                n.tripWeatherTime() != null && TIME.matcher(n.tripWeatherTime()).matches() ? n.tripWeatherTime() : null);
     }
 
     private static Integer hour(Integer h) {

@@ -13,10 +13,13 @@ import { PREFS_CHANGED } from './prefsEvents.js'
  */
 
 const PREFS_KEY = 'ba-transit:avisos'
-/** Tipos que se sumaron despues, por version: a quien ya tenia avisos se le agregan una vez. */
-export const NEW_KINDS = { 2: ['clima', 'tarifas', 'especiales'], 3: ['colectivos'] }
+/**
+ * Tipos que se sumaron despues, por version: a quien ya tenia avisos se le agregan una vez.
+ * La 4 no suma tipos: trae "El clima y tu viaje" y las zonas, y hace que se manden una vez al servidor.
+ */
+export const NEW_KINDS = { 2: ['clima', 'tarifas', 'especiales'], 3: ['colectivos'], 4: [] }
 export const DEFAULT_PREFS = {
-  version: 3,
+  version: 4,
   kinds: ['lineas', 'estaciones', 'accesos', 'colectivos', ...NEW_KINDS[2]],
   notifyResolved: true,
   quiet: true,
@@ -29,6 +32,9 @@ export const DEFAULT_PREFS = {
   // Ultimo subte o Premetro de tus lineas: cuantos minutos antes avisar.
   lastTrain: false,
   lastTrainMinutes: 30,
+  // "El clima y tu viaje": de lunes a viernes a esta hora, solo si el clima complica el dia en Casa o Trabajo.
+  tripWeather: true,
+  tripWeatherTime: '07:00',
   // Hasta cuando estan pausados (ISO) o null.
   pausedUntil: null,
 }
@@ -159,6 +165,7 @@ function body(subscription, prefs, zones) {
     greetingName: greetingName(),
     lastTrainMinutes: prefs.lastTrain ? prefs.lastTrainMinutes : null,
     zones,
+    tripWeatherTime: prefs.tripWeather ? prefs.tripWeatherTime : null,
   }
 }
 

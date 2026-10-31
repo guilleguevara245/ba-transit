@@ -76,6 +76,10 @@ public class PushSubscription {
     @Column(length = 120)
     private String zones;
 
+    /** Hora de "El clima y tu viaje" ("07:00"); null = apagado. */
+    @Column(name = "trip_weather_time", length = 5)
+    private String tripWeatherTime;
+
     protected PushSubscription() {
         // Para JPA.
     }
@@ -190,6 +194,14 @@ public class PushSubscription {
     /** Casa, Trabajo y la zona del clima, ya en el formato de NoticeZones.encode. */
     public void updateZones(String zones) {
         this.zones = zones;
+    }
+
+    public String getTripWeatherTime() {
+        return tripWeatherTime;
+    }
+
+    public void updateTripWeather(String time) {
+        this.tripWeatherTime = time;
     }
 
     public void pauseUntil(Instant until) {

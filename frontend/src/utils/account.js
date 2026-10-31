@@ -238,6 +238,8 @@ const NOTICE_KEYS = [
   'summaryDays',
   'lastTrain',
   'lastTrainMinutes',
+  'tripWeather',
+  'tripWeatherTime',
 ]
 let prefsTimer = null
 

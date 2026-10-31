@@ -108,9 +108,10 @@ export default function PrivacyPage() {
           Tu navegador le da al sitio una dirección para mandarte avisos (la crea el servicio de notificaciones del
           navegador: Google, Mozilla, Apple o Microsoft) y unas claves para cifrarlos. Se guardan en el servidor junto
           con tus favoritos y tus preferencias (qué avisar, el horario sin avisos, la pausa, cuánto antes del último
-          subte y el resumen diario, con el nombre del saludo si lo escribiste), las zonas de Casa, Trabajo y tu zona
-          del clima (de unos 5 km, para mandarte solo las alertas del clima que te alcanzan) y un registro de qué avisos
-          ya te llegaron, que se borra a los 30 días. No hace falta cuenta; si ingresaste, quedan asociados a ella.
+          subte, la hora del aviso del clima para tu viaje y el resumen diario, con el nombre del saludo si lo
+          escribiste), las zonas de Casa, Trabajo y tu zona del clima (de unos 5 km, para mandarte solo las alertas del
+          clima que te alcanzan) y un registro de qué avisos ya te llegaron, que se borra a los 30 días. No hace falta
+          cuenta; si ingresaste, quedan asociados a ella.
         </p>
         <p>
           Los avisos viajan cifrados: el servicio del navegador los entrega pero no puede leerlos. Podés apagarlos
