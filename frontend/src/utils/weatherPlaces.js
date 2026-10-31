@@ -26,7 +26,7 @@ export function gridQuery({ lat, lon }) {
 }
 
 /** Donde queda Casa o Trabajo: la estacion guardada o la zona de la direccion confirmada. */
-function stationPoint(places, stations, tipo) {
+export function placePoint(places, stations, tipo) {
   const place = places.find((p) => p.tipo === tipo && (p.estacion || p.lat != null))
   if (!place) return null
   if (!place.estacion) return { lat: place.lat, lon: place.lon, name: addressArea(place.direccion) ?? 'Tu dirección' }
@@ -41,13 +41,13 @@ function stationPoint(places, stations, tipo) {
  * de la principal.
  */
 export function weatherPlaces({ places = [], stations = null, zone = null }) {
-  const home = stationPoint(places, stations, 'casa')
+  const home = placePoint(places, stations, 'casa')
   const primary = home
     ? { id: 'casa', tipo: 'casa', label: 'Casa', detail: home.name, lat: home.lat, lon: home.lon }
     : zone
       ? { id: 'zona', tipo: 'otro', label: zone.nombre, detail: 'Tu zona', lat: zone.lat, lon: zone.lon }
       : { ...CAPITAL, tipo: 'otro', isDefault: true }
-  const work = stationPoint(places, stations, 'trabajo')
+  const work = placePoint(places, stations, 'trabajo')
   const list = [primary]
   if (
     work &&

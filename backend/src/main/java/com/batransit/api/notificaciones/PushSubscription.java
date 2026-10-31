@@ -72,6 +72,10 @@ public class PushSubscription {
     @Column(name = "last_train_minutes")
     private Short lastTrainMinutes;
 
+    /** Zonas para las alertas del SMN (ver NoticeZones); null = todo el AMBA. */
+    @Column(length = 120)
+    private String zones;
+
     protected PushSubscription() {
         // Para JPA.
     }
@@ -177,6 +181,15 @@ public class PushSubscription {
         this.summaryDays = summaryDays;
         this.greetingName = greetingName;
         this.lastTrainMinutes = lastTrainMinutes;
+    }
+
+    public String getZones() {
+        return zones;
+    }
+
+    /** Casa, Trabajo y la zona del clima, ya en el formato de NoticeZones.encode. */
+    public void updateZones(String zones) {
+        this.zones = zones;
     }
 
     public void pauseUntil(Instant until) {

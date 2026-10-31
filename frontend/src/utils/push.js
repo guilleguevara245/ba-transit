@@ -1,5 +1,8 @@
-import { apiSend } from '../api.js'
+import { apiGet, apiSend } from '../api.js'
 import { readAll } from './favoritesStore.js'
+import { needsStations, noticeZones } from './noticeZones.js'
+import { readPlaces } from './placesStore.js'
+import { readZone } from './weatherZone.js'
 import { getSession } from './session.js'
 import { upgradePrefs } from './notifPrefs.js'
 import { PREFS_CHANGED } from './prefsEvents.js'
@@ -123,7 +126,25 @@ export async function currentSubscription() {
   return reg ? reg.pushManager.getSubscription() : null
 }
 
-function body(subscription, prefs) {
+/**
+ * Casa, Trabajo y la zona del clima (celdas de unos 5 km), para que lleguen
+ * solo las alertas del SMN que te alcanzan. Si Casa o Trabajo son una
+ * estacion, se buscan las estaciones; si falla, se mandan las que haya.
+ */
+async function currentZones() {
+  const places = readPlaces()
+  let stations = null
+  if (needsStations(places)) {
+    try {
+      stations = await apiGet('/api/v1/map/stations')
+    } catch {
+      stations = null
+    }
+  }
+  return noticeZones({ places, stations, zone: readZone() })
+}
+
+function body(subscription, prefs, zones) {
   const json = subscription.toJSON()
   return {
     endpoint: json.endpoint,
@@ -137,12 +158,13 @@ function body(subscription, prefs) {
     summaryDays: prefs.summaryDays,
     greetingName: greetingName(),
     lastTrainMinutes: prefs.lastTrain ? prefs.lastTrainMinutes : null,
+    zones,
   }
 }
 
 async function send(subscription, prefs) {
   await apiSend('PUT', '/api/v1/notificaciones/suscripcion', {
-    body: body(subscription, prefs),
+    body: body(subscription, prefs, await currentZones()),
     token: getSession()?.token,
   })
 }
@@ -203,7 +225,7 @@ export async function testPush() {
 
 let syncTimer = null
 
-/** Con avisos activos, sube los favoritos un momento despues de cada cambio. */
+/** Con avisos activos, sube los favoritos (y las zonas) un momento despues de cada cambio. */
 export function scheduleFavoritesSync() {
   clearTimeout(syncTimer)
   syncTimer = setTimeout(() => {

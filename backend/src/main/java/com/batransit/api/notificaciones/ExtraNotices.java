@@ -20,7 +20,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 /**
  * Los avisos que no salen de las alertas de las lineas: alertas del clima
@@ -37,9 +39,15 @@ public final class ExtraNotices {
      * Lo que hace falta de una suscripcion. lines: sus lineas favoritas mas
      * las lineas de sus estaciones favoritas; kinds: tipos de aviso elegidos;
      * lastTrainMinutes: cuanto antes del ultimo tren (null = no); buses: los
-     * carteles de sus colectivos favoritos ("152", "53A").
+     * carteles de sus colectivos favoritos ("152", "53A"); zones: Casa,
+     * Trabajo y la zona del clima (vacio = todo el AMBA).
      */
-    public record Target(long id, Set<Long> lines, Set<String> kinds, Integer lastTrainMinutes, Set<String> buses) {
+    public record Target(long id, Set<Long> lines, Set<String> kinds, Integer lastTrainMinutes, Set<String> buses,
+                         List<NoticeZones.Zone> zones) {
+
+        public Target(long id, Set<Long> lines, Set<String> kinds, Integer lastTrainMinutes, Set<String> buses) {
+            this(id, lines, kinds, lastTrainMinutes, buses, List.of());
+        }
     }
 
     /** Separador entre el precio de antes y el nuevo: los chevrones del sitio. */
@@ -59,27 +67,69 @@ public final class ExtraNotices {
      * pero si sube de amarilla a naranja se avisa de nuevo.
      */
     public static List<Planned> weather(List<WeatherAlert> alerts, List<Target> targets, String siteUrl, ZonedDateTime now) {
+        return weather(targets, t -> alerts, siteUrl, now);
+    }
+
+    /**
+     * Como weather, pero con las alertas de cada suscripcion: alertsOf da
+     * las que alcanzan sus zonas (o las de todo el AMBA si no tiene zonas).
+     */
+    public static List<Planned> weather(List<Target> targets, Function<Target, List<WeatherAlert>> alertsOf,
+                                        String siteUrl, ZonedDateTime now) {
         List<Planned> out = new ArrayList<>();
-        for (WeatherAlert a : alerts) {
-            if (a.kind() == null) {
+        for (Target t : targets) {
+            if (!t.kinds().contains("clima")) {
                 continue;
             }
-            if (a.expires() != null && !a.expires().toInstant().isAfter(now.toInstant())) {
-                continue;
-            }
-            OffsetDateTime start = a.onset() != null && a.onset().toInstant().isAfter(now.toInstant()) ? a.onset() : null;
-            LocalDate day = (start != null ? start.atZoneSameInstant(now.getZone()) : now).toLocalDate();
-            String key = "clima:" + a.kind() + ":" + a.level() + ":" + day.format(DAY_KEY);
-            String kind = a.kind().toLowerCase(Locale.ROOT);
-            PushMessage message = new PushMessage(weatherTitle(a), weatherBody(a, now),
-                    siteUrl + "/notif/clima-" + kind + ".png", siteUrl + "/", "clima-" + kind, "Abrir BA Transit", false);
-            for (Target t : targets) {
-                if (t.kinds().contains("clima")) {
-                    out.add(new Planned(t.id(), key, message));
-                }
+            for (WeatherAlert a : alertsOf.apply(t)) {
+                weatherNotice(a, siteUrl, now).ifPresent(n -> out.add(new Planned(t.id(), n.key(), n.message())));
             }
         }
         return out;
+    }
+
+    private record WeatherNotice(String key, PushMessage message) {
+    }
+
+    /** El aviso de una alerta vigente (clave y mensaje), o vacio si ya vencio o no tiene tipo. */
+    private static Optional<WeatherNotice> weatherNotice(WeatherAlert a, String siteUrl, ZonedDateTime now) {
+        if (a.kind() == null) {
+            return Optional.empty();
+        }
+        if (a.expires() != null && !a.expires().toInstant().isAfter(now.toInstant())) {
+            return Optional.empty();
+        }
+        OffsetDateTime start = a.onset() != null && a.onset().toInstant().isAfter(now.toInstant()) ? a.onset() : null;
+        LocalDate day = (start != null ? start.atZoneSameInstant(now.getZone()) : now).toLocalDate();
+        String key = "clima:" + a.kind() + ":" + a.level() + ":" + day.format(DAY_KEY);
+        String kind = a.kind().toLowerCase(Locale.ROOT);
+        PushMessage message = new PushMessage(weatherTitle(a), weatherBody(a, now),
+                siteUrl + "/notif/clima-" + kind + ".png", siteUrl + "/", "clima-" + kind, "Abrir BA Transit", false);
+        return Optional.of(new WeatherNotice(key, message));
+    }
+
+    /**
+     * Las alertas de varias zonas juntas: una por tipo, la de mayor nivel
+     * (si Casa tiene amarilla y Trabajo naranja por tormentas, queda la naranja).
+     */
+    public static List<WeatherAlert> strongestByKind(List<List<WeatherAlert>> lists) {
+        Map<String, WeatherAlert> byKind = new LinkedHashMap<>();
+        for (List<WeatherAlert> list : lists) {
+            for (WeatherAlert a : list) {
+                WeatherAlert seen = byKind.get(a.kind());
+                if (seen == null || levelRank(a.level()) > levelRank(seen.level())) {
+                    byKind.put(a.kind(), a);
+                }
+            }
+        }
+        return List.copyOf(byKind.values());
+    }
+
+    private static int levelRank(String level) {
+        if ("ROJA".equals(level)) {
+            return 3;
+        }
+        return "NARANJA".equals(level) ? 2 : 1;
     }
 
     /** "Alerta amarilla por tormentas". */

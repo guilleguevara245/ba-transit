@@ -11,6 +11,7 @@ import {
 } from '../utils/account.js'
 import { PREFS_CHANGED } from '../utils/prefsEvents.js'
 import { PLACES_CHANGED } from '../utils/placesStore.js'
+import { ZONE_CHANGED } from '../utils/weatherZone.js'
 import { getSession } from '../utils/session.js'
 import { scheduleFavoritesSync, upgradeSubscription } from '../utils/push.js'
 
@@ -33,13 +34,17 @@ export default function AccountSync() {
     window.addEventListener(FAVORITES_CHANGED, schedulePush)
     window.addEventListener(PLACES_CHANGED, schedulePlacesPush)
     window.addEventListener(PREFS_CHANGED, schedulePrefsPush)
-    // Los avisos de este navegador tambien siguen los favoritos.
+    // Los avisos de este navegador tambien siguen los favoritos y las zonas (Casa, Trabajo, zona del clima).
     window.addEventListener(FAVORITES_CHANGED, scheduleFavoritesSync)
+    window.addEventListener(PLACES_CHANGED, scheduleFavoritesSync)
+    window.addEventListener(ZONE_CHANGED, scheduleFavoritesSync)
     return () => {
       window.removeEventListener(FAVORITES_CHANGED, schedulePush)
       window.removeEventListener(PLACES_CHANGED, schedulePlacesPush)
       window.removeEventListener(PREFS_CHANGED, schedulePrefsPush)
       window.removeEventListener(FAVORITES_CHANGED, scheduleFavoritesSync)
+      window.removeEventListener(PLACES_CHANGED, scheduleFavoritesSync)
+      window.removeEventListener(ZONE_CHANGED, scheduleFavoritesSync)
     }
   }, [])
   return null

@@ -64,6 +64,29 @@ class ExtraNoticesTest {
                 "Desde mañana a las 12:00 hasta el sábado a las 18:00. Si viajás mañana, llevá agua y evitá el sol del mediodía.");
     }
 
+    @Test
+    void climaSoloParaLasZonasQueAlcanza() {
+        WeatherAlert amarilla = new WeatherAlert("a1", "TORMENTAS", "AMARILLA", "Tormentas", "", "", at(29, 9), at(29, 21), List.of());
+        WeatherAlert naranja = new WeatherAlert("a2", "TORMENTAS", "NARANJA", "Tormentas", "", "", at(29, 9), at(29, 21), List.of());
+        NoticeZones.Zone casa = new NoticeZones.Zone("casa", -34.6, -58.65);
+        NoticeZones.Zone trabajo = new NoticeZones.Zone("trabajo", -34.6, -58.4);
+        Target sinZona = target(1, Set.of(), Set.of("clima"), null);
+        Target conZonas = new Target(2, Set.of(), Set.of("clima"), null, Set.of(), List.of(casa, trabajo));
+        Target lejos = new Target(3, Set.of(), Set.of("clima"), null, Set.of(), List.of(new NoticeZones.Zone("casa", -35.0, -58.0)));
+
+        // La naranja alcanza solo Trabajo; la amarilla, Casa; ninguna llega a la zona de la suscripcion 3.
+        List<Planned> out = ExtraNotices.weather(List.of(sinZona, conZonas, lejos), t -> t.zones().isEmpty()
+                ? List.of(naranja)
+                : ExtraNotices.strongestByKind(t.zones().stream()
+                        .map(z -> z == trabajo ? List.of(naranja) : z == casa ? List.of(amarilla) : List.<WeatherAlert>of())
+                        .toList()), SITE, NOW);
+
+        assertThat(out.size()).isEqualTo(2);
+        assertThat(out.get(0).subscriptionId()).isEqualTo(1L);
+        assertThat(out.get(1).subscriptionId()).isEqualTo(2L);
+        assertThat(out.get(1).eventKey()).isEqualTo("clima:TORMENTAS:NARANJA:20261029");
+    }
+
     private static FareRow fare(TransportMode mode, String jurisdiction, String minKm, Integer section, Integer tripsFrom, String price) {
         return new FareRow(mode, jurisdiction, minKm == null ? null : new BigDecimal(minKm),
                 section == null ? null : section.shortValue(), tripsFrom == null ? null : tripsFrom.shortValue(),

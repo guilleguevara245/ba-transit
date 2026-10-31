@@ -25,7 +25,11 @@ const KINDS = [
 ]
 // Avisos que no dependen de un favorito puntual (los servicios especiales, de tus líneas).
 const EXTRA_KINDS = [
-  { key: 'clima', label: 'Alertas del clima', hint: 'Alertas del Servicio Meteorológico para la Ciudad y el conurbano.' },
+  {
+    key: 'clima',
+    label: 'Alertas del clima',
+    hint: 'Alertas del Servicio Meteorológico que alcanzan tu Casa, tu Trabajo o tu zona del clima (sin ninguna guardada, las de todo el AMBA).',
+  },
   { key: 'tarifas', label: 'Cambios de tarifa', hint: 'Cuando cambia el boleto de subte, colectivo o tren, y desde cuándo.' },
   {
     key: 'especiales',

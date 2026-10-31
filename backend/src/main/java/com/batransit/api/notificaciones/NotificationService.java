@@ -92,6 +92,7 @@ public class NotificationService {
                 r.notifyResolved() == null || r.notifyResolved(), from, to, Instant.now());
         sub.updateExtras(summaryTime(r.summaryTime()), summaryDays(r.summaryDays()), greeting(r.greetingName()),
                 lastTrainMinutes(r.lastTrainMinutes()));
+        sub.updateZones(NoticeZones.encode(NoticeZones.sanitize(r.zones())));
         subscriptions.save(sub);
     }
 
@@ -172,7 +173,7 @@ public class NotificationService {
             Favorites f = favoritesOf(s);
             return new ExtraNotices.Target(s.getId(), lines, kinds,
                     s.getLastTrainMinutes() == null ? null : s.getLastTrainMinutes().intValue(),
-                    new HashSet<>(f.colectivos()));
+                    new HashSet<>(f.colectivos()), NoticeZones.decode(s.getZones()));
         }).toList();
     }
 

@@ -1,6 +1,7 @@
 package com.batransit.api.notificaciones;
 
 import com.batransit.api.clima.WeatherAlertService;
+import com.batransit.api.clima.WeatherAlertService.WeatherAlert;
 import com.batransit.api.colectivos.BusAlertController;
 import com.batransit.api.colectivos.BusAlertParser;
 import com.batransit.api.live.TransporteLiveClient;
@@ -35,7 +36,8 @@ import java.util.Objects;
 
 /**
  * Los avisos que no salen de las alertas de las lineas (ver ExtraNotices):
- * - Clima: cada 5 minutos mira las alertas del SMN para el AMBA.
+ * - Clima: cada 5 minutos mira las alertas del SMN para el AMBA y avisa a
+ *   cada uno las que alcanzan sus zonas (o todas, si no guardo ninguna).
  * - Tarifas: cada 30 minutos compara el boleto de referencia de cada modo
  *   con el de la vuelta anterior (guardado en app_setting, asi un reinicio
  *   no lo confunde con un cambio). La primera vez solo toma nota.
@@ -92,7 +94,14 @@ public class ExtraNoticeJobs {
                 return;
             }
             List<Target> targets = targets().stream().filter(t -> t.kinds().contains("clima")).toList();
-            notifications.deliver(ExtraNotices.weather(alerts, targets, notifications.siteUrl(), now()), null);
+            // Cada suscripcion recibe las alertas que alcanzan sus zonas (Casa, Trabajo, zona del clima);
+            // sin zonas, las de todo el AMBA. Cada celda se consulta una sola vez por vuelta.
+            Map<String, List<WeatherAlert>> byCell = new HashMap<>();
+            notifications.deliver(ExtraNotices.weather(targets, t -> t.zones().isEmpty()
+                    ? alerts
+                    : ExtraNotices.strongestByKind(t.zones().stream()
+                            .map(z -> byCell.computeIfAbsent(z.cell(), c -> weather.forPoint(z.lat(), z.lon())))
+                            .toList()), notifications.siteUrl(), now()), null);
         } catch (RuntimeException e) {
             log.warn("Avisos del clima: fallo la revision ({})", e.getClass().getSimpleName());
         }
