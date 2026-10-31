@@ -14,6 +14,10 @@
 
   background: var(--bg);
   border-bottom: 3px solid var(--yellow);
+  /* Nada del header es texto para seleccionar: ni el logo, ni las pestañas,
+     ni el reloj y su panel, ni el menu de la cuenta. */
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .header-row {
@@ -550,15 +554,13 @@
   color: var(--text);
 }
 
-/* El mail entero, aunque ocupe dos renglones (se puede seleccionar). */
+/* El mail entero, aunque ocupe dos renglones. */
 .account-menu-me small {
   margin-top: 2px;
   font-size: 12px;
   line-height: 1.35;
   color: var(--text-dim);
   overflow-wrap: anywhere;
-  -webkit-user-select: text;
-  user-select: text;
 }
 
 .account-menu-item {

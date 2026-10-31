@@ -19,6 +19,9 @@
   border-top: 3px solid var(--yellow);
   background: var(--bg);
   color: var(--text);
+  /* Como el header: es navegacion, no texto para seleccionar. */
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 /* ---- Franja de contacto ---- */
