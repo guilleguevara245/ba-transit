@@ -7,9 +7,11 @@ import ModeIcon from '../components/ModeIcon.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import UpdatedAt from '../components/UpdatedAt.jsx'
 import { useApi } from '../hooks/useApi.js'
-import { AVAILABILITY_BADGES, availability, normalizeText, stationLabel } from '../utils/ecobici.js'
+import { AVAILABILITY_BADGES, availability, normalizeText, stationName } from '../utils/ecobici.js'
 import { badgeIcon } from '../utils/mapIcons.js'
 import MapBadge from '../components/MapBadge.jsx'
+import EcobiciPlaceIcon from '../components/EcobiciPlaceIcon.jsx'
+import EcobiciStock from '../components/EcobiciStock.jsx'
 import './ModePage.css'
 import './EcobiciPage.css'
 
@@ -120,7 +122,7 @@ export default function EcobiciPage() {
                     >
                       <MapBadge {...AVAILABILITY_BADGES[level.key]} />
                       <span className="ecobici-result-name">
-                        {stationLabel(s.name)}
+                        {stationName(s.name)}
                         {s.address && <small>{s.address}</small>}
                       </span>
                       <span className="ecobici-counts">
@@ -172,31 +174,21 @@ export default function EcobiciPage() {
                 <MapCard
                   badge={<MapCardIcon path={ECOBICI_ICON} />}
                   kicker="Estación EcoBici"
-                  title={stationLabel(s.name)}
+                  icon={<EcobiciPlaceIcon name={s.name} />}
+                  title={stationName(s.name)}
                 >
                   <div className="map-card-status" style={{ '--status-color': level.color }}>
                     <i />
                     {level.label}
                   </div>
-                  {s.renting && (
-                    <div className="map-card-stats">
-                      <div className="map-card-stat">
-                        <strong>{s.bikes}</strong>
-                        <span>{s.bikes === 1 ? 'bici disponible' : 'bicis disponibles'}</span>
-                      </div>
-                      <div className="map-card-stat">
-                        <strong>{s.docks}</strong>
-                        <span>{s.docks === 1 ? 'anclaje libre' : 'anclajes libres'}</span>
-                      </div>
-                    </div>
-                  )}
+                  {s.renting && <EcobiciStock bikes={s.bikes} docks={s.docks} />}
                 </MapCard>
               )
               return (
                 <Marker
                   key={s.id}
                   position={[s.latitude, s.longitude]}
-                  title={`${stationLabel(s.name)}: ${level.label}`}
+                  title={`${stationName(s.name)}: ${level.label}`}
                   icon={badgeIcon(badge.glyph, { ...badge, size: 22, active })}
                   eventHandlers={{ click: () => setSelectedId(s.id) }}
                 >

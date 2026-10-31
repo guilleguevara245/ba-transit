@@ -1,0 +1,119 @@
+/* Bicis y anclajes en la tarjeta: verde de sobra, amarillo pocas, rojo la ultima o ninguna. */
+.ecobici-stock {
+  --stock-color: #2f8a3c;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ecobici-stock-few {
+  --stock-color: #d9a300;
+}
+
+.ecobici-stock-last,
+.ecobici-stock-none {
+  --stock-color: #c23b34;
+}
+
+.ecobici-stock-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.ecobici-stock-row strong {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 26px;
+  line-height: 1;
+  color: var(--text);
+}
+
+.ecobici-stock-glyphs {
+  display: inline-flex;
+  align-items: center;
+  color: var(--stock-color);
+}
+
+.ecobici-stock-glyphs svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ecobici-stock-glyphs svg + svg {
+  margin-left: 2px;
+}
+
+/* Las bicis de un grupo, encimadas: el borde del color de la tarjeta las separa. */
+
+.ecobici-stock-halo {
+  stroke: var(--surface-raised);
+  stroke-width: 5.5;
+}
+
+/* Ninguno: el dibujo apagado y una X encima. */
+.ecobici-stock-none .ecobici-stock-glyph {
+  opacity: 0.4;
+}
+
+.ecobici-stock-x {
+  stroke-width: 2.8;
+}
+
+.ecobici-stock-label {
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+.ecobici-stock-label {
+  white-space: nowrap;
+}
+
+/* Los avisos (queda una, no hay lugar), debajo de los dos numeros. */
+.ecobici-stock-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 10px;
+  padding: 0;
+  list-style: none;
+}
+
+.ecobici-stock-notes li {
+  --stock-color: #c23b34;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--stock-color);
+}
+
+.ecobici-stock-notes li::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+:root[data-theme='dark'] .ecobici-stock-notes li {
+  --stock-color: #ef6b62;
+}
+
+:root[data-theme='dark'] .ecobici-stock {
+  --stock-color: #6fbf73;
+}
+
+:root[data-theme='dark'] .ecobici-stock-few {
+  --stock-color: #f4c11b;
+}
+
+:root[data-theme='dark'] .ecobici-stock-last,
+:root[data-theme='dark'] .ecobici-stock-none {
+  --stock-color: #ef6b62;
+}

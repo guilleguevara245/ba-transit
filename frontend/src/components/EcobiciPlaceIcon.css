@@ -1,0 +1,18 @@
+.ecobici-place-icon {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: var(--mode-icon-bg);
+  color: var(--mode-icon-fg);
+}
+
+.ecobici-place-icon svg {
+  width: 62%;
+  height: 62%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
