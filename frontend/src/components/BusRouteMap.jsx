@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useRef } from 'react'
-import { CircleMarker, MapContainer, Marker, Polyline, TileLayer, useMap } from 'react-leaflet'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { CircleMarker, MapContainer, Marker, Polyline, TileLayer, useMap, useMapEvents } from 'react-leaflet'
 import { badgeIcon } from '../utils/mapIcons.js'
+import BusIcon from './BusIcon.jsx'
 import MapCard from './MapCard.jsx'
-import { headsignTo, parseBusShortName, stopName } from '../utils/busNames.js'
+import { headsignName, stopName } from '../utils/busNames.js'
 
 function FitToRoute({ positions }) {
   const map = useMap()
@@ -16,6 +17,13 @@ function FitToRoute({ positions }) {
 
 /** Zoom al mostrar una parada elegida en la lista (si el mapa esta mas lejos). */
 const STOP_ZOOM = 16
+/** Con el mapa mas lejos que esto, las paradas intermedias van chiquitas (si no, tapan el recorrido). */
+const SMALL_STOPS_ZOOM = 14
+
+function ZoomTracker({ onZoom }) {
+  const map = useMapEvents({ zoomend: () => onZoom(map.getZoom()) })
+  return null
+}
 
 /**
  * Lleva el mapa a la parada elegida en la lista y abre su tarjeta. En el
@@ -58,11 +66,13 @@ export default function BusRouteMap({ route, directionIndex, className, vehicles
     [active, hasVehicles],
   )
   const markers = useRef([])
+  const [zoom, setZoom] = useState(12)
   const busBadge = (
     <span className="map-card-bus" style={route.color ? { background: route.color } : undefined}>
-      {parseBusShortName(route.shortName).number || '?'}
+      {route.shortName || '?'}
     </span>
   )
+  const smallStops = zoom < SMALL_STOPS_ZOOM
 
   return (
     <MapContainer className={className} center={[-34.6083, -58.4]} zoom={12} scrollWheelZoom>
@@ -94,17 +104,18 @@ export default function BusRouteMap({ route, directionIndex, className, vehicles
                   markers.current[index] = layer
                 }}
                 center={[stop.latitude, stop.longitude]}
-                radius={isFocused ? 8 : isEnd ? 7 : 4}
+                radius={isFocused ? 8 : isEnd ? 7 : smallStops ? 2.5 : 4}
                 pathOptions={{
                   color,
                   fillColor: isFocused ? color : '#ffffff',
                   fillOpacity: 1,
-                  weight: isFocused || isEnd ? 3 : 2,
+                  weight: isFocused || isEnd ? 3 : smallStops ? 1.5 : 2,
                 }}
               >
                 <MapCard
                   badge={busBadge}
                   kicker={index === 0 ? 'Cabecera' : index === active.stops.length - 1 ? 'Última parada' : 'Parada'}
+                  icon={<BusIcon kind="stop" color={route.color} />}
                   title={stopName(stop.name)}
                   subtitle={[
                     `Parada ${index + 1} de ${active.stops.length}`,
@@ -130,10 +141,15 @@ export default function BusRouteMap({ route, directionIndex, className, vehicles
         >
           <MapCard
             badge={busBadge}
-            kicker="Colectivo en vivo"
+            kicker={
+              <>
+                Colectivo en vivo <span className="live-dot" aria-hidden="true" />
+              </>
+            }
+            icon={<BusIcon kind="bus" />}
             title={`Línea ${route.shortName || '?'}`}
             subtitle={[
-              v.headsign ? `Hacia ${headsignTo(v.headsign)}` : null,
+              v.headsign ? `Hacia ${headsignName(v.headsign)}` : null,
               v.ageSeconds > 60 ? `posición de hace ${Math.round(v.ageSeconds / 60)} min` : 'posición actual',
             ]
               .filter(Boolean)
@@ -142,6 +158,7 @@ export default function BusRouteMap({ route, directionIndex, className, vehicles
         </Marker>
       ))}
 
+      <ZoomTracker onZoom={setZoom} />
       <FitToRoute positions={positions} />
       <FocusStop focused={focusedStop} stops={active?.stops} markers={markers} />
     </MapContainer>

@@ -5,10 +5,12 @@ import {
   busFavoriteId,
   busParams,
   busTitle,
+  headsignName,
   headsignTo,
   movingLabel,
   parseBusShortName,
   plainText,
+  operatorName,
   stopName,
 } from './busNames.js'
 
@@ -92,5 +94,26 @@ describe('plainText', () => {
     expect(plainText('Estación Constitución')).toBe('Estacion Constitucion')
     expect(plainText('  Av.   Corrientes ')).toBe('Av. Corrientes')
     expect(plainText(null)).toBe('')
+  })
+})
+
+describe('operatorName', () => {
+  it('pasa la empresa a minusculas y deja las siglas de sociedad', () => {
+    expect(operatorName('EMPRESA DEL OESTE SAT')).toBe('Empresa del Oeste SAT')
+    expect(operatorName('MICRO OMNIBUS NORTE S.A.')).toBe('Micro Omnibus Norte S.A.')
+    expect(operatorName('LA CENTRAL DE VICENTE LOPEZ SACI')).toBe('La Central de Vicente Lopez SACI')
+  })
+
+  it('deja como vienen las siglas sueltas y los nombres ya escritos bien', () => {
+    expect(operatorName('MOTCB')).toBe('MOTCB')
+    expect(operatorName('Transportes Sur Nuevo SA')).toBe('Transportes Sur Nuevo SA')
+  })
+})
+
+describe('headsignName', () => {
+  it('saca la "a" y las mayusculas del destino', () => {
+    expect(headsignName('A EST. MORON')).toBe('Est. Moron')
+    expect(headsignName('Ramal 14 - IDA')).toBe('Ramal 14 - IDA')
+    expect(headsignName('A COLECTORA PTA. 2 FORD')).toBe('Colectora Pta. 2 Ford')
   })
 })

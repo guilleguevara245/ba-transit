@@ -12,7 +12,15 @@ import FavoriteButton from '../components/FavoriteButton.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { useDebounce } from '../hooks/useDebounce.js'
-import { busDescription, busFavoriteId, busParams, busTitle, headsignTo, plainText } from '../utils/busNames.js'
+import {
+  busDescription,
+  busFavoriteId,
+  busParams,
+  busTitle,
+  headsignName,
+  operatorName,
+  stopName,
+} from '../utils/busNames.js'
 import { formatDuration } from '../utils/travelTime.js'
 import './ModePage.css'
 import './ColectivosPage.css'
@@ -102,7 +110,7 @@ function RouteDetail({ routeId, line, headsign, initialDirection }) {
         <div>
           <h2 className="bus-detail-name">{busTitle(route)}</h2>
           {busDescription(route) && <div className="bus-detail-agency">{busDescription(route)}</div>}
-          {route.agency && <div className="bus-detail-agency">{plainText(route.agency)}</div>}
+          {route.agency && <div className="bus-detail-agency">{operatorName(route.agency)}</div>}
         </div>
         {busFavoriteId(route.shortName) && (
           <FavoriteButton kind="colectivos" id={busFavoriteId(route.shortName)} name={busTitle(route)} />
@@ -121,7 +129,7 @@ function RouteDetail({ routeId, line, headsign, initialDirection }) {
               aria-pressed={index === directionIndex}
               onClick={() => setDirectionIndex(index)}
             >
-              Hacia {headsignTo(d.headsign) || `sentido ${index + 1}`}
+              Hacia {headsignName(d.headsign) || `sentido ${index + 1}`}
             </button>
           ))}
         </div>
@@ -133,7 +141,7 @@ function RouteDetail({ routeId, line, headsign, initialDirection }) {
           {vehicles.length > 0 &&
             `${vehicles.length} ${vehicles.length === 1 ? 'colectivo' : 'colectivos'} en vivo${matchesGtfs ? ' en este sentido' : ''}`}
           {vehicles.length === 0 && otherCount === 0 && 'Sin colectivos en vivo de esta línea ahora.'}
-          {vehicles.length > 0 && route.id !== routeId && (
+          {vehicles.length > 0 && (route.id !== routeId || vehicles.some((v) => v.otherRoute)) && (
             <span className="bus-live-note"> · pueden ir por un ramal distinto del recorrido dibujado</span>
           )}
           {live.data.updatedAt && (
@@ -148,7 +156,7 @@ function RouteDetail({ routeId, line, headsign, initialDirection }) {
             <>
               Ninguno en este sentido ahora, pero hay {otherCount} en vivo{' '}
               <button type="button" className="bus-live-switch" onClick={() => setDirectionIndex(otherIndex)}>
-                hacia {headsignTo(route.directions[otherIndex].headsign) || 'el otro sentido'}
+                hacia {headsignName(route.directions[otherIndex].headsign) || 'el otro sentido'}
               </button>
             </>
           )}
@@ -175,23 +183,30 @@ function RouteDetail({ routeId, line, headsign, initialDirection }) {
                 <span> según el horario del feed</span>
               </div>
             )}
-            <ol className="bus-stop-list" style={{ '--bus-color': route.color ?? '#17171a' }}>
-              {direction.stops.map((stop, index) => (
-                <li key={`${stop.id}-${index}`}>
-                  {/* Tocar la parada la muestra en el mapa con su tarjeta. */}
-                  <button
-                    type="button"
-                    className={`bus-stop-button${focusedStop?.index === index ? ' active' : ''}`}
-                    aria-current={focusedStop?.index === index ? 'location' : undefined}
-                    onClick={() => setFocusedStop((prev) => ({ index, n: (prev?.n ?? 0) + 1 }))}
-                  >
-                    <span>{plainText(stop.name)}</span>
-                    {direction.minutes?.[index] != null && index > 0 && (
-                      <span className="bus-stop-minutes">+{direction.minutes[index]} min</span>
-                    )}
-                  </button>
-                </li>
-              ))}
+            {/* El recorrido como una linea con sus paradas; la elegida queda marcada en la linea. */}
+            <ol className="bus-stop-list" style={route.color ? { '--bus-color': route.color } : undefined}>
+              {direction.stops.map((stop, index) => {
+                const active = focusedStop?.index === index
+                const end = index === 0 || index === direction.stops.length - 1
+                const minutes = direction.minutes?.[index]
+                return (
+                  <li key={`${stop.id}-${index}`} className={end ? 'bus-stop end' : 'bus-stop'}>
+                    {/* Tocar la parada la muestra en el mapa con su tarjeta. */}
+                    <button
+                      type="button"
+                      className={`bus-stop-button${active ? ' active' : ''}`}
+                      aria-current={active ? 'location' : undefined}
+                      onClick={() => setFocusedStop((prev) => ({ index, n: (prev?.n ?? 0) + 1 }))}
+                    >
+                      <span className="bus-stop-dot" aria-hidden="true" />
+                      <span className="bus-stop-name">{stopName(stop.name)}</span>
+                      {minutes != null && index > 0 && (
+                        <span className="bus-stop-minutes">+{formatDuration(minutes)}</span>
+                      )}
+                    </button>
+                  </li>
+                )
+              })}
             </ol>
           </div>
         )}
@@ -281,7 +296,7 @@ export default function ColectivosPage() {
                   <span className="bus-result-text">
                     <span className="bus-result-name">{busTitle(route)}</span>
                     {busDescription(route) && <span className="bus-result-agency">{busDescription(route)}</span>}
-                    {route.agency && <span className="bus-result-agency">{plainText(route.agency)}</span>}
+                    {route.agency && <span className="bus-result-agency">{operatorName(route.agency)}</span>}
                   </span>
                 </button>
               ))}

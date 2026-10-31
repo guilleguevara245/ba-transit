@@ -14,10 +14,22 @@ export function MapCardIcon({ path }) {
 
 /**
  * Tarjeta de un elemento del mapa con la misma estetica que el popup de
- * las estaciones: encabezado chico (icono y rubro), titulo grande,
- * subtitulo, contenido libre y enlaces al pie.
+ * las estaciones: encabezado chico (icono y rubro), titulo grande (con
+ * un icono opcional al lado, como el de estacion), subtitulo, contenido
+ * libre y enlaces al pie.
  */
-export default function MapCard({ badge, kicker, title, subtitle, children, actions, minWidth = 220, position, onClose }) {
+export default function MapCard({
+  badge,
+  kicker,
+  icon,
+  title,
+  subtitle,
+  children,
+  actions,
+  minWidth = 220,
+  position,
+  onClose,
+}) {
   // Con position la tarjeta es un popup suelto (uno solo para miles de
   // puntos, como los colectivos en vivo); sin position va dentro de un marcador.
   return (
@@ -34,7 +46,10 @@ export default function MapCard({ badge, kicker, title, subtitle, children, acti
           {badge}
           {kicker}
         </div>
-        <h3 className="station-popup-name">{title}</h3>
+        <h3 className="station-popup-name">
+          {icon}
+          {title}
+        </h3>
         {subtitle && <div className="station-popup-route">{subtitle}</div>}
         {children}
         {actions && <div className="station-popup-links">{actions}</div>}

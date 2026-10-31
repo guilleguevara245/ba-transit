@@ -118,19 +118,6 @@
   overflow-y: auto;
 }
 
-.bus-stop-list {
-  margin: 0;
-  padding-left: 22px;
-  font-size: 13px;
-  line-height: 1.9;
-  color: var(--text);
-}
-
-.bus-stop-list li::marker {
-  color: var(--bus-color);
-  font-weight: 700;
-}
-
 @media (max-width: 900px) {
   .bus-layout {
     grid-template-columns: minmax(0, 1fr);
@@ -251,31 +238,83 @@
   font-size: 12px;
 }
 
-.bus-stop-list li {
-  display: flex;
+.bus-stop-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  color: var(--text);
+}
+
+/*
+ * Recorrido: una linea vertical del color de la linea (o del texto si el
+ * feed no trae color) que pasa por un punto en cada parada. Las cabeceras
+ * tienen el punto mas grande; la elegida, relleno y con un anillo.
+ */
+.bus-stop {
+  position: relative;
+}
+
+.bus-stop::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 9px;
+  width: 3px;
+  margin-left: -1.5px;
+  background: var(--bus-color, var(--text));
+  opacity: 0.85;
+}
+
+.bus-stop:first-child::before {
+  top: 50%;
+}
+
+.bus-stop:last-child::before {
+  bottom: 50%;
 }
 
 /* Cada parada es un boton: la muestra en el mapa. */
 .bus-stop-button {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
+  position: relative;
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 10px;
   width: 100%;
-  margin: 0 0 0 -4px;
-  padding: 0 4px;
+  padding: 5px 8px 5px 0;
   border: none;
-  border-radius: 3px;
+  border-radius: 6px;
   background: none;
   color: inherit;
   font: inherit;
-  line-height: inherit;
+  line-height: 1.35;
   text-align: left;
   cursor: pointer;
 }
 
+.bus-stop-dot {
+  justify-self: center;
+  width: 9px;
+  height: 9px;
+  border: 2px solid var(--bus-color, var(--text));
+  border-radius: 50%;
+  background: var(--surface);
+}
+
+.bus-stop.end .bus-stop-dot {
+  width: 13px;
+  height: 13px;
+  border-width: 3px;
+}
+
+.bus-stop.end .bus-stop-name {
+  font-weight: 600;
+}
+
 .bus-stop-button:hover {
-  background: var(--surface-hover);
-  color: var(--accent-text);
+  background: var(--bg);
 }
 
 .bus-stop-button:focus-visible {
@@ -284,14 +323,22 @@
 }
 
 .bus-stop-button.active {
-  background: var(--surface-hover);
+  background: rgba(244, 193, 27, 0.16);
   font-weight: 600;
-  box-shadow: inset 3px 0 0 var(--bus-color);
+}
+
+.bus-stop-button.active .bus-stop-dot {
+  width: 15px;
+  height: 15px;
+  border-width: 3px;
+  background: var(--bus-color, var(--text));
+  box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px var(--yellow);
 }
 
 .bus-stop-minutes {
   color: var(--text-faint);
   font-size: 12px;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -338,4 +385,22 @@
   font-family: 'Barlow Condensed', sans-serif;
   font-weight: 700;
   font-size: 14px;
+}
+
+.live-buses-filter-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 4px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+/* El punto de tus colectivos en el mapa: negro con borde amarillo. */
+.live-buses-fav-dot {
+  width: 10px;
+  height: 10px;
+  border: 2px solid #f4c11b;
+  border-radius: 50%;
+  background: #17171a;
 }

@@ -28,8 +28,9 @@ public class BusPositionsController {
     /** Posiciones mas viejas que esto se descartan (colectivo fuera de servicio o sin GPS). */
     static final long MAX_POSITION_AGE_SECONDS = 10 * 60;
 
+    /** otherRoute: de la misma linea (mismo cartel) pero con otro route_id, por ejemplo otro ramal. */
     public record Vehicle(String id, double latitude, double longitude, int direction, String headsign,
-                          long ageSeconds) {
+                          long ageSeconds, boolean otherRoute) {
     }
 
     public record VehiclesResponse(boolean available, Instant updatedAt, List<Vehicle> vehicles) {
@@ -130,7 +131,10 @@ public class BusPositionsController {
      * Los colectivos de una linea. numero (opcional): el cartel ("303A");
      * si el feed en vivo trae otro cartel con el mismo route_id (pasa
      * cuando el GTFS del dia y el feed en vivo numeran distinto), se
-     * descarta, asi no aparecen colectivos de otra linea en el mapa.
+     * descarta, asi no aparecen colectivos de otra linea en el mapa. Y al
+     * reves: los de ese cartel con otro route_id (otro ramal, o un id que
+     * el feed en vivo numera distinto) se suman marcados con otherRoute,
+     * asi la pagina de la linea cuenta los mismos que "Mis colectivos".
      */
     @GetMapping("/{routeId}/vivo")
     public VehiclesResponse vehicles(@PathVariable String routeId,
@@ -157,11 +161,13 @@ public class BusPositionsController {
         String wanted = lineKey(line);
         List<Vehicle> result = new ArrayList<>();
         for (JsonNode v : feed) {
-            if (!routeId.equals(v.path("route_id").asText(""))) {
+            boolean sameRoute = routeId.equals(v.path("route_id").asText(""));
+            String vehicleLine = lineKey(v.path("route_short_name").asText(""));
+            boolean sameLine = wanted != null && wanted.equals(vehicleLine);
+            if (!sameRoute && !sameLine) {
                 continue;
             }
-            String vehicleLine = lineKey(v.path("route_short_name").asText(""));
-            if (wanted != null && vehicleLine != null && !wanted.equals(vehicleLine)) {
+            if (sameRoute && wanted != null && vehicleLine != null && !sameLine) {
                 continue; // mismo id, otra linea
             }
             double lat = v.path("latitude").asDouble(0);
@@ -175,7 +181,7 @@ public class BusPositionsController {
                 continue;
             }
             result.add(new Vehicle(v.path("id").asText(""), lat, lon, v.path("direction").asInt(0),
-                    com.batransit.api.colectivos.TextRepair.fix(v.path("trip_headsign").asText("")), age));
+                    com.batransit.api.colectivos.TextRepair.fix(v.path("trip_headsign").asText("")), age, !sameRoute));
         }
         return result;
     }

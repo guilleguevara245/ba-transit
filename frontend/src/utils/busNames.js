@@ -88,10 +88,37 @@ export function stopName(name) {
     .replace(/^\s*\d+\s*[-–]?\s*/, '')
     .trim()
   if (!clean || clean !== clean.toUpperCase()) return clean || (name ?? '')
-  return clean
+  return titleCase(clean)
+}
+
+/** "AVENIDA DEL LIBERTADOR" -> "Avenida del Libertador". */
+function titleCase(text) {
+  return text
     .toLowerCase()
     .split(/\s+/)
     .map((word, index) => (index > 0 && LOWER_WORDS.has(word) ? word : word.replace(/^\p{L}/u, (c) => c.toUpperCase())))
+    .join(' ')
+}
+
+/** Siglas de sociedades que quedan en mayusculas ("SAT", "S.A."). */
+const COMPANY_SUFFIX = /^(S\.?A\.?[A-Z.]*|S\.?R\.?L\.?|S\.?E\.?|SAT|SAU|SACI[A-Z]*|SAIC[A-Z]*|MOTCB)$/
+
+/**
+ * Empresa legible: el feed la trae en mayusculas ("EMPRESA DEL OESTE SAT"
+ * -> "Empresa del Oeste SAT"). Las siglas de sociedad y los nombres de
+ * una sola palabra ("MOTCB") quedan como vienen.
+ */
+export function operatorName(agency) {
+  const clean = plainText(agency)
+  const words = clean.split(' ')
+  if (words.length < 2 || clean !== clean.toUpperCase()) return clean
+  return words
+    .map((word, index) => {
+      if (COMPANY_SUFFIX.test(word)) return word
+      const lower = word.toLowerCase()
+      if (index > 0 && LOWER_WORDS.has(lower)) return lower
+      return lower.replace(/^\p{L}/u, (c) => c.toUpperCase())
+    })
     .join(' ')
 }
 
@@ -120,4 +147,10 @@ export function alertsForBus(alerts, line) {
 /** El destino sin la "a" del feed ("A EST. MORÓN" -> "EST. MORÓN"), para escribir "Hacia ...". */
 export function headsignTo(headsign) {
   return plainText(headsign).replace(/^a\s+/i, '')
+}
+
+/** El destino para leer en un texto: sin la "a" y sin gritar ("A EST. MORON" -> "Est. Moron"). */
+export function headsignName(headsign) {
+  const to = headsignTo(headsign)
+  return to && to === to.toUpperCase() && /\p{L}/u.test(to) ? titleCase(to) : to
 }

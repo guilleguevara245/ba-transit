@@ -81,4 +81,24 @@ class BusPositionsControllerTest {
         // Sin numero, como antes: todos los del id.
         assertThat(BusPositionsController.vehiclesOf(feed, "500", NOW).size()).isEqualTo(3);
     }
+
+    @Test
+    void sumaLosDeLaMismaLineaConOtroId() throws Exception {
+        String json = """
+                [{"route_id": "500", "latitude": -34.6, "longitude": -58.6, "timestamp": 1776129290, "id": "1",
+                  "route_short_name": "303A"},
+                 {"route_id": "501", "latitude": -34.7, "longitude": -58.5, "timestamp": 1776129290, "id": "2",
+                  "route_short_name": "303 a"},
+                 {"route_id": "502", "latitude": -34.7, "longitude": -58.5, "timestamp": 1776129290, "id": "3",
+                  "route_short_name": "303B"}]
+                """;
+        var feed = new ObjectMapper().readTree(json);
+        List<Vehicle> mine = BusPositionsController.vehiclesOf(feed, "500", "303A", NOW);
+        // El 303A de otro ramal se suma marcado; el 303B no.
+        assertThat(mine).extracting(Vehicle::id).containsExactly("1", "2");
+        assertThat(mine.get(0).otherRoute()).isFalse();
+        assertThat(mine.get(1).otherRoute()).isTrue();
+        // Sin numero no se puede saber cual es la misma linea: solo los del id.
+        assertThat(BusPositionsController.vehiclesOf(feed, "500", NOW)).extracting(Vehicle::id).containsExactly("1");
+    }
 }

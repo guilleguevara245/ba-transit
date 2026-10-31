@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import { CircleMarker, MapContainer, Marker, TileLayer, useMapEvents } from 'react-leaflet'
 import { badgeIcon } from '../utils/mapIcons.js'
+import BusIcon from './BusIcon.jsx'
 import Chevrons from './Chevrons.jsx'
 import MapCard from './MapCard.jsx'
 import UpdatedAt from './UpdatedAt.jsx'
 import { useApi } from '../hooks/useApi.js'
 import Skeleton from './Skeleton.jsx'
 import { useFavoriteList } from '../hooks/useFavoriteList.js'
-import { busFavoriteId, headsignTo } from '../utils/busNames.js'
+import { busFavoriteId, headsignName, movingLabel } from '../utils/busNames.js'
 import '../pages/EcobiciPage.css'
 
 const REFRESH_MS = 30_000
@@ -16,6 +17,13 @@ const ZOOM = 11
 // este zoom, con el dibujo de un colectivo, y solo los que estan a la vista.
 const ICON_ZOOM = 14
 const BUS_BADGE = { bg: '#f4c11b', fg: '#17171a', border: '#17171a', shape: 'square', size: 24 }
+
+/** Con el mapa lejos son miles: puntos mas chicos para que se vean las calles. */
+function dotRadius(zoom) {
+  if (zoom <= 11) return 2.5
+  if (zoom <= 12) return 3
+  return 4
+}
 
 function ViewTracker({ onChange }) {
   const map = useMapEvents({
@@ -50,6 +58,8 @@ export default function LiveBusesMap({ onSelectRoute }) {
   }
   const filter = lineFilter && favorites.includes(lineFilter) ? lineFilter : null
   const buses = filter ? data.buses.filter((bus) => busFavoriteId(bus.line) === filter) : data.buses
+  const favoriteBuses =
+    favorites.length > 0 ? data.buses.filter((bus) => favorites.includes(busFavoriteId(bus.line))) : []
 
   return (
     <section className="live-buses" aria-label="Colectivos en movimiento">
@@ -87,21 +97,43 @@ export default function LiveBusesMap({ onSelectRoute }) {
             <CircleMarker
               key={bus.id || index}
               center={[bus.latitude, bus.longitude]}
-              radius={3.5}
-              pathOptions={{ color: '#17171a', weight: 1, fillColor: '#f4c11b', fillOpacity: 0.95 }}
+              radius={dotRadius(view.zoom)}
+              pathOptions={{
+                color: '#17171a',
+                weight: view.zoom <= 11 ? 0.6 : 1,
+                fillColor: '#f4c11b',
+                fillOpacity: 0.95,
+              }}
               eventHandlers={{ click: () => setSelected(bus) }}
             />
           )
         })}
+        {/* Tus colectivos, encima y en negro, para encontrarlos entre los demas. */}
+        {!showIcons &&
+          !filter &&
+          favoriteBuses.map((bus, index) => (
+            <CircleMarker
+              key={`fav-${bus.id || index}`}
+              center={[bus.latitude, bus.longitude]}
+              radius={dotRadius(view.zoom) + 2.5}
+              pathOptions={{ color: '#f4c11b', weight: 2, fillColor: '#17171a', fillOpacity: 1 }}
+              eventHandlers={{ click: () => setSelected(bus) }}
+            />
+          ))}
         {selected && (
           <MapCard
             key={selected.id}
             position={[selected.latitude, selected.longitude]}
             onClose={() => setSelected(null)}
             badge={<span className="map-card-bus">{selected.line || '?'}</span>}
-            kicker="Colectivo en vivo"
+            kicker={
+              <>
+                Colectivo en vivo <span className="live-dot" aria-hidden="true" />
+              </>
+            }
+            icon={<BusIcon kind="bus" />}
             title={`Línea ${selected.line || '?'}`}
-            subtitle={selected.headsign ? `Hacia ${headsignTo(selected.headsign)}` : null}
+            subtitle={selected.headsign ? `Hacia ${headsignName(selected.headsign)}` : null}
             actions={
               selected.routeId && (
                 <button
@@ -122,6 +154,9 @@ export default function LiveBusesMap({ onSelectRoute }) {
           role="group"
           aria-label="Ver en el mapa solo un colectivo"
         >
+          <span className="live-buses-filter-label">
+            <span className="live-buses-fav-dot" aria-hidden="true" /> Tus colectivos (tocá uno para ver solo ese):
+          </span>
           {favorites.map((line) => {
             const active = filter === line
             return (
@@ -136,7 +171,7 @@ export default function LiveBusesMap({ onSelectRoute }) {
                 }}
               >
                 <span className="live-buses-filter-number">{line}</span>
-                <small>{counts[line] ?? 0}</small>
+                <small>{movingLabel(counts[line] ?? 0)}</small>
               </button>
             )
           })}
