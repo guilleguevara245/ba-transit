@@ -203,7 +203,7 @@
   display: none;
 }
 
-@media (max-width: 1360px) {
+@media (max-width: 1440px) {
   .clock-date-long {
     display: none;
   }
@@ -214,9 +214,21 @@
 }
 
 /* Pantallas medianas: la navegacion entra justa al lado del logo, asi
-   que se achica el espaciado antes de pasar al formato de celular. */
-/* Con 7 secciones, por debajo de 1280 px las pestañas quedan solo con texto. */
-@media (max-width: 1280px) {
+   que se achica el espaciado antes de pasar al formato de celular. En
+   1366 px (notebooks comunes) el header se pasaba del ancho y el boton de
+   la cuenta quedaba cortado. */
+@media (max-width: 1440px) {
+  .header-row {
+    gap: 22px;
+  }
+
+  .nav-tab {
+    padding: 9px 10px;
+  }
+}
+
+/* Con 7 secciones, por debajo de 1320 px las pestañas quedan solo con texto. */
+@media (max-width: 1320px) {
   .nav-tab .nav-icon {
     display: none;
   }
@@ -224,11 +236,22 @@
 
 @media (max-width: 1280px) {
   .header-row {
-    gap: 24px;
+    gap: 20px;
+  }
+}
+
+@media (max-width: 1180px) {
+  .header-row {
+    gap: 14px;
+  }
+
+  .nav-tabs {
+    gap: 2px;
   }
 
   .nav-tab {
-    padding: 9px 10px;
+    padding: 9px 7px;
+    letter-spacing: 0.3px;
   }
 }
 
