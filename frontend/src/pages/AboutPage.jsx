@@ -110,11 +110,11 @@ const SOURCES = [
       'Temperatura, lluvia y viento hora por hora, a partir de modelos meteorológicos. Las alertas son las oficiales del SMN.',
   },
   {
-    what: 'Direcciones de Mis lugares',
+    what: 'Direcciones',
     source: 'Georef, Servicio de Normalización de Datos Geográficos (datos.gob.ar)',
     url: 'https://datosgobar.github.io/georef-ar-api/',
     detail:
-      'Confirma que la dirección de Casa, Trabajo y los otros lugares exista en el AMBA y dice dónde queda, para sumar la estación más cercana.',
+      'Confirma que la dirección de Casa, Trabajo y los otros lugares exista en el AMBA y busca las direcciones de Cómo llegar, para sumar las estaciones cercanas.',
   },
   {
     what: 'Avisos de los trenes',

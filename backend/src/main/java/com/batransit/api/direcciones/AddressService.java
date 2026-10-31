@@ -31,7 +31,8 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Busca direcciones con Georef, la API de direcciones de la Nacion
  * (apis.datos.gob.ar, datos abiertos). Para "Mis lugares": la persona escribe
- * su direccion, ve como se encontro y la confirma. Solo se devuelven
+ * su direccion, ve como se encontro y la confirma. Para "Como llegar": la
+ * direccion de salida o de llegada del viaje. Solo se devuelven
  * resultados del AMBA, sin repetidos. Las busquedas se guardan un dia (la
  * misma direccion no se vuelve a consultar) y no se loguean.
  */

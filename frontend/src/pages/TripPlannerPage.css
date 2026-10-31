@@ -21,8 +21,7 @@
   color: var(--text-faint);
 }
 
-.planner-field input,
-.planner-address input {
+.planner-field input {
   padding: 10px 12px;
   border: 1px solid var(--line);
   background: var(--bg);
@@ -31,8 +30,7 @@
   font-size: 15px;
 }
 
-.planner-field input:focus,
-.planner-address input:focus {
+.planner-field input:focus {
   outline: 2px solid var(--yellow);
   outline-offset: 1px;
 }
@@ -44,9 +42,10 @@
   height: 40px;
   border: 1px solid var(--line);
   border-radius: 50%;
+  display: grid;
+  place-items: center;
   background: var(--surface);
   color: var(--text-dim);
-  font-size: 18px;
   cursor: pointer;
 }
 
@@ -55,10 +54,43 @@
   color: var(--text);
 }
 
-.planner-empty {
+/* Avisos: lugares repetidos, sin estaciones cerca, conviene caminar... */
+.planner-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
   margin-top: 14px;
+  padding: 10px 14px;
+  border-left: 3px solid var(--yellow);
+  background: var(--bg);
   font-size: 13px;
-  color: var(--text-faint);
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.planner-notice .trip-icon {
+  width: 17px;
+  height: 17px;
+  margin-top: 1px;
+  color: var(--accent-text);
+}
+
+.planner-notice a {
+  color: var(--accent-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.planner-notice a:hover {
+  text-decoration: underline;
+}
+
+.planner-notice-walk {
+  border-left-color: var(--normal);
+}
+
+.planner-notice-walk .trip-icon {
+  color: var(--normal);
 }
 
 .planner-result {
@@ -67,152 +99,227 @@
   border-top: 1px solid var(--line);
 }
 
+/* Total, combinaciones y hora de llegada; a la derecha, la tira de lineas. */
 .planner-summary {
   display: flex;
-  align-items: baseline;
-  gap: 12px;
-  margin-bottom: 12px;
-  color: var(--text-dim);
-  font-size: 14px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  margin-bottom: 16px;
 }
 
 .planner-summary strong {
+  display: block;
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 32px;
+  line-height: 1.05;
   color: var(--text);
 }
 
-.planner-legs {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.planner-leg {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 10px 12px;
-  background: var(--bg);
-  border-left: 4px solid var(--line-color, var(--line));
+.planner-summary span {
   font-size: 14px;
+  color: var(--text-dim);
 }
 
-.planner-leg div {
+.planner-strip {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.planner-strip-part {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.planner-strip .chevrons {
+  width: 1em;
+  height: 0.75em;
+  color: var(--text-faint);
+}
+
+.planner-strip .trip-icon {
+  color: var(--text-dim);
+}
+
+/*
+ * Linea de tiempo: hora | linea con las paradas | texto. Entre paradas, el
+ * tramo con el color de su linea (punteado si es a pie o esperando otro
+ * ramal). La linea de cada parada se dibuja en dos mitades (como llega y
+ * como sigue) para que no se corte.
+ */
+.planner-timeline {
+  list-style: none;
+  display: grid;
+  grid-template-columns: max-content 22px 1fr;
+  column-gap: 12px;
+}
+
+.planner-stop,
+.planner-seg {
+  display: contents;
+}
+
+.planner-time {
+  min-width: 44px;
+  padding-top: 1px;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.planner-rail {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.planner-rail::before,
+.planner-rail::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  width: 6px;
+  transform: translateX(-50%);
+}
+
+.planner-rail::before {
+  top: 0;
+  height: 10px;
+  background: var(--in);
+}
+
+.planner-rail::after {
+  top: 10px;
+  bottom: 0;
+  background: var(--out);
+}
+
+.planner-rail.in-walk::before,
+.planner-rail.out-walk::after,
+.planner-rail.in-wait::before,
+.planner-rail.out-wait::after {
+  width: 0;
+  border-left: 3px dotted var(--text-faint);
+  background: none;
+}
+
+.planner-rail.no-in::before,
+.planner-rail.no-out::after {
+  display: none;
+}
+
+.planner-node {
+  position: relative;
+  z-index: 1;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  border: 3px solid var(--node, var(--text-dim));
+  border-radius: 50%;
+  background: var(--surface);
+}
+
+.planner-stop-address .planner-node {
+  border-color: var(--accent-text);
+}
+
+.planner-stop-end .planner-node {
+  background: var(--node, var(--accent-text));
+}
+
+.planner-stop-end.planner-stop-address .planner-node {
+  background: var(--accent-text);
+}
+
+.planner-stop-text {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
+  min-width: 0;
+  padding-bottom: 6px;
 }
 
-.planner-leg span {
-  color: var(--text-dim);
+.planner-stop-text strong {
+  font-size: 15px;
+  color: var(--text);
+}
+
+.planner-stop-text span {
   font-size: 13px;
+  color: var(--text-dim);
 }
 
-.planner-walk {
-  border-left-style: dashed;
+.planner-track {
+  justify-self: center;
+  width: 6px;
+  min-height: 36px;
+  background: var(--track);
 }
 
-.planner-walk-icon {
-  width: 24px;
-  text-align: center;
-  font-size: 16px;
+.planner-seg-walk .planner-track,
+.planner-seg-wait .planner-track {
+  width: 0;
+  border-left: 3px dotted var(--text-faint);
+  background: none;
 }
 
-.planner-note,
-.planner-dim {
+.planner-seg-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0 10px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.planner-seg-text .trip-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--text-faint);
+}
+
+.planner-note {
   margin-top: 10px;
   font-size: 12px;
   color: var(--text-faint);
 }
 
-.planner-note a,
-.planner-maps {
+.planner-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 22px;
+  margin-top: 12px;
+}
+
+.planner-link {
   color: var(--accent-text);
+  font-size: 14px;
   font-weight: 600;
   text-decoration: none;
 }
 
-.planner-maps {
-  display: inline-block;
-  margin-top: 10px;
-  font-size: 14px;
+.planner-link:hover {
+  text-decoration: underline;
 }
 
-.planner-heading {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 700;
-  font-size: 20px;
-  color: var(--text);
-}
-
-.planner-address {
-  display: grid;
-  grid-template-columns: 1fr 1fr auto;
-  gap: 10px;
-  margin-top: 12px;
-}
-
-.planner-address {
-  align-items: start;
-}
-
-.planner-address-field {
-  display: grid;
-  gap: 6px;
-  min-width: 0;
-}
-
-.planner-address-field input {
-  width: 100%;
-}
-
-.planner-address input[aria-invalid='true'] {
-  border-color: var(--interrupted);
-}
-
-.planner-address input[aria-invalid='true']:focus {
-  outline-color: var(--interrupted);
-}
-
-.planner-address-error {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--interrupted);
-}
-
-.planner-address-error::before {
-  content: '!';
-  display: inline-grid;
-  place-items: center;
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-  border-radius: 50%;
-  background: var(--interrupted);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.planner-address button {
-  padding: 10px 16px;
-  border: none;
-  background: var(--yellow);
-  color: #17171a;
-  font: inherit;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
+.planner-link .chevrons {
+  width: 1em;
+  height: 0.75em;
 }
 
 @media (max-width: 760px) {
-  .planner-form,
-  .planner-address {
+  .planner-form {
     grid-template-columns: 1fr;
   }
 
@@ -240,10 +347,6 @@
 
 .planner-accessible small {
   color: var(--text-faint);
-}
-
-.planner-share {
-  margin: 10px 14px 0 0;
 }
 
 /* Mis lugares: atajos Casa / Trabajo y chips debajo de cada campo. */

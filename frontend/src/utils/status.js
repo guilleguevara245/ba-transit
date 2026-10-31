@@ -61,7 +61,7 @@ export const STATUS_GROUPS = [
     id: 'cuenta',
     title: 'Tu cuenta',
     icon: 'CUENTA',
-    items: { brevo: 'Mails (recuperar la contraseña)', georef: 'Direcciones de Mis lugares' },
+    items: { brevo: 'Mails (recuperar la contraseña)', georef: 'Direcciones (Mis lugares y Cómo llegar)' },
   },
 ]
 

@@ -42,7 +42,7 @@ public class SourceHealth {
         METROVIAS("Estado del Urquiza", "Metrovías"),
         SMN("Alertas meteorológicas", "Servicio Meteorológico Nacional"),
         PRONOSTICO("Pronóstico del clima", "Open-Meteo"),
-        GEOREF("Búsqueda de direcciones (Mis lugares)", "Georef (datos.gob.ar)"),
+        GEOREF("Búsqueda de direcciones (Mis lugares y Cómo llegar)", "Georef (datos.gob.ar)"),
         TOMTOM("Tránsito en los accesos", "TomTom"),
         ADSB_LOL("Aviones en vivo", "adsb.lol"),
         NOTICIAS("Noticias del transporte", "enelSubte y Google Noticias"),

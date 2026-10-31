@@ -168,6 +168,10 @@ export default function PrivacyPage() {
           direcciones del Estado nacional) por el texto que escribiste. Solo se guarda la dirección, una zona de unos 5
           km y la estación más cercana: la ubicación exacta no se guarda.
         </p>
+        <p>
+          Las direcciones que escribís en Cómo llegar se buscan igual, pero no se guardan en ningún lado: el viaje se
+          arma en tu navegador y la dirección no va en el enlace para compartir.
+        </p>
       </section>
 
       <section className="about-block">
