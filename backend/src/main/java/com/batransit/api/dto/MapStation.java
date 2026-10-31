@@ -19,6 +19,7 @@ public record MapStation(
         Integer sequenceOrder,
         LocalDate openedOn,
         String landmarks,
-        Boolean accessible
+        Boolean accessible,
+        String lineOperator
 ) {
 }

@@ -24,7 +24,7 @@ public interface StationRepository extends JpaRepository<Station, Long> {
 
     String MAP_STATION_SELECT = "SELECT new com.batransit.api.dto.MapStation("
             + "s.id, s.name, s.latitude, s.longitude, b.id, tl.id, tl.mode, tl.code, tl.name, tl.colorHex, "
-            + "s.sequenceOrder, s.openedOn, s.landmarks, s.accessible) "
+            + "s.sequenceOrder, s.openedOn, s.landmarks, s.accessible, tl.operator) "
             + "FROM Station s JOIN s.branch b JOIN b.transportLine tl "
             + "WHERE s.active = true AND s.latitude IS NOT NULL AND s.longitude IS NOT NULL ";
 

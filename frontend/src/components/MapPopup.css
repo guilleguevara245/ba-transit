@@ -14,9 +14,21 @@
 }
 
 .station-popup {
+  position: relative;
   font-family: 'Inter', sans-serif;
   font-size: 13px;
   color: var(--text);
+}
+
+/* Franja del color de la linea pegada al borde de arriba de la tarjeta
+   (el contenido tiene 14px de margen y el contenedor 1px de relleno). */
+.station-popup-stripe {
+  position: absolute;
+  top: -15px;
+  left: -17px;
+  right: -17px;
+  height: 3px;
+  border-radius: 6px 6px 0 0;
 }
 
 .station-popup-line {
@@ -28,12 +40,17 @@
   color: var(--text-dim);
 }
 
-.station-popup-line .station-icon {
-  margin-right: 2px;
+.station-popup-dot,
+.station-popup-operator {
+  font-weight: 500;
+  color: var(--text-faint);
 }
 
 .station-popup-name {
-  margin: 6px 0 2px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 7px 0 3px;
   font-family: 'Barlow Condensed', sans-serif;
   font-weight: 700;
   font-size: 22px;
@@ -43,6 +60,70 @@
 .station-popup-route {
   font-size: 12px;
   color: var(--text-faint);
+}
+
+/* ---- Mini recorrido: un punto por estacion, la actual resaltada ---- */
+
+.station-popup-route-count {
+  margin: 8px 0 6px;
+}
+
+.station-popup-track {
+  position: relative;
+  height: 12px;
+}
+
+.station-popup-rail,
+.station-popup-rail-done {
+  position: absolute;
+  left: 4px;
+  top: 5px;
+  height: 2px;
+  border-radius: 1px;
+}
+
+.station-popup-rail {
+  right: 4px;
+  background: var(--line);
+}
+
+.station-popup-rail-done {
+  background: var(--line-color);
+}
+
+.station-popup-track i {
+  position: absolute;
+  top: 3px;
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  border-radius: 50%;
+  background: var(--line);
+}
+
+.station-popup-track i.done {
+  background: var(--line-color);
+}
+
+.station-popup-track i.here {
+  top: 0;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  background: var(--surface);
+  border: 3px solid var(--line-color);
+}
+
+.station-popup-route-ends {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 4px;
+  color: var(--text-dim);
+}
+
+.station-popup-route-ends span:last-child {
+  text-align: right;
 }
 
 .station-popup-section {
@@ -76,21 +157,69 @@
   gap: 7px;
 }
 
-.station-popup-ok {
+/* ---- Estado de la estacion: renglones con icono ---- */
+
+.station-popup-status {
+  padding-top: 9px;
+}
+
+.station-popup-state {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 7px 9px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.station-popup-state svg {
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+  margin-top: 1px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.station-popup-state strong {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 12px;
+}
+
+.station-popup-state-ok {
+  background: var(--normal-tint);
   color: var(--normal);
   font-weight: 500;
 }
 
-.station-popup-alert {
+.station-popup-state-line {
+  background: var(--delayed-tint);
   color: var(--text-dim);
-  line-height: 1.45;
 }
 
-.station-popup-alert strong {
-  display: block;
+.station-popup-state-line svg,
+.station-popup-state-line strong {
   color: var(--delayed);
-  font-size: 12px;
-  margin-bottom: 2px;
+}
+
+.station-popup-state-here {
+  background: var(--interrupted-tint);
+  color: var(--text-dim);
+}
+
+.station-popup-state-here svg,
+.station-popup-state-here strong {
+  color: var(--interrupted);
+}
+
+.station-popup-state-note {
+  padding-top: 5px;
+  color: var(--text-faint);
 }
 
 .next-trains-list {
@@ -277,18 +406,6 @@ button.station-popup-link {
   background: none;
   font: inherit;
   cursor: pointer;
-}
-
-.station-popup-alert-here strong {
-  color: var(--interrupted);
-}
-
-.station-popup-elsewhere {
-  display: block;
-  margin-top: 2px;
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--text-faint);
 }
 
 .next-trains-towards .next-trains-every {

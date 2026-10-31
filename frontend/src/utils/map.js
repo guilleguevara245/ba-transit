@@ -86,6 +86,17 @@ export function routeInfo(stations, station) {
 }
 
 /**
+ * Nombre corto de la operadora para la tarjeta de estacion ("Trenes
+ * Argentinos Operaciones" queda en "Trenes Argentinos"; "Emova Movilidad",
+ * en "Emova"). Sin dato, null.
+ */
+export function shortOperator(operator) {
+  const name = operator?.trim()
+  if (!name) return null
+  return name.replace(/\s+(Operaciones|Movilidad)$/i, '')
+}
+
+/**
  * Todos los ramales de la linea que paran en esta estacion (en el Roca,
  * Temperley es parada de varios): un routeInfo por ramal, sin repetir.
  */

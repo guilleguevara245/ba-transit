@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { SUBTE_TRANSFERS, buildLegend, buildRoutes, connectingLineCodes, distanceKm, findTransfers, lineSummary, routeInfo, stationBranches } from './map.js'
+import { SUBTE_TRANSFERS, buildLegend, buildRoutes, connectingLineCodes, distanceKm, findTransfers, lineSummary, routeInfo, shortOperator, stationBranches } from './map.js'
 
 const station = (id, branchId, lineId, sequenceOrder, lat, lng) => ({
   stationId: id,
@@ -72,6 +72,20 @@ describe('routeInfo', () => {
     const stations = [s(3, 3, 'Retiro'), s(1, 1, 'Constitución'), s(2, 2, 'San Juan')]
 
     expect(routeInfo(stations, stations[2])).toEqual({ position: 2, total: 3, from: 'Constitución', to: 'Retiro' })
+  })
+})
+
+describe('shortOperator', () => {
+  it('acorta el nombre de la operadora', () => {
+    expect(shortOperator('Trenes Argentinos Operaciones')).toBe('Trenes Argentinos')
+    expect(shortOperator('Emova Movilidad')).toBe('Emova')
+    expect(shortOperator('Ferrovías')).toBe('Ferrovías')
+    expect(shortOperator('Metrovías')).toBe('Metrovías')
+  })
+
+  it('sin dato devuelve null', () => {
+    expect(shortOperator(null)).toBeNull()
+    expect(shortOperator('  ')).toBeNull()
   })
 })
 
