@@ -70,6 +70,32 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Verde de sobra, ambar pocas, rojo uno o ninguno (tonos oscuros para que se lean sobre blanco). */
+.ecobici-counts strong {
+  font-size: 15px;
+}
+
+.ecobici-count-plenty {
+  color: var(--normal);
+}
+
+.ecobici-count-few {
+  color: #946c00;
+}
+
+.ecobici-count-last,
+.ecobici-count-none {
+  color: var(--interrupted);
+}
+
+.ecobici-count-off {
+  color: var(--text-faint);
+}
+
+:root[data-theme='dark'] .ecobici-count-few {
+  color: #f4c11b;
+}
+
 .ecobici-legend {
   display: flex;
   flex-wrap: wrap;

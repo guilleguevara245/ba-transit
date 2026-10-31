@@ -7,7 +7,7 @@ import ModeIcon from '../components/ModeIcon.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import UpdatedAt from '../components/UpdatedAt.jsx'
 import { useApi } from '../hooks/useApi.js'
-import { AVAILABILITY_BADGES, availability, normalizeText, stationName } from '../utils/ecobici.js'
+import { AVAILABILITY_BADGES, availability, normalizeText, stationName, stockLevel } from '../utils/ecobici.js'
 import { badgeIcon } from '../utils/mapIcons.js'
 import MapBadge from '../components/MapBadge.jsx'
 import EcobiciPlaceIcon from '../components/EcobiciPlaceIcon.jsx'
@@ -125,8 +125,16 @@ export default function EcobiciPage() {
                         {stationName(s.name)}
                         {s.address && <small>{s.address}</small>}
                       </span>
+                      {/* Los numeros con el color de cuantos quedan (como los dibujos de la tarjeta). */}
                       <span className="ecobici-counts">
-                        <strong>{s.bikes}</strong> bicis · {s.docks} libres
+                        <strong className={`ecobici-count-${s.renting ? stockLevel(s.bikes, 'bikes').key : 'off'}`}>
+                          {s.bikes}
+                        </strong>{' '}
+                        {s.bikes === 1 ? 'bici' : 'bicis'} ·{' '}
+                        <strong className={`ecobici-count-${s.renting ? stockLevel(s.docks, 'docks').key : 'off'}`}>
+                          {s.docks}
+                        </strong>{' '}
+                        {s.docks === 1 ? 'libre' : 'libres'}
                       </span>
                     </button>
                   </li>
