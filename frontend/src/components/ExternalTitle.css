@@ -1,0 +1,18 @@
+/* La ultima palabra y el icono de enlace externo, siempre juntos. */
+.external-tail {
+  white-space: nowrap;
+}
+
+.external-icon {
+  display: inline-block;
+  width: 0.85em;
+  height: 0.85em;
+  margin-left: 4px;
+  vertical-align: -0.05em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.7;
+}

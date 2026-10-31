@@ -98,14 +98,19 @@ public class SubteAlertSyncService {
         // Se registran TODOS los ids del feed antes de procesarlos: si una
         // alerta falla al procesarse, igual sigue vigente en la fuente y
         // no debe desactivarse.
+        // El aviso de fin del horario ("Servicio finalizado") no es una alerta: no se guarda y, si
+        // ya estaba guardado, se desactiva (por eso tampoco cuenta como vigente).
         Set<String> feedEntityIds = new HashSet<>();
         for (SubteAlertsFeed.FeedEntity entity : feed.entity()) {
-            if (entity != null && entity.id() != null) {
+            if (entity != null && entity.id() != null && !isEndOfService(entity)) {
                 feedEntityIds.add(entity.id());
             }
         }
 
         for (SubteAlertsFeed.FeedEntity entity : feed.entity()) {
+            if (entity != null && isEndOfService(entity)) {
+                continue;
+            }
             try {
                 processEntity(entity);
             } catch (Exception e) {
@@ -176,6 +181,29 @@ public class SubteAlertSyncService {
                 .toList();
         toDeactivate.forEach(a -> a.setActive(false));
         return toDeactivate.size();
+    }
+
+    private boolean isEndOfService(SubteAlertsFeed.FeedEntity entity) {
+        return entity.alert() != null && isEndOfService(describe(entity.alert()));
+    }
+
+    /**
+     * Si el texto es solo el aviso de fin del horario ("Servicio finalizado",
+     * "Fin del servicio"), que la fuente publica cada noche. Un texto mas
+     * largo ("Servicio finalizado entre Peru y San Pedrito por obras") si es
+     * una alerta y no se descarta.
+     */
+    static boolean isEndOfService(String text) {
+        if (text == null) {
+            return false;
+        }
+        String t = java.text.Normalizer.normalize(text, java.text.Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .toLowerCase(java.util.Locale.ROOT)
+                .replaceAll("[.!]+$", "")
+                .replaceAll("\\s+", " ")
+                .strip();
+        return t.matches("(el )?servicio (finalizado|finalizo|terminado)( por hoy)?|fin (de|del) servicio( por hoy)?");
     }
 
     /** "Alerta_X#C" -> "Alerta_X"; "Alerta_Y" -> "Alerta_Y". */

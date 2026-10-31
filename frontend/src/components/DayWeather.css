@@ -320,10 +320,7 @@
   grid-template-columns: 1fr;
 }
 
-/* "Tu dia" acompaña al bajar por los favoritos. */
 .home-top > .day-weather {
-  position: sticky;
-  top: 16px;
   grid-column: 2;
   grid-row: 1 / span 3;
   margin-bottom: 24px;
@@ -337,7 +334,6 @@
 
   /* En una columna, en el orden del codigo: saludo, busqueda, "Tu dia" y los favoritos. */
   .home-top > .day-weather {
-    position: static;
     grid-column: 1;
     grid-row: auto;
   }

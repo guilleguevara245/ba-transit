@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import ExternalTitle from './ExternalTitle.jsx'
 import NewsList from './NewsList.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { EVENT_KINDS, eventWhen, prettyStreets } from '../utils/events.js'
@@ -37,7 +38,7 @@ function EventsList({ events, loading }) {
                 <div className="events-list-title">
                   {event.url ? (
                     <a href={event.url} target="_blank" rel="noreferrer">
-                      {event.title} ↗
+                      <ExternalTitle text={event.title} />
                     </a>
                   ) : (
                     event.title

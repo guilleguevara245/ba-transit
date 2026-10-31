@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import Chevrons from './Chevrons.jsx'
 import './AlertsPanel.css'
 import { formatRelativeTime } from '../utils/format.js'
 import { ALERT_TYPE_LABELS } from '../constants.js'
@@ -79,8 +80,14 @@ export default function AlertsPanel({ alerts, lines }) {
       })}
 
       {(hidden > 0 || expanded) && filtered.length > DEFAULT_VISIBLE && (
-        <button type="button" className="alerts-more" onClick={() => setExpanded((value) => !value)}>
-          {expanded ? 'Ver menos' : `Ver todas (${filtered.length})`}
+        <button type="button" className="alerts-more chevrons-host" onClick={() => setExpanded((value) => !value)}>
+          {expanded ? (
+            'Ver menos'
+          ) : (
+            <>
+              Ver las {filtered.length} <Chevrons />
+            </>
+          )}
         </button>
       )}
     </div>

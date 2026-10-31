@@ -1,10 +1,13 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import Chevrons from './Chevrons.jsx'
+import ExternalTitle from './ExternalTitle.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { formatRelativeTime } from '../utils/format.js'
-import { NEWS_CATEGORIES, newsCounts } from '../utils/news.js'
+import { NEWS_CATEGORIES, dedupeNews, newsCounts } from '../utils/news.js'
 
 const REFRESH_MS = 15 * 60_000
-const FIRST = 8
+// Cuatro: con las tarifas arriba, asi la columna queda pareja con las cinco alertas de al lado.
+const FIRST = 4
 
 /**
  * Noticias del transporte del AMBA: titular, medio, hace cuanto y link a
@@ -14,7 +17,8 @@ export default function NewsList() {
   const { data, loading, error } = useApi('/api/v1/noticias', { refreshMs: REFRESH_MS })
   const [category, setCategory] = useState(null)
   const [expanded, setExpanded] = useState(false)
-  const items = data?.items ?? []
+  // La misma nota en varios medios queda una sola vez (la mas reciente).
+  const items = useMemo(() => dedupeNews(data?.items ?? []), [data])
   const counts = newsCounts(items)
   const visible = category ? items.filter((n) => n.category === category) : items
   const shown = expanded ? visible : visible.slice(0, FIRST)
@@ -66,7 +70,7 @@ export default function NewsList() {
               </div>
               <div className="events-list-title">
                 <a href={n.url} target="_blank" rel="noreferrer">
-                  {n.title} ↗
+                  <ExternalTitle text={n.title} />
                 </a>
               </div>
             </li>
@@ -74,8 +78,8 @@ export default function NewsList() {
         })}
       </ul>
       {!expanded && visible.length > FIRST && (
-        <button type="button" className="news-more" onClick={() => setExpanded(true)}>
-          Ver {visible.length - FIRST} más
+        <button type="button" className="news-more chevrons-host" onClick={() => setExpanded(true)}>
+          Ver las {visible.length} <Chevrons />
         </button>
       )}
     </>

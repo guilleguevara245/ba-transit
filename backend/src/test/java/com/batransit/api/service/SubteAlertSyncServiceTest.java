@@ -59,6 +59,21 @@ class SubteAlertSyncServiceTest {
     }
 
     @Test
+    void elFinDelHorarioNoEsUnaAlerta() {
+        when(apiClient.fetchSubteAlerts()).thenReturn(feed(entity("fin-h", 3, "Servicio finalizado", "LineaA")));
+
+        service.sync();
+
+        verify(alertRepository, never()).save(any());
+        assertThat(SubteAlertSyncService.isEndOfService("Servicio finalizado.")).isTrue();
+        assertThat(SubteAlertSyncService.isEndOfService("  Fin del servicio por hoy ")).isTrue();
+        assertThat(SubteAlertSyncService.isEndOfService("Servicio finalizó")).isTrue();
+        // Un texto con mas informacion si es una alerta.
+        assertThat(SubteAlertSyncService.isEndOfService("Servicio finalizado entre Perú y San Pedrito por obras")).isFalse();
+        assertThat(SubteAlertSyncService.isEndOfService(null)).isFalse();
+    }
+
+    @Test
     void creaUnaAlertaNueva() {
         when(apiClient.fetchSubteAlerts()).thenReturn(feed(entity("alerta-1", 1, "Servicio interrumpido", "LineaA")));
 

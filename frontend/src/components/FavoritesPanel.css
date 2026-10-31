@@ -1,0 +1,111 @@
+/* "Tus favoritos": un panel con un renglon por favorito. */
+
+.fav-panel {
+  margin-bottom: 30px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.fav-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.fav-head h2 {
+  margin: 0;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.fav-empty {
+  margin: 0;
+  padding: 14px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.fav-empty .star {
+  color: var(--yellow);
+}
+
+/* Las tarjetas de siempre, como renglones del panel. */
+.fav-list .my-line-card {
+  min-width: 0;
+  border: none;
+  border-top: 1px solid var(--line);
+  box-shadow: none;
+}
+
+.fav-list .my-line-card:first-child {
+  border-top: none;
+}
+
+.fav-list .my-line {
+  gap: 12px;
+  padding: 9px 10px 9px 14px;
+}
+
+/* Tipo de favorito: una columna angosta a la izquierda. */
+.fav-kind {
+  flex-shrink: 0;
+  width: 70px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+/* Proximos trenes: debajo, alineados con el nombre. */
+.fav-list .my-line-trains {
+  padding: 0 14px 10px 96px;
+  border-top: none;
+}
+
+.fav-list .my-line-trains .select,
+.fav-list .my-line-trains .mini-trains-box {
+  max-width: 420px;
+}
+
+.fav-list .my-bus-live {
+  margin: 0;
+  padding: 0;
+  border: none;
+  white-space: nowrap;
+}
+
+.fav-list .my-lines-empty {
+  padding: 10px 14px;
+}
+
+/* Enlace a los avisos: corto, en el encabezado. */
+.notif-link.notif-link-compact {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent-text);
+  font-size: 12.5px;
+}
+
+.notif-link.notif-link-compact:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .fav-kind {
+    display: none;
+  }
+
+  .fav-list .my-line-trains {
+    padding-left: 14px;
+  }
+}

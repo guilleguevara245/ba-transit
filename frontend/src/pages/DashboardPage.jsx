@@ -3,11 +3,8 @@ import Greeting from '../components/Greeting.jsx'
 import SearchBar from '../components/SearchBar.jsx'
 import DayWeather from '../components/DayWeather.jsx'
 import ModeGrid from '../components/ModeGrid.jsx'
-import MyLines from '../components/MyLines.jsx'
-import { MyAccesses, MyStations } from '../components/MyPlaces.jsx'
-import MyBuses from '../components/MyBuses.jsx'
+import FavoritesPanel from '../components/FavoritesPanel.jsx'
 import AccountInvite from '../components/AccountInvite.jsx'
-import NotificationsLink from '../components/NotificationsLink.jsx'
 import AlertsPanel from '../components/AlertsPanel.jsx'
 import FaresPanel from '../components/FaresPanel.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
@@ -45,11 +42,7 @@ export default function DashboardPage() {
         <DayWeather />
         <div className="home-favorites">
           <AccountInvite />
-          {ready && <MyLines lines={lines} alerts={alerts} />}
-          {ready && <MyStations lines={lines} alerts={alerts} />}
-          <MyAccesses />
-          <MyBuses />
-          {ready && <NotificationsLink />}
+          <FavoritesPanel lines={lines} alerts={alerts} />
         </div>
       </div>
       <div className="section-label section-label-row">
