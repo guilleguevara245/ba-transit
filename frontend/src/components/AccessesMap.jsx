@@ -1,10 +1,68 @@
 import { useEffect, useMemo } from 'react'
 import { MapContainer, Polyline, TileLayer, useMap } from 'react-leaflet'
-import MapCard, { MapCardIcon } from './MapCard.jsx'
-import { speedPercent, trafficStatus } from '../utils/traffic.js'
+import Chevrons from './Chevrons.jsx'
+import MapCard from './MapCard.jsx'
+import SpeedGauge from './SpeedGauge.jsx'
+import { delayMinutes, speedPercent, trafficStatus } from '../utils/traffic.js'
 
-// Mismo trazo que el icono de Accesos.
-const ACCESS_ICON = 'M8 3 5 21m11-18 3 18M12 4v3m0 4v3m0 4v3'
+/**
+ * Tarjeta de un tramo: el escudo de la ruta, un velocimetro con el
+ * porcentaje de la velocidad normal, hacia donde va, el estado con la
+ * demora estimada y las velocidades con la barra.
+ */
+function SegmentCard({ segment }) {
+  const { label, color } = trafficStatus(segment.status)
+  const percent = speedPercent(segment)
+  const delay = delayMinutes(segment)
+  return (
+    <MapCard
+      badge={<span className="map-card-shield">{segment.access.road}</span>}
+      kicker={segment.access.name}
+      icon={<SpeedGauge percent={percent} color={color} />}
+      title={segment.name}
+      subtitle={
+        segment.towards ? (
+          <span className="map-card-towards chevrons-host" style={{ '--status-color': color }}>
+            <Chevrons /> Hacia {segment.towards}
+          </span>
+        ) : undefined
+      }
+    >
+      <div className="map-card-status" style={{ '--status-color': color }}>
+        <i />
+        {label}
+      </div>
+      {delay != null && <div className="map-card-delay">≈ {delay} min de demora en este tramo</div>}
+      {segment.currentSpeed != null && (
+        <>
+          <div className="map-card-stats">
+            <div className="map-card-stat">
+              <strong>{segment.currentSpeed}</strong>
+              <span>km/h ahora</span>
+            </div>
+            {segment.freeFlowSpeed != null && (
+              <div className="map-card-stat">
+                <strong>{segment.freeFlowSpeed}</strong>
+                <span>km/h normal</span>
+              </div>
+            )}
+            {percent != null && (
+              <div className="map-card-stat">
+                <strong>{percent}%</strong>
+                <span>de lo normal</span>
+              </div>
+            )}
+          </div>
+          {percent != null && (
+            <div className="speed-bar map-card-speed" aria-hidden="true">
+              <span style={{ width: `${percent}%`, background: color }} />
+            </div>
+          )}
+        </>
+      )}
+    </MapCard>
+  )
+}
 
 function FitToSegments({ positions }) {
   const map = useMap()
@@ -51,32 +109,7 @@ export default function AccessesMap({ accesses, className }) {
           positions={segment.geometry}
           pathOptions={{ color: trafficStatus(segment.status).color, weight: 7, opacity: 0.85 }}
         >
-          <MapCard badge={<MapCardIcon path={ACCESS_ICON} />} kicker={segment.access.name} title={segment.name} subtitle={segment.towards ? `Hacia ${segment.towards}` : undefined}>
-            <div className="map-card-status" style={{ '--status-color': trafficStatus(segment.status).color }}>
-              <i />
-              {trafficStatus(segment.status).label}
-            </div>
-            {segment.currentSpeed != null && (
-              <div className="map-card-stats">
-                <div className="map-card-stat">
-                  <strong>{segment.currentSpeed}</strong>
-                  <span>km/h ahora</span>
-                </div>
-                {segment.freeFlowSpeed != null && (
-                  <div className="map-card-stat">
-                    <strong>{segment.freeFlowSpeed}</strong>
-                    <span>km/h sin tránsito</span>
-                  </div>
-                )}
-                {speedPercent(segment) != null && (
-                  <div className="map-card-stat">
-                    <strong>{speedPercent(segment)}%</strong>
-                    <span>de lo normal</span>
-                  </div>
-                )}
-              </div>
-            )}
-          </MapCard>
+          <SegmentCard segment={segment} />
         </Polyline>
       ))}
       <FitToSegments positions={positions} />

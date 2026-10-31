@@ -1,4 +1,7 @@
+import { useState } from 'react'
 import Skeleton from '../components/Skeleton.jsx'
+import Chevrons from '../components/Chevrons.jsx'
+import ExternalTitle from '../components/ExternalTitle.jsx'
 import ModeIcon from '../components/ModeIcon.jsx'
 import AccessesMap from '../components/AccessesMap.jsx'
 import BackButton from '../components/BackButton.jsx'
@@ -12,7 +15,7 @@ import { PEAK_HOURS, TOLLS, formatToll, peakNow } from '../data/tolls.js'
 import { holidayOn } from '../utils/holidays.js'
 import { useNow } from '../hooks/useNow.js'
 import { formatLongDate } from '../utils/format.js'
-import { speedPercent, trafficStatus, worstStatus } from '../utils/traffic.js'
+import { speedPercent, speedText, trafficProblems, trafficStatus, worstStatus } from '../utils/traffic.js'
 import './ModePage.css'
 import './AirportsPage.css'
 import './AccessesPage.css'
@@ -38,17 +41,15 @@ function DirectionRow({ direction }) {
   return (
     <div className="access-direction" style={{ '--status-color': color }}>
       <div className="access-direction-head">
-        <span>Hacia {direction.towards}</span>
+        <span className="access-direction-towards chevrons-host">
+          <Chevrons /> Hacia {direction.towards}
+        </span>
         <span className="access-direction-status">{label}</span>
       </div>
       <div className="speed-bar" aria-hidden="true">
         <span style={{ width: `${percent ?? 0}%`, background: color }} />
       </div>
-      <div className="access-segment-speed">
-        {direction.currentSpeed != null
-          ? `${direction.currentSpeed} km/h · normal ${direction.freeFlowSpeed} km/h`
-          : 'Sin medición en este momento.'}
-      </div>
+      <div className="access-segment-speed">{speedText(direction)}</div>
     </div>
   )
 }
@@ -87,9 +88,7 @@ function SegmentRow({ segment, configured }) {
           <div className="access-segment-speed">
             {segment.checkLocation
               ? 'El punto de medición no cae sobre la autopista: hay que revisarlo.'
-              : segment.currentSpeed != null
-                ? `${segment.currentSpeed} km/h · normal ${segment.freeFlowSpeed} km/h`
-                : 'Sin medición en este momento.'}
+              : speedText(segment)}
           </div>
         </>
       )}
@@ -97,55 +96,161 @@ function SegmentRow({ segment, configured }) {
   )
 }
 
+/** "$994 con TelePASE · $2.000 sin TelePASE", o un solo precio si es el mismo. */
+function priceNow(plaza, column) {
+  const tele = plaza.telepase[column]
+  const manual = plaza.manual[column]
+  if (formatToll(tele) === formatToll(manual)) {
+    return (
+      <>
+        <strong>{formatToll(tele)}</strong> con o sin TelePASE
+      </>
+    )
+  }
+  return (
+    <>
+      <strong>{formatToll(tele)}</strong> con TelePASE · <strong>{formatToll(manual)}</strong> sin TelePASE
+    </>
+  )
+}
+
+/**
+ * Peaje del acceso: a la vista, lo que se paga ahora (pico o no pico) en
+ * la primera cabina; el cuadro completo de cada cabina, a pedido.
+ */
 function TollTable({ toll, accessId }) {
   const now = useNow(60_000)
+  const [open, setOpen] = useState(false)
   const { peak, towards } = peakNow(accessId, now, Boolean(holidayOn(now)))
   const rules = PEAK_HOURS[accessId]
   // Columna que rige ahora: 0 no pico, 1 pico.
   const current = peak ? 1 : 0
   const cell = (index) => (index === current ? 'now' : undefined)
+  const first = toll.plazas[0]
+  const tableId = `peaje-${accessId}`
 
   return (
     <div className="toll">
       <div className="toll-title">Peaje para autos</div>
-      {toll.plazas.map((plaza) => (
-        <table className="toll-table" key={plaza.name}>
-          <caption>{plaza.name}</caption>
-          <thead>
-            <tr>
-              <th scope="col" />
-              <th scope="col" className={cell(0)}>
-                No pico{current === 0 && <span className="toll-now">ahora</span>}
-              </th>
-              <th scope="col" className={cell(1)}>
-                Pico{current === 1 && <span className="toll-now">ahora</span>}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th scope="row">TelePASE</th>
-              <td className={cell(0)}>{formatToll(plaza.telepase[0])}</td>
-              <td className={cell(1)}>{formatToll(plaza.telepase[1])}</td>
-            </tr>
-            <tr>
-              <th scope="row">Sin TelePASE</th>
-              <td className={cell(0)}>{formatToll(plaza.manual[0])}</td>
-              <td className={cell(1)}>{formatToll(plaza.manual[1])}</td>
-            </tr>
-          </tbody>
-        </table>
-      ))}
-      {towards && <div className="toll-direction">Ahora es hora pico solo hacia {towards}.</div>}
+      {towards ? (
+        // Fin de semana: la hora pico rige en una sola mano; en la otra se paga lo de no pico.
+        <p className="toll-summary">
+          <span className="toll-summary-line">
+            <span className="toll-summary-when">Hacia {towards}, hora pico:</span> {priceNow(first, 1)}
+          </span>
+          <span className="toll-summary-line">
+            <span className="toll-summary-when">
+              Hacia {towards === 'CABA' ? 'Provincia' : 'CABA'}, fuera de hora pico:
+            </span>{' '}
+            {priceNow(first, 0)}
+          </span>
+        </p>
+      ) : (
+        <p className="toll-summary">
+          <span className="toll-summary-when">Ahora, {peak ? 'hora pico' : 'fuera de hora pico'}:</span>{' '}
+          {priceNow(first, current)}
+          {toll.plazas.length > 1 && <small>{first.name}</small>}
+        </p>
+      )}
+      <button
+        type="button"
+        className="toll-toggle chevrons-host"
+        aria-expanded={open}
+        aria-controls={tableId}
+        onClick={() => setOpen((o) => !o)}
+      >
+        {open ? 'Ocultar las tarifas' : toll.plazas.length > 1 ? 'Ver las tarifas de cada cabina' : 'Ver las tarifas'}{' '}
+        <Chevrons className="toll-chevrons" />
+      </button>
+      {open && (
+        <div id={tableId}>
+          {toll.plazas.map((plaza) => (
+            <table className="toll-table" key={plaza.name}>
+              <caption>{plaza.name}</caption>
+              <thead>
+                <tr>
+                  <th scope="col" />
+                  <th scope="col" className={cell(0)}>
+                    No pico{current === 0 && <span className="toll-now">ahora</span>}
+                  </th>
+                  <th scope="col" className={cell(1)}>
+                    Pico{current === 1 && <span className="toll-now">ahora</span>}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">TelePASE</th>
+                  <td className={cell(0)}>{formatToll(plaza.telepase[0])}</td>
+                  <td className={cell(1)}>{formatToll(plaza.telepase[1])}</td>
+                </tr>
+                <tr>
+                  <th scope="row">Sin TelePASE</th>
+                  <td className={cell(0)}>{formatToll(plaza.manual[0])}</td>
+                  <td className={cell(1)}>{formatToll(plaza.manual[1])}</td>
+                </tr>
+              </tbody>
+            </table>
+          ))}
+          {towards && <div className="toll-direction">Ahora la hora pico rige solo hacia {towards}.</div>}
+          {rules && <div className="toll-source toll-note">{rules.text}</div>}
+          {toll.note && <div className="toll-source toll-note">{toll.note}</div>}
+        </div>
+      )}
       <div className="toll-source">
-        {rules && <span className="toll-note">{rules.text}</span>}
         Vigente desde el {formatLongDate(toll.since)} ·{' '}
         <a href={toll.source} target="_blank" rel="noreferrer">
-          fuente ↗
+          <ExternalTitle text="Fuente" />
         </a>
-        {toll.note && <span className="toll-note">{toll.note}</span>}
         {isStale('peajes') && <span className="toll-note stale-note">{STALE_TEXT}</span>}
       </div>
+    </div>
+  )
+}
+
+/**
+ * Arriba de todo: si los accesos estan fluidos o donde hay problemas,
+ * cada uno con un enlace a su tarjeta.
+ */
+function TrafficSummary({ accesses }) {
+  const problems = trafficProblems(accesses)
+  const withProblems = new Set(problems.map((p) => p.access.id)).size
+  if (problems.length === 0) {
+    return (
+      <div className="access-summary access-summary-ok" role="status">
+        <strong>Todos los accesos están fluidos</strong>
+        <span>Se circula a la velocidad normal o cerca en todos los tramos medidos.</span>
+      </div>
+    )
+  }
+  const worst = problems[0].status
+  const title =
+    worst === 'CORTADO'
+      ? `Hay cortes en ${withProblems === 1 ? '1 acceso' : `${withProblems} accesos`}`
+      : `Hay demoras en ${withProblems === 1 ? '1 acceso' : `${withProblems} accesos`}`
+  return (
+    <div className="access-summary" role="status" style={{ '--status-color': trafficStatus(worst).color }}>
+      <strong>{title}</strong>
+      <span>{withProblems === accesses.length ? 'Ninguno está del todo fluido.' : 'El resto está fluido.'}</span>
+      <ul className="access-summary-list">
+        {problems.map((p) => (
+          <li key={`${p.access.id}-${p.segment}-${p.towards ?? ''}`}>
+            <a className="access-summary-row" href={`#acceso-${p.access.id}`}>
+              <span className="road-shield road-shield-sm">{p.access.road}</span>
+              <span className="access-summary-text">
+                <b>{p.access.name}</b>
+                <span>
+                  {p.segment}
+                  {p.towards ? `, hacia ${p.towards}` : ''}
+                  {p.currentSpeed != null ? ` · ${p.currentSpeed} km/h` : ''}
+                  {p.delay != null ? ` · ≈ ${p.delay} min de demora` : ''}
+                </span>
+              </span>
+              <StatusPill status={p.status} />
+            </a>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }
@@ -153,7 +258,11 @@ function TollTable({ toll, accessId }) {
 function AccessCard({ access, configured }) {
   const overall = worstStatus(access.segments)
   return (
-    <article className="access-card" style={{ '--status-color': trafficStatus(overall).color }}>
+    <article
+      className="access-card"
+      id={`acceso-${access.id}`}
+      style={{ '--status-color': trafficStatus(overall).color }}
+    >
       <header className="access-head">
         <span className="road-shield">{access.road}</span>
         <div className="access-title">
@@ -216,6 +325,8 @@ export default function AccessesPage() {
 
       {data && (
         <>
+          {data.configured && <TrafficSummary accesses={data.accesses} />}
+
           <div className="traffic-legend" aria-label="Referencias">
             {['FLUIDO', 'DEMORADO', 'CONGESTIONADO', 'CORTADO'].map((code) => (
               <span key={code}>

@@ -1,0 +1,34 @@
+.speed-gauge {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--status-color) 14%, transparent);
+  color: color-mix(in srgb, var(--status-color) 75%, var(--text));
+}
+
+.speed-gauge svg {
+  width: 78%;
+  height: 78%;
+  fill: none;
+  stroke-linecap: round;
+}
+
+.speed-gauge-track {
+  stroke: color-mix(in srgb, var(--status-color) 22%, transparent);
+  stroke-width: 3.5;
+}
+
+.speed-gauge-fill {
+  stroke: var(--status-color);
+  stroke-width: 3.5;
+}
+
+.speed-gauge-needle {
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+.speed-gauge circle {
+  fill: currentColor;
+}

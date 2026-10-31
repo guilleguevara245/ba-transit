@@ -271,7 +271,7 @@
 }
 
 .toll-direction {
-  margin: -4px 0 8px;
+  margin: -2px 0 8px;
   font-size: 12px;
   color: var(--accent-text);
   font-weight: 600;
@@ -288,7 +288,145 @@
 
 .toll-source a {
   color: var(--accent-text);
+  font-weight: 600;
   text-decoration: none;
+}
+
+/* Lo que se paga ahora, siempre a la vista; el cuadro completo, a pedido. */
+.toll-summary {
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.toll-summary strong {
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.toll-summary-line {
+  display: block;
+}
+
+.toll-summary-line + .toll-summary-line {
+  margin-top: 2px;
+}
+
+.toll-summary-when {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.toll-summary small {
+  display: block;
+  margin-top: 1px;
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+.toll-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.toll-toggle:hover {
+  text-decoration: underline;
+}
+
+.toll-toggle .toll-chevrons {
+  width: 1em;
+  height: 0.75em;
+  transform: rotate(90deg);
+  transition: transform 0.15s;
+}
+
+.toll-toggle[aria-expanded='true'] .toll-chevrons {
+  transform: rotate(-90deg);
+}
+
+/* Resumen de arriba: todo fluido o donde hay problemas. */
+.access-summary {
+  --status-color: var(--normal);
+  margin-bottom: 18px;
+  padding: 14px 18px;
+  border-left: 4px solid var(--status-color);
+  background: color-mix(in srgb, var(--status-color) 9%, var(--surface));
+  box-shadow: var(--shadow);
+}
+
+.access-summary > strong {
+  display: block;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: color-mix(in srgb, var(--status-color) 70%, var(--text));
+}
+
+.access-summary > span {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.access-summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.access-summary-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.access-summary-row:hover {
+  border-color: var(--yellow);
+}
+
+.access-summary-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  font-size: 13px;
+}
+
+.access-summary-text span {
+  color: var(--text-dim);
+}
+
+.road-shield.road-shield-sm {
+  min-width: 48px;
+  padding: 3px 6px;
+  border-width: 1.5px;
+  border-radius: 4px 4px 10px 10px;
+  font-size: 13px;
+}
+
+.access-card {
+  scroll-margin-top: 90px;
 }
 
 .toll-note {
@@ -306,4 +444,17 @@
   .accesses-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Hacia donde va cada mano, con los chevrones del color de su estado. */
+.access-direction-towards {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.access-direction-towards .chevrons {
+  width: 0.95em;
+  height: 0.7em;
+  color: var(--status-color);
 }

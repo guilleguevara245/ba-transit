@@ -425,3 +425,44 @@ button.station-popup-link {
 .next-trains-towards .next-trains-every::before {
   content: ' · ';
 }
+
+/* Accesos: escudo chico de la ruta, hacia donde va y la demora. */
+.map-card-shield {
+  display: inline-grid;
+  place-items: center;
+  min-width: 34px;
+  height: 22px;
+  padding: 0 6px;
+  border: 1.5px solid #17171a;
+  border-radius: 4px 4px 9px 9px;
+  background: #fff;
+  color: #17171a;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.map-card-towards {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.map-card-towards .chevrons {
+  width: 1em;
+  height: 0.75em;
+  /* Del color del estado de esa mano: rojo si esta congestionada. */
+  color: var(--status-color, var(--yellow-deep));
+}
+
+.map-card-delay {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.map-card-speed {
+  margin: 10px 0 0;
+}

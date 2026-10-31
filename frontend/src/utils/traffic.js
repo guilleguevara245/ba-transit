@@ -35,3 +35,67 @@ export function worstStatus(segments) {
   }
   return worst < 0 ? 'SIN_DATOS' : SEVERITY[worst]
 }
+
+/** Largo en km de un tramo dibujado ([[lat, lon], ...]). */
+export function lengthKm(geometry) {
+  let km = 0
+  for (let i = 1; i < (geometry?.length ?? 0); i++) {
+    const [lat1, lon1] = geometry[i - 1]
+    const [lat2, lon2] = geometry[i]
+    const toRad = (deg) => (deg * Math.PI) / 180
+    const h =
+      Math.sin(toRad(lat2 - lat1) / 2) ** 2 +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(toRad(lon2 - lon1) / 2) ** 2
+    km += 2 * 6371 * Math.asin(Math.sqrt(h))
+  }
+  return km
+}
+
+/**
+ * Minutos de mas que se tarda en el tramo medido por ir mas lento que lo
+ * normal (redondeado), o null si no hay como calcularlo o es menos de 1.
+ */
+export function delayMinutes(segment) {
+  const { currentSpeed, freeFlowSpeed, geometry } = segment
+  const km = lengthKm(geometry)
+  if (!(km > 0) || !(currentSpeed > 0) || !(freeFlowSpeed > 0) || currentSpeed >= freeFlowSpeed) return null
+  const minutes = Math.round((km / currentSpeed - km / freeFlowSpeed) * 60)
+  return minutes >= 1 ? minutes : null
+}
+
+/** "104 km/h, velocidad normal" o "58 km/h · normal 92 km/h". */
+export function speedText({ currentSpeed, freeFlowSpeed }) {
+  if (currentSpeed == null) return 'Sin medición en este momento.'
+  if (freeFlowSpeed == null) return `${currentSpeed} km/h`
+  if (currentSpeed >= freeFlowSpeed * 0.95) return `${currentSpeed} km/h, velocidad normal`
+  return `${currentSpeed} km/h · normal ${freeFlowSpeed} km/h`
+}
+
+const PROBLEMS = ['DEMORADO', 'CONGESTIONADO', 'CORTADO']
+
+/**
+ * Los tramos con problemas (demorado, congestionado o cortado), de peor a
+ * mejor: con las dos manos medidas, cada mano por separado. Para el
+ * resumen de arriba de la pagina.
+ */
+export function trafficProblems(accesses) {
+  const list = []
+  for (const access of accesses ?? []) {
+    for (const segment of access.segments ?? []) {
+      const parts = segment.directions?.length ? segment.directions : [segment]
+      for (const part of parts) {
+        if (!PROBLEMS.includes(part.status)) continue
+        list.push({
+          access,
+          segment: segment.name,
+          towards: part.towards ?? null,
+          status: part.status,
+          currentSpeed: part.currentSpeed,
+          freeFlowSpeed: part.freeFlowSpeed,
+          delay: delayMinutes(part),
+        })
+      }
+    }
+  }
+  return list.sort((a, b) => SEVERITY.indexOf(b.status) - SEVERITY.indexOf(a.status))
+}
