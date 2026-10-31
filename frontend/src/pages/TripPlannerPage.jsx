@@ -14,7 +14,7 @@ import { useApi } from '../hooks/useApi.js'
 import { useClockPrefs } from '../hooks/useClockPrefs.js'
 import { useNow } from '../hooks/useNow.js'
 import { useSavedPlaces } from '../hooks/useSavedPlaces.js'
-import { distanceText } from '../utils/addressSearch.js'
+import { distanceText, isSavedAddress } from '../utils/addressSearch.js'
 import { formatClock, formatClock12 } from '../utils/format.js'
 import { buildPlaces } from '../utils/places.js'
 import { findStationPlace, placePhrase } from '../utils/placesStore.js'
@@ -236,7 +236,9 @@ export default function TripPlannerPage() {
   // lineas, y el viaje sale o llega por la que mas convenga.
   const options = useMemo(() => buildPlaces(stations), [stations])
   const { places } = useSavedPlaces()
-  // Los lugares guardados como estacion, listos para los chips de cada campo.
+  // Todos los lugares guardados (Casa, Trabajo, Club...) como chips de cada
+  // campo: los guardados como estacion y los guardados como direccion
+  // (que se buscan al tocarlos; si no, queda su estacion mas cercana).
   const placeChips = useMemo(
     () =>
       places
@@ -245,12 +247,18 @@ export default function TripPlannerPage() {
           tipo: p.tipo,
           nombre: p.nombre,
           option: findStationPlace(options, p.estacion ?? p.cerca),
+          direccion: p.estacion ? null : p.direccion,
         }))
-        .filter((c) => c.option),
+        .filter((c) => c.option || c.direccion),
     [places, options],
   )
   // El lugar ya elegido en un campo no se ofrece en el otro.
-  const chipsBut = (chosen) => placeChips.filter((c) => !chosen || c.option.stationId !== pointKey(chosen))
+  const chipsBut = (chosen) =>
+    placeChips.filter((c) => {
+      if (!chosen) return true
+      if (isAddress(chosen)) return !(c.direccion && isSavedAddress(chosen, c.direccion))
+      return !(c.option && c.option.stationId === chosen.stationId)
+    })
 
   // Un enlace compartido (?desde=...&hasta=...) carga el viaje al abrirlo.
   useEffect(() => {

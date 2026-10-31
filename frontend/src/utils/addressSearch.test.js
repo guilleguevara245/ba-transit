@@ -4,7 +4,10 @@ import {
   addressText,
   confirmedPlace,
   distanceText,
+  isSavedAddress,
+  matchSavedAddress,
   nearestStation,
+  savedAddressQuery,
   stationIdOf,
 } from './addressSearch.js'
 
@@ -65,5 +68,33 @@ describe('stationIdOf y distanceText', () => {
     expect(distanceText(0.43)).toBe('a 400 m')
     expect(distanceText(0.04)).toBe('a 100 m')
     expect(distanceText(1.26)).toBe('a 1,3 km')
+  })
+})
+
+describe('direcciones guardadas en Como llegar', () => {
+  const RESULTS = [
+    { text: 'Martín Rodríguez 800', area: 'Morón', lat: -34.645, lon: -58.62 },
+    { text: 'Martín Rodríguez 800', area: 'Ituzaingó', lat: -34.6545, lon: -58.668 },
+  ]
+
+  it('busca solo la calle y la altura', () => {
+    expect(savedAddressQuery('Martín Rodríguez 800, Ituzaingó')).toBe('Martín Rodríguez 800')
+    expect(savedAddressQuery('Av Rivadavia 5000')).toBe('Av Rivadavia 5000')
+  })
+
+  it('elige la de la misma localidad', () => {
+    expect(matchSavedAddress(RESULTS, 'Martín Rodríguez 800, Ituzaingó').area).toBe('Ituzaingó')
+    expect(matchSavedAddress(RESULTS, 'Martin Rodriguez 800, ITUZAINGO').area).toBe('Ituzaingó')
+    expect(matchSavedAddress(RESULTS, 'Martín Rodríguez 800, Hurlingham')).toBeNull()
+  })
+
+  it('sin localidad, la primera', () => {
+    expect(matchSavedAddress(RESULTS, 'Martín Rodríguez 800').area).toBe('Morón')
+    expect(matchSavedAddress([], 'Martín Rodríguez 800')).toBeNull()
+  })
+
+  it('reconoce la direccion ya elegida', () => {
+    expect(isSavedAddress({ text: 'Av. Rivadavia 5000' }, 'Av Rivadavia 5000, Ciudad de Buenos Aires')).toBe(true)
+    expect(isSavedAddress({ text: 'Av. Rivadavia 5100' }, 'Av Rivadavia 5000')).toBe(false)
   })
 })

@@ -67,3 +67,37 @@ export function distanceText(km) {
   if (km < 1) return `a ${Math.max(100, Math.round((km * 1000) / 100) * 100)} m`
   return `a ${km.toFixed(1).replace('.', ',')} km`
 }
+
+/** Para comparar direcciones: sin tildes, mayusculas ni puntuacion ("Av. Rivadavia" = "av rivadavia"). */
+const comparable = (text) =>
+  String(text ?? '')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+
+/** La calle y altura de una direccion guardada ("Tte Origone 151, Hurlingham" -> "Tte Origone 151"), para buscarla. */
+export function savedAddressQuery(direccion) {
+  return String(direccion ?? '')
+    .split(',')[0]
+    .trim()
+}
+
+/**
+ * De lo que encontro Georef para una direccion guardada, la que es esa
+ * direccion: la de la misma localidad (si se guardo con localidad) o,
+ * si no tiene, la primera. null si ninguna coincide.
+ */
+export function matchSavedAddress(results, direccion) {
+  const list = results ?? []
+  const parts = String(direccion ?? '').split(',')
+  const area = comparable(parts.slice(1).join(','))
+  if (!area) return list[0] ?? null
+  return list.find((r) => comparable(r.area) === area) ?? null
+}
+
+/** Si lo elegido en un campo es esa direccion guardada (para no ofrecerla en el otro campo). */
+export function isSavedAddress(address, direccion) {
+  return Boolean(address?.text) && comparable(address.text) === comparable(savedAddressQuery(direccion))
+}

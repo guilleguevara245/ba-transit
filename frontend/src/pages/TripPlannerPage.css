@@ -442,3 +442,12 @@
 .place-chip:hover {
   border-color: var(--yellow);
 }
+
+.place-chip:disabled {
+  cursor: progress;
+}
+
+.place-chip[aria-busy='true'] {
+  border-color: var(--yellow);
+  color: var(--text-dim);
+}

@@ -1,8 +1,15 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import PlaceIcon from './PlaceIcon.jsx'
 import TripIcon from './TripIcon.jsx'
+import { apiGet } from '../api.js'
 import { useAddressSearch } from '../hooks/useAddressSearch.js'
-import { addressText, distanceText, nearestStation } from '../utils/addressSearch.js'
+import {
+  addressText,
+  distanceText,
+  matchSavedAddress,
+  nearestStation,
+  savedAddressQuery,
+} from '../utils/addressSearch.js'
 import { MAX_ACCESS_KM, isAddress } from '../utils/planner.js'
 import { moveActiveIndex } from '../utils/search.js'
 import { matchStations, normalizeText } from '../utils/stationSearch.js'
@@ -63,8 +70,13 @@ const ADDRESS_STATUS = {
  * buscador del inicio (flechas, Enter y Escape). Reemplaza al
  * <datalist> nativo, que cada navegador dibuja a su manera.
  *
- * shortcuts (opcional): lugares guardados ({ key, tipo, nombre, option })
- * que se muestran como chips debajo del campo mientras esta vacio.
+ * shortcuts (opcional): lugares guardados ({ key, tipo, nombre, option,
+ * direccion }) que se muestran como chips debajo del campo mientras esta
+ * vacio. option: su estacion (la guardada o la mas cercana a la
+ * direccion). direccion (con withAddresses): al tocarlo se busca en
+ * Georef, porque de Mis lugares solo se guarda la zona y no la ubicacion
+ * exacta; si no se encuentra, queda su estacion o, sin estacion, la
+ * direccion escrita en el campo para elegirla de la lista.
  *
  * withAddresses (opcional): tambien acepta direcciones. Al escribir calle
  * y altura aparecen, debajo de las estaciones, las direcciones del AMBA
@@ -79,6 +91,8 @@ export default function StationPicker({ id, title, stations, value, onChange, sh
   const containerRef = useRef(null)
   const listboxId = useId()
   const typingRef = useRef(false)
+  // El chip que se esta buscando en Georef (su key), para mostrarlo ocupado.
+  const [pendingChip, setPendingChip] = useState(null)
 
   // Si lo elegido cambia desde afuera (boton de invertir), se actualiza
   // el texto. Si se borro porque el usuario esta escribiendo, no.
@@ -124,6 +138,31 @@ export default function StationPicker({ id, title, stations, value, onChange, sh
     setText(labelOf(picked))
     setOpen(false)
     setActiveIndex(-1)
+  }
+
+  /** Un lugar guardado: su direccion (buscada en Georef) o su estacion. */
+  async function chooseSaved(chip) {
+    if (!withAddresses || !chip.direccion) {
+      if (chip.option) choose(chip.option)
+      return
+    }
+    setPendingChip(chip.key)
+    let found = null
+    try {
+      const results = await apiGet(`/api/v1/direcciones?q=${encodeURIComponent(savedAddressQuery(chip.direccion))}`)
+      found = matchSavedAddress(Array.isArray(results) ? results : [], chip.direccion)
+    } catch {
+      // Georef no responde: queda la estacion guardada, si hay.
+    }
+    setPendingChip(null)
+    if (found) choose({ type: 'address', ...found })
+    else if (chip.option) choose(chip.option)
+    else {
+      // Sin estacion ni ubicacion: la direccion queda escrita para elegirla de la lista.
+      setText(savedAddressQuery(chip.direccion))
+      setOpen(true)
+      containerRef.current?.querySelector('input')?.focus()
+    }
   }
 
   function handleKeyDown(event) {
@@ -197,9 +236,16 @@ export default function StationPicker({ id, title, stations, value, onChange, sh
       {!value && shortcuts.length > 0 && (
         <div className="place-chips" role="group" aria-label={`Mis lugares para ${title.toLowerCase()}`}>
           {shortcuts.map((s) => (
-            <button key={s.key} type="button" className="place-chip" onClick={() => choose(s.option)}>
+            <button
+              key={s.key}
+              type="button"
+              className="place-chip"
+              aria-busy={pendingChip === s.key || undefined}
+              disabled={pendingChip !== null}
+              onClick={() => chooseSaved(s)}
+            >
               <PlaceIcon tipo={s.tipo} size="sm" />
-              {s.nombre}
+              {pendingChip === s.key ? 'Buscando…' : s.nombre}
             </button>
           ))}
         </div>
