@@ -1,13 +1,17 @@
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+import Chevrons from './Chevrons.jsx'
 import PlaceIcon from './PlaceIcon.jsx'
 import StationPicker from './StationPicker.jsx'
 import WeatherIcon from './WeatherIcon.jsx'
 import { useApi } from '../hooks/useApi.js'
+import { useCommute } from '../hooks/useCommute.js'
 import { useWeatherPlaces } from '../hooks/useWeatherPlaces.js'
 import { useWeatherZone } from '../hooks/useWeatherZone.js'
 import { headline, hourSlots, isRainy, sunText, uvText } from '../utils/dayWeather.js'
 import { distanceKm } from '../utils/map.js'
 import { buildPlaces } from '../utils/places.js'
+import { formatDuration } from '../utils/travelTime.js'
 import { describeWeather } from '../utils/weather.js'
 import { gridQuery } from '../utils/weatherPlaces.js'
 import './DayWeather.css'
@@ -164,14 +168,39 @@ function ZonePicker({ hasZone, onDone }) {
 }
 
 /**
+ * El viaje de Casa al Trabajo: cuanto tarda y por que lineas, con el
+ * enlace a Como llegar. Si llueve o hay tormenta, sugiere salir antes.
+ */
+function Commute({ trip, wet }) {
+  const notes = [trip.lines]
+  if (trip.nearest) notes.push('desde la estación más cercana')
+  return (
+    <Link className="dw-commute chevrons-host" to={trip.link}>
+      <span className="dw-commute-icons" aria-hidden="true">
+        <PlaceIcon tipo="casa" size="sm" />
+        <Chevrons />
+        <PlaceIcon tipo="trabajo" size="sm" />
+      </span>
+      <span className="dw-commute-text">
+        <strong>De casa al trabajo ≈ {formatDuration(trip.minutes)}</strong>
+        <small>{notes.join(' · ')}</small>
+        {wet && <small className="dw-commute-wet">Con lluvia puede haber demoras: salí unos minutos antes.</small>}
+      </span>
+    </Link>
+  )
+}
+
+/**
  * "Tu dia": el clima de tus lugares (Casa y Trabajo de Mis lugares, o la
  * zona que elijas; si no, Capital): ahora, los proximos horarios, datos
  * utiles y una frase con lo que importa para viajar (mira todos tus
- * lugares). De noche, con el cielo oscuro de fondo. Si el pronostico no esta
+ * lugares) y, si Casa y Trabajo tienen estacion, cuanto se tarda de una a
+ * otra. De noche, con el cielo oscuro de fondo. Si el pronostico no esta
  * disponible, no se muestra.
  */
 export default function DayWeather() {
   const { places, ready, zone } = useWeatherPlaces()
+  const commute = useCommute()
   const [picking, setPicking] = useState(false)
   const [selected, setSelected] = useState(0)
   const first = useApi(ready ? forecastPath(places[0]) : null, { refreshMs: REFRESH_MS })
@@ -233,6 +262,7 @@ export default function DayWeather() {
       ) : (
         <PlaceWeather forecast={shown.forecast} />
       )}
+      {commute && !picking && <Commute trip={commute} wet={head?.tone === 'rain' || head?.tone === 'storm'} />}
     </section>
   )
 }
