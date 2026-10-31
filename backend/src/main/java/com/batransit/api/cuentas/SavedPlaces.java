@@ -1,5 +1,6 @@
 package com.batransit.api.cuentas;
 
+import com.batransit.api.clima.ForecastService;
 import com.batransit.api.cuentas.AccountModels.Places;
 import com.batransit.api.cuentas.AccountModels.SavedPlace;
 
@@ -64,7 +65,15 @@ public final class SavedPlaces {
             }
         };
         // Si tiene estacion, la direccion sobra: se usa la estacion.
-        return new SavedPlace(p.tipo(), name, station, station == null ? address : null);
+        if (station != null) {
+            return new SavedPlace(p.tipo(), name, station, null);
+        }
+        // Direccion confirmada: la zona (redondeada a la grilla, solo dentro del AMBA) y la estacion cercana.
+        boolean zoned = p.lat() != null && p.lon() != null
+                && ForecastService.inArea(p.lat(), p.lon());
+        Long near = p.cerca() != null && p.cerca() > 0 ? p.cerca() : null;
+        return new SavedPlace(p.tipo(), name, null, address,
+                zoned ? Math.round(p.lat() * 20) / 20.0 : null, zoned ? Math.round(p.lon() * 20) / 20.0 : null, near);
     }
 
     /** Sin caracteres de control, espacios de mas ni texto vacio; recortado a max. */

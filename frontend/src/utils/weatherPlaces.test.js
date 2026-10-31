@@ -43,7 +43,13 @@ describe('weatherPlaces', () => {
     expect(weatherPlaces({ places, stations }).map((p) => p.id)).toEqual(['casa'])
   })
 
-  it('Casa con direccion (sin estacion): se usa la zona', () => {
+  it('Casa con direccion confirmada: su zona, con el nombre del partido', () => {
+    const places = [{ tipo: 'casa', estacion: null, direccion: 'Tte Origone 151, Hurlingham', lat: -34.6, lon: -58.65 }]
+    const [home] = weatherPlaces({ places, stations })
+    expect(home).toMatchObject({ id: 'casa', detail: 'Hurlingham', lat: -34.6, lon: -58.65 })
+  })
+
+  it('Casa con direccion sin confirmar: se usa la zona', () => {
     const places = [{ tipo: 'casa', estacion: null, direccion: 'Av. Siempreviva 742' }]
     const [only] = weatherPlaces({ places, stations, zone: { nombre: 'Moreno', lat: -34.65, lon: -58.8 } })
     expect(only.id).toBe('zona')

@@ -14,7 +14,7 @@ const BROWSER_DATA = [
   { what: 'Líneas, estaciones, accesos y colectivos favoritos', why: 'Para mostrarlos en el inicio.' },
   {
     what: 'Mis lugares (Casa, Trabajo y otros)',
-    why: 'Para armar el viaje con un toque en Cómo llegar. Son la estación o la dirección que vos elegiste.',
+    why: 'Para armar el viaje con un toque en Cómo llegar. Son la dirección que vos elegiste, su zona (unos 5 km) y la estación más cercana.',
   },
   {
     what: 'Tu zona del clima, si la elegiste',
@@ -78,13 +78,14 @@ export default function PrivacyPage() {
         <h2 className="about-heading">Si creás una cuenta</h2>
         <p>
           Se guardan en el servidor tu mail, tu nombre y apellido (o los de tu cuenta de Google), tus líneas,
-          estaciones, accesos y colectivos favoritos, tus lugares guardados (la estación o dirección de Casa, Trabajo y
-          los otros que agregues), el tema, tus preferencias de avisos y tu zona del clima (una zona de unos 5 km), la
-          imagen que elijas (un avatar, la dirección de tu foto de Google o una foto que subas, achicada a 256 píxeles),
-          las fechas en que creaste la cuenta e ingresaste por última vez y, de cada dispositivo con la sesión abierta,
-          el navegador y el sistema (por ejemplo, “Chrome en Windows”) y cuándo se usó; no se guarda la IP ni la
-          ubicación. Se usan solo para que puedas ingresar y ver tus favoritos en cualquier dispositivo: no se usan para
-          nada más ni se comparten. Desde Tu cuenta podés descargar todo en un archivo y borrarlo cuando quieras.
+          estaciones, accesos y colectivos favoritos, tus lugares guardados (la dirección de Casa, Trabajo y los otros
+          que agregues, con su zona y la estación más cercana), el tema, tus preferencias de avisos y tu zona del clima
+          (una zona de unos 5 km), la imagen que elijas (un avatar, la dirección de tu foto de Google o una foto que
+          subas, achicada a 256 píxeles), las fechas en que creaste la cuenta e ingresaste por última vez y, de cada
+          dispositivo con la sesión abierta, el navegador y el sistema (por ejemplo, “Chrome en Windows”) y cuándo se
+          usó; no se guarda la IP ni la ubicación. Se usan solo para que puedas ingresar y ver tus favoritos en
+          cualquier dispositivo: no se usan para nada más ni se comparten. Desde Tu cuenta podés descargar todo en un
+          archivo y borrarlo cuando quieras.
         </p>
         <p>
           Si usás mail y contraseña, la contraseña se guarda cifrada (con PBKDF2 y una sal propia), nunca tal cual. Si
@@ -159,6 +160,11 @@ export default function PrivacyPage() {
         <p>
           El pronóstico del clima se lo pide el servidor de BA Transit a Open-Meteo (o, de respaldo, a MET Norway), con
           una zona de unos 5 km: tu navegador no se conecta con ellos, así que no reciben tu IP ni tu ubicación.
+        </p>
+        <p>
+          Para confirmar una dirección de Mis lugares, el servidor de BA Transit le pregunta a Georef (el servicio de
+          direcciones del Estado nacional) por el texto que escribiste. Solo se guarda la dirección, una zona de unos 5
+          km y la estación más cercana: la ubicación exacta no se guarda.
         </p>
       </section>
 

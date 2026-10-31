@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { cleanPlace, findStationPlace, mergePlaces, placePhrase, sanitizePlaces, savePlace } from './placesStore.js'
+import {
+  addressArea,
+  cleanPlace,
+  findStationPlace,
+  mergePlaces,
+  placePhrase,
+  sanitizePlaces,
+  savePlace,
+} from './placesStore.js'
 
 describe('cleanPlace', () => {
   it('valida y normaliza', () => {
@@ -16,8 +24,37 @@ describe('cleanPlace', () => {
       nombre: 'Lugar',
       estacion: null,
       direccion: 'Av. Corrientes 1500',
+      lat: null,
+      lon: null,
+      cerca: null,
     })
     expect(cleanPlace({ tipo: 'otro', nombre: 'a'.repeat(99), estacion: 2 }).nombre).toHaveLength(30)
+  })
+
+  it('direccion confirmada: guarda solo la zona y la estacion cercana', () => {
+    expect(
+      cleanPlace({ tipo: 'casa', direccion: 'Tte Origone 151, Hurlingham', lat: -34.5891, lon: -58.6392, cerca: 77 }),
+    ).toEqual({
+      tipo: 'casa',
+      nombre: 'Casa',
+      estacion: null,
+      direccion: 'Tte Origone 151, Hurlingham',
+      lat: -34.6,
+      lon: -58.65,
+      cerca: 77,
+    })
+    // Fuera del AMBA no se guarda la zona; una estacion invalida tampoco.
+    const far = cleanPlace({ tipo: 'casa', direccion: 'San Martín 100, Rosario', lat: -32.95, lon: -60.65, cerca: -3 })
+    expect([far.lat, far.lon, far.cerca]).toEqual([null, null, null])
+  })
+})
+
+describe('addressArea', () => {
+  it('la parte de la zona de la direccion guardada', () => {
+    expect(addressArea('Tte Origone 151, Hurlingham')).toBe('Hurlingham')
+    expect(addressArea('Av Corrientes 1234, Ciudad de Buenos Aires')).toBe('Capital')
+    expect(addressArea('Av. Corrientes 1500')).toBeNull()
+    expect(addressArea(null)).toBeNull()
   })
 })
 

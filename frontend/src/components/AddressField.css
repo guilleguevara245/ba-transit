@@ -1,0 +1,142 @@
+/* Campo de direccion con sugerencias (Mis lugares). */
+
+.address-field {
+  position: relative;
+}
+
+.address-input-wrap {
+  position: relative;
+}
+
+.address-input-wrap > svg {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  width: 17px;
+  height: 17px;
+  margin-top: -8.5px;
+  pointer-events: none;
+}
+
+.address-field svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.address-input-wrap > svg {
+  color: var(--text-faint);
+}
+
+.auth-field .address-input-wrap input {
+  padding-left: 36px;
+}
+
+.address-options {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-raised);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+  font-weight: 400;
+}
+
+.address-options li {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 8px 9px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.address-options li.active {
+  background: var(--surface-hover);
+  outline: 1px solid var(--line);
+}
+
+.address-options li svg {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  color: var(--accent-text);
+}
+
+.address-options strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.address-options small {
+  display: block;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.address-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--text-faint);
+}
+
+.address-status svg {
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+  margin-top: 1px;
+}
+
+.address-status strong {
+  display: block;
+  font-weight: 600;
+}
+
+.address-status-ok {
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--normal-tint);
+  color: var(--text-dim);
+}
+
+.address-status-ok svg,
+.address-status-ok strong {
+  color: var(--normal);
+}
+
+.address-status-empty,
+.address-status-error {
+  color: var(--delayed);
+}
+
+.address-status-loading svg {
+  animation: address-pulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes address-pulse {
+  from {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .address-status-loading svg {
+    animation: none;
+  }
+}

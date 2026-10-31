@@ -27,6 +27,11 @@ function cleanText(value, max) {
   return t.length > max ? t.slice(0, max).trim() : t
 }
 
+/** Dentro del AMBA (la misma caja que usa el servidor para el clima). */
+function inAmba(lat, lon) {
+  return Number.isFinite(lat) && Number.isFinite(lon) && lat >= -35.5 && lat <= -34 && lon >= -59.5 && lon <= -57.7
+}
+
 /** Un lugar valido o null. */
 export function cleanPlace(p) {
   if (!p || !Object.hasOwn(PLACE_TYPES, p.tipo)) return null
@@ -34,7 +39,21 @@ export function cleanPlace(p) {
   const direccion = estacion ? null : cleanText(p.direccion, MAX_ADDRESS)
   if (!estacion && !direccion) return null
   const nombre = p.tipo === 'otro' ? (cleanText(p.nombre, MAX_NAME) ?? 'Lugar') : PLACE_TYPES[p.tipo].label
-  return { tipo: p.tipo, nombre, estacion, direccion }
+  if (estacion) return { tipo: p.tipo, nombre, estacion, direccion: null }
+  // Direccion confirmada: la zona (grilla de 0,05 grados, dentro del AMBA) y la estacion mas cercana.
+  const lat = Number(p.lat)
+  const lon = Number(p.lon)
+  const zoned = p.lat != null && p.lon != null && inAmba(lat, lon)
+  const cerca = Number.isInteger(p.cerca) && p.cerca > 0 ? p.cerca : null
+  return {
+    tipo: p.tipo,
+    nombre,
+    estacion: null,
+    direccion,
+    lat: zoned ? Math.round(lat * 20) / 20 : null,
+    lon: zoned ? Math.round(lon * 20) / 20 : null,
+    cerca,
+  }
 }
 
 /** Sin invalidos, una sola Casa y un solo Trabajo (vale el primero), hasta MAX_PLACES. */
@@ -111,6 +130,17 @@ export function mergePlaces(local, remote, alreadySynced) {
 export function findStationPlace(options, stationId) {
   if (!stationId) return null
   return options.find((o) => o.stations?.some((s) => s.stationId === stationId)) ?? null
+}
+
+/**
+ * La zona de una direccion guardada ("Tte Origone 151, Hurlingham" ->
+ * "Hurlingham"; la Ciudad queda como "Capital"), o null si no tiene.
+ */
+export function addressArea(direccion) {
+  const parts = String(direccion ?? '').split(',')
+  const area = parts.slice(1).join(',').trim()
+  if (!area) return null
+  return area === 'Ciudad de Buenos Aires' ? 'Capital' : area
 }
 
 /** "Casa" -> "casa"; para frases como "De casa al trabajo". */

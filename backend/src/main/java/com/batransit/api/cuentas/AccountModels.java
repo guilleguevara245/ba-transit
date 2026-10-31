@@ -31,9 +31,17 @@ public final class AccountModels {
 
     /**
      * Un lugar guardado. tipo: 'casa' | 'trabajo' | 'otro'. Tiene una
-     * estacion (id) o una direccion, no las dos.
+     * estacion (id) o una direccion, no las dos. Una direccion confirmada
+     * (con Georef) trae ademas su zona, lat y lon redondeados a la grilla
+     * de 0,05 grados (unos 5 km, nunca el punto exacto), y cerca: la
+     * estacion mas cercana.
      */
-    public record SavedPlace(String tipo, String nombre, Long estacion, String direccion) {
+    public record SavedPlace(String tipo, String nombre, Long estacion, String direccion, Double lat, Double lon,
+                             Long cerca) {
+
+        public SavedPlace(String tipo, String nombre, Long estacion, String direccion) {
+            this(tipo, nombre, estacion, direccion, null, null, null);
+        }
     }
 
     /** Mis lugares: Casa, Trabajo y otros. */

@@ -61,4 +61,19 @@ class SavedPlacesTest {
         }
         assertThat(SavedPlaces.sanitize(new Places(muchos)).lugares().size()).isEqualTo(SavedPlaces.MAX_PLACES);
     }
+
+    @Test
+    void direccionConfirmadaGuardaSoloLaZona() {
+        SavedPlace saved = SavedPlaces.clean(
+                new SavedPlace("casa", null, null, "Tte Origone 151, Hurlingham", -34.61829, -58.63695, 105L));
+        // La zona de 5 km, no el punto exacto; y la estacion cercana.
+        assertThat(saved.lat()).isEqualTo(-34.6);
+        assertThat(saved.lon()).isEqualTo(-58.65);
+        assertThat(saved.cerca()).isEqualTo(105L);
+        // Fuera del AMBA no se guarda la zona.
+        SavedPlace far = SavedPlaces.clean(new SavedPlace("otro", "Cordoba", null, "Colon 100", -31.42, -64.18, null));
+        assertThat(far.lat()).isNull();
+        // Con estacion, ni zona ni cercana: manda la estacion.
+        assertThat(SavedPlaces.clean(new SavedPlace("casa", null, 10L, null, -34.6, -58.4, 5L)).cerca()).isNull();
+    }
 }

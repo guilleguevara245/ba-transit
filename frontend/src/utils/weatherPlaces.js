@@ -1,4 +1,5 @@
 import { distanceKm } from './map.js'
+import { addressArea } from './placesStore.js'
 
 /**
  * Los lugares de "Tu día": de donde se muestra el clima.
@@ -24,9 +25,12 @@ export function gridQuery({ lat, lon }) {
   return `lat=${toGrid(lat).toFixed(2)}&lon=${toGrid(lon).toFixed(2)}`
 }
 
+/** Donde queda Casa o Trabajo: la estacion guardada o la zona de la direccion confirmada. */
 function stationPoint(places, stations, tipo) {
-  const place = places.find((p) => p.tipo === tipo && p.estacion)
-  const station = place && stations?.find((s) => s.stationId === place.estacion)
+  const place = places.find((p) => p.tipo === tipo && (p.estacion || p.lat != null))
+  if (!place) return null
+  if (!place.estacion) return { lat: place.lat, lon: place.lon, name: addressArea(place.direccion) ?? 'Tu dirección' }
+  const station = stations?.find((s) => s.stationId === place.estacion)
   if (!station) return null
   return { lat: Number(station.latitude), lon: Number(station.longitude), name: station.stationName }
 }

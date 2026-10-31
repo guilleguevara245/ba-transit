@@ -20,13 +20,20 @@ import './AirportsPage.css'
 import './TripPlannerPage.css'
 import { stationPath } from '../utils/lineSlug.js'
 
+/** La estacion de un lugar guardado: la suya o, si es una direccion confirmada, la mas cercana. */
+const stationOf = (place) => place.estacion ?? place.cerca ?? null
+
 /** Un lugar guardado como punto para Google Maps: la estacion (lat,lng) o la direccion. */
 function mapsPoint(place, options) {
   if (place.direccion) return `${place.direccion}, Buenos Aires`
   return findStationPlace(options, place.estacion)
 }
 
-/** Atajos entre Casa y Trabajo (y al reves). Si alguno es una direccion, abren Google Maps. */
+/**
+ * Atajos entre Casa y Trabajo (y al reves). Con estaciones (las guardadas o
+ * las mas cercanas a las direcciones confirmadas) el viaje se arma aca; si
+ * no, abren Google Maps.
+ */
 function CommuteShortcuts({ places, options, onTrip }) {
   const home = places.find((p) => p.tipo === 'casa')
   const work = places.find((p) => p.tipo === 'trabajo')
@@ -45,10 +52,31 @@ function CommuteShortcuts({ places, options, onTrip }) {
   return (
     <div className="planner-shortcuts">
       {trips.map(([from, to]) => {
+        const label = `${placePhrase(from, 'de')} ${placePhrase(to, 'a')}`
+        // Con estacion (la propia o la mas cercana a la direccion), el viaje lo arma BA Transit.
+        const fromStation = findStationPlace(options, stationOf(from))
+        const toStation = findStationPlace(options, stationOf(to))
+        if (fromStation && toStation && fromStation.stationId !== toStation.stationId) {
+          return (
+            <button
+              key={label}
+              type="button"
+              className="planner-shortcut chevrons-host"
+              onClick={() => onTrip(fromStation, toStation)}
+            >
+              <PlaceIcon tipo={from.tipo} size="sm" />
+              <Chevrons />
+              <PlaceIcon tipo={to.tipo} size="sm" />
+              <span>{label}</span>
+              {(from.cerca || to.cerca) && !(from.estacion && to.estacion) && (
+                <small>desde la estación más cercana</small>
+              )}
+            </button>
+          )
+        }
         const a = mapsPoint(from, options)
         const b = mapsPoint(to, options)
         if (!a || !b) return null
-        const label = `${placePhrase(from, 'de')} ${placePhrase(to, 'a')}`
         const content = (
           <>
             <PlaceIcon tipo={from.tipo} size="sm" />
@@ -147,7 +175,12 @@ export default function TripPlannerPage() {
   const placeChips = useMemo(
     () =>
       places
-        .map((p, i) => ({ key: `${p.tipo}-${i}`, tipo: p.tipo, nombre: p.nombre, option: findStationPlace(options, p.estacion) }))
+        .map((p, i) => ({
+          key: `${p.tipo}-${i}`,
+          tipo: p.tipo,
+          nombre: p.nombre,
+          option: findStationPlace(options, p.estacion ?? p.cerca),
+        }))
         .filter((c) => c.option),
     [places, options],
   )

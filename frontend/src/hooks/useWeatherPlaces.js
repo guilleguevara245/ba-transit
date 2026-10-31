@@ -12,6 +12,7 @@ import { weatherPlaces } from '../utils/weatherPlaces.js'
 export function useWeatherPlaces() {
   const { places } = useSavedPlaces()
   const { zone } = useWeatherZone()
+  // Solo hacen falta las estaciones si Casa o Trabajo es una estacion (una direccion confirmada ya trae su zona).
   const needsStations = places.some((p) => (p.tipo === 'casa' || p.tipo === 'trabajo') && p.estacion)
   const { data: stations } = useApi(needsStations ? '/api/v1/map/stations' : null)
   const ready = !needsStations || Boolean(stations)

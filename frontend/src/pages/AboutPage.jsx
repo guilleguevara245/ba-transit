@@ -110,6 +110,13 @@ const SOURCES = [
       'Temperatura, lluvia y viento hora por hora, a partir de modelos meteorológicos globales. Si Open-Meteo no responde se usa el pronóstico del Instituto Meteorológico de Noruega (api.met.no). Las alertas son las oficiales del SMN.',
   },
   {
+    what: 'Direcciones de Mis lugares',
+    source: 'Georef, Servicio de Normalización de Datos Geográficos (datos.gob.ar)',
+    url: 'https://datosgobar.github.io/georef-ar-api/',
+    detail:
+      'Confirma que la dirección de Casa, Trabajo y los otros lugares exista en el AMBA y dice dónde queda, para sumar la estación más cercana.',
+  },
+  {
     what: 'Avisos de los trenes',
     source: 'Trenes Argentinos, modificaciones en el servicio y novedades',
     url: 'https://www.argentina.gob.ar/transporte/trenes-argentinos/modificaciones-en-el-servicio-y-novedades',

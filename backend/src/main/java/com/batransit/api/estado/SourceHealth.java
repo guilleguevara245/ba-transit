@@ -42,6 +42,7 @@ public class SourceHealth {
         METROVIAS("Estado del Urquiza", "Metrovías"),
         SMN("Alertas meteorológicas", "Servicio Meteorológico Nacional"),
         PRONOSTICO("Pronóstico del clima", "Open-Meteo (respaldo: MET Norway)"),
+        GEOREF("Búsqueda de direcciones (Mis lugares)", "Georef (datos.gob.ar)"),
         TOMTOM("Tránsito en los accesos", "TomTom"),
         ADSB_LOL("Aviones en vivo", "adsb.lol"),
         NOTICIAS("Noticias del transporte", "enelSubte y Google Noticias"),
