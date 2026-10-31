@@ -44,6 +44,8 @@ function detailPath(routeId, line, headsign) {
 function RouteDetail({ routeId, line, headsign, initialDirection }) {
   const { data: route, loading, error } = useApi(detailPath(routeId, line, headsign))
   const [directionIndex, setDirectionIndex] = useState(0)
+  // Parada elegida en la lista: { index, n } (n cambia en cada toque, para volver a centrarla).
+  const [focusedStop, setFocusedStop] = useState(null)
   // Con el numero de la linea, el servidor descarta los colectivos de otra linea con el mismo id.
   const live = useApi(
     route
@@ -58,6 +60,9 @@ function RouteDetail({ routeId, line, headsign, initialDirection }) {
     const index = route?.directions.findIndex((d) => d.directionId === initialDirection) ?? -1
     setDirectionIndex(index >= 0 ? index : 0)
   }, [route, initialDirection])
+
+  // Al cambiar de sentido, la parada elegida deja de valer.
+  useEffect(() => setFocusedStop(null), [directionIndex, route])
 
   if (loading) return <Skeleton variant="map" label="Cargando recorrido…" />
   if (String(error ?? '').includes('respondió 404')) {
@@ -151,7 +156,13 @@ function RouteDetail({ routeId, line, headsign, initialDirection }) {
       )}
 
       <div className="bus-layout">
-        <BusRouteMap className="bus-map" route={route} directionIndex={directionIndex} vehicles={vehicles} />
+        <BusRouteMap
+          className="bus-map"
+          route={route}
+          directionIndex={directionIndex}
+          vehicles={vehicles}
+          focusedStop={focusedStop}
+        />
         {direction && (
           <div className="panel bus-stops">
             <div className="panel-title">
@@ -167,10 +178,18 @@ function RouteDetail({ routeId, line, headsign, initialDirection }) {
             <ol className="bus-stop-list" style={{ '--bus-color': route.color ?? '#17171a' }}>
               {direction.stops.map((stop, index) => (
                 <li key={`${stop.id}-${index}`}>
-                  <span>{plainText(stop.name)}</span>
-                  {direction.minutes?.[index] != null && index > 0 && (
-                    <span className="bus-stop-minutes">+{direction.minutes[index]} min</span>
-                  )}
+                  {/* Tocar la parada la muestra en el mapa con su tarjeta. */}
+                  <button
+                    type="button"
+                    className={`bus-stop-button${focusedStop?.index === index ? ' active' : ''}`}
+                    aria-current={focusedStop?.index === index ? 'location' : undefined}
+                    onClick={() => setFocusedStop((prev) => ({ index, n: (prev?.n ?? 0) + 1 }))}
+                  >
+                    <span>{plainText(stop.name)}</span>
+                    {direction.minutes?.[index] != null && index > 0 && (
+                      <span className="bus-stop-minutes">+{direction.minutes[index]} min</span>
+                    )}
+                  </button>
                 </li>
               ))}
             </ol>

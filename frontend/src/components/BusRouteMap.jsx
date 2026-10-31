@@ -14,11 +14,36 @@ function FitToRoute({ positions }) {
   return null
 }
 
+/** Zoom al mostrar una parada elegida en la lista (si el mapa esta mas lejos). */
+const STOP_ZOOM = 16
+
+/**
+ * Lleva el mapa a la parada elegida en la lista y abre su tarjeta. En el
+ * celular, si el mapa quedo fuera de la pantalla, primero lo trae.
+ */
+function FocusStop({ focused, stops, markers }) {
+  const map = useMap()
+  useEffect(() => {
+    const stop = focused && stops?.[focused.index]
+    if (!stop) return
+    const box = map.getContainer().getBoundingClientRect()
+    if (box.top < 0 || box.bottom > window.innerHeight) {
+      map.getContainer().scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+    const open = () => markers.current[focused.index]?.openPopup()
+    map.once('moveend', open)
+    map.flyTo([stop.latitude, stop.longitude], Math.max(map.getZoom(), STOP_ZOOM), { duration: 0.6 })
+    return () => map.off('moveend', open)
+  }, [map, focused, stops, markers])
+  return null
+}
+
 /**
  * Mapa del recorrido de un colectivo: el sentido elegido resaltado, el
- * otro sentido mas tenue y las paradas del sentido elegido.
+ * otro sentido mas tenue y las paradas del sentido elegido. focusedStop:
+ * la parada elegida en la lista ({ index }), que se centra y se resalta.
  */
-export default function BusRouteMap({ route, directionIndex, className, vehicles = [] }) {
+export default function BusRouteMap({ route, directionIndex, className, vehicles = [], focusedStop = null }) {
   const color = route.color ?? '#17171a'
   const active = route.directions[directionIndex]
   // El encuadre incluye los colectivos en vivo: si el feed usa un recorrido
@@ -32,6 +57,7 @@ export default function BusRouteMap({ route, directionIndex, className, vehicles
     () => [...(active?.shape ?? []), ...(hasVehicles ? vehiclesRef.current.map((v) => [v.latitude, v.longitude]) : [])],
     [active, hasVehicles],
   )
+  const markers = useRef([])
   const busBadge = (
     <span className="map-card-bus" style={route.color ? { background: route.color } : undefined}>
       {parseBusShortName(route.shortName).number || '?'}
@@ -60,12 +86,21 @@ export default function BusRouteMap({ route, directionIndex, className, vehicles
           <Polyline positions={active.shape} pathOptions={{ color, weight: 5, opacity: 0.9 }} />
           {active.stops.map((stop, index) => {
             const isEnd = index === 0 || index === active.stops.length - 1
+            const isFocused = focusedStop?.index === index
             return (
               <CircleMarker
                 key={`${stop.id}-${index}`}
+                ref={(layer) => {
+                  markers.current[index] = layer
+                }}
                 center={[stop.latitude, stop.longitude]}
-                radius={isEnd ? 7 : 4}
-                pathOptions={{ color, fillColor: '#ffffff', fillOpacity: 1, weight: isEnd ? 3 : 2 }}
+                radius={isFocused ? 8 : isEnd ? 7 : 4}
+                pathOptions={{
+                  color,
+                  fillColor: isFocused ? color : '#ffffff',
+                  fillOpacity: 1,
+                  weight: isFocused || isEnd ? 3 : 2,
+                }}
               >
                 <MapCard
                   badge={busBadge}
@@ -108,6 +143,7 @@ export default function BusRouteMap({ route, directionIndex, className, vehicles
       ))}
 
       <FitToRoute positions={positions} />
+      <FocusStop focused={focusedStop} stops={active?.stops} markers={markers} />
     </MapContainer>
   )
 }

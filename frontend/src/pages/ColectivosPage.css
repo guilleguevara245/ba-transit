@@ -253,8 +253,40 @@
 
 .bus-stop-list li {
   display: flex;
+}
+
+/* Cada parada es un boton: la muestra en el mapa. */
+.bus-stop-button {
+  display: flex;
   justify-content: space-between;
   gap: 10px;
+  width: 100%;
+  margin: 0 0 0 -4px;
+  padding: 0 4px;
+  border: none;
+  border-radius: 3px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.bus-stop-button:hover {
+  background: var(--surface-hover);
+  color: var(--accent-text);
+}
+
+.bus-stop-button:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 1px;
+}
+
+.bus-stop-button.active {
+  background: var(--surface-hover);
+  font-weight: 600;
+  box-shadow: inset 3px 0 0 var(--bus-color);
 }
 
 .bus-stop-minutes {
