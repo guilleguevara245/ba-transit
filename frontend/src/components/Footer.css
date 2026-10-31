@@ -1,51 +1,131 @@
+/*
+ * Pie de pagina oscuro, como el header (mantiene su paleta aunque el
+ * resto del sitio este en tema claro), con la linea amarilla arriba.
+ */
 .footer {
-  margin-top: 24px;
-  border-top: 1px solid var(--line);
+  --bg: #0c0c0d;
+  --surface: #17171a;
+  --surface-raised: #222226;
+  --line: #2c2c2f;
+  --text: #f5f4ef;
+  --text-dim: #aeaca5;
+  --text-faint: #8a877f;
+  --normal: #6fbf73;
+  --normal-tint: rgba(111, 191, 115, 0.18);
+  --delayed: #e3a24a;
+  --delayed-tint: rgba(227, 162, 74, 0.18);
+
+  margin-top: 40px;
+  border-top: 3px solid var(--yellow);
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* ---- Franja de contacto ---- */
+/* Las filas llevan .wrap: el padding vertical va con doble clase para
+   ganarle al "padding: 0 32px" de .wrap (index.css se carga despues). */
+
+.footer-band {
   background: var(--surface);
 }
 
-.footer-row {
+.footer .footer-band-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px 20px;
-  padding-top: 18px;
-  padding-bottom: 18px;
-  font-size: 12px;
-  color: var(--text-faint);
+  justify-content: center;
+  gap: 10px 16px;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.footer-band p {
+  margin: 0;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.footer-band a {
+  padding: 6px 15px;
+  border: 1.5px solid var(--text);
+  border-radius: 999px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.footer-band a.footer-band-main {
+  border-color: var(--yellow);
+  background: var(--yellow);
+  color: #17171a;
+}
+
+.footer-band a:hover {
+  border-color: var(--yellow);
+}
+
+.footer-band a.footer-band-main:hover {
+  filter: brightness(1.06);
+}
+
+/* ---- Marca y columnas ---- */
+
+.footer .footer-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) repeat(4, minmax(0, 1fr));
+  gap: 28px;
+  padding-top: 34px;
+  padding-bottom: 26px;
 }
 
 .footer-brand {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-weight: 700;
-  color: var(--text);
-}
-
-.footer-mark {
-  width: 20px;
-  height: 20px;
-}
-
-.footer-text {
-  flex: 1;
-}
-
-.footer-link {
-  color: var(--accent-text);
-  font-weight: 600;
+  gap: 10px;
+  color: var(--yellow);
+  font-size: 22px;
+  line-height: 1;
   text-decoration: none;
 }
 
-.footer-link:hover {
-  text-decoration: underline;
+.footer-brand b {
+  font-weight: 800;
+}
+
+.footer-mark {
+  width: 30px;
+  height: 30px;
+}
+
+.footer-about p {
+  max-width: 320px;
+  margin: 12px 0 16px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-dim);
+}
+
+.footer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
 }
 
 .footer-status {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.footer-status:hover {
+  text-decoration: underline;
 }
 
 .footer-dot {
@@ -61,23 +141,93 @@
   box-shadow: 0 0 0 3px var(--delayed-tint);
 }
 
-.footer-links {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 20px;
+.footer-col h2 {
+  margin: 4px 0 12px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+  color: var(--yellow);
 }
 
-/* Celular: marca y aviso arriba; los enlaces abajo, en renglones prolijos. */
-@media (max-width: 600px) {
-  .footer-text {
-    flex-basis: 100%;
-    order: 1;
+.footer-col ul {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.footer-col a {
+  font-size: 13.5px;
+  color: #d9d7d0;
+  text-decoration: none;
+}
+
+.footer-col a:hover {
+  color: var(--yellow);
+}
+
+.footer-col small {
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+
+.footer a:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+}
+
+/* ---- Barra legal ---- */
+
+.footer .footer-legal {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 20px;
+  padding-top: 14px;
+  padding-bottom: 20px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.footer-legal-links {
+  display: flex;
+  gap: 18px;
+}
+
+.footer-legal-links a {
+  color: #d9d7d0;
+  text-decoration: none;
+}
+
+.footer-legal-links a:hover {
+  color: var(--yellow);
+}
+
+/* Pantallas medianas: la marca arriba, las columnas de a cuatro debajo. */
+@media (max-width: 980px) {
+  .footer .footer-main {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
-  .footer-links {
+  .footer-about {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Celular: columnas de a dos. */
+@media (max-width: 600px) {
+  .footer .footer-main {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 16px;
+  }
+
+  .footer-band p {
     flex-basis: 100%;
-    order: 2;
-    gap: 10px 18px;
+    text-align: center;
   }
 }
