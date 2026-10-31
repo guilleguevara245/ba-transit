@@ -37,18 +37,21 @@ export default function DashboardPage() {
 
   return (
     <div className="wrap content">
-      {/* Saludo y busqueda a la izquierda; "Tu dia" a la derecha (abajo en el celular). */}
+      {/* En la computadora: saludo, busqueda y favoritos a la izquierda; "Tu dia" a la derecha.
+          En el celular, una columna: saludo, busqueda, "Tu dia" y los favoritos. */}
       <div className="home-top">
         <Greeting />
-        <DayWeather />
         <SearchBar />
+        <DayWeather />
+        <div className="home-favorites">
+          <AccountInvite />
+          {ready && <MyLines lines={lines} alerts={alerts} />}
+          {ready && <MyStations lines={lines} alerts={alerts} />}
+          <MyAccesses />
+          <MyBuses />
+          {ready && <NotificationsLink />}
+        </div>
       </div>
-      <AccountInvite />
-      {ready && <MyLines lines={lines} alerts={alerts} />}
-      {ready && <MyStations lines={lines} alerts={alerts} />}
-      <MyAccesses />
-      <MyBuses />
-      {ready && <NotificationsLink />}
       <div className="section-label section-label-row">
         <span>Estado de la red</span>
         {alertsState.updatedAt && (
