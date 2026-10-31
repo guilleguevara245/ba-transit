@@ -18,6 +18,7 @@ const ICONS = {
   aeropuertos: 'M2 13l9-2 4-8h2l-2 9 6 1 1 2-7 1-3 6h-2l1-7-9-2z',
   comoLlegar: 'M12 21s-6-5.5-6-10.5a6 6 0 0 1 12 0C18 15.5 12 21 12 21zm0-8.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4z',
   estacionamiento: 'M5.5 11.5 7 7.5h10l1.5 4M4.5 11.5h15v5h-15zM7 16.5v2M17 16.5v2M7.5 14h.01M16.5 14h.01',
+  accesos: 'M8 3 5 21m11-18 3 18M12 4v3m0 4v3m0 4v3',
   ecobici: 'M5.5 18a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zm13 0a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM5.5 14.5 9 8h6l3.5 6.5M9 8l3 6.5h-1M14 5h2.5',
 }
 
@@ -27,6 +28,7 @@ const TABS = [
   { to: '/como-llegar', label: 'Cómo llegar', icon: ICONS.comoLlegar },
   { to: '/colectivos', label: 'Colectivos', icon: ICONS.colectivos },
   { to: '/ecobici', label: 'EcoBici', icon: ICONS.ecobici },
+  { to: '/accesos', label: 'Accesos', icon: ICONS.accesos },
   { to: '/estacionamiento', label: 'Estacionamiento', icon: ICONS.estacionamiento },
   { to: '/aeropuertos', label: 'Aeropuertos', icon: ICONS.aeropuertos },
 ]
