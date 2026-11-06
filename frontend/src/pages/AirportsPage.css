@@ -94,7 +94,9 @@
 }
 
 .bus-chip {
+  display: inline-block;
   min-width: 38px;
+  text-decoration: none;
   padding: 4px 8px;
   text-align: center;
   background: var(--ink);
@@ -141,4 +143,42 @@
 .airports-source a {
   color: var(--accent-text);
   font-weight: 600;
+}
+
+/* Cada linea lleva a su recorrido en Colectivos. */
+a.bus-chip:hover {
+  background: var(--yellow);
+  color: #17171a;
+}
+
+/* Aterrizando y despegando ahora, debajo del nombre del aeropuerto. */
+.airport-traffic {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  margin: -4px 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.airport-traffic-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.airport-traffic-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.airport-traffic-quiet {
+  font-weight: 400;
+  color: var(--text-dim);
 }

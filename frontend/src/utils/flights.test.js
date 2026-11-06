@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
+  airportTraffic,
   flightDetail,
+  headingName,
   flightGroup,
   flightStatus,
   flightTitle,
@@ -33,7 +35,10 @@ describe('aviones en vivo', () => {
     expect(flightTitle(iberia)).toBe('IBE5107')
     expect(flightTitle({ id: 'e80461', callsign: null })).toBe('Avión E80461')
     expect(flightTitle({ id: 'e80461', callsign: null, registration: 'LV-HVT' })).toBe('LV-HVT')
-    expect(flightDetail({ callsign: 'IBE5107', registration: 'EC-NCX', aircraftType: 'A359' })).toBe('EC-NCX · A359')
+    expect(flightDetail({ callsign: 'IBE5107', registration: 'EC-NCX', aircraftType: 'A359' })).toBe(
+      'EC-NCX · Airbus A350-900',
+    )
+    expect(flightDetail({ callsign: 'X1', registration: 'LV-ABC', aircraftType: 'ZZZZ' })).toBe('LV-ABC · ZZZZ')
     expect(flightDetail({ callsign: 'N650BL', registration: 'N650BL', aircraftType: null })).toBe(null)
   })
 
@@ -42,3 +47,23 @@ describe('aviones en vivo', () => {
   })
 })
 
+
+describe('headingName y airportTraffic', () => {
+  it('pasa el rumbo a una direccion', () => {
+    expect(headingName(0)).toBe('norte')
+    expect(headingName(315)).toBe('noroeste')
+    expect(headingName(-90)).toBe('oeste')
+    expect(headingName(null)).toBeNull()
+  })
+
+  it('cuenta aterrizando y despegando por aeropuerto', () => {
+    const flights = [
+      { airport: 'AEP', phase: 'LANDING' },
+      { airport: 'AEP', phase: 'DEPARTING' },
+      { airport: 'AEP', phase: 'DEPARTING' },
+      { airport: 'EZE', phase: 'GROUND' },
+    ]
+    expect(airportTraffic(flights, 'AEP')).toEqual({ arriving: 1, departing: 2 })
+    expect(airportTraffic(flights, 'EZE')).toEqual({ arriving: 0, departing: 0 })
+  })
+})

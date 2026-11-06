@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { divIcon } from 'leaflet'
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet'
+import GlyphBadge from './GlyphBadge.jsx'
 import MapCard, { MapCardIcon } from './MapCard.jsx'
 import UpdatedAt from './UpdatedAt.jsx'
 import { useApi } from '../hooks/useApi.js'
@@ -13,6 +14,7 @@ import {
   flightTitle,
   formatAltitude,
   formatSpeed,
+  headingName,
   movingNow,
 } from '../utils/flights.js'
 import './LiveFlights.css'
@@ -20,6 +22,8 @@ import './LiveFlights.css'
 // El backend guarda el dato de adsb.lol 30 segundos.
 const REFRESH_MS = 30_000
 const GROUP_COLOR = Object.fromEntries(FLIGHT_GROUPS.map((g) => [g.key, g.color]))
+// El avion de la tarjeta, sobre el color de su grupo (el amarillo lleva el dibujo oscuro).
+const GROUP_INK = { arriving: '#ffffff', departing: '#17171a', ground: '#ffffff', air: '#ffffff' }
 // Mismo trazo que el icono de Aeropuertos.
 const AIRPORT_ICON = 'M2 13l9-2 4-8h2l-2 9 6 1 1 2-7 1-3 6h-2l1-7-9-2z'
 
@@ -78,10 +82,20 @@ function FlightCard({ flight }) {
   const group = flightGroup(flight)
   const altitude = formatAltitude(flight.altitude)
   const speed = formatSpeed(flight.speed)
+  const heading = flight.onGround ? null : headingName(flight.heading)
   return (
     <MapCard
       badge={<MapCardIcon path={AIRPORT_ICON} />}
       kicker={flight.airline ?? 'Vuelo'}
+      icon={
+        <GlyphBadge
+          glyph="plane"
+          shape="circle"
+          bg={GROUP_COLOR[group]}
+          fg={GROUP_INK[group]}
+          rotate={Math.round(flight.heading ?? 0)}
+        />
+      }
       title={flightTitle(flight)}
       subtitle={flightDetail(flight) ?? undefined}
     >
@@ -89,6 +103,7 @@ function FlightCard({ flight }) {
         <i />
         {flightStatus(flight)}
       </div>
+      {heading && <div className="map-card-note">Va hacia el {heading}</div>}
       {(altitude || speed) && (
         <div className="map-card-stats">
           {altitude && (

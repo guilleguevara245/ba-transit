@@ -4,6 +4,8 @@ import MapBadge from '../components/MapBadge.jsx'
 import { GLYPHS, badgeIcon } from '../utils/mapIcons.js'
 import { CircleMarker, MapContainer, Marker, TileLayer, useMap, useMapEvents } from 'react-leaflet'
 import MapCard, { MapCardIcon } from '../components/MapCard.jsx'
+import ExternalTitle from '../components/ExternalTitle.jsx'
+import GlyphBadge from '../components/GlyphBadge.jsx'
 import BackButton from '../components/BackButton.jsx'
 import ModeIcon from '../components/ModeIcon.jsx'
 import { MOTO_GARAGES, MOTO_STREET, PARKING_SOURCE, PUBLIC_LOTS, PUBLIC_LOTS_SOURCE } from '../data/parking.js'
@@ -35,6 +37,30 @@ const DOT_STYLE = {
   osm: { color: '#17171a', weight: 1, fillColor: '#ffffff', fillOpacity: 1 },
 }
 const iconFor = (layer, active) => badgeIcon(BADGES[layer].glyph, { ...BADGES[layer], size: SIZES[layer], active })
+/** El mismo distintivo del mapa, al lado del titulo de la tarjeta. */
+const cardIcon = (layer) => <GlyphBadge {...BADGES[layer]} />
+
+/** Para ir en auto o en moto: el recorrido en Google Maps hasta el lugar. */
+function Directions({ place }) {
+  const url = `https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lon}&travelmode=driving`
+  return (
+    <a className="station-popup-link" href={url} target="_blank" rel="noreferrer">
+      <ExternalTitle text="Cómo llegar" />
+    </a>
+  )
+}
+
+/** "A 150 m del punto marcado" / "a 1,2 km de vos", si hay un punto elegido. */
+function DistanceNote({ place, point }) {
+  if (!point) return null
+  const [near] = nearestPlaces([place], point, 1)
+  const text = formatDistance(near.meters)
+  return (
+    <div className="map-card-note">
+      {text.charAt(0).toUpperCase() + text.slice(1)} {point.source === 'gps' ? 'de vos' : 'del punto marcado'}
+    </div>
+  )
+}
 
 // Los garajes son miles: con el mapa lejos van como puntos (canvas, livianos);
 // desde este zoom, con su icono, y solo los que estan a la vista.
@@ -298,8 +324,8 @@ export default function ParkingPage() {
               <CircleMarker
                 key={p.id}
                 center={[p.lat, p.lon]}
-                radius={active ? 8 : 4}
-                pathOptions={DOT_STYLE[p.layer]}
+                radius={active ? 8 : view.zoom <= 13 ? 3 : 4}
+                pathOptions={view.zoom <= 13 ? { ...DOT_STYLE[p.layer], weight: 0.7 } : DOT_STYLE[p.layer]}
                 eventHandlers={select}
               />
             )
@@ -310,10 +336,13 @@ export default function ParkingPage() {
                 <MapCard
                   badge={<MapCardIcon path={GLYPHS.lot} />}
                   kicker={p.underground ? 'Playa subterránea de la Ciudad' : 'Playa de la Ciudad'}
+                  icon={cardIcon('lot')}
                   title={p.name}
                   subtitle={p.address !== p.name ? p.address : null}
+                  actions={<Directions place={p} />}
                 >
                   {p.barrio && <div className="station-popup-opened">{p.barrio}</div>}
+                  <DistanceNote place={p} point={point} />
                 </MapCard>
               </Marker>
             )
@@ -321,7 +350,13 @@ export default function ParkingPage() {
           if (p.layer === 'garage') {
             return (
               <Marker key={p.id} position={[p.lat, p.lon]} title={p.title} icon={iconFor('garage', active)} eventHandlers={select}>
-                <MapCard badge={<MapCardIcon path={GLYPHS.motoGarage} />} kicker="Cochera para motos" title={p.address}>
+                <MapCard
+                  badge={<MapCardIcon path={GLYPHS.motoGarage} />}
+                  kicker="Cochera para motos"
+                  icon={cardIcon('garage')}
+                  title={p.address}
+                  actions={<Directions place={p} />}
+                >
                   <div className="map-card-stats">
                     <div className="map-card-stat">
                       <strong>{p.capacity}</strong>
@@ -336,14 +371,23 @@ export default function ParkingPage() {
                     {p.covered ? 'Bajo techo' : 'A cielo abierto'}
                     {p.exclusive ? ' · exclusiva para motos' : ' · compartida con autos'}
                   </div>
+                  <DistanceNote place={p} point={point} />
                 </MapCard>
               </Marker>
             )
           }
           return (
             <Marker key={p.id} position={[p.lat, p.lon]} title={p.title} icon={iconFor('street', active)} eventHandlers={select}>
-              <MapCard badge={<MapCardIcon path={GLYPHS.moto} />} kicker="Motos en la calle" title={p.street} subtitle={placeDetail(p)}>
+              <MapCard
+                badge={<MapCardIcon path={GLYPHS.moto} />}
+                kicker="Motos en la calle"
+                icon={cardIcon('street')}
+                title={p.street}
+                subtitle={placeDetail(p)}
+                actions={<Directions place={p} />}
+              >
                 {p.barrio && <div className="station-popup-opened">{p.barrio}</div>}
+                <DistanceNote place={p} point={point} />
               </MapCard>
             </Marker>
           )
@@ -355,9 +399,12 @@ export default function ParkingPage() {
             onClose={() => setSelectedId(null)}
             badge={<MapCardIcon path={GLYPHS.lot} />}
             kicker="Estacionamiento en el conurbano"
+            icon={cardIcon('osm')}
             title={selected.title}
             subtitle={placeDetail(selected) || null}
+            actions={<Directions place={selected} />}
           >
+            <DistanceNote place={selected} point={point} />
             <div className="station-popup-opened">Cargado por usuarios de OpenStreetMap: puede estar desactualizado</div>
           </MapCard>
         )}
@@ -368,12 +415,15 @@ export default function ParkingPage() {
             onClose={() => setSelectedId(null)}
             badge={<MapCardIcon path={GLYPHS.garage} />}
             kicker="Garaje"
+            icon={cardIcon('car')}
             title={selected.name || selected.address}
             subtitle={selected.name ? selected.address : null}
+            actions={<Directions place={selected} />}
           >
             <div className="station-popup-opened">
               {[selected.floors > 1 ? `${selected.floors} pisos` : null, selected.barrio].filter(Boolean).join(' · ')}
             </div>
+            <DistanceNote place={selected} point={point} />
           </MapCard>
         )}
         <FlyToPoint point={point} />

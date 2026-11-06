@@ -374,3 +374,17 @@ body {
 .stale-note {
   color: var(--delayed);
 }
+
+/* El distintivo del mapa al lado del titulo de una tarjeta (GlyphBadge). */
+.glyph-badge {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.glyph-badge .map-badge {
+  box-shadow: none;
+}
+
+.glyph-badge .map-badge-square {
+  border-radius: 8px;
+}

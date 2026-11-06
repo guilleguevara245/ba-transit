@@ -457,7 +457,8 @@ button.station-popup-link {
   color: var(--status-color, var(--yellow-deep));
 }
 
-.map-card-delay {
+.map-card-delay,
+.map-card-note {
   margin-top: 2px;
   font-size: 12px;
   color: var(--text-dim);
