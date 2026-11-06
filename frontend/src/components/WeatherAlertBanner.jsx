@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useApi } from '../hooks/useApi.js'
 import { useWeatherPlaces } from '../hooks/useWeatherPlaces.js'
@@ -29,20 +29,46 @@ const HIDDEN_ON = [
   '/condiciones',
 ]
 
-// Cuando aparecio cada alerta en esta visita (la animacion no se repite al cambiar de pagina).
-const shownAt = new Map()
 /** Lo que dura la animacion de entrada (con el escalonado de la segunda y tercera). */
 const ENTER_MS = 1500
 
 /**
- * true mientras la alerta esta entrando. Se decide la primera vez que se ve
- * y se mantiene durante la animacion: si se calculara en cada render, el
- * primer re-render (otra respuesta, un cambio de pagina) le sacaba la clase
- * y la animacion se cortaba al instante.
+ * Fase de cada alerta en esta visita: 'esperando' (todavia cerrada),
+ * 'entrando' (animandose) o 'vista'. Vive fuera del componente para que
+ * la animacion no se repita al cambiar de pagina.
  */
-function isEntering(key, now = Date.now()) {
-  if (!shownAt.has(key)) shownAt.set(key, now)
-  return now - shownAt.get(key) < ENTER_MS
+const phases = new Map()
+const reducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+
+function phaseOf(key) {
+  if (!phases.has(key)) phases.set(key, reducedMotion() ? 'vista' : 'esperando')
+  return phases.get(key)
+}
+
+/**
+ * Llama a fn cuando la pagina termino de cargar, esta a la vista y el
+ * navegador tiene un respiro. La animacion corre en el hilo principal: si
+ * arranca mientras la pagina todavia se esta armando (mapas, tarjetas,
+ * fuentes), cuando se pinta el primer cuadro ya termino y no se ve.
+ */
+function whenSettled(fn) {
+  let cancelled = false
+  const start = () =>
+    !cancelled && window.requestAnimationFrame(() => window.requestAnimationFrame(() => !cancelled && fn()))
+  const run = () => {
+    if (cancelled) return
+    if (document.hidden) {
+      document.addEventListener('visibilitychange', run, { once: true })
+      return
+    }
+    if (window.requestIdleCallback) window.requestIdleCallback(start, { timeout: 1200 })
+    else setTimeout(start, 200)
+  }
+  if (document.readyState === 'complete') run()
+  else window.addEventListener('load', run, { once: true })
+  return () => {
+    cancelled = true
+  }
 }
 
 function readDismissed() {
@@ -75,6 +101,31 @@ export default function WeatherAlertBanner() {
     ...(places[1] ? [{ place: places[1], alerts: second.data?.alerts }] : []),
   ]
   const alerts = alertsForPlaces(lists).filter((a) => !dismissed.includes(dismissKey(a)))
+  const [, setTick] = useState(0)
+  // (dismissKey con una flecha: su segundo parametro es la fecha y map le pasaria el indice.)
+  const waitingKeys = alerts
+    .map((alert) => dismissKey(alert))
+    .filter((key) => phaseOf(key) === 'esperando')
+    .join('|')
+
+  // Las alertas nuevas esperan a que la pagina se calme y recien ahi se animan.
+  useEffect(() => {
+    if (!waitingKeys) return undefined
+    const keys = waitingKeys.split('|')
+    const cancel = whenSettled(() => {
+      keys.forEach((key) => phases.set(key, 'entrando'))
+      setTick((n) => n + 1)
+      // Este timer no se cancela con el efecto: al pasar a 'entrando' cambian las
+      // claves que esperan y el efecto se limpia, pero la animacion tiene que seguir.
+      setTimeout(() => {
+        keys.forEach((key) => phases.set(key, 'vista'))
+        setTick((n) => n + 1)
+      }, ENTER_MS)
+    })
+    // Solo se cancela la espera: si la pagina cambia antes de que arranque, vuelve a esperar.
+    return cancel
+  }, [waitingKeys])
+
   if (alerts.length === 0 || HIDDEN_ON.includes(pathname)) return null
 
   function dismiss(alert) {
@@ -92,10 +143,10 @@ export default function WeatherAlertBanner() {
     <div className="weather-alerts" role="region" aria-label="Alertas meteorológicas">
       {alerts.map((alert) => {
         const level = ALERT_LEVELS[alert.level] ?? ALERT_LEVELS.AMARILLA
-        const key = dismissKey(alert)
-        const enter = isEntering(key)
+        const phase = phaseOf(dismissKey(alert))
+        const motion = { esperando: ' weather-alert-waiting', entrando: ' weather-alert-enter' }[phase] ?? ''
         return (
-          <div key={alert.id} className={`weather-alert ${level.className}${enter ? ' weather-alert-enter' : ''}`}>
+          <div key={alert.id} className={`weather-alert ${level.className}${motion}`}>
             <div className="weather-alert-inner">
               <div className="wrap weather-alert-row">
                 <WeatherIcon kind={ALERT_ICONS[alert.kind] ?? 'storm'} className="weather-alert-icon" />

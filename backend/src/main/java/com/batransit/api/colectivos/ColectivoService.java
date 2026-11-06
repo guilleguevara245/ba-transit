@@ -90,6 +90,9 @@ public class ColectivoService {
     /** Descarga y procesa el feed. Si algo falla, se conserva lo que habia. */
     public void refresh() {
         lastAttempt = Instant.now();
+        if (snapshotStore != null) {
+            snapshotStore.markAttempt(lastAttempt);
+        }
         Path file = null;
         try {
             file = Files.createTempFile("colectivos-gtfs", ".zip");
@@ -153,6 +156,13 @@ public class ColectivoService {
             catalog.compareAndSet(null, saved);
             log.info("Colectivos: {} lineas cargadas desde la copia de la base (feed del {}).",
                     saved.routes().size(), saved.loadedAt());
+        });
+        // Si el ultimo intento de bajar el feed no termino (el servidor se reinicio en el
+        // medio), no se reintenta enseguida: se espera RETRY_AFTER_FAILURE desde ese intento.
+        snapshotStore.lastAttempt().ifPresent(at -> {
+            if (lastAttempt == null || at.isAfter(lastAttempt)) {
+                lastAttempt = at;
+            }
         });
     }
 

@@ -56,6 +56,31 @@ class ColectivoServiceTest {
     }
 
     @Test
+    void siElUltimoIntentoNoTerminoNoReintentaEnseguida() throws IOException {
+        // La copia de la base es de hace 30 horas y el servidor se reinicio a mitad de una
+        // descarga hace 1 hora (por ejemplo, por memoria): no tiene que volver a bajar el feed.
+        Instant now = Instant.parse("2026-11-06T12:00:00Z");
+        BusModels.Catalog old = new BusModels.Catalog(loadedService().current().orElseThrow().routes(),
+                now.minus(Duration.ofHours(30)));
+        ColectivoSnapshotStore store = new ColectivoSnapshotStore(null, null) {
+            @Override
+            public java.util.Optional<BusModels.Catalog> load() {
+                return java.util.Optional.of(old);
+            }
+
+            @Override
+            public java.util.Optional<Instant> lastAttempt() {
+                return java.util.Optional.of(now.minus(Duration.ofHours(1)));
+            }
+        };
+        ColectivoService service = new ColectivoService(new TransporteApiProperties(), "", "/colectivos/feed-gtfs", store);
+        service.restoreSnapshot();
+        assertThat(service.needsRefresh(Duration.ofHours(24), now)).isFalse();
+        // Pasadas las 6 horas de espera desde ese intento, si.
+        assertThat(service.needsRefresh(Duration.ofHours(24), now.plus(Duration.ofHours(6)))).isTrue();
+    }
+
+    @Test
     void lineaInexistenteEsNotFound() throws IOException {
         ColectivoService service = loadedService();
 

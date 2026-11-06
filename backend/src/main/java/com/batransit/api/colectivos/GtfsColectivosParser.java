@@ -10,7 +10,6 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -26,8 +25,9 @@ import java.util.zip.ZipFile;
  *
  * Para no quedarse sin memoria con el feed del AMBA, no se cargan todos
  * los viajes: por cada linea y sentido se toman unos pocos viajes
- * candidatos y se elige el que tiene mas paradas. Despues se leen solo
- * las paradas, recorridos (shapes) y horarios de esos viajes.
+ * candidatos y se elige el que tiene mas paradas (contandolas, sin
+ * guardarlas). Despues se leen solo las paradas, recorridos (shapes) y
+ * horarios de esos viajes.
  */
 public class GtfsColectivosParser {
 
@@ -71,12 +71,42 @@ public class GtfsColectivosParser {
                 }
             });
 
-            // 3. Paradas (y horarios) de los viajes candidatos
+            // 3. Elegir, por linea y sentido, el candidato con mas paradas. Primero
+            //    solo se cuentan las filas de cada candidato (un numero por viaje):
+            //    guardar las paradas de todos los candidatos pasaba el limite de
+            //    memoria del servidor con el feed del AMBA.
+            Map<String, int[]> stopCounts = new HashMap<>();
+            read(zip, "stop_times.txt", row -> {
+                String tripId = row.get("trip_id");
+                if (candidates.containsKey(tripId)) {
+                    stopCounts.computeIfAbsent(tripId, k -> new int[1])[0]++;
+                }
+            });
+            Map<String, String> chosenByKey = new HashMap<>();
+            candidatesByKey.forEach((key, trips) -> {
+                String best = null;
+                int bestCount = -1;
+                for (String tripId : trips) {
+                    int count = stopCounts.containsKey(tripId) ? stopCounts.get(tripId)[0] : 0;
+                    if (count > bestCount) {
+                        best = tripId;
+                        bestCount = count;
+                    }
+                }
+                if (best != null) {
+                    chosenByKey.put(key, best);
+                }
+            });
+            stopCounts.clear();
+
+            // 4. Paradas (y horarios) solo de los viajes elegidos: una segunda
+            //    pasada por stop_times.txt, que es mas barata que la memoria.
+            Set<String> chosenTrips = new HashSet<>(chosenByKey.values());
             Map<String, TreeMap<Integer, String>> stopsByTrip = new HashMap<>();
             Map<String, Map<Integer, Integer>> secondsByTrip = new HashMap<>();
             read(zip, "stop_times.txt", row -> {
                 String tripId = row.get("trip_id");
-                if (candidates.containsKey(tripId)) {
+                if (chosenTrips.contains(tripId)) {
                     int sequence = parseIntOr(row.get("stop_sequence"), 0);
                     stopsByTrip.computeIfAbsent(tripId, k -> new TreeMap<>()).put(sequence, row.get("stop_id"));
                     Integer seconds = parseTime(row.get("arrival_time"));
@@ -88,12 +118,6 @@ public class GtfsColectivosParser {
                     }
                 }
             });
-
-            // 4. Elegir, por linea y sentido, el candidato con mas paradas
-            Map<String, String> chosenByKey = new HashMap<>();
-            candidatesByKey.forEach((key, trips) -> trips.stream()
-                    .max(Comparator.comparingInt(t -> stopsByTrip.getOrDefault(t, new TreeMap<>()).size()))
-                    .ifPresent(t -> chosenByKey.put(key, t)));
 
             Set<String> neededStops = new HashSet<>();
             Set<String> neededShapes = new HashSet<>();

@@ -105,6 +105,22 @@
   }
 }
 
+/* Antes de animarse (mientras la pagina termina de cargar): cerrada, como al empezar la animacion. */
+.weather-alert-waiting {
+  display: grid;
+  grid-template-rows: 0fr;
+  clip-path: inset(0 calc(100% - 4px) 0 0);
+}
+
+.weather-alert-waiting > .weather-alert-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.weather-alert-waiting .weather-alert-row {
+  opacity: 0;
+}
+
 /*
  * Al aparecer (una vez por visita): la franja se abre de a poco empujando
  * la pagina, con solo la raya de color visible; despues el fondo se barre
@@ -168,5 +184,14 @@
   .weather-alert-enter,
   .weather-alert-enter .weather-alert-row {
     animation: none;
+  }
+
+  .weather-alert-waiting {
+    display: block;
+    clip-path: none;
+  }
+
+  .weather-alert-waiting .weather-alert-row {
+    opacity: 1;
   }
 }

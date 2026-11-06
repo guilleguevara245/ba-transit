@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.zip.GZIPInputStream;
@@ -52,6 +53,30 @@ public class ColectivoSnapshotStore {
             log.info("Colectivos: copia guardada en la base ({} KB).", data.length / 1024);
         } catch (IOException | DataAccessException e) {
             log.warn("Colectivos: no se pudo guardar la copia en la base ({}).", e.getClass().getSimpleName());
+        }
+    }
+
+    /**
+     * Anota que se empieza a bajar el feed. Va antes de la descarga: si el
+     * servidor se cae en el medio, al volver se sabe que hubo un intento.
+     */
+    public void markAttempt(Instant at) {
+        try {
+            jdbc.update("UPDATE colectivos_snapshot SET attempted_at = ? WHERE id = 1", Timestamp.from(at));
+        } catch (DataAccessException e) {
+            log.warn("Colectivos: no se pudo anotar el intento ({}).", e.getClass().getSimpleName());
+        }
+    }
+
+    /** El ultimo intento anotado, si hay. */
+    public Optional<Instant> lastAttempt() {
+        try {
+            List<Timestamp> rows = jdbc.query("SELECT attempted_at FROM colectivos_snapshot WHERE id = 1",
+                    (rs, rowNum) -> rs.getTimestamp("attempted_at"));
+            return rows.isEmpty() || rows.get(0) == null ? Optional.empty() : Optional.of(rows.get(0).toInstant());
+        } catch (DataAccessException e) {
+            log.warn("Colectivos: no se pudo leer el ultimo intento ({}).", e.getClass().getSimpleName());
+            return Optional.empty();
         }
     }
 
