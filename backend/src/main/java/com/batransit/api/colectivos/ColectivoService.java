@@ -1,5 +1,6 @@
 package com.batransit.api.colectivos;
 
+import com.batransit.api.estado.MemoryReport;
 import com.batransit.api.estado.SourceHealth;
 import com.batransit.api.colectivos.BusModels.BusRoute;
 import com.batransit.api.colectivos.BusModels.Catalog;
@@ -95,11 +96,14 @@ public class ColectivoService {
         }
         Path file = null;
         try {
+            MemoryReport.log("colectivos, antes de bajar el feed");
             file = Files.createTempFile("colectivos-gtfs", ".zip");
             download(file);
+            log.info("Colectivos: feed GTFS bajado ({} MB).", Files.size(file) / (1024 * 1024));
             Catalog loaded = parser.parse(file);
             catalog.set(loaded);
             log.info("Colectivos: {} lineas cargadas desde el feed GTFS.", loaded.routes().size());
+            MemoryReport.log("colectivos, despues de procesar el feed");
             health.ok(SourceHealth.Source.COLECTIVOS_RECORRIDOS);
             if (snapshotStore != null) {
                 snapshotStore.save(loaded);
