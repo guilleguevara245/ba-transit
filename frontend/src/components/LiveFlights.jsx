@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { divIcon } from 'leaflet'
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet'
 import GlyphBadge from './GlyphBadge.jsx'
@@ -69,6 +69,24 @@ function planeIcon(group, heading, active) {
   return iconCache.get(key)
 }
 
+/**
+ * Al cambiar el filtro: cierra la tarjeta abierta y vuelve a encuadrar el
+ * mapa con los aeropuertos y los aviones que quedan a la vista.
+ * reset: un numero que cambia con cada filtro elegido.
+ */
+function ResetView({ reset, points }) {
+  const map = useMap()
+  // Los puntos cambian con cada actualizacion de los aviones; el encuadre, solo al elegir un filtro.
+  const latest = useRef(points)
+  latest.current = points
+  useEffect(() => {
+    if (!reset) return
+    map.closePopup()
+    map.flyToBounds(latest.current, { padding: [60, 60], maxZoom: 11, duration: 0.6 })
+  }, [map, reset])
+  return null
+}
+
 /** target: [lat, lon] del avion al elegirlo (no lo sigue en cada actualizacion). */
 function FlyTo({ target }) {
   const map = useMap()
@@ -135,6 +153,15 @@ export default function LiveFlights({ bounds, children }) {
   const [selectedId, setSelectedId] = useState(null)
   // Al elegir un avion de la lista el mapa va hasta el; tocandolo en el mapa, no hace falta.
   const [flyTarget, setFlyTarget] = useState(null)
+  const [reset, setReset] = useState(0)
+
+  /** Elegir un filtro (o "Ver todos") deja de mostrar el avion elegido y vuelve a encuadrar el mapa. */
+  function chooseFilter(key) {
+    setGroupFilter(key)
+    setSelectedId(null)
+    setFlyTarget(null)
+    setReset((n) => n + 1)
+  }
 
   const flights = useMemo(() => data?.flights ?? [], [data])
   const counts = useMemo(() => {
@@ -142,9 +169,7 @@ export default function LiveFlights({ bounds, children }) {
     for (const f of flights) result[flightGroup(f)] += 1
     return result
   }, [flights])
-  const visible = groupFilter
-    ? flights.filter((f) => f.id === selectedId || flightGroup(f) === groupFilter)
-    : flights
+  const visible = groupFilter ? flights.filter((f) => flightGroup(f) === groupFilter) : flights
   const moving = movingNow(flights)
 
   return (
@@ -168,7 +193,7 @@ export default function LiveFlights({ bounds, children }) {
                 type="button"
                 className={active ? 'active' : undefined}
                 aria-pressed={active}
-                onClick={() => setGroupFilter(active ? null : g.key)}
+                onClick={() => chooseFilter(active ? null : g.key)}
               >
                 <PlaneSvg group={g.key} heading={45} size={16} />
                 {g.label}
@@ -177,7 +202,7 @@ export default function LiveFlights({ bounds, children }) {
             )
           })}
           {groupFilter && (
-            <button type="button" className="ecobici-legend-all" onClick={() => setGroupFilter(null)}>
+            <button type="button" className="ecobici-legend-all" onClick={() => chooseFilter(null)}>
               Ver todos
             </button>
           )}
@@ -203,6 +228,7 @@ export default function LiveFlights({ bounds, children }) {
           </Marker>
         ))}
         <FlyTo target={flyTarget} />
+        <ResetView reset={reset} points={[...bounds, ...visible.map((f) => [f.latitude, f.longitude])]} />
       </MapContainer>
 
       {!data && error && (
