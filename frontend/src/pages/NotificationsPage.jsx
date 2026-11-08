@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import BackButton from '../components/BackButton.jsx'
+import AccountShell from '../components/AccountShell.jsx'
 import Select from '../components/Select.jsx'
 import { useFavoriteList } from '../hooks/useFavoriteList.js'
 import { isPaused, pauseLabel } from '../utils/notifPrefs.js'
@@ -64,7 +64,10 @@ function plural(n, one, many) {
   return `${n} ${n === 1 ? one : many}`
 }
 
-/** Avisos de este navegador: activar, elegir que avisar, horario sin avisos, probar y apagar. */
+/**
+ * Avisos de este navegador: activar, elegir que avisar, horario sin avisos,
+ * probar y apagar. En computadora, las opciones van en dos columnas.
+ */
 export default function NotificationsPage() {
   const support = pushSupport()
   const [subscribed, setSubscribed] = useState(null)
@@ -119,9 +122,8 @@ export default function NotificationsPage() {
     change({ ...prefs, kinds: prefs.kinds.includes(key) ? prefs.kinds.filter((k) => k !== key) : [...prefs.kinds, key] })
 
   return (
-    <div className="wrap content auth notif-page">
-      <BackButton />
-      <section className="auth-card" aria-labelledby="notif-title">
+    <AccountShell active="avisos" className="notif-page">
+      <section className="account-card account-sheet" aria-labelledby="notif-title">
         <h1 className="auth-title" id="notif-title">
           Avisos
         </h1>
@@ -206,170 +208,171 @@ export default function NotificationsPage() {
         )}
 
         {support !== 'no' && (
-          <fieldset className="notif-prefs" disabled={busy}>
-            <legend>Resumen de tus favoritos</legend>
-            <label className="notif-check">
-              <input type="checkbox" checked={prefs.summary} onChange={() => change({ ...prefs, summary: !prefs.summary })} />
-              <span>
-                Resumen diario
-                <small>Un solo aviso con el estado de todas tus líneas, estaciones y accesos.</small>
-              </span>
-            </label>
-            {prefs.summary && (
-              <div className="notif-summary">
-                <div className="auth-field">
-                  <span id="summary-time">A las</span>
-                  <Select
-                    labelledBy="summary-time"
-                    value={prefs.summaryTime}
-                    options={SUMMARY_TIMES}
-                    onChange={(v) => change({ ...prefs, summaryTime: v })}
+          <div className="notif-columns">
+            <div className="notif-column">
+              <fieldset className="notif-prefs" disabled={busy}>
+                <legend>Resumen de tus favoritos</legend>
+                <label className="notif-check">
+                  <input type="checkbox" checked={prefs.summary} onChange={() => change({ ...prefs, summary: !prefs.summary })} />
+                  <span>
+                    Resumen diario
+                    <small>Un solo aviso con el estado de todas tus líneas, estaciones y accesos.</small>
+                  </span>
+                </label>
+                {prefs.summary && (
+                  <div className="notif-summary">
+                    <div className="auth-field">
+                      <span id="summary-time">A las</span>
+                      <Select
+                        labelledBy="summary-time"
+                        value={prefs.summaryTime}
+                        options={SUMMARY_TIMES}
+                        onChange={(v) => change({ ...prefs, summaryTime: v })}
+                      />
+                    </div>
+                    <div className="notif-days" role="group" aria-label="Días del resumen">
+                      {DAYS.map(([day, letter, name]) => {
+                        const on = prefs.summaryDays.includes(day)
+                        return (
+                          <button
+                            key={day}
+                            type="button"
+                            className={on ? 'notif-day on' : 'notif-day'}
+                            aria-pressed={on}
+                            aria-label={name}
+                            title={name}
+                            onClick={() => {
+                              const days = on ? prefs.summaryDays.filter((d) => d !== day) : [...prefs.summaryDays, day]
+                              if (days.length > 0) change({ ...prefs, summaryDays: days.sort((a, b) => a - b) })
+                            }}
+                          >
+                            {letter}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+              </fieldset>
+        
+              <fieldset className="notif-prefs" disabled={busy}>
+                <legend>De tus favoritos</legend>
+                {KINDS.map((k) => (
+                  <label key={k.key} className="notif-check">
+                    <input type="checkbox" checked={prefs.kinds.includes(k.key)} onChange={() => toggleKind(k.key)} />
+                    <span>
+                      {k.label}
+                      <small>{k.hint}</small>
+                    </span>
+                  </label>
+                ))}
+                <label className="notif-check">
+                  <input
+                    type="checkbox"
+                    checked={prefs.notifyResolved}
+                    onChange={() => change({ ...prefs, notifyResolved: !prefs.notifyResolved })}
                   />
-                </div>
-                <div className="notif-days" role="group" aria-label="Días del resumen">
-                  {DAYS.map(([day, letter, name]) => {
-                    const on = prefs.summaryDays.includes(day)
-                    return (
-                      <button
-                        key={day}
-                        type="button"
-                        className={on ? 'notif-day on' : 'notif-day'}
-                        aria-pressed={on}
-                        aria-label={name}
-                        title={name}
-                        onClick={() => {
-                          const days = on ? prefs.summaryDays.filter((d) => d !== day) : [...prefs.summaryDays, day]
-                          if (days.length > 0) change({ ...prefs, summaryDays: days.sort((a, b) => a - b) })
-                        }}
-                      >
-                        {letter}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-          </fieldset>
-        )}
-
-        {support !== 'no' && (
-          <fieldset className="notif-prefs" disabled={busy}>
-            <legend>De tus favoritos</legend>
-            {KINDS.map((k) => (
-              <label key={k.key} className="notif-check">
-                <input type="checkbox" checked={prefs.kinds.includes(k.key)} onChange={() => toggleKind(k.key)} />
-                <span>
-                  {k.label}
-                  <small>{k.hint}</small>
-                </span>
-              </label>
-            ))}
-            <label className="notif-check">
-              <input
-                type="checkbox"
-                checked={prefs.notifyResolved}
-                onChange={() => change({ ...prefs, notifyResolved: !prefs.notifyResolved })}
-              />
-              <span>
-                Avisarme cuando se normaliza
-                <small>Por ejemplo, “Línea B: volvió a funcionar normal”.</small>
-              </span>
-            </label>
-          </fieldset>
-        )}
-
-        {support !== 'no' && (
-          <fieldset className="notif-prefs" disabled={busy}>
-            <legend>Además</legend>
-            {EXTRA_KINDS.map((k) => (
-              <label key={k.key} className="notif-check">
-                <input type="checkbox" checked={prefs.kinds.includes(k.key)} onChange={() => toggleKind(k.key)} />
-                <span>
-                  {k.label}
-                  <small>{k.hint}</small>
-                </span>
-              </label>
-            ))}
-            <label className="notif-check">
-              <input
-                type="checkbox"
-                checked={prefs.lastTrain}
-                onChange={() => change({ ...prefs, lastTrain: !prefs.lastTrain })}
-              />
-              <span>
-                Último subte
-                <small>
-                  Antes del último subte o Premetro de tus líneas (y las de tus estaciones). Llega aunque sea horario
-                  sin avisos.
-                </small>
-              </span>
-            </label>
-            {prefs.lastTrain && (
-              <div className="notif-summary">
-                <div className="auth-field notif-last-train">
-                  <span id="last-train">Avisarme</span>
-                  <Select
-                    labelledBy="last-train"
-                    value={prefs.lastTrainMinutes}
-                    options={LAST_TRAIN_OPTIONS}
-                    onChange={(v) => change({ ...prefs, lastTrainMinutes: v })}
+                  <span>
+                    Avisarme cuando se normaliza
+                    <small>Por ejemplo, “Línea B: volvió a funcionar normal”.</small>
+                  </span>
+                </label>
+              </fieldset>
+        
+            </div>
+            <div className="notif-column">
+              <fieldset className="notif-prefs" disabled={busy}>
+                <legend>Además</legend>
+                {EXTRA_KINDS.map((k) => (
+                  <label key={k.key} className="notif-check">
+                    <input type="checkbox" checked={prefs.kinds.includes(k.key)} onChange={() => toggleKind(k.key)} />
+                    <span>
+                      {k.label}
+                      <small>{k.hint}</small>
+                    </span>
+                  </label>
+                ))}
+                <label className="notif-check">
+                  <input
+                    type="checkbox"
+                    checked={prefs.lastTrain}
+                    onChange={() => change({ ...prefs, lastTrain: !prefs.lastTrain })}
                   />
-                </div>
-              </div>
-            )}
-            <label className="notif-check">
-              <input
-                type="checkbox"
-                checked={prefs.tripWeather}
-                onChange={() => change({ ...prefs, tripWeather: !prefs.tripWeather })}
-              />
-              <span>
-                El clima y tu viaje
-                <small>
-                  De lunes a viernes, solo los días con lluvia, tormenta, calor, frío o viento fuerte en Casa o Trabajo
-                  (o en tu zona del clima). Usa los lugares de <Link to="/mis-lugares">Mis lugares</Link>.
-                </small>
-              </span>
-            </label>
-            {prefs.tripWeather && (
-              <div className="notif-summary">
-                <div className="auth-field">
-                  <span id="trip-weather-time">A las</span>
-                  <Select
-                    labelledBy="trip-weather-time"
-                    value={prefs.tripWeatherTime}
-                    options={SUMMARY_TIMES}
-                    onChange={(v) => change({ ...prefs, tripWeatherTime: v })}
+                  <span>
+                    Último subte
+                    <small>
+                      Antes del último subte o Premetro de tus líneas (y las de tus estaciones). Llega aunque sea horario
+                      sin avisos.
+                    </small>
+                  </span>
+                </label>
+                {prefs.lastTrain && (
+                  <div className="notif-summary">
+                    <div className="auth-field notif-last-train">
+                      <span id="last-train">Avisarme</span>
+                      <Select
+                        labelledBy="last-train"
+                        value={prefs.lastTrainMinutes}
+                        options={LAST_TRAIN_OPTIONS}
+                        onChange={(v) => change({ ...prefs, lastTrainMinutes: v })}
+                      />
+                    </div>
+                  </div>
+                )}
+                <label className="notif-check">
+                  <input
+                    type="checkbox"
+                    checked={prefs.tripWeather}
+                    onChange={() => change({ ...prefs, tripWeather: !prefs.tripWeather })}
                   />
-                </div>
-              </div>
-            )}
-          </fieldset>
-        )}
-
-        {support !== 'no' && (
-          <fieldset className="notif-prefs" disabled={busy}>
-            <legend>Horario</legend>
-            <label className="notif-check">
-              <input type="checkbox" checked={prefs.quiet} onChange={() => change({ ...prefs, quiet: !prefs.quiet })} />
-              <span>
-                Sin avisos de noche
-                <small>Lo que pase en ese horario no se avisa después.</small>
-              </span>
-            </label>
-            {prefs.quiet && (
-              <div className="notif-hours">
-                <div className="auth-field">
-                  <span id="quiet-from">Desde</span>
-                  <Select labelledBy="quiet-from" value={prefs.quietFrom} options={HOURS} onChange={(v) => change({ ...prefs, quietFrom: v })} />
-                </div>
-                <div className="auth-field">
-                  <span id="quiet-to">Hasta</span>
-                  <Select labelledBy="quiet-to" value={prefs.quietTo} options={HOURS} onChange={(v) => change({ ...prefs, quietTo: v })} />
-                </div>
-              </div>
-            )}
-          </fieldset>
+                  <span>
+                    El clima y tu viaje
+                    <small>
+                      De lunes a viernes, solo los días con lluvia, tormenta, calor, frío o viento fuerte en Casa o Trabajo
+                      (o en tu zona del clima). Usa los lugares de <Link to="/mis-lugares">Mis lugares</Link>.
+                    </small>
+                  </span>
+                </label>
+                {prefs.tripWeather && (
+                  <div className="notif-summary">
+                    <div className="auth-field">
+                      <span id="trip-weather-time">A las</span>
+                      <Select
+                        labelledBy="trip-weather-time"
+                        value={prefs.tripWeatherTime}
+                        options={SUMMARY_TIMES}
+                        onChange={(v) => change({ ...prefs, tripWeatherTime: v })}
+                      />
+                    </div>
+                  </div>
+                )}
+              </fieldset>
+        
+              <fieldset className="notif-prefs" disabled={busy}>
+                <legend>Horario</legend>
+                <label className="notif-check">
+                  <input type="checkbox" checked={prefs.quiet} onChange={() => change({ ...prefs, quiet: !prefs.quiet })} />
+                  <span>
+                    Sin avisos de noche
+                    <small>Lo que pase en ese horario no se avisa después.</small>
+                  </span>
+                </label>
+                {prefs.quiet && (
+                  <div className="notif-hours">
+                    <div className="auth-field">
+                      <span id="quiet-from">Desde</span>
+                      <Select labelledBy="quiet-from" value={prefs.quietFrom} options={HOURS} onChange={(v) => change({ ...prefs, quietFrom: v })} />
+                    </div>
+                    <div className="auth-field">
+                      <span id="quiet-to">Hasta</span>
+                      <Select labelledBy="quiet-to" value={prefs.quietTo} options={HOURS} onChange={(v) => change({ ...prefs, quietTo: v })} />
+                    </div>
+                  </div>
+                )}
+              </fieldset>
+        
+            </div>
+          </div>
         )}
 
         {support === 'ok' && subscribed && (
@@ -397,6 +400,6 @@ export default function NotificationsPage() {
           Los avisos son de este dispositivo y no necesitan cuenta. Qué se guarda: <Link to="/privacidad">política de privacidad</Link>.
         </p>
       </section>
-    </div>
+    </AccountShell>
   )
 }

@@ -1,3 +1,12 @@
+/* Las opciones: una columna en el celular, dos en computadora. */
+.notif-columns,
+.notif-column {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
 .notif-prefs {
   display: flex;
   flex-direction: column;
@@ -195,4 +204,25 @@
 .notif-check small a {
   color: var(--accent-text);
   font-weight: 600;
+}
+
+@media (min-width: 900px) {
+  .notif-columns {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 36px;
+    align-items: start;
+  }
+
+  /* Los botones a su medida, no de lado a lado. */
+  .notif-page .auth-submit {
+    align-self: flex-start;
+    padding: 11px 26px;
+  }
+
+  .notif-actions {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
 }

@@ -25,6 +25,7 @@ const HIDDEN_ON = [
   '/restablecer',
   '/notificaciones',
   '/mis-lugares',
+  '/dispositivos',
   '/privacidad',
   '/condiciones',
 ]

@@ -201,3 +201,70 @@
 .place-check-no {
   color: var(--delayed);
 }
+
+/* Computadora: los lugares de a dos por fila; el formulario ocupa toda la fila. */
+@media (min-width: 900px) {
+  .places-page .place-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .places-page .place-list > li:not(.place-row) {
+    grid-column: 1 / -1;
+  }
+
+  /* El nombre y los botones arriba; la direccion y si esta confirmada, debajo y de lado a lado. */
+  .places-page .place-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    align-content: start;
+    gap: 2px 12px;
+    padding: 14px;
+  }
+
+  .places-page .place-row > :first-child {
+    grid-row: 1 / span 3;
+    align-self: start;
+  }
+
+  .places-page .place-text {
+    display: contents;
+  }
+
+  .places-page .place-text > strong {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .places-page .place-actions {
+    grid-column: 3;
+    grid-row: 1;
+    margin-right: -8px;
+  }
+
+  .places-page .place-detail,
+  .places-page .place-check {
+    grid-column: 2 / -1;
+  }
+
+  /* Con mas lugar, la direccion entera (en dos renglones si hace falta). */
+  .places-page .place-detail-text {
+    white-space: normal;
+  }
+
+  .places-page .place-add {
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  .places-page .place-add-button {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .places-page .place-editor {
+    padding: 18px 20px;
+  }
+}

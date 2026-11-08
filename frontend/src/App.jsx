@@ -30,6 +30,7 @@ const ResetPage = lazy(() => import('./pages/ResetPage.jsx'))
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage.jsx'))
 const MyPlacesPage = lazy(() => import('./pages/MyPlacesPage.jsx'))
 const AccountPage = lazy(() => import('./pages/AccountPage.jsx'))
+const DevicesPage = lazy(() => import('./pages/DevicesPage.jsx'))
 const TrainNoticesPage = lazy(() => import('./pages/TrainNoticesPage.jsx'))
 const StationPage = lazy(() => import('./pages/StationPage.jsx'))
 const SubePage = lazy(() => import('./pages/SubePage.jsx'))
@@ -66,6 +67,7 @@ export default function App() {
           <Route path="/cuenta" element={<AccountPage />} />
           <Route path="/notificaciones" element={<NotificationsPage />} />
           <Route path="/mis-lugares" element={<MyPlacesPage />} />
+          <Route path="/dispositivos" element={<DevicesPage />} />
           <Route path="/recuperar" element={<RecoverPage />} />
           <Route path="/restablecer" element={<ResetPage />} />
           <Route path="*" element={<NotFoundPage />} />

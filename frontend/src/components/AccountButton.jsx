@@ -14,7 +14,7 @@ const ITEMS = [
   ['Tu cuenta', '/cuenta', 'perfil'],
   ['Mis lugares', '/mis-lugares', 'lugares'],
   ['Avisos', '/notificaciones', 'avisos'],
-  ['Dispositivos', '/cuenta#dispositivos', 'dispositivos'],
+  ['Dispositivos', '/dispositivos', 'dispositivos'],
 ]
 
 function MenuIcon({ name }) {

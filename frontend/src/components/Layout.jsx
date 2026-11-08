@@ -6,9 +6,11 @@ import Header from './Header.jsx'
 import WeatherAlertBanner from './WeatherAlertBanner.jsx'
 import AccountSync from './AccountSync.jsx'
 import { useAlertsTitle } from '../hooks/useAlertsTitle.js'
+import { useScrollToTop } from '../hooks/useScrollToTop.js'
 
 export default function Layout() {
   useAlertsTitle()
+  useScrollToTop()
 
   return (
     <div className="app">

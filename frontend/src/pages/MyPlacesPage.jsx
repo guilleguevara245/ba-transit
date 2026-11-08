@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import BackButton from '../components/BackButton.jsx'
+import AccountShell from '../components/AccountShell.jsx'
 import Chevrons from '../components/Chevrons.jsx'
 import PlaceIcon from '../components/PlaceIcon.jsx'
 import AddressField from '../components/AddressField.jsx'
@@ -171,7 +171,8 @@ function PlaceDetail({ place, options }) {
 /**
  * Mis lugares: Casa, Trabajo y otros lugares frecuentes, para armar el
  * viaje con un toque en Cómo llegar. Funciona sin cuenta; con cuenta se
- * sincronizan en todos los dispositivos.
+ * sincronizan en todos los dispositivos. En computadora, los lugares van
+ * de a dos por fila.
  */
 export default function MyPlacesPage() {
   const { data: stations } = useApi('/api/v1/map/stations')
@@ -206,9 +207,8 @@ export default function MyPlacesPage() {
     ) : null
 
   return (
-    <div className="wrap content auth">
-      <BackButton />
-      <section className="auth-card" aria-labelledby="places-title">
+    <AccountShell active="lugares" className="places-page">
+      <section className="account-card account-sheet" aria-labelledby="places-title">
         <h1 className="auth-title" id="places-title">
           Mis lugares
         </h1>
@@ -291,6 +291,6 @@ export default function MyPlacesPage() {
           )}
         </p>
       </section>
-    </div>
+    </AccountShell>
   )
 }

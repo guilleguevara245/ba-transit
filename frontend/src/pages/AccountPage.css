@@ -635,6 +635,16 @@
   display: none;
 }
 
+/* Paginas de la cuenta con su tarjeta (Mis lugares, Avisos, Dispositivos): con la franja amarilla. */
+.account-card.account-sheet {
+  gap: 14px;
+  border-top: 4px solid var(--yellow);
+}
+
+.account-sheet .auth-subtitle {
+  max-width: 70ch;
+}
+
 /* Datos del perfil: etiqueta y valor; "Cambiar" a la derecha del nombre. */
 .account-rows {
   display: grid;
@@ -835,6 +845,29 @@
     background: var(--bg);
   }
 
+  /* El menu no es texto seleccionable, como el header. */
+  .account-nav a,
+  .account-nav button {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* La seccion en la que se esta. */
+  .account-nav a[aria-current='page'] {
+    border-left-color: var(--yellow);
+    background: var(--bg);
+    font-weight: 700;
+  }
+
+  /* Sin cuenta (Mis lugares y Avisos): sin menu, la pagina sola y mas ancha. */
+  .wrap.account-page.account-guest {
+    max-width: 820px;
+  }
+
+  .account-guest .account-layout {
+    display: block;
+  }
+
   .account-nav a:focus-visible,
   .account-nav button:focus-visible {
     outline: 2px solid var(--yellow);
@@ -867,6 +900,10 @@
 
   .account-card {
     padding: 24px 28px;
+  }
+
+  .account-card.account-sheet {
+    padding: 28px 32px 26px;
   }
 
   .account-rows {
