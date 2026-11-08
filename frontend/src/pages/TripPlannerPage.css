@@ -378,8 +378,19 @@
   height: 0.8em;
 }
 
-.planner-shortcut span {
+/* El viaje y, debajo, de donde sale (asi no se parte en varios renglones en el celular). */
+.planner-shortcut-text {
+  display: flex;
+  flex-direction: column;
   margin-left: 4px;
+  text-align: left;
+  line-height: 1.25;
+}
+
+@media (max-width: 520px) {
+  .planner-shortcut {
+    flex: 1 1 100%;
+  }
 }
 
 .planner-shortcut small {

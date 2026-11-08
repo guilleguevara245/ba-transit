@@ -89,6 +89,17 @@
   line-height: 1;
 }
 
+/* El area para tocar es mas grande que el circulo (unos 40 px, comodo en el celular). */
+.weather-alert-close {
+  position: relative;
+}
+
+.weather-alert-close::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+}
+
 .weather-alert-close:hover {
   background: var(--surface);
   color: var(--text);

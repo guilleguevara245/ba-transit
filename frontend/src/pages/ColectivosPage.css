@@ -130,11 +130,17 @@
 
 .bus-live {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 4px 8px;
   margin-bottom: 10px;
   font-size: 13px;
   color: var(--text-dim);
+}
+
+.bus-live-text {
+  flex: 1 1 220px;
+  min-width: 0;
 }
 
 .bus-live-switch {

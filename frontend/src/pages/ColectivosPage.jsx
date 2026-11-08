@@ -12,6 +12,7 @@ import FavoriteButton from '../components/FavoriteButton.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { useDebounce } from '../hooks/useDebounce.js'
+import { NARROW, useMediaQuery } from '../hooks/useMediaQuery.js'
 import {
   busDescription,
   busFavoriteId,
@@ -138,12 +139,23 @@ function RouteDetail({ routeId, line, headsign, initialDirection }) {
       {live.data?.available && (
         <div className="bus-live" role="status">
           <span className="live-dot" aria-hidden="true" />
-          {vehicles.length > 0 &&
-            `${vehicles.length} ${vehicles.length === 1 ? 'colectivo' : 'colectivos'} en vivo${matchesGtfs ? ' en este sentido' : ''}`}
-          {vehicles.length === 0 && otherCount === 0 && 'Sin colectivos en vivo de esta línea ahora.'}
-          {vehicles.length > 0 && (route.id !== routeId || vehicles.some((v) => v.otherRoute)) && (
-            <span className="bus-live-note"> · pueden ir por un ramal distinto del recorrido dibujado</span>
-          )}
+          {/* El texto en un solo bloque: en el celular sigue en el renglon de abajo en vez de partirse en columnas. */}
+          <span className="bus-live-text">
+            {vehicles.length > 0 &&
+              `${vehicles.length} ${vehicles.length === 1 ? 'colectivo' : 'colectivos'} en vivo${matchesGtfs ? ' en este sentido' : ''}`}
+            {vehicles.length === 0 && otherCount === 0 && 'Sin colectivos en vivo de esta línea ahora.'}
+            {vehicles.length > 0 && (route.id !== routeId || vehicles.some((v) => v.otherRoute)) && (
+              <span className="bus-live-note"> · pueden ir por un ramal distinto del recorrido dibujado</span>
+            )}
+            {vehicles.length === 0 && otherCount > 0 && (
+              <>
+                Ninguno en este sentido ahora, pero hay {otherCount} en vivo{' '}
+                <button type="button" className="bus-live-switch" onClick={() => setDirectionIndex(otherIndex)}>
+                  hacia {headsignName(route.directions[otherIndex].headsign) || 'el otro sentido'}
+                </button>
+              </>
+            )}
+          </span>
           {live.data.updatedAt && (
             <UpdatedAt
               className="bus-live-updated"
@@ -151,14 +163,6 @@ function RouteDetail({ routeId, line, headsign, initialDirection }) {
               onRefresh={live.reload}
               refreshing={live.refreshing}
             />
-          )}
-          {vehicles.length === 0 && otherCount > 0 && (
-            <>
-              Ninguno en este sentido ahora, pero hay {otherCount} en vivo{' '}
-              <button type="button" className="bus-live-switch" onClick={() => setDirectionIndex(otherIndex)}>
-                hacia {headsignName(route.directions[otherIndex].headsign) || 'el otro sentido'}
-              </button>
-            </>
           )}
         </div>
       )}
@@ -220,6 +224,7 @@ function RouteDetail({ routeId, line, headsign, initialDirection }) {
  * paradas. Datos: feed GTFS de colectivos (API Transporte).
  */
 export default function ColectivosPage() {
+  const narrow = useMediaQuery(NARROW)
   const [searchParams, setSearchParams] = useSearchParams()
   // La URL muestra el numero de la linea (?linea=53A) y el id del feed
   // (&id=283) para ubicarla sin ambiguedad. Con solo el numero (escrito a
@@ -274,7 +279,7 @@ export default function ColectivosPage() {
               type="text"
               inputMode="search"
               aria-label="Buscar línea de colectivo"
-              placeholder="Número o nombre de la línea, por ejemplo 152"
+              placeholder={narrow ? 'Línea, por ejemplo 152' : 'Número o nombre de la línea, por ejemplo 152'}
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />

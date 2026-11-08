@@ -350,6 +350,29 @@
     color 0.15s ease;
 }
 
+/* Mas alto para tocar de lo que se ve (el recuadro no cambia). */
+.theme-toggle {
+  overflow: visible;
+}
+
+.theme-toggle button {
+  position: relative;
+}
+
+.theme-toggle button::after {
+  content: '';
+  position: absolute;
+  inset: -7px 0;
+}
+
+.theme-toggle button:first-child {
+  border-radius: 5px 0 0 5px;
+}
+
+.theme-toggle button:last-child {
+  border-radius: 0 5px 5px 0;
+}
+
 .theme-toggle button svg {
   width: 15px;
   height: 15px;

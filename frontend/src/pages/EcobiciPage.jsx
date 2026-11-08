@@ -7,6 +7,7 @@ import ModeIcon from '../components/ModeIcon.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import UpdatedAt from '../components/UpdatedAt.jsx'
 import { useApi } from '../hooks/useApi.js'
+import { NARROW, useMediaQuery } from '../hooks/useMediaQuery.js'
 import { AVAILABILITY_BADGES, availability, normalizeText, stationName, stockLevel } from '../utils/ecobici.js'
 import { badgeIcon } from '../utils/mapIcons.js'
 import MapBadge from '../components/MapBadge.jsx'
@@ -32,6 +33,7 @@ function FlyTo({ station }) {
 
 /** EcoBici: estaciones con bicis y anclajes libres en vivo. */
 export default function EcobiciPage() {
+  const narrow = useMediaQuery(NARROW)
   const { data, loading, error, reload, refreshing } = useApi('/api/v1/ecobici', { refreshMs: REFRESH_MS })
   const [query, setQuery] = useState('')
   const [selectedId, setSelectedId] = useState(null)
@@ -102,7 +104,7 @@ export default function EcobiciPage() {
               type="text"
               inputMode="search"
               aria-label="Buscar estación de EcoBici"
-              placeholder="Buscá una estación o calle, por ejemplo Plaza Italia"
+              placeholder={narrow ? 'Estación o calle' : 'Buscá una estación o calle, por ejemplo Plaza Italia'}
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />

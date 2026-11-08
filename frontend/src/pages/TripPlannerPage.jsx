@@ -73,10 +73,12 @@ function CommuteShortcuts({ places, options, onTrip }) {
               <PlaceIcon tipo={from.tipo} size="sm" />
               <Chevrons />
               <PlaceIcon tipo={to.tipo} size="sm" />
-              <span>{label}</span>
-              {(from.cerca || to.cerca) && !(from.estacion && to.estacion) && (
-                <small>desde la estación más cercana</small>
-              )}
+              <span className="planner-shortcut-text">
+                <span>{label}</span>
+                {(from.cerca || to.cerca) && !(from.estacion && to.estacion) && (
+                  <small>desde la estación más cercana</small>
+                )}
+              </span>
             </button>
           )
         }
@@ -88,8 +90,14 @@ function CommuteShortcuts({ places, options, onTrip }) {
             <PlaceIcon tipo={from.tipo} size="sm" />
             <Chevrons />
             <PlaceIcon tipo={to.tipo} size="sm" />
-            <span>{label}</span>
-            {(from.direccion || to.direccion) && <small>Google Maps ↗</small>}
+            <span className="planner-shortcut-text">
+              <span>{label}</span>
+              {(from.direccion || to.direccion) && (
+                <small>
+                  <ExternalTitle text="En Google Maps" />
+                </small>
+              )}
+            </span>
           </>
         )
         if (from.direccion || to.direccion) {

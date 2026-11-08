@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiGet } from '../api.js'
 import { useDebounce } from '../hooks/useDebounce.js'
+import { NARROW, useMediaQuery } from '../hooks/useMediaQuery.js'
 import { moveActiveIndex, toSearchOptions } from '../utils/search.js'
 import './SearchBar.css'
 
@@ -14,6 +15,7 @@ const MIN_CHARS = 2
  * su linea con la estacion resaltada; un colectivo, a su recorrido.
  */
 export default function SearchBar() {
+  const narrow = useMediaQuery(NARROW)
   const [query, setQuery] = useState('')
   const [results, setResults] = useState(null)
   const [buses, setBuses] = useState(null)
@@ -108,7 +110,7 @@ export default function SearchBar() {
           aria-expanded={showDropdown}
           aria-controls={listboxId}
           aria-activedescendant={activeOption ? `${listboxId}-${activeOption.key}` : undefined}
-          placeholder="Buscar líneas, estaciones o colectivos"
+          placeholder={narrow ? 'Línea, estación o colectivo' : 'Buscar líneas, estaciones o colectivos'}
           value={query}
           onChange={(event) => {
             setQuery(event.target.value)

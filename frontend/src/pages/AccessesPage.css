@@ -417,6 +417,21 @@
   color: var(--text-dim);
 }
 
+/* Celular: el estado debajo del texto, asi el nombre y el tramo tienen todo el ancho. */
+@media (max-width: 520px) {
+  .access-summary-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: 6px 10px;
+  }
+
+  .access-summary-row .traffic-pill {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
+
 .road-shield.road-shield-sm {
   min-width: 48px;
   padding: 3px 6px;
