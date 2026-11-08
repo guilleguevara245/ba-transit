@@ -160,7 +160,7 @@ export default function PrivacyPage() {
         <div className="about-main">
           <section className="about-block" id="resumen">
             <h2 className="about-heading">En pocas palabras</h2>
-            <ul className="privacy-promises">
+            <ul className="about-points">
               {PROMISES.map(([title, text]) => (
                 <li key={title}>
                   <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">

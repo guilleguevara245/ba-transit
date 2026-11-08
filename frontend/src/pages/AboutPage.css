@@ -183,8 +183,8 @@
   stroke-linejoin: round;
 }
 
-/* Privacidad: lo principal en cuatro puntos, con su tilde. */
-.privacy-promises {
+/* En pocas palabras (Privacidad y Condiciones): lo principal en cuatro puntos. */
+.about-points {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
@@ -192,7 +192,7 @@
   list-style: none;
 }
 
-.privacy-promises li {
+.about-points li {
   display: flex;
   align-items: flex-start;
   gap: 10px;
@@ -202,7 +202,7 @@
   line-height: 1.45;
 }
 
-.privacy-promises svg {
+.about-points svg {
   flex-shrink: 0;
   width: 20px;
   height: 20px;
@@ -213,14 +213,23 @@
   stroke-linejoin: round;
 }
 
-.privacy-promises span {
+.about-points span {
   display: flex;
   flex-direction: column;
   gap: 1px;
 }
 
-.privacy-promises strong {
+.about-points strong {
   font-size: 14px;
+}
+
+/* Condiciones: neutro (no todo es una ventaja). */
+.about-points.neutral li {
+  background: var(--bg);
+}
+
+.about-points.neutral svg {
+  stroke: var(--text-dim);
 }
 
 /* Subtitulo dentro de una tarjeta (Servicios externos). */
@@ -243,7 +252,7 @@
 }
 
 @media (max-width: 640px) {
-  .privacy-promises {
+  .about-points {
     grid-template-columns: 1fr;
   }
 }
