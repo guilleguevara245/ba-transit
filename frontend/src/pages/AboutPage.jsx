@@ -3,6 +3,7 @@ import BackButton from '../components/BackButton.jsx'
 import Chevrons from '../components/Chevrons.jsx'
 import ExternalTitle from '../components/ExternalTitle.jsx'
 import ModeIcon from '../components/ModeIcon.jsx'
+import PageIndex from '../components/PageIndex.jsx'
 import { SOURCE_GROUPS, whenLabel } from '../data/sources.js'
 import { photoCredits } from '../data/stationPhotos.js'
 import './ModePage.css'
@@ -40,14 +41,7 @@ export default function AboutPage() {
       <p className="page-subtitle">El estado del transporte de Buenos Aires en un solo lugar.</p>
 
       <div className="about-layout">
-        <nav className="about-index" aria-label="En esta página">
-          {index.map(([id, label, icon]) => (
-            <a key={id} href={`#${id}`} className={icon ? 'about-index-sub' : undefined}>
-              {icon && <ModeIcon mode={icon} size="sm" />}
-              {label}
-            </a>
-          ))}
-        </nav>
+        <PageIndex items={index} />
 
         <div className="about-main">
           <section className="about-block" id="que-es">
