@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useApi } from '../hooks/useApi.js'
+import { useMediaQuery } from '../hooks/useMediaQuery.js'
 import { useWeatherPlaces } from '../hooks/useWeatherPlaces.js'
+import Chevrons from './Chevrons.jsx'
 import WeatherIcon from './WeatherIcon.jsx'
 import {
   ALERT_ICONS,
@@ -29,6 +31,12 @@ const HIDDEN_ON = [
   '/privacidad',
   '/condiciones',
 ]
+
+/** En el celular cada alerta va en un renglon (el titulo); al tocarla se abre el detalle. */
+const COMPACT = '(max-width: 600px)'
+
+/** "hasta el lunes" -> "Hasta el lunes", para el detalle debajo del titulo. */
+const capitalize = (text) => text.charAt(0).toUpperCase() + text.slice(1)
 
 /** Lo que dura la animacion de entrada (con el escalonado de la segunda y tercera). */
 const ENTER_MS = 1500
@@ -96,6 +104,10 @@ export default function WeatherAlertBanner() {
   const first = useApi(ready ? alertsPath(places[0]) : null, { refreshMs: REFRESH_MS })
   const second = useApi(ready ? alertsPath(places[1]) : null, { refreshMs: REFRESH_MS })
   const [dismissed, setDismissed] = useState(readDismissed)
+  const compact = useMediaQuery(COMPACT)
+  // Las alertas abiertas en el celular (su id).
+  const [expanded, setExpanded] = useState([])
+  const toggle = (id) => setExpanded((list) => (list.includes(id) ? list.filter((x) => x !== id) : [...list, id]))
 
   const lists = [
     { place: places[0], alerts: first.data?.alerts },
@@ -146,19 +158,50 @@ export default function WeatherAlertBanner() {
         const level = ALERT_LEVELS[alert.level] ?? ALERT_LEVELS.AMARILLA
         const phase = phaseOf(dismissKey(alert))
         const motion = { esperando: ' weather-alert-waiting', entrando: ' weather-alert-enter' }[phase] ?? ''
+        const title = (
+          <strong>
+            {alertTitle(alert)}
+            {alert.where && ` en ${alert.where}`}
+          </strong>
+        )
+        const period = periodText(alert)
+        const tip = travelTip(alert)
+        const open = expanded.includes(alert.id)
+        const detailId = `alerta-clima-${alert.id}`
         return (
-          <div key={alert.id} className={`weather-alert ${level.className}${motion}`}>
+          <div
+            key={alert.id}
+            className={`weather-alert ${level.className}${motion}${compact ? ' compact' : ''}${open ? ' open' : ''}`}
+          >
             <div className="weather-alert-inner">
               <div className="wrap weather-alert-row">
                 <WeatherIcon kind={ALERT_ICONS[alert.kind] ?? 'storm'} className="weather-alert-icon" />
-                <div className="weather-alert-text">
-                  <strong>
-                    {alertTitle(alert)}
-                    {alert.where && ` en ${alert.where}`}
-                  </strong>
-                  {periodText(alert) && <span className="weather-alert-period">: {periodText(alert)}.</span>}
-                  {travelTip(alert) && <span className="weather-alert-tip"> {travelTip(alert)}</span>}
-                </div>
+                {compact ? (
+                  <div className="weather-alert-text">
+                    <button
+                      type="button"
+                      className="weather-alert-toggle chevrons-host"
+                      aria-expanded={open}
+                      aria-controls={detailId}
+                      onClick={() => toggle(alert.id)}
+                    >
+                      {title}
+                      <Chevrons className="weather-alert-chevron" />
+                    </button>
+                    {open && (period || tip) && (
+                      <p className="weather-alert-detail" id={detailId}>
+                        {period && <span className="weather-alert-period">{capitalize(period)}.</span>}
+                        {tip && <span className="weather-alert-tip"> {tip}</span>}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="weather-alert-text">
+                    {title}
+                    {period && <span className="weather-alert-period">: {period}.</span>}
+                    {tip && <span className="weather-alert-tip"> {tip}</span>}
+                  </div>
+                )}
                 <button
                   type="button"
                   className="weather-alert-close"

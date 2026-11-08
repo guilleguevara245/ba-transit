@@ -1,6 +1,6 @@
 .modes {
   display: grid;
-  /* Ocho tarjetas: 4 columnas en escritorio, 2 en tablet, 1 en celular. */
+  /* 4 columnas en escritorio y 2 en tablet y celular. */
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1px;
   background: var(--line);
@@ -64,9 +64,21 @@
   }
 }
 
+/* Celular: siguen de a dos, mas compactas (una por fila ocupaba media pantalla). */
 @media (max-width: 520px) {
-  .modes {
-    grid-template-columns: 1fr;
+  .mode-card {
+    gap: 10px;
+    padding: 14px 12px;
+  }
+
+  .mode-name {
+    gap: 8px;
+    font-size: 14px;
+  }
+
+  .mode-alerts {
+    font-size: 11px;
+    line-height: 1.35;
   }
 }
 

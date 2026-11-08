@@ -105,15 +105,64 @@
   color: var(--text);
 }
 
-@media (max-width: 600px) {
-  .weather-alert-row {
-    flex-wrap: wrap;
-    gap: 4px 10px;
-  }
+/* Celular: un renglon por alerta (el titulo y los chevrones); al tocarla se abre el detalle. */
+.weather-alert.compact .weather-alert-row {
+  align-items: flex-start;
+  gap: 10px;
+}
 
-  .weather-alert-text {
-    flex-basis: calc(100% - 70px);
-  }
+.weather-alert-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 24px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.weather-alert-toggle > strong {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.weather-alert.open .weather-alert-toggle > strong {
+  white-space: normal;
+}
+
+.weather-alert-chevron {
+  flex-shrink: 0;
+  width: 18px;
+  height: 12px;
+  color: color-mix(in srgb, var(--level) 65%, var(--text));
+  transition: transform 0.15s ease;
+}
+
+.weather-alert.open .weather-alert-chevron {
+  transform: rotate(90deg);
+}
+
+.weather-alert-toggle:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+}
+
+.weather-alert-detail {
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+.weather-alert.compact .weather-alert-close {
+  margin-top: 0;
 }
 
 /* Antes de animarse (mientras la pagina termina de cargar): cerrada, como al empezar la animacion. */

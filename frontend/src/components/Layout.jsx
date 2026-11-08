@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom'
 import Skeleton from './Skeleton.jsx'
 import Footer from './Footer.jsx'
 import Header from './Header.jsx'
+import TabBar from './TabBar.jsx'
 import WeatherAlertBanner from './WeatherAlertBanner.jsx'
 import AccountSync from './AccountSync.jsx'
 import { useAlertsTitle } from '../hooks/useAlertsTitle.js'
@@ -29,6 +30,7 @@ export default function Layout() {
         </Suspense>
       </main>
       <Footer />
+      <TabBar />
     </div>
   )
 }

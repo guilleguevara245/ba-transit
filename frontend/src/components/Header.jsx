@@ -3,35 +3,13 @@ import { NavLink, useLocation } from 'react-router-dom'
 import ClockPanel from './ClockPanel.jsx'
 import Logo from './Logo.jsx'
 import ThemeToggle from './ThemeToggle.jsx'
+import { TABS } from './navTabs.js'
 import AccountButton from './AccountButton.jsx'
 import { useClockPrefs } from '../hooks/useClockPrefs.js'
 import { useNow } from '../hooks/useNow.js'
 import { formatClock, formatClock12, formatDayDate, formatNumericDate, formatShortDate } from '../utils/format.js'
 import { holidayOn, localDateKey } from '../utils/holidays.js'
 import './Header.css'
-
-// Iconos de trazo (24x24) de cada seccion.
-const ICONS = {
-  inicio: 'M3 11 12 4l9 7v9h-6v-6H9v6H3z',
-  mapa: 'M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zm0 0v14m6-12v14',
-  colectivos: 'M5 4h14v12H5zM5 11h14M8 19v-3m8 3v-3M7.5 13.5h.01M16.5 13.5h.01',
-  aeropuertos: 'M2 13l9-2 4-8h2l-2 9 6 1 1 2-7 1-3 6h-2l1-7-9-2z',
-  comoLlegar: 'M12 21s-6-5.5-6-10.5a6 6 0 0 1 12 0C18 15.5 12 21 12 21zm0-8.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4z',
-  estacionamiento: 'M5.5 11.5 7 7.5h10l1.5 4M4.5 11.5h15v5h-15zM7 16.5v2M17 16.5v2M7.5 14h.01M16.5 14h.01',
-  accesos: 'M8 3 5 21m11-18 3 18M12 4v3m0 4v3m0 4v3',
-  ecobici: 'M5.5 18a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zm13 0a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM5.5 14.5 9 8h6l3.5 6.5M9 8l3 6.5h-1M14 5h2.5',
-}
-
-const TABS = [
-  { to: '/', label: 'Inicio', icon: ICONS.inicio, end: true },
-  { to: '/mapa', label: 'Mapa', icon: ICONS.mapa },
-  { to: '/como-llegar', label: 'Cómo llegar', icon: ICONS.comoLlegar },
-  { to: '/colectivos', label: 'Colectivos', icon: ICONS.colectivos },
-  { to: '/ecobici', label: 'EcoBici', icon: ICONS.ecobici },
-  { to: '/accesos', label: 'Accesos', icon: ICONS.accesos },
-  { to: '/estacionamiento', label: 'Estacionamiento', icon: ICONS.estacionamiento },
-  { to: '/aeropuertos', label: 'Aeropuertos', icon: ICONS.aeropuertos },
-]
 
 function TabIcon({ path }) {
   return (

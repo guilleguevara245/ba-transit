@@ -1,0 +1,178 @@
+/* Barra de secciones del celular: no se muestra en pantallas anchas. */
+.tabbar,
+.tabbar-sheet,
+.tabbar-dim {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  /* Las secciones salen del header y pasan a la barra de abajo. */
+  .nav-tabs {
+    display: none !important;
+  }
+
+  /* Lugar para la barra, asi el final de la pagina (el pie) no queda tapado. */
+  .app {
+    padding-bottom: calc(62px + env(safe-area-inset-bottom));
+  }
+
+  .tabbar {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1050;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    padding: 4px 4px calc(4px + env(safe-area-inset-bottom));
+    background: #0c0c0d;
+    border-top: 2px solid var(--yellow);
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .tabbar-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-width: 0;
+    min-height: 54px;
+    padding: 0 2px;
+    border: none;
+    background: none;
+    color: #c9c7c1;
+    font: inherit;
+    font-size: 10.5px;
+    font-weight: 600;
+    line-height: 1.1;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .tabbar-icon {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 28px;
+    border-radius: 14px;
+    transition: background-color 0.15s ease;
+  }
+
+  .tabbar svg,
+  .tabbar-sheet svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .tabbar-item.active {
+    color: var(--yellow);
+  }
+
+  .tabbar-item.active .tabbar-icon {
+    background: var(--yellow);
+    color: #0c0c0d;
+  }
+
+  /* Con el panel abierto se marca solo "Más". */
+  .tabbar.sheet-open .tabbar-item.active:not(.tabbar-more) {
+    color: #c9c7c1;
+  }
+
+  .tabbar.sheet-open .tabbar-item.active:not(.tabbar-more) .tabbar-icon {
+    background: none;
+    color: inherit;
+  }
+
+  .tabbar-item:focus-visible {
+    outline: 2px solid var(--yellow);
+    outline-offset: -2px;
+  }
+
+  /* "Más": panel que sube desde la barra, con el resto de las secciones. */
+  .tabbar-dim {
+    position: fixed;
+    inset: 0;
+    z-index: 1040;
+    display: block;
+    background: rgba(0, 0, 0, 0.4);
+  }
+
+  .tabbar-sheet {
+    position: fixed;
+    right: 0;
+    bottom: calc(62px + env(safe-area-inset-bottom));
+    left: 0;
+    z-index: 1045;
+    display: block;
+    padding: 14px 16px 18px;
+    background: var(--surface);
+    border-top: 4px solid var(--yellow);
+    box-shadow: 0 -12px 32px rgba(0, 0, 0, 0.25);
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .tabbar-sheet-title {
+    margin-bottom: 10px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  .tabbar-sheet-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .tabbar-sheet-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 48px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.2;
+    text-decoration: none;
+  }
+
+  .tabbar-sheet-item.active {
+    border-color: var(--yellow);
+    box-shadow: inset 3px 0 0 var(--yellow);
+  }
+
+  .tabbar-sheet-item:focus-visible {
+    outline: 2px solid var(--yellow);
+    outline-offset: 2px;
+  }
+}
+
+@media (max-width: 760px) and (prefers-reduced-motion: no-preference) {
+  .tabbar-sheet {
+    animation: tabbar-sheet-in 0.18s ease-out;
+  }
+}
+
+@keyframes tabbar-sheet-in {
+  from {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+}
