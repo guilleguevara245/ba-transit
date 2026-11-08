@@ -114,9 +114,10 @@
   background: var(--bg);
 }
 
+/* La estacion elegida, con el color de la linea (no el amarillo del sitio). */
 .station-item.highlighted {
-  background: rgba(244, 193, 27, 0.16);
-  box-shadow: inset 3px 0 0 var(--yellow);
+  background: color-mix(in srgb, var(--line-color) 12%, transparent);
+  box-shadow: inset 3px 0 0 var(--line-color);
 }
 
 .station-item.highlighted .station-dot {
@@ -146,16 +147,12 @@
 }
 
 .line-minimap {
-  height: 440px;
+  /* Alto para que la tarjeta de la estacion entre entera, sin barras de desplazamiento. */
+  height: 500px;
   border: 1px solid var(--line);
   box-shadow: var(--shadow);
 }
 
-/* En el minimapa la tarjeta no puede ser mas alta que el mapa: si no entra, se desplaza adentro. */
-.line-minimap .leaflet-popup-content {
-  max-height: 330px;
-  overflow-y: auto;
-}
 
 .line-minimap-hint {
   margin: 8px 0 0;
@@ -174,7 +171,7 @@
   }
 
   .line-minimap {
-    height: 320px;
+    height: 460px;
   }
 }
 
@@ -208,7 +205,9 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: var(--accent-text);
+  /* Del color de la linea, un poco mas oscuro (o claro, en el tema oscuro) para que se lea:
+     el amarillo de la H puro no se lee sobre fondo claro. */
+  color: color-mix(in srgb, var(--line-color) 70%, var(--text));
   font-size: 12px;
   font-weight: 600;
   text-decoration: none;
@@ -217,6 +216,7 @@
 
 .station-item-link .chevrons {
   font-size: 10px;
+  color: var(--line-color);
 }
 
 /* Estacion con un aviso propio en la lista del ramal. */

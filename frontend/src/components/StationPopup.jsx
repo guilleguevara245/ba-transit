@@ -207,7 +207,11 @@ export default function StationPopup({ station, stations, alerts, mode }) {
       </div>
 
       <div className="station-popup-links">
-        <Link className="station-popup-link chevrons-host" to={stationPath(station)}>
+        <Link
+          className="station-popup-link station-popup-line-link chevrons-host"
+          style={{ '--line-color': station.lineColorHex }}
+          to={stationPath(station)}
+        >
           Ver la estación <Chevrons />
         </Link>
       </div>

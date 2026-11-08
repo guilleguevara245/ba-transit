@@ -333,6 +333,15 @@
   text-decoration: underline;
 }
 
+/* "Ver la estacion": del color de la linea, como en la lista del ramal. */
+.station-popup-link.station-popup-line-link {
+  color: color-mix(in srgb, var(--line-color) 70%, var(--text)) !important;
+}
+
+.station-popup-line-link .chevrons {
+  color: var(--line-color);
+}
+
 /* ---- Tarjeta generica (MapCard) ---- */
 
 .map-card-stats {

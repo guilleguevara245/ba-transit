@@ -1,3 +1,4 @@
+import ExternalTitle from './ExternalTitle.jsx'
 import LineBadge from './LineBadge.jsx'
 import BothWays from './BothWays.jsx'
 import { connectingLineCodes, lineSummary } from '../utils/map.js'
@@ -85,7 +86,7 @@ export default function LineInfoCard({ line, stations, branches = [], allLines =
         {!hours && operatorSite && (
           <Row label="Horarios">
             <a className="info-link" href={operatorSite} target="_blank" rel="noreferrer">
-              Consultar en el sitio de {line.operator} ↗
+              <ExternalTitle text={`Consultar en el sitio de ${line.operator}`} />
             </a>
           </Row>
         )}
