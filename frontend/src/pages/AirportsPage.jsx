@@ -5,9 +5,6 @@ import { badgeIcon } from '../utils/mapIcons.js'
 import MapCard, { MapCardIcon } from '../components/MapCard.jsx'
 import BackButton from '../components/BackButton.jsx'
 import { AIRPORTS, FLIGHTS_URL } from '../data/airports.js'
-import { useWeather } from '../hooks/useWeather.js'
-import { describeWeather } from '../utils/weather.js'
-import WeatherIcon from '../components/WeatherIcon.jsx'
 import LiveFlights from '../components/LiveFlights.jsx'
 import ExternalTitle from '../components/ExternalTitle.jsx'
 import GlyphBadge from '../components/GlyphBadge.jsx'
@@ -69,9 +66,6 @@ function BusChips({ buses }) {
 }
 
 function AirportCard({ airport }) {
-  const { data: weather, error } = useWeather(airport.latitude, airport.longitude)
-  const sky = weather ? describeWeather(weather.code, weather.isDay) : null
-
   return (
     <article className="airport-card">
       <header className="airport-head">
@@ -85,20 +79,6 @@ function AirportCard({ airport }) {
       </header>
 
       <TrafficNow code={airport.code} />
-
-      <div className="airport-weather" aria-live="polite">
-        {weather && (
-          <>
-            <WeatherIcon kind={sky.icon} className="airport-weather-icon" />
-            <span className="airport-temp">{Math.round(weather.temperature)}°C</span>
-            <span className="airport-sky">
-              {sky.label} · viento {Math.round(weather.wind)} km/h
-            </span>
-          </>
-        )}
-        {!weather && !error && <span className="airport-sky">Cargando clima...</span>}
-        {!weather && error && <span className="airport-sky">Clima no disponible por el momento.</span>}
-      </div>
 
       <div className="airport-section">
         <div className="airport-label">Cómo llegar en colectivo</div>
@@ -117,7 +97,7 @@ function AirportCard({ airport }) {
   )
 }
 
-/** Pagina de aeropuertos: clima actual, como llegar, aviones en vivo y enlace a vuelos. */
+/** Pagina de aeropuertos: como llegar, aviones en vivo y enlace a vuelos. */
 export default function AirportsPage() {
   return (
     <div className="wrap content">
@@ -126,7 +106,7 @@ export default function AirportsPage() {
         <ModeIcon mode="AEROPUERTO" size="lg" />
         Aeropuertos
       </h1>
-      <p className="page-subtitle">Clima actual, cómo llegar en transporte público y los aviones en vivo.</p>
+      <p className="page-subtitle">Cómo llegar en transporte público y los aviones en vivo.</p>
 
       <div className="airports-grid">
         {AIRPORTS.map((airport) => (
@@ -167,9 +147,9 @@ export default function AirportsPage() {
       </LiveFlights>
 
       <p className="airports-source">
-        Clima: Open-Meteo. Aviones: <a href="https://adsb.lol" target="_blank" rel="noreferrer">adsb.lol</a> (ODbL),
-        con las señales que reciben antenas voluntarias (puede faltar alguno). Horarios, demoras y puertas: sitio
-        oficial de Aeropuertos Argentina.
+        Aviones: <a href="https://adsb.lol" target="_blank" rel="noreferrer">adsb.lol</a> (ODbL), con las señales que
+        reciben antenas voluntarias (puede faltar alguno). Horarios, demoras y puertas: sitio oficial de Aeropuertos
+        Argentina.
       </p>
     </div>
   )

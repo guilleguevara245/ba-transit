@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet'
 import MapCard, { MapCardIcon } from '../components/MapCard.jsx'
 import BackButton from '../components/BackButton.jsx'
@@ -24,11 +24,32 @@ const ECOBICI_ICON =
 const MAX_RESULTS = 12
 const LEGEND = ['ok', 'low', 'empty', 'off']
 
-function FlyTo({ station }) {
+/** target: [lat, lon] de la estacion al elegirla (no vuelve a ella en cada actualizacion). */
+function FlyTo({ target }) {
   const map = useMap()
   useEffect(() => {
-    if (station) map.flyTo([station.latitude, station.longitude], 16, { duration: 0.6 })
-  }, [map, station])
+    if (target) map.flyTo(target, 16, { duration: 0.6 })
+  }, [map, target])
+  return null
+}
+
+/**
+ * Al cambiar el filtro: cierra la tarjeta abierta y vuelve a encuadrar el
+ * mapa con las estaciones que quedan a la vista. reset: un numero que
+ * cambia con cada filtro elegido.
+ */
+function ResetView({ reset, points }) {
+  const map = useMap()
+  // Los puntos cambian con cada actualizacion de las estaciones; el encuadre, solo al elegir un filtro.
+  const latest = useRef(points)
+  latest.current = points
+  useEffect(() => {
+    if (!reset) return
+    map.closePopup()
+    if (latest.current.length > 0) {
+      map.flyToBounds(latest.current, { padding: [40, 40], maxZoom: 15, duration: 0.6 })
+    }
+  }, [map, reset])
   return null
 }
 
@@ -38,6 +59,8 @@ export default function EcobiciPage() {
   const { data, loading, error, reload, refreshing } = useApi('/api/v1/ecobici', { refreshMs: REFRESH_MS })
   const [query, setQuery] = useState('')
   const [selectedId, setSelectedId] = useState(null)
+  const [flyTarget, setFlyTarget] = useState(null)
+  const [reset, setReset] = useState(0)
   // Referencia elegida: el mapa muestra solo esas estaciones (null = todas).
   const [levelFilter, setLevelFilter] = useState(null)
 
@@ -53,15 +76,28 @@ export default function EcobiciPage() {
   const results = q
     ? stations.filter((s) => normalizeText(`${s.name} ${s.address}`).includes(q)).slice(0, MAX_RESULTS)
     : []
-  const selected = stations.find((s) => s.id === selectedId)
   const countByLevel = useMemo(() => {
     const counts = { ok: 0, low: 0, empty: 0, off: 0 }
     for (const s of stations) counts[availability(s).key] += 1
     return counts
   }, [stations])
+  // La estacion elegida en el buscador se ve aunque no sea del filtro.
   const visibleStations = levelFilter
     ? stations.filter((s) => s.id === selectedId || availability(s).key === levelFilter)
     : stations
+
+  function select(station) {
+    setSelectedId(station.id)
+    setFlyTarget([station.latitude, station.longitude])
+  }
+
+  /** Elegir un filtro (o "Ver todas") deja de mostrar la estacion elegida y vuelve a encuadrar el mapa. */
+  function chooseLevel(key) {
+    setLevelFilter(key)
+    setSelectedId(null)
+    setFlyTarget(null)
+    setReset((n) => n + 1)
+  }
 
   return (
     <div className="wrap content">
@@ -121,7 +157,7 @@ export default function EcobiciPage() {
                     <button
                       type="button"
                       className={s.id === selectedId ? 'ecobici-result active' : 'ecobici-result'}
-                      onClick={() => setSelectedId(s.id)}
+                      onClick={() => select(s)}
                     >
                       <MapBadge {...AVAILABILITY_BADGES[level.key]} />
                       <span className="ecobici-result-name">
@@ -157,7 +193,7 @@ export default function EcobiciPage() {
                   type="button"
                   className={active ? 'active' : undefined}
                   aria-pressed={active}
-                  onClick={() => setLevelFilter(active ? null : key)}
+                  onClick={() => chooseLevel(active ? null : key)}
                 >
                   <MapBadge {...AVAILABILITY_BADGES[key]} />
                   {level.label}
@@ -166,7 +202,7 @@ export default function EcobiciPage() {
               )
             })}
             {levelFilter && (
-              <button type="button" className="ecobici-legend-all" onClick={() => setLevelFilter(null)}>
+              <button type="button" className="ecobici-legend-all" onClick={() => chooseLevel(null)}>
                 Ver todas
               </button>
             )}
@@ -201,13 +237,14 @@ export default function EcobiciPage() {
                   position={[s.latitude, s.longitude]}
                   title={`${stationName(s.name)}: ${level.label}`}
                   icon={badgeIcon(badge.glyph, { ...badge, size: 22, active })}
-                  eventHandlers={{ click: () => setSelectedId(s.id) }}
+                  eventHandlers={{ click: () => select(s) }}
                 >
                   {card}
                 </Marker>
               )
             })}
-            <FlyTo station={selected} />
+            <FlyTo target={flyTarget} />
+            <ResetView reset={reset} points={visibleStations.map((s) => [s.latitude, s.longitude])} />
           </MapContainer>
 
           <p className="airports-source">Datos: EcoBici (GBFS) a través de la API Transporte de Buenos Aires.</p>

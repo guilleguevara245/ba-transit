@@ -49,34 +49,6 @@
   color: var(--text-dim);
 }
 
-.airport-weather {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  padding: 12px 14px;
-  background: var(--bg);
-  min-height: 52px;
-}
-
-.airport-weather-icon {
-  width: 30px;
-  height: 30px;
-  flex-shrink: 0;
-  align-self: center;
-}
-
-.airport-temp {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 700;
-  font-size: 28px;
-  font-variant-numeric: tabular-nums;
-}
-
-.airport-sky {
-  font-size: 13px;
-  color: var(--text-dim);
-}
-
 .airport-label {
   font-family: 'Barlow Condensed', sans-serif;
   font-weight: 600;

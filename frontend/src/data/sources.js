@@ -183,8 +183,7 @@ export const SOURCE_GROUPS = [
         what: 'Pronóstico del clima',
         source: 'Open-Meteo (datos con licencia CC BY 4.0)',
         url: 'https://open-meteo.com/',
-        detail:
-          'Temperatura, lluvia y viento hora por hora para Tu día y los aeropuertos, a partir de modelos meteorológicos.',
+        detail: 'Temperatura, lluvia y viento hora por hora para Tu día, a partir de modelos meteorológicos.',
         when: { every: '45 min' },
       },
       {
