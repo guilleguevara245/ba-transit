@@ -14,6 +14,7 @@ import { eventsOnAccesses } from '../utils/events.js'
 import { PEAK_HOURS, TOLLS, formatToll, peakNow } from '../data/tolls.js'
 import { holidayOn } from '../utils/holidays.js'
 import { useNow } from '../hooks/useNow.js'
+import { useFlash } from '../hooks/useFlash.js'
 import { formatLongDate } from '../utils/format.js'
 import { speedPercent, speedText, trafficProblems, trafficStatus, worstStatus } from '../utils/traffic.js'
 import './ModePage.css'
@@ -25,10 +26,16 @@ import { STALE_TEXT, isStale } from '../utils/staleness.js'
 // para mostrar el dato nuevo poco despues de que llegue.
 const REFRESH_MS = 5 * 60_000
 
+/** El estado del transito; si cambia mientras se mira la pagina, parpadea una vez. */
 function StatusPill({ status }) {
   const { label, color } = trafficStatus(status)
+  const flash = useFlash(status)
   return (
-    <span className="traffic-pill" style={{ '--status-color': color }}>
+    <span
+      key={flash}
+      className={flash ? 'traffic-pill status-flash' : 'traffic-pill'}
+      style={{ '--status-color': color }}
+    >
       {label}
     </span>
   )

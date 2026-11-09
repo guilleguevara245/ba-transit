@@ -149,6 +149,13 @@ const trackColor = (track) => (track && track !== 'walk' && track !== 'wait' ? t
  * sale ahora) y, entre paradas, el tramo con el color de su linea o
  * punteado si es a pie.
  */
+/** Para la key del viaje: la estacion o la direccion de donde sale cada tramo. */
+const nameKey = (point) => point?.stationId ?? point?.text ?? ''
+
+/**
+ * El viaje paso a paso. Al aparecer se dibuja de arriba hacia abajo: cada
+ * parada y cada tramo entran en orden (--i), con la linea creciendo.
+ */
 function Timeline({ legs, start, formato }) {
   const items = tripTimeline(legs)
   return (
@@ -159,7 +166,7 @@ function Timeline({ legs, start, formato }) {
             <li
               key={i}
               className={`planner-seg planner-seg-${item.track === 'walk' || item.track === 'wait' ? item.track : 'ride'}`}
-              style={{ '--track': trackColor(item.track) ?? item.line?.lineColorHex }}
+              style={{ '--track': trackColor(item.track) ?? item.line?.lineColorHex, '--i': i }}
             >
               <span className="planner-time" />
               <span className="planner-track" aria-hidden="true" />
@@ -179,7 +186,12 @@ function Timeline({ legs, start, formato }) {
           <li
             key={i}
             className={`planner-stop planner-stop-${item.kind}${item.address ? ' planner-stop-address' : ''}`}
-            style={{ '--node': item.color ?? undefined, '--in': trackColor(item.in), '--out': trackColor(item.out) }}
+            style={{
+              '--node': item.color ?? undefined,
+              '--in': trackColor(item.in),
+              '--out': trackColor(item.out),
+              '--i': i,
+            }}
           >
             <time className="planner-time" dateTime={at.toISOString()}>
               {clockText(at, formato)}
@@ -439,7 +451,13 @@ export default function TripPlannerPage() {
                 </div>
                 <Strip legs={plan.legs} />
               </div>
-              <Timeline legs={plan.legs} start={now} formato={clock.formato} />
+              {/* Con key, otro viaje vuelve a dibujarse desde el origen. */}
+              <Timeline
+                key={`${plan.legs.map((leg) => `${leg.type}:${nameKey(leg.from)}`).join('|')}>${nameKey(plan.legs.at(-1).to)}`}
+                legs={plan.legs}
+                start={now}
+                formato={clock.formato}
+              />
               <p className="planner-note">
                 Tiempo estimado por distancia, más unos minutos de espera en cada combinación. No incluye la espera
                 inicial{withAddress ? ', y a pie se cuenta por calles, no en línea recta' : ''}.

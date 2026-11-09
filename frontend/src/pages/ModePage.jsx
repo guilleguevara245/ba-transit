@@ -12,6 +12,7 @@ import { MODE_LABELS_PLURAL, modeFromSlug } from '../constants.js'
 import { statusFor, worstAlertType } from '../utils/network.js'
 import './ModePage.css'
 import { linePath } from '../utils/lineSlug.js'
+import StatusPill from '../components/StatusPill.jsx'
 
 /**
  * Pagina de un modo (/red/trenes): todas sus lineas con su estado y,
@@ -68,10 +69,9 @@ export default function ModePage() {
                   ("Interrupciones (2)") empujaba la estrella fuera de la tarjeta. */}
               <span className="mode-line-text">
                 <span className="mode-line-name">{line.name}</span>
-                <span className={`status-pill ${status.className}`}>
-                  <span className="dot"></span>
+                <StatusPill tone={status.className}>
                   {lineAlerts.length > 1 ? `${status.label} (${lineAlerts.length})` : status.label}
-                </span>
+                </StatusPill>
               </span>
               <FavoriteButton lineId={line.id} lineName={line.name} compact />
             </Link>

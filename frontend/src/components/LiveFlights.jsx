@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { divIcon } from 'leaflet'
-import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, useMap } from 'react-leaflet'
+import { CruiseMarker } from './GlideMarkers.jsx'
 import GlyphBadge from './GlyphBadge.jsx'
 import MapCard, { MapCardIcon } from './MapCard.jsx'
 import UpdatedAt from './UpdatedAt.jsx'
@@ -215,17 +216,21 @@ export default function LiveFlights({ bounds, children }) {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         {children}
+        {/* Entre actualizaciones, los aviones en vuelo siguen avanzando con su rumbo y velocidad. */}
         {visible.map((f) => (
-          <Marker
+          <CruiseMarker
             key={f.id}
             position={[f.latitude, f.longitude]}
+            heading={f.heading}
+            speed={f.speed}
+            moving={!f.onGround}
             title={`${flightTitle(f)}: ${flightStatus(f)}`}
             icon={planeIcon(flightGroup(f), f.heading, f.id === selectedId)}
             zIndexOffset={f.onGround ? 0 : 500}
             eventHandlers={{ click: () => setSelectedId(f.id) }}
           >
             <FlightCard flight={f} />
-          </Marker>
+          </CruiseMarker>
         ))}
         <FlyTo target={flyTarget} />
         <ResetView reset={reset} points={[...bounds, ...visible.map((f) => [f.latitude, f.longitude])]} />

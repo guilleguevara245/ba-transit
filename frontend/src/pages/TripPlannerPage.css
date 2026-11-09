@@ -8,7 +8,8 @@
 
 .planner-form {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  /* minmax(0, ...): con una estacion elegida, el campo no se estira mas alla de la pantalla. */
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: start;
   gap: 10px;
 }
@@ -273,6 +274,57 @@
   background: none;
 }
 
+/*
+ * El viaje se dibuja del origen al destino: cada parada y cada tramo
+ * entran en orden (--i, su lugar en la lista), la linea crece hacia abajo
+ * y los circulos de las paradas aparecen con un rebote chico.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .planner-timeline .planner-track,
+  .planner-timeline .planner-rail::after {
+    transform-origin: top;
+    animation: planner-grow 0.3s ease-out both;
+    animation-delay: calc(var(--i) * 140ms);
+  }
+
+  .planner-timeline .planner-rail::before {
+    transform-origin: top;
+    animation: planner-grow 0.12s ease-out both;
+    animation-delay: calc(var(--i) * 140ms - 60ms);
+  }
+
+  .planner-timeline .planner-node {
+    animation: planner-pop 0.32s cubic-bezier(0.3, 1.6, 0.6, 1) both;
+    animation-delay: calc(var(--i) * 140ms);
+  }
+
+  .planner-timeline .planner-time,
+  .planner-timeline .planner-stop-text,
+  .planner-timeline .planner-seg-text {
+    animation: planner-fade 0.3s ease-out both;
+    animation-delay: calc(var(--i) * 140ms);
+  }
+}
+
+@keyframes planner-grow {
+  from {
+    scale: 1 0;
+  }
+}
+
+@keyframes planner-pop {
+  from {
+    scale: 0;
+  }
+}
+
+@keyframes planner-fade {
+  from {
+    opacity: 0;
+    translate: 0 4px;
+  }
+}
+
 .planner-seg-text {
   display: flex;
   align-items: center;
@@ -320,7 +372,7 @@
 
 @media (max-width: 760px) {
   .planner-form {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .planner-swap {

@@ -9,6 +9,7 @@ import { statusFor, worstAlertType } from '../utils/network.js'
 import { stationPath } from '../utils/lineSlug.js'
 import { trafficStatus, worstStatus } from '../utils/traffic.js'
 import './MyLines.css'
+import StatusPill from './StatusPill.jsx'
 
 /**
  * "Mis estaciones" del inicio: cada estacion favorita con el estado de su
@@ -41,10 +42,7 @@ export function MyStations({ lines, alerts, inPanel = false }) {
               <small>{line.name}</small>
             </span>
           </Link>
-          <span className={`status-pill ${status.className}`}>
-            <span className="dot"></span>
-            {status.label}
-          </span>
+          <StatusPill tone={status.className}>{status.label}</StatusPill>
           <FavoriteButton
             kind="estaciones"
             id={station.stationId}

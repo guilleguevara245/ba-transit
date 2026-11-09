@@ -13,8 +13,14 @@ export default function SpeedGauge({ percent, color, size = 34 }) {
   const p = Math.max(0, Math.min(100, percent ?? 0)) / 100
   const angle = Math.PI * (1 - p)
   const needle = [18 + 9 * Math.cos(angle), 20 - 9 * Math.sin(angle)].map((n) => n.toFixed(2))
+  // Al aparecer, la aguja sube desde el cero (girando desde la izquierda) y el arco se llena.
+  const needleFrom = `${(-180 * p).toFixed(1)}deg`
   return (
-    <span className="speed-gauge" style={{ width: size, height: size, '--status-color': color }} aria-hidden="true">
+    <span
+      className="speed-gauge"
+      style={{ width: size, height: size, '--status-color': color, '--needle-from': needleFrom }}
+      aria-hidden="true"
+    >
       <svg viewBox="0 0 36 26" focusable="false">
         <path className="speed-gauge-track" d={ARC} />
         <path className="speed-gauge-fill" d={ARC} strokeDasharray={`${(ARC_LENGTH * p).toFixed(2)} ${ARC_LENGTH}`} />

@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { CircleMarker, MapContainer, Marker, TileLayer, useMapEvents } from 'react-leaflet'
+import { MapContainer, TileLayer, useMapEvents } from 'react-leaflet'
 import { badgeIcon } from '../utils/mapIcons.js'
 import BusIcon from './BusIcon.jsx'
 import Chevrons from './Chevrons.jsx'
+import { GlideCircleMarker, GlideMarker } from './GlideMarkers.jsx'
 import MapCard from './MapCard.jsx'
 import UpdatedAt from './UpdatedAt.jsx'
 import { useApi } from '../hooks/useApi.js'
@@ -17,6 +18,9 @@ const ZOOM = 11
 // este zoom, con el dibujo de un colectivo, y solo los que estan a la vista.
 const ICON_ZOOM = 14
 const BUS_BADGE = { bg: '#f4c11b', fg: '#17171a', border: '#17171a', shape: 'square', size: 24 }
+// Desde este zoom los colectivos a la vista se deslizan a su nueva posicion; mas lejos, en
+// 30 segundos se mueven un par de pixeles y animar miles no vale la pena.
+const GLIDE_ZOOM = 13
 
 /** Con el mapa lejos son miles: puntos mas chicos para que se vean las calles. */
 function dotRadius(zoom) {
@@ -81,11 +85,13 @@ export default function LiveBusesMap({ onSelectRoute }) {
         />
         <ViewTracker onChange={setView} />
         {buses.map((bus, index) => {
+          const glide = view.zoom >= GLIDE_ZOOM && Boolean(view.bounds?.contains([bus.latitude, bus.longitude]))
           if (showIcons) {
             if (!view.bounds.contains([bus.latitude, bus.longitude])) return null
             return (
-              <Marker
+              <GlideMarker
                 key={bus.id || index}
+                animate={glide}
                 position={[bus.latitude, bus.longitude]}
                 title={`Línea ${bus.line || '?'}`}
                 icon={badgeIcon('bus', { ...BUS_BADGE, active: selected?.id === bus.id })}
@@ -94,8 +100,9 @@ export default function LiveBusesMap({ onSelectRoute }) {
             )
           }
           return (
-            <CircleMarker
+            <GlideCircleMarker
               key={bus.id || index}
+              animate={glide}
               center={[bus.latitude, bus.longitude]}
               radius={dotRadius(view.zoom)}
               pathOptions={{
@@ -112,8 +119,9 @@ export default function LiveBusesMap({ onSelectRoute }) {
         {!showIcons &&
           !filter &&
           favoriteBuses.map((bus, index) => (
-            <CircleMarker
+            <GlideCircleMarker
               key={`fav-${bus.id || index}`}
+              animate={view.zoom >= GLIDE_ZOOM}
               center={[bus.latitude, bus.longitude]}
               radius={dotRadius(view.zoom) + 2.5}
               pathOptions={{ color: '#f4c11b', weight: 2, fillColor: '#17171a', fillOpacity: 1 }}

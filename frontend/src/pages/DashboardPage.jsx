@@ -9,16 +9,25 @@ import AlertsPanel from '../components/AlertsPanel.jsx'
 import FaresPanel from '../components/FaresPanel.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
 import EventsSection from '../components/EventsSection.jsx'
+import { useEffect, useState } from 'react'
 import { useApi } from '../hooks/useApi.js'
 import { useNow } from '../hooks/useNow.js'
 import { formatRelativeTime } from '../utils/format.js'
 import '../components/Panels.css'
+import './DashboardPage.css'
 
 // El backend sincroniza las alertas cada 5 minutos; pedirlas cada
 // minuto deja el dashboard al dia sin cargar de mas al servidor.
 const ALERTS_REFRESH_MS = 60_000
 
+// Las tarjetas entran de a una solo la primera vez que se abre el inicio en la visita.
+let entered = false
+
 export default function DashboardPage() {
+  const [enter] = useState(() => !entered)
+  useEffect(() => {
+    entered = true
+  }, [])
   const linesState = useApi('/api/v1/lines')
   const alertsState = useApi('/api/v1/alerts', { refreshMs: ALERTS_REFRESH_MS })
   const faresState = useApi('/api/v1/fares')
@@ -33,7 +42,7 @@ export default function DashboardPage() {
   const error = linesState.error || alertsState.error || faresState.error
 
   return (
-    <div className="wrap content">
+    <div className={enter ? 'wrap content home-enter' : 'wrap content'}>
       {/* En la computadora: saludo, busqueda y favoritos a la izquierda; "Tu dia" a la derecha.
           En el celular, una columna: saludo, busqueda, "Tu dia" y los favoritos. */}
       <div className="home-top">

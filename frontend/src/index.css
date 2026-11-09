@@ -176,6 +176,50 @@ body {
   white-space: nowrap;
 }
 
+/*
+ * Cuando un estado cambia con la pagina abierta (Normal pasa a Demoras):
+ * la etiqueta crece un poco y suelta un anillo de su color, una sola vez.
+ */
+.status-flash {
+  animation: status-flash 1.1s ease-out;
+}
+
+@keyframes status-flash {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 45%, transparent);
+  }
+  25% {
+    transform: scale(1.12);
+  }
+  60% {
+    transform: scale(1);
+  }
+  100% {
+    box-shadow: 0 0 0 10px transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-flash {
+    animation: none;
+  }
+}
+
+/* Al cambiar de pagina: fundido corto, subiendo apenas. Solo opacidad y translate (sin transform). */
+@media (prefers-reduced-motion: no-preference) {
+  .page-enter {
+    animation: page-enter 0.22s ease-out;
+  }
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    translate: 0 6px;
+  }
+}
+
 .status-pill .dot {
   flex-shrink: 0;
   width: 6px;

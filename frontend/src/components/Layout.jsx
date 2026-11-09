@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import Skeleton from './Skeleton.jsx'
 import Footer from './Footer.jsx'
 import Header from './Header.jsx'
@@ -12,6 +12,7 @@ import { useScrollToTop } from '../hooks/useScrollToTop.js'
 export default function Layout() {
   useAlertsTitle()
   useScrollToTop()
+  const { pathname } = useLocation()
 
   return (
     <div className="app">
@@ -19,15 +20,18 @@ export default function Layout() {
       <Header />
       <WeatherAlertBanner />
       <main className="app-main">
-        <Suspense
-          fallback={
-            <div className="wrap content">
-              <Skeleton variant="block" label="Cargando…" />
-            </div>
-          }
-        >
-          <Outlet />
-        </Suspense>
+        {/* Con key, cada pagina nueva entra con un fundido corto (ver .page-enter). */}
+        <div key={pathname} className="page-enter">
+          <Suspense
+            fallback={
+              <div className="wrap content">
+                <Skeleton variant="block" label="Cargando…" />
+              </div>
+            }
+          >
+            <Outlet />
+          </Suspense>
+        </div>
       </main>
       <Footer />
       <TabBar />

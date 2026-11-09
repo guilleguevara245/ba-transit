@@ -7,6 +7,7 @@ import { MODE_ORDER, statusFor, summarizeByMode } from '../utils/network.js'
 import { useApi } from '../hooks/useApi.js'
 import { worstStatus } from '../utils/traffic.js'
 import { eventsOnAccesses } from '../utils/events.js'
+import StatusPill from './StatusPill.jsx'
 
 // Estado de la red de accesos, con las mismas etiquetas que los modos.
 const ACCESS_PILL = {
@@ -33,10 +34,7 @@ function AccessesCard() {
         <Chevrons className="mode-arrow" />
       </div>
       {pill ? (
-        <span className={`status-pill ${pill.className}`}>
-          <span className="dot"></span>
-          {pill.label}
-        </span>
+        <StatusPill tone={pill.className}>{pill.label}</StatusPill>
       ) : (
         <span className="mode-extra">Autopistas</span>
       )}
@@ -66,10 +64,7 @@ export default function ModeGrid({ lines, alerts }) {
               <span className="mode-label">{MODE_LABELS_PLURAL[mode] ?? mode}</span>
               <Chevrons className="mode-arrow" />
             </div>
-            <span className={`status-pill ${status.className}`}>
-              <span className="dot"></span>
-              {status.label}
-            </span>
+            <StatusPill tone={status.className}>{status.label}</StatusPill>
             <div className="mode-alerts">
               {lineCount} {lineCount === 1 ? 'línea' : 'líneas'} · {alertCount}{' '}
               {alertCount === 1 ? 'alerta activa' : 'alertas activas'}

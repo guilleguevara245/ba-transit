@@ -15,6 +15,7 @@ import EcobiciPlaceIcon from '../components/EcobiciPlaceIcon.jsx'
 import EcobiciStock from '../components/EcobiciStock.jsx'
 import './ModePage.css'
 import './EcobiciPage.css'
+import CountUp from '../components/CountUp.jsx'
 
 const REFRESH_MS = 60_000
 // Mismo trazo que el icono de EcoBici de la barra de navegacion.
@@ -130,11 +131,11 @@ export default function EcobiciPage() {
                       {/* Los numeros con el color de cuantos quedan (como los dibujos de la tarjeta). */}
                       <span className="ecobici-counts">
                         <strong className={`ecobici-count-${s.renting ? stockLevel(s.bikes, 'bikes').key : 'off'}`}>
-                          {s.bikes}
+                          <CountUp value={s.bikes} />
                         </strong>{' '}
                         {s.bikes === 1 ? 'bici' : 'bicis'} ·{' '}
                         <strong className={`ecobici-count-${s.renting ? stockLevel(s.docks, 'docks').key : 'off'}`}>
-                          {s.docks}
+                          <CountUp value={s.docks} />
                         </strong>{' '}
                         {s.docks === 1 ? 'libre' : 'libres'}
                       </span>

@@ -233,6 +233,7 @@ export default function LinePage() {
                 <div ref={mapRef} className="line-minimap-wrap">
                   <NetworkMap
                     className="line-minimap"
+                    drawRoutes
                     stations={lineStations}
                     allStations={modeStations}
                     alerts={alertsState.data ?? []}

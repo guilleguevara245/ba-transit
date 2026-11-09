@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { divIcon } from 'leaflet'
 import { CircleMarker, MapContainer, Marker, Polyline, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet'
+import { DrawnPolyline } from './GlideMarkers.jsx'
 import StationPopup from './StationPopup.jsx'
 import { buildRoutes } from '../utils/map.js'
 import { mentionsStation } from '../utils/stationAlerts.js'
@@ -141,6 +142,7 @@ function FocusOnStation({ station, markers, openPopup }) {
  * - focusId: estacion a centrar y resaltar (y abrir su popup, salvo
  *   openFocusedPopup = false).
  * - onSelect: se llama con el id de la estacion al hacer click.
+ * - drawRoutes: los recorridos se dibujan de punta a punta al aparecer.
  */
 export default function NetworkMap({
   stations,
@@ -151,6 +153,7 @@ export default function NetworkMap({
   openFocusedPopup = true,
   onSelect,
   className,
+  drawRoutes = false,
 }) {
   const markers = useRef({})
   const routes = useMemo(() => buildRoutes(routeStations), [routeStations])
@@ -166,13 +169,23 @@ export default function NetworkMap({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
 
-      {routes.map((route) => (
-        <Polyline
-          key={route.branchId}
-          positions={route.positions}
-          pathOptions={{ color: route.color, weight: 4, opacity: 0.8 }}
-        />
-      ))}
+      {/* Con drawRoutes (la pagina de una linea), el recorrido se dibuja de punta a punta al abrirla. */}
+      {routes.map((route) =>
+        drawRoutes ? (
+          <DrawnPolyline
+            key={route.branchId}
+            drawKey={route.branchId}
+            positions={route.positions}
+            pathOptions={{ color: route.color, weight: 4, opacity: 0.8 }}
+          />
+        ) : (
+          <Polyline
+            key={route.branchId}
+            positions={route.positions}
+            pathOptions={{ color: route.color, weight: 4, opacity: 0.8 }}
+          />
+        ),
+      )}
 
       {stations.map((station) => {
         const isFocused = station.stationId === focusId

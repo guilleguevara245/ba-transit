@@ -32,3 +32,28 @@
 .speed-gauge circle {
   fill: currentColor;
 }
+
+/* Al aparecer: el arco se llena y la aguja sube desde el cero. */
+@media (prefers-reduced-motion: no-preference) {
+  .speed-gauge-fill {
+    animation: gauge-fill 0.7s ease-out both;
+  }
+
+  .speed-gauge-needle {
+    transform-box: view-box;
+    transform-origin: 18px 20px;
+    animation: gauge-needle 0.7s ease-out both;
+  }
+}
+
+@keyframes gauge-fill {
+  from {
+    stroke-dasharray: 0 41;
+  }
+}
+
+@keyframes gauge-needle {
+  from {
+    transform: rotate(var(--needle-from));
+  }
+}

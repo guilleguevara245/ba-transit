@@ -79,8 +79,31 @@
   }
 
   .tabbar-item.active .tabbar-icon {
-    background: var(--yellow);
     color: #0c0c0d;
+  }
+
+  /* La pastilla amarilla va por detras de los iconos y viaja hasta la seccion tocada. */
+  .tabbar-pill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 46px;
+    height: 28px;
+    border-radius: 14px;
+    background: var(--yellow);
+    pointer-events: none;
+  }
+
+  .tabbar-pill.slide {
+    transition: transform 0.32s cubic-bezier(0.3, 1.25, 0.5, 1);
+  }
+
+  .tabbar-pill.hidden {
+    opacity: 0;
+  }
+
+  .tabbar-item {
+    position: relative;
   }
 
   /* Con el panel abierto se marca solo "Más". */
@@ -89,7 +112,6 @@
   }
 
   .tabbar.sheet-open .tabbar-item.active:not(.tabbar-more) .tabbar-icon {
-    background: none;
     color: inherit;
   }
 
@@ -161,6 +183,12 @@
   .tabbar-sheet-item:focus-visible {
     outline: 2px solid var(--yellow);
     outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tabbar-pill.slide {
+    transition: none;
   }
 }
 

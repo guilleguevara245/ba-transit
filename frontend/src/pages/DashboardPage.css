@@ -1,0 +1,39 @@
+/*
+ * La primera vez que se abre el inicio en la visita, las tarjetas entran
+ * de a una, subiendo apenas. Las del estado de la red entran cuando llegan
+ * los datos. Sin animacion si se pidio menos movimiento.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .home-enter .home-top > *,
+  .home-enter .modes > *,
+  .home-enter .grid-main > *,
+  .home-enter .panel-stack > * {
+    animation: home-enter 0.45s ease-out both;
+  }
+
+  .home-enter .home-top > :nth-child(2),
+  .home-enter .modes > :nth-child(2),
+  .home-enter .panel-stack > :nth-child(1) {
+    animation-delay: 70ms;
+  }
+
+  .home-enter .home-top > :nth-child(3),
+  .home-enter .modes > :nth-child(3),
+  .home-enter .grid-main > :nth-child(2),
+  .home-enter .panel-stack > :nth-child(2) {
+    animation-delay: 140ms;
+  }
+
+  .home-enter .home-top > :nth-child(n + 4),
+  .home-enter .modes > :nth-child(n + 4),
+  .home-enter .panel-stack > :nth-child(n + 3) {
+    animation-delay: 210ms;
+  }
+}
+
+@keyframes home-enter {
+  from {
+    opacity: 0;
+    translate: 0 10px;
+  }
+}

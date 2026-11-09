@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { CircleMarker, MapContainer, Marker, Polyline, TileLayer, useMap, useMapEvents } from 'react-leaflet'
+import { CircleMarker, MapContainer, Polyline, TileLayer, useMap, useMapEvents } from 'react-leaflet'
 import { badgeIcon } from '../utils/mapIcons.js'
 import BusIcon from './BusIcon.jsx'
+import { DrawnPolyline, GlideMarker } from './GlideMarkers.jsx'
 import MapCard from './MapCard.jsx'
 import { headsignName, stopName } from '../utils/busNames.js'
 
@@ -93,7 +94,12 @@ export default function BusRouteMap({ route, directionIndex, className, vehicles
 
       {active && (
         <>
-          <Polyline positions={active.shape} pathOptions={{ color, weight: 5, opacity: 0.9 }} />
+          {/* El recorrido se dibuja de punta a punta al abrirlo y al cambiar de sentido. */}
+          <DrawnPolyline
+            drawKey={`${route.id}-${directionIndex}`}
+            positions={active.shape}
+            pathOptions={{ color, weight: 5, opacity: 0.9 }}
+          />
           {active.stops.map((stop, index) => {
             const isEnd = index === 0 || index === active.stops.length - 1
             const isFocused = focusedStop?.index === index
@@ -132,8 +138,9 @@ export default function BusRouteMap({ route, directionIndex, className, vehicles
         </>
       )}
 
+      {/* Cada 30 segundos, cada colectivo se desliza a su nueva posicion. */}
       {vehicles.map((v) => (
-        <Marker
+        <GlideMarker
           key={v.id}
           position={[v.latitude, v.longitude]}
           title={`Colectivo de la línea ${route.shortName || '?'}`}
@@ -155,7 +162,7 @@ export default function BusRouteMap({ route, directionIndex, className, vehicles
               .filter(Boolean)
               .join(' · ')}
           />
-        </Marker>
+        </GlideMarker>
       ))}
 
       <ZoomTracker onZoom={setZoom} />

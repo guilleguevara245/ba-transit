@@ -1,5 +1,6 @@
 import { stockLevel } from '../utils/ecobici.js'
 import './EcobiciStock.css'
+import CountUp from './CountUp.jsx'
 
 /** Bici (el mismo trazo de EcoBici) y anclaje (un soporte de bicis). */
 const GLYPHS = {
@@ -55,7 +56,9 @@ function Stock({ kind, count }) {
   return (
     <div className={`ecobici-stock ecobici-stock-${level.key}`}>
       <div className="ecobici-stock-row">
-        <strong>{count}</strong>
+        <strong>
+          <CountUp value={count} from={0} />
+        </strong>
         <span className="ecobici-stock-glyphs" aria-hidden="true">
           {kind === 'bikes' && level.glyphs > 1 ? (
             <BikeGroup count={level.glyphs} />

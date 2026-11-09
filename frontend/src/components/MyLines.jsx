@@ -11,6 +11,7 @@ import { statusFor, worstAlertType } from '../utils/network.js'
 import './MyLines.css'
 import { linePath } from '../utils/lineSlug.js'
 import { hasTrainTimes } from '../utils/nextTrains.js'
+import StatusPill from './StatusPill.jsx'
 
 /**
  * Seccion "Mis lineas" del inicio: las favoritas con su estado actual.
@@ -52,10 +53,7 @@ export default function MyLines({ lines, alerts, inPanel = false }) {
             <LineBadge line={line} size="md" />
             <span className="my-line-name">{line.name}</span>
           </Link>
-          <span className={`status-pill ${status.className}`}>
-            <span className="dot"></span>
-            {status.label}
-          </span>
+          <StatusPill tone={status.className}>{status.label}</StatusPill>
           <FavoriteButton lineId={line.id} lineName={line.name} compact />
         </div>
 
