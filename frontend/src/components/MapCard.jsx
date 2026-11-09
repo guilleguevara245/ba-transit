@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Popup } from 'react-leaflet'
+import { cardHeader } from '../utils/color.js'
 import './MapPopup.css'
 
 /** Icono de trazo chico para el encabezado de la tarjeta (mismos trazos que ModeIcon). */
@@ -17,7 +18,8 @@ export function MapCardIcon({ path }) {
  * Tarjeta de un elemento del mapa con la misma estetica que el popup de
  * las estaciones: encabezado chico (icono y rubro), titulo grande (con
  * un icono opcional al lado, como el de estacion), subtitulo, contenido
- * libre y enlaces al pie.
+ * libre y enlaces al pie. color: el de lo que se toco en el mapa (el
+ * marcador, la linea o el estado); en el celular pinta el encabezado.
  */
 export default function MapCard({
   badge,
@@ -30,6 +32,7 @@ export default function MapCard({
   minWidth = 220,
   position,
   onClose,
+  color,
 }) {
   // Con position la tarjeta es un popup suelto (uno solo para miles de
   // puntos, como los colectivos en vivo); sin position va dentro de un marcador.
@@ -60,6 +63,8 @@ export default function MapCard({
     },
   }
 
+  const header = cardHeader(color)
+
   return (
     <Popup
       className="station-popup-container"
@@ -70,7 +75,7 @@ export default function MapCard({
       ref={popupRef}
       eventHandlers={eventHandlers}
     >
-      <div className="station-popup">
+      <div className={`station-popup${header.className}`} style={header.style}>
         <div className="station-popup-line">
           {badge}
           {kicker}

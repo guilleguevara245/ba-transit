@@ -132,6 +132,7 @@ export default function LiveBusesMap({ onSelectRoute }) {
           <MapCard
             key={selected.id}
             position={[selected.latitude, selected.longitude]}
+            color={BUS_BADGE.bg}
             onClose={() => setSelected(null)}
             badge={<span className="map-card-bus">{selected.line || '?'}</span>}
             kicker={

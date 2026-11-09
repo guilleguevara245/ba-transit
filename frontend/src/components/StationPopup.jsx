@@ -6,6 +6,7 @@ import LineBadge from './LineBadge.jsx'
 import NextTrains from './NextTrains.jsx'
 import StationIcon from './StationIcon.jsx'
 import { findTransfers, routeInfo, shortOperator } from '../utils/map.js'
+import { cardHeader } from '../utils/color.js'
 import { splitAlertsForStation } from '../utils/stationAlerts.js'
 import { formatLongDate, yearsSince } from '../utils/format.js'
 import './MapPopup.css'
@@ -84,10 +85,11 @@ export default function StationPopup({ station, stations, alerts, mode }) {
   const lineNames = stations.filter((s) => s.lineId === station.lineId).map((s) => s.stationName)
   const split = splitAlertsForStation(lineAlerts, station, lineNames)
   const operator = shortOperator(station.lineOperator)
+  const header = cardHeader(station.lineColorHex)
 
   return (
-    <div className="station-popup">
-      {/* Franja del color de la linea en el borde de arriba de la tarjeta. */}
+    <div className={`station-popup${header.className}`} style={header.style}>
+      {/* Franja del color de la linea en el borde de arriba de la tarjeta (en el celular, el encabezado entero). */}
       <span className="station-popup-stripe" style={{ background: station.lineColorHex }} aria-hidden="true" />
 
       {/* Linea y operadora. En subte y Premetro la letra ya nombra la linea

@@ -20,6 +20,8 @@ function FitToRoute({ positions }) {
 const STOP_ZOOM = 16
 /** Con el mapa mas lejos que esto, las paradas intermedias van chiquitas (si no, tapan el recorrido). */
 const SMALL_STOPS_ZOOM = 14
+/** El amarillo de los colectivos del mapa (tambien el encabezado de sus tarjetas en el celular). */
+const BUS_YELLOW = '#f4c11b'
 
 function ZoomTracker({ onZoom }) {
   const map = useMapEvents({ zoomend: () => onZoom(map.getZoom()) })
@@ -119,6 +121,7 @@ export default function BusRouteMap({ route, directionIndex, className, vehicles
                 }}
               >
                 <MapCard
+                  color={BUS_YELLOW}
                   badge={busBadge}
                   kicker={index === 0 ? 'Cabecera' : index === active.stops.length - 1 ? 'Última parada' : 'Parada'}
                   icon={<BusIcon kind="stop" color={route.color} />}
@@ -144,9 +147,10 @@ export default function BusRouteMap({ route, directionIndex, className, vehicles
           key={v.id}
           position={[v.latitude, v.longitude]}
           title={`Colectivo de la línea ${route.shortName || '?'}`}
-          icon={badgeIcon('bus', { bg: '#f4c11b', fg: '#17171a', border: '#17171a', shape: 'square', size: 28 })}
+          icon={badgeIcon('bus', { bg: BUS_YELLOW, fg: '#17171a', border: '#17171a', shape: 'square', size: 28 })}
         >
           <MapCard
+            color={BUS_YELLOW}
             badge={busBadge}
             kicker={
               <>

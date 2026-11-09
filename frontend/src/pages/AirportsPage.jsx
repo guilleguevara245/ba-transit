@@ -17,6 +17,9 @@ import './AirportsPage.css'
 // Mismo trazo que el icono de Aeropuertos.
 const AIRPORT_ICON = 'M2 13l9-2 4-8h2l-2 9 6 1 1 2-7 1-3 6h-2l1-7-9-2z'
 
+// El marcador de cada aeropuerto (y el encabezado de su tarjeta en el celular).
+const AIRPORT_YELLOW = '#f4c11b'
+
 const COLOR = Object.fromEntries(FLIGHT_GROUPS.map((g) => [g.key, g.color]))
 
 /** Aterrizando y despegando ahora en el aeropuerto, con el avion del color del mapa. */
@@ -120,12 +123,13 @@ export default function AirportsPage() {
             key={airport.code}
             position={[airport.latitude, airport.longitude]}
             title={airport.name}
-            icon={badgeIcon('plane', { bg: '#f4c11b', fg: '#17171a', border: '#17171a', size: 30 })}
+            icon={badgeIcon('plane', { bg: AIRPORT_YELLOW, fg: '#17171a', border: '#17171a', size: 30 })}
           >
             <Tooltip permanent direction="right" offset={[6, 0]} className="airport-map-label">
               <strong>{airport.code}</strong> {airport.name}
             </Tooltip>
             <MapCard
+              color={AIRPORT_YELLOW}
               badge={<MapCardIcon path={AIRPORT_ICON} />}
               kicker={airport.code}
               icon={<GlyphBadge glyph="plane" shape="circle" bg="#f4c11b" fg="#17171a" border="#17171a" />}

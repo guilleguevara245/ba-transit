@@ -13,3 +13,17 @@ export function readableTextColor(hex) {
 
   return luminance > 0.4 ? '#17171a' : '#ffffff'
 }
+
+/**
+ * Encabezado pintado de las tarjetas de los mapas (en el celular, como el
+ * cartel del anden): las clases y las variables con el color y el texto que
+ * se lee encima. Sin color, la tarjeta queda como siempre.
+ */
+export function cardHeader(color) {
+  if (!color) return { className: '', style: undefined }
+  const ink = readableTextColor(color)
+  return {
+    className: ink === '#ffffff' ? ' has-header header-light-ink' : ' has-header',
+    style: { '--card-color': color, '--card-ink': ink },
+  }
+}

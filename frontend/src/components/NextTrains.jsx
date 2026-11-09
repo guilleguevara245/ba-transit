@@ -3,6 +3,7 @@ import Chevrons from './Chevrons.jsx'
 import { useNow } from '../hooks/useNow.js'
 import { urquizaNextTrains } from '../utils/urquizaSchedule.js'
 import { STALE_TEXT } from '../utils/staleness.js'
+import { readableTextColor } from '../utils/color.js'
 import { formatArrival, hasLiveArrivals, nextTrainsPath, scheduleLabel, schedulePath } from '../utils/nextTrains.js'
 
 const REFRESH_MS = 30_000
@@ -163,7 +164,13 @@ function ScheduledTrains({ directions, source, stale = false, color }) {
   return (
     <div className="station-popup-section next-trains">
       <div className="station-popup-label">
-        Próximos trenes <span className="next-trains-tag">según horario</span>
+        Próximos trenes{' '}
+        <span
+          className="next-trains-tag"
+          style={color ? { background: color, borderColor: color, color: readableTextColor(color) } : undefined}
+        >
+          según horario
+        </span>
       </div>
       <ul className="next-trains-list" style={color ? { '--line-color': color } : undefined}>
         {directions.map((d, i) => (

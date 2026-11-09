@@ -16,6 +16,7 @@ function SegmentCard({ segment }) {
   const delay = delayMinutes(segment)
   return (
     <MapCard
+      color={color}
       badge={<span className="map-card-shield">{segment.access.road}</span>}
       kicker={segment.access.name}
       icon={<SpeedGauge percent={percent} color={color} />}

@@ -334,6 +334,7 @@ export default function ParkingPage() {
             return (
               <Marker key={p.id} position={[p.lat, p.lon]} title={p.title} icon={iconFor('lot', active)} eventHandlers={select}>
                 <MapCard
+                  color={BADGES.lot.bg}
                   badge={<MapCardIcon path={GLYPHS.lot} />}
                   kicker={p.underground ? 'Playa subterránea de la Ciudad' : 'Playa de la Ciudad'}
                   icon={cardIcon('lot')}
@@ -351,6 +352,7 @@ export default function ParkingPage() {
             return (
               <Marker key={p.id} position={[p.lat, p.lon]} title={p.title} icon={iconFor('garage', active)} eventHandlers={select}>
                 <MapCard
+                  color={BADGES.garage.bg}
                   badge={<MapCardIcon path={GLYPHS.motoGarage} />}
                   kicker="Cochera para motos"
                   icon={cardIcon('garage')}
@@ -379,6 +381,7 @@ export default function ParkingPage() {
           return (
             <Marker key={p.id} position={[p.lat, p.lon]} title={p.title} icon={iconFor('street', active)} eventHandlers={select}>
               <MapCard
+                color={BADGES.street.bg}
                 badge={<MapCardIcon path={GLYPHS.moto} />}
                 kicker="Motos en la calle"
                 icon={cardIcon('street')}
@@ -397,6 +400,7 @@ export default function ParkingPage() {
             key={selected.id}
             position={[selected.lat, selected.lon]}
             onClose={() => setSelectedId(null)}
+            color={BADGES.lot.bg}
             badge={<MapCardIcon path={GLYPHS.lot} />}
             kicker="Estacionamiento en el conurbano"
             icon={cardIcon('osm')}
@@ -413,6 +417,7 @@ export default function ParkingPage() {
             key={selected.id}
             position={[selected.lat, selected.lon]}
             onClose={() => setSelectedId(null)}
+            color={BADGES.car.bg}
             badge={<MapCardIcon path={GLYPHS.garage} />}
             kicker="Garaje"
             icon={cardIcon('car')}

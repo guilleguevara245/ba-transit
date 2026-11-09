@@ -123,6 +123,16 @@ a.bus-chip:hover {
   color: #17171a;
 }
 
+/* En la tarjeta del mapa, Leaflet pinta de azul los enlaces: los numeros van en amarillo sobre negro. */
+.leaflet-container a.bus-chip {
+  color: var(--yellow);
+}
+
+.leaflet-container a.bus-chip:hover {
+  background: var(--yellow);
+  color: #17171a;
+}
+
 /* Aterrizando y despegando ahora, debajo del nombre del aeropuerto. */
 .airport-traffic {
   display: flex;

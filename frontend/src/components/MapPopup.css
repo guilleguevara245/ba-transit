@@ -476,3 +476,100 @@ button.station-popup-link {
 .map-card-speed {
   margin: 10px 0 0;
 }
+
+/*
+ * Celular (mismo corte que la barra de abajo): tarjetas "cartel". La linea y
+ * el nombre van sobre un encabezado del color de lo que se toco en el mapa,
+ * como el cartel del anden; el texto, blanco o negro segun ese color.
+ * --card-color y --card-ink los pone cardHeader (utils/color.js). Los
+ * dibujos del encabezado se invierten para que no se pierdan sobre su color.
+ * El contenido tiene 14px de margen y el contenedor 1px de relleno: por eso
+ * el encabezado se corre 15px arriba y 17px a los costados.
+ */
+@media (max-width: 760px) {
+  .station-popup.has-header .station-popup-stripe {
+    display: none;
+  }
+
+  .station-popup.has-header .station-popup-line,
+  .station-popup.has-header .station-popup-name {
+    margin-right: -17px;
+    margin-left: -17px;
+    padding-right: 17px;
+    padding-left: 17px;
+    background: var(--card-color);
+    color: var(--card-ink);
+  }
+
+  .station-popup.has-header .station-popup-line {
+    margin-top: -15px;
+    /* Lugar para la cruz de cerrar. */
+    padding-top: 13px;
+    padding-right: 40px;
+    border-radius: 6px 6px 0 0;
+  }
+
+  .station-popup.has-header .station-popup-name {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-top: 6px;
+    padding-bottom: 13px;
+    font-size: 25px;
+  }
+
+  .station-popup.has-header .station-popup-name + * {
+    margin-top: 11px;
+  }
+
+  .station-popup.has-header .station-popup-dot,
+  .station-popup.has-header .station-popup-operator {
+    color: inherit;
+    opacity: 0.8;
+  }
+
+  .station-popup-container:has(.station-popup.has-header) .leaflet-popup-close-button {
+    z-index: 2;
+    color: #17171a;
+  }
+
+  .station-popup-container:has(.station-popup.header-light-ink) .leaflet-popup-close-button {
+    color: #ffffff;
+  }
+
+  /* El dibujo junto al nombre, con un borde del color del texto. */
+  .station-popup.has-header .station-popup-name > :first-child:not(:only-child) {
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px var(--card-ink);
+  }
+
+  .station-popup.has-header .station-icon,
+  .station-popup.has-header .station-popup-line .line-badge,
+  .station-popup.has-header .speed-gauge {
+    background: var(--card-ink) !important;
+    color: var(--card-color) !important;
+    box-shadow: none !important;
+  }
+
+  .station-popup.has-header .map-card-icon {
+    background: var(--card-ink);
+    color: var(--card-color);
+  }
+
+  .station-popup.has-header .speed-gauge-fill {
+    stroke: var(--card-color);
+  }
+
+  .station-popup.has-header .speed-gauge-track {
+    stroke: color-mix(in srgb, var(--card-color) 35%, transparent);
+  }
+
+  /* El lugar de la EcoBici (facultad, plaza...) sobre blanco, como la tarjeta. */
+  .station-popup.has-header .ecobici-place-icon {
+    background: #ffffff;
+    color: #17171a;
+  }
+
+  .station-popup.has-header.header-light-ink .ecobici-place-icon {
+    color: var(--card-color);
+  }
+}

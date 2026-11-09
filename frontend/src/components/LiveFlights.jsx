@@ -104,6 +104,7 @@ function FlightCard({ flight }) {
   const heading = flight.onGround ? null : headingName(flight.heading)
   return (
     <MapCard
+      color={GROUP_COLOR[group]}
       badge={<MapCardIcon path={AIRPORT_ICON} />}
       kicker={flight.airline ?? 'Vuelo'}
       icon={

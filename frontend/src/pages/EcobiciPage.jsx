@@ -8,7 +8,14 @@ import Skeleton from '../components/Skeleton.jsx'
 import UpdatedAt from '../components/UpdatedAt.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { NARROW, useMediaQuery } from '../hooks/useMediaQuery.js'
-import { AVAILABILITY_BADGES, availability, normalizeText, stationName, stockLevel } from '../utils/ecobici.js'
+import {
+  AVAILABILITY_BADGES,
+  availability,
+  normalizeText,
+  placeKind,
+  stationName,
+  stockLevel,
+} from '../utils/ecobici.js'
 import { badgeIcon } from '../utils/mapIcons.js'
 import MapBadge from '../components/MapBadge.jsx'
 import EcobiciPlaceIcon from '../components/EcobiciPlaceIcon.jsx'
@@ -219,7 +226,8 @@ export default function EcobiciPage() {
               const active = s.id === selectedId
               const card = (
                 <MapCard
-                  badge={<MapCardIcon path={ECOBICI_ICON} />}
+                  color={badge.bg}
+                  badge={placeKind(s.name) === 'bici' ? null : <MapCardIcon path={ECOBICI_ICON} />}
                   kicker="Estación EcoBici"
                   icon={<EcobiciPlaceIcon name={s.name} />}
                   title={stationName(s.name)}
