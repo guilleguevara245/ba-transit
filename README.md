@@ -62,7 +62,8 @@ con APIs públicas, pruebas, integración continua y despliegue.
   horario programado para el subte sin datos en vivo y para el Urquiza (horario de Metrovías, con servicio nocturno).
 - Estado del Urquiza leído del panel de Metrovías, y avisos de obras y servicios limitados de Trenes Argentinos.
 - **Cómo llegar**: planificador propio (algoritmo de Dijkstra sobre el grafo de la red) con combinaciones, tiempo
-  estimado, opción de viajar solo por estaciones accesibles y enlace para compartir el viaje.
+  estimado, opción de viajar solo por estaciones accesibles y enlace para compartir el viaje. Se puede salir desde una
+  dirección (Georef) o desde Mis lugares (Casa, Trabajo y otros).
 
 **Colectivos, accesos y más**
 - Colectivos en movimiento en tiempo real sobre el mapa, búsqueda por número, recorrido con paradas y tiempos, y
@@ -81,7 +82,8 @@ con APIs públicas, pruebas, integración continua y despliegue.
   accesos, y su aviso de "volvió a la normalidad". Sin cuenta, con horario sin avisos y sin repetir. El cifrado
   (RFC 8291) y la firma VAPID (RFC 8292) están hechos con lo que trae Java y probados con el ejemplo del RFC. Política de privacidad
   propia y borrado de la cuenta desde el sitio.
-- Aeropuertos con el clima actual y cómo llegar.
+- Aeropuertos: cómo llegar en colectivo y cuántos aviones están aterrizando o despegando en ese momento.
+- **Tu día**: pronóstico hora por hora (Open-Meteo) para la zona elegida, con la ubicación redondeada a unos 5 km.
 - Cuadro tarifario completo del AMBA y simulador del descuento Red SUBE.
 
 **Experiencia**
@@ -104,15 +106,18 @@ flowchart LR
     B --> SMN[SMN<br>alertas CAP]
     B --> TT[TomTom Traffic]
     B --> AD[adsb.lol<br>aviones]
-    F --> OM[Open-Meteo<br>clima]
+    B --> OM[Open-Meteo<br>pronóstico]
+    B --> GR[Georef<br>direcciones]
+    B --> BR[Brevo<br>mails]
+    B --> WP[Servicios de avisos<br>Web Push]
     F --> OSM[OpenStreetMap<br>mapas]
 ```
 
 - **Backend**: API REST con Spring Boot. Sincroniza las fuentes externas con tareas programadas y guarda en caché las
   respuestas en vivo, para que muchas visitas juntas no se conviertan en muchas llamadas a las APIs. Las credenciales
   nunca se escriben en los logs.
-- **Base de datos**: PostgreSQL con el esquema versionado en 42 migraciones de Flyway: líneas, ramales, estaciones con
-  coordenadas reales, alertas, tarifas, servicios especiales y eventos.
+- **Base de datos**: PostgreSQL con el esquema versionado en 58 migraciones de Flyway: líneas, ramales, estaciones con
+  coordenadas reales, alertas, tarifas, servicios especiales, eventos, cuentas, sesiones por dispositivo y avisos.
 - **Frontend**: React con React Router y Leaflet. La lógica (planificador, tarifas, horarios, textos) vive en funciones
   puras con sus propias pruebas, separada de los componentes.
 
@@ -135,7 +140,11 @@ flowchart LR
 - **Salud de las fuentes**: cada integración informa si respondió o falló; una falla aislada no marca la fuente como
   caída. Los servicios de la Ciudad que hoy no funcionan se prueban una vez por semana.
 - **Seguridad**: los endpoints de escritura piden una clave de administrador (`X-API-Key`), los errores siguen el
-  formato estándar Problem Details (RFC 9457) y el XML externo se procesa sin entidades externas.
+  formato estándar Problem Details (RFC 9457) sin detalles internos y el XML externo se procesa sin entidades externas.
+  Las contraseñas se guardan con PBKDF2-HMAC-SHA512 (210.000 iteraciones, lo que recomienda OWASP); las sesiones van
+  firmadas con HMAC y se pueden cerrar desde Dispositivos. Los límites de intentos usan la IP real del visitante (la que
+  pone Cloudflare, no la primera de `X-Forwarded-For`, que se puede inventar), los avisos solo se mandan a los servicios
+  de Google, Mozilla, Apple y Microsoft, y la ubicación se guarda redondeada. Ninguna credencial está en el código.
 - **Calidad**: pruebas unitarias, de controllers y de repositorios en el backend, de la lógica del frontend y de punta
   a punta en un navegador real (Playwright), todas en GitHub Actions en cada push.
 
@@ -161,7 +170,8 @@ flowchart LR
 | Alertas meteorológicas | [Servicio Meteorológico Nacional](https://www.smn.gob.ar/alertas) |
 | Tránsito en los accesos | [TomTom Traffic](https://www.tomtom.com/products/traffic-apis/) |
 | Aviones en vivo | [adsb.lol](https://adsb.lol/) (ODbL) |
-| Clima en los aeropuertos | [Open-Meteo](https://open-meteo.com/) |
+| Pronóstico (Tu día) | [Open-Meteo](https://open-meteo.com/) (CC BY 4.0) |
+| Direcciones | [Georef](https://datosgobar.github.io/georef-ar-api/) (datos.gob.ar) |
 | Tarifas | [Red SUBE](https://www.argentina.gob.ar/redsube/tarifas-de-transporte-publico-amba) |
 | Horarios y accesibilidad del subte | [Emova](https://emova.com.ar/) |
 | Mapas | [OpenStreetMap](https://www.openstreetmap.org/copyright) |
@@ -179,14 +189,15 @@ ba-transit/
 │       │   ├── live/         datos en tiempo real (subte, colectivos, EcoBici)
 │       │   ├── colectivos/   feed GTFS de colectivos
 │       │   ├── accesos/      tránsito en autopistas (TomTom)
-│       │   ├── clima/        alertas del SMN (CAP)
+│       │   ├── clima/        alertas del SMN (CAP) y pronóstico (Open-Meteo)
 │       │   ├── vuelos/       aviones en vivo (adsb.lol)
-│       │   ├── cuentas/      cuentas de usuario y favoritos
+│       │   ├── cuentas/      cuentas de usuario, sesiones y favoritos
+│       │   ├── direcciones/  búsqueda de direcciones (Georef)
 │       │   ├── notificaciones/ avisos Web Push (cifrado, VAPID, reglas)
 │       │   ├── eventos/      eventos masivos y cortes (carga manual)
 │       │   ├── trenes/       avisos, Ferrovías y Metrovías
 │       │   ├── estado/       salud de cada fuente de datos
-│       │   └── security/     clave para los endpoints de escritura
+│       │   └── security/     clave de escritura e IP real de cada pedido
 │       └── resources/db/migration/   migraciones Flyway
 ├── frontend/                 cliente web (React + Vite)
 │   ├── public/               íconos, manifest y service worker
@@ -203,7 +214,7 @@ ba-transit/
 
 ## Cómo correrlo
 
-Requisitos: Docker, Java 21, Maven y Node 22.
+Requisitos: Docker, Java 21, Maven y Node 22.12 o más nuevo.
 
 ```bash
 git clone https://github.com/guilleguevara245/ba-transit.git
@@ -228,6 +239,7 @@ La API queda en `http://localhost:8080` y la documentación interactiva en `http
 | `GOOGLE_CLIENT_ID` | "Continuar con Google" | solo mail y contraseña |
 | `BREVO_API_KEY`, `MAIL_FROM` | mails para recuperar la contraseña (Brevo, plan gratuito) | sin "¿Olvidaste tu contraseña?" |
 | `ADMIN_API_KEY` | endpoints de escritura (`POST`) | escritura deshabilitada |
+| `DB_SSLMODE` | modo SSL de la base (`require` en producción) | `prefer`: SSL si está disponible |
 
 Más detalle en [`backend/README.md`](./backend/README.md).
 

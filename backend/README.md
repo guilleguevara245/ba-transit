@@ -1,70 +1,18 @@
-# BA Transit
+# BA Transit: backend
 
-Plataforma web de informacion sobre transporte publico del Area Metropolitana
-de Buenos Aires (AMBA) y CABA: trenes, subte, premetro, colectivos y
-aeropuertos, con estados de servicio, alertas, tarifas, mapa, busqueda,
-historial y estadisticas.
+API REST de [BA Transit](https://ba-transit.onrender.com) (Java 21 + Spring Boot 3.5 + PostgreSQL). Reune las
+fuentes de transporte del AMBA (API Transporte de la Ciudad, Trenes Argentinos, Ferrovias, Metrovias, SMN, TomTom,
+adsb.lol, Open-Meteo y Georef), las guarda o las cachea y las sirve al frontend. Tambien maneja las cuentas de
+usuario, las sesiones por dispositivo y los avisos Web Push.
 
-Este repositorio es el backend (API REST) del proyecto.
-
-## Estado del proyecto
-
-**Fases 1 a 7 completas (Fase 4 solo para subte). El mapa incluye subte y trenes.**
-
-- Fase 1 (base): Spring Boot, PostgreSQL, Docker Compose, CI, variables de
-  entorno.
-- Fase 2 (modelo de datos): lineas, ramales y estaciones reales de subte
-  (90 estaciones) y las 8 lineas de tren AMBA, versionadas con Flyway.
-- Fase 3 (API): alertas, tarifas por tramo de distancia, y busqueda
-  combinada de lineas y estaciones.
-- Fase 4 (actualizacion automatica): job programado (cada 5 minutos) que
-  sincroniza alertas de subte desde la API Transporte oficial de Buenos
-  Aires (`apitransporte.buenosaires.gob.ar`), con reintentos ante fallos y
-  sin destruir datos si la fuente no responde.
-- Fase 5 (frontend): dashboard en React con estado en vivo por modo,
-  panel de alertas, panel de tarifas y busqueda, conectado a la API real.
-- Fase 6 (mapa): mapa interactivo con Leaflet de las 90 estaciones de
-  subte, coloreadas por linea, con coordenadas reales.
-- Fase 7 (estadisticas): endpoint de estadisticas de alertas por linea
-  (total historico, activas, tipo mas frecuente), con agregacion SQL en
-  el backend, y pagina de estadisticas en el frontend.
-- Ronda de calidad (v4.6 a v4.30): correcciones en la sincronizacion,
-  timeouts y credenciales fuera de los logs, API key para escrituras,
-  errores con Problem Details, DTOs, enum de modos, busqueda sin
-  tildes, TIMESTAMPTZ, tarifas vigentes, tests y Swagger UI.
-
-## Colectivos y trenes en la Fase 4
-
-La API Transporte de Buenos Aires no expone un recurso `/trenes`, y el
-endpoint de alertas de `/colectivos` no incluye un identificador de linea
-utilizable (el campo `route_id` viene vacio). El endpoint de posiciones en
-tiempo real de colectivos (`vehiclePositionsSimple`) devuelve actualmente
-un error interno del servidor en vez de datos. Por estas limitaciones de
-la fuente oficial, la sincronizacion automatica de la Fase 4 se implemento
-solo para subte, que si expone datos completos y confiables.
-
-## Alcance de las estaciones y ramales de tren
-
-Las 8 lineas de tren del AMBA tienen ramales y estaciones reales cargados,
-pero no todos los ramales existentes: se excluyeron a proposito los
-servicios de larga distancia (ej. San Martin hacia Junin/Rufino), los
-ramales diesel de menor frecuencia (Sarmiento: Moreno-Mercedes,
-Merlo-Lobos), extensiones fuera del AMBA (Roca: Ezeiza, Alejandro Korn,
-Bosques, Canuelas, Lobos, Monte, Chascomus; Mitre: Zarate, Capilla del
-Senor; Belgrano Sur: Gonzalez Catan-Lozano), y el ramal Puente
-Alsina-Aldo Bonzi de Belgrano Sur, que esta confirmado que actualmente no
-esta en servicio. El criterio en todos los casos fue el mismo: cargar los
-ramales urbanos principales con buena frecuencia dentro del AMBA, y dejar
-el resto para una etapa posterior en vez de forzar datos de menor calidad
-o fuera del alcance real del proyecto.
+La descripcion general del proyecto esta en el [README principal](../README.md).
 
 ## Stack
 
-- Java 21 + Spring Boot 3.5
-- PostgreSQL 16
-- Maven
-- Docker + Docker Compose
-- GitHub Actions (CI)
+- Java 21 + Spring Boot 3.5 (Spring Web, Data JPA, Validation, Actuator)
+- PostgreSQL 16 (Neon en produccion) con Flyway
+- springdoc-openapi (Swagger UI)
+- Maven, Docker + Docker Compose, GitHub Actions (CI) y Render
 
 ## Como ejecutarlo localmente
 
@@ -116,6 +64,11 @@ o fuera del alcance real del proyecto.
 | `ADMIN_API_KEY`              | Clave para los endpoints de escritura    | (vacio = escritura deshabilitada) |
 | `COLECTIVOS_GTFS_URL`        | URL del feed GTFS de colectivos (zip)    | (vacio = API Transporte, `/colectivos/feed-gtfs`) |
 | `TOMTOM_API_KEY`             | Clave de la API de trafico de TomTom     | (vacio = Accesos sin estado en vivo) |
+| `AUTH_TOKEN_SECRET`          | Clave para firmar las sesiones (32+ caracteres) | (vacio = clave temporal: las sesiones se pierden al reiniciar) |
+| `GOOGLE_CLIENT_ID`           | ID de cliente de Google (publico)        | (vacio = sin "Continuar con Google") |
+| `BREVO_API_KEY`, `MAIL_FROM` | Mails para recuperar la contrasena (Brevo) | (vacio = sin recuperar contrasena) |
+| `SITE_URL`                   | Direccion del sitio, para los links de los mails y los avisos | `https://ba-transit.onrender.com` |
+| `DB_SSLMODE`                 | Modo SSL de la base                      | `prefer` (en produccion, `require`) |
 
 Los endpoints de escritura (`POST`) requieren el header `X-API-Key` con
 el valor de `ADMIN_API_KEY`. Las lecturas (`GET`) son publicas. Ejemplo:
@@ -171,24 +124,42 @@ Endpoints principales:
 - `GET /api/v1/servicios-especiales?lineId=` - servicios especiales vigentes hoy
 - `GET /api/v1/stats/alerts` - estadisticas de alertas por linea (total,
   activas, tipo mas frecuente)
+- `GET /api/v1/subte/proximos`, `GET /api/v1/subte/horario`, `GET /api/v1/trenes/proximos` -
+  proximos trenes en vivo o segun el horario
+- `GET /api/v1/colectivos/vivo`, `GET /api/v1/ecobici`, `GET /api/v1/vuelos` - datos en vivo
+- `GET /api/v1/clima/alertas`, `GET /api/v1/clima/pronostico` - alertas del SMN y pronostico
+- `GET /api/v1/eventos`, `GET /api/v1/estado` - eventos masivos y salud de cada fuente
+- `GET /api/v1/direcciones?q=` - direcciones del AMBA (Georef), con limite de pedidos por IP
+- `/api/v1/auth/*` y `/api/v1/cuenta/*` - cuentas, sesiones por dispositivo, favoritos,
+  lugares y preferencias (con el token de la sesion en `Authorization: Bearer`)
+- `/api/v1/notificaciones/*` - suscripcion a los avisos Web Push
+
+La lista completa, con los parametros, esta en Swagger UI.
 
 ## Arquitectura
 
-Backend en capas: `controller` -> `service` -> `repository` -> `domain`.
-La logica de negocio no vive en los controllers. La integracion con la API
-externa vive en `client` (llamadas HTTP con reintentos), `config`
-(propiedades tipadas) y `scheduler` (el job programado).
+Las lineas, estaciones, alertas y tarifas siguen las capas `controller` ->
+`service` -> `repository` -> `domain`; lo demas esta agrupado por tema
+(`live`, `colectivos`, `accesos`, `clima`, `vuelos`, `trenes`, `cuentas`,
+`notificaciones`, `direcciones`, `estado`...), cada uno con su controller,
+su servicio y su cliente de la fuente externa. La logica de negocio no vive
+en los controllers. Las fuentes externas se consultan con timeouts y se
+cachean; si una falla, se sirven los ultimos datos validos y queda
+registrado en `estado`.
 
-## Roadmap
+Seguridad, en corto:
 
-- [x] Fase 1 - Base
-- [x] Fase 2 - Modelo de datos y carga de datasets estaticos
-- [x] Fase 3 - API de lineas, estados, alertas, tarifas y busqueda
-- [x] Fase 4 - Actualizacion automatica (solo subte, ver limitaciones arriba)
-- [x] Fase 5 - Frontend
-- [x] Fase 6 - Mapa (subte y trenes; premetro sin coordenadas todavia)
-- [x] Fase 7 - Estadisticas y calidad
-- [ ] Fase 8 - Presentacion final
+- Escrituras de administracion con `X-API-Key` (comparada en tiempo
+  constante); sin la clave configurada, la escritura queda deshabilitada.
+- Contrasenas con PBKDF2-HMAC-SHA512 (210.000 iteraciones); las del formato
+  anterior (SHA256) se pasan al nuevo al entrar.
+- Sesiones firmadas con HMAC-SHA256, una por dispositivo, que se pueden
+  cerrar; cambiar o recuperar la contrasena cierra las demas.
+- Limites de intentos por IP real (`CF-Connecting-IP`, ver `ClientIp`) y
+  por mail.
+- Los avisos solo se mandan a servicios de push conocidos (https).
+- Errores en formato Problem Details sin detalles internos; el XML externo
+  se lee sin entidades externas.
 
 ## Colectivos
 
