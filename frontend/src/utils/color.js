@@ -15,6 +15,18 @@ export function readableTextColor(hex) {
 }
 
 /**
+ * Un color del tema escrito como variable ("var(--traffic-closed)", que es
+ * negro en el tema claro y casi blanco en el oscuro) pasado al valor que
+ * tiene ahora, para poder calcular el texto que va encima. Cualquier otro
+ * color vuelve igual.
+ */
+export function resolveThemeColor(color) {
+  const name = /^var\((--[\w-]+)\)$/.exec(color ?? '')?.[1]
+  if (!name || typeof document === 'undefined') return color
+  return window.getComputedStyle(document.documentElement).getPropertyValue(name).trim() || color
+}
+
+/**
  * Encabezado pintado de las tarjetas de los mapas (en el celular, como el
  * cartel del anden): las clases y las variables con el color y el texto que
  * se lee encima. Sin color, la tarjeta queda como siempre.

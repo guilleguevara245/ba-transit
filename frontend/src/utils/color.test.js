@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cardHeader, readableTextColor } from './color.js'
+import { cardHeader, readableTextColor, resolveThemeColor } from './color.js'
 
 describe('readableTextColor', () => {
   it('texto oscuro sobre colores claros', () => {
@@ -30,5 +30,12 @@ describe('cardHeader', () => {
 
   it('sin color, la tarjeta queda como siempre', () => {
     expect(cardHeader(undefined)).toEqual({ className: '', style: undefined })
+  })
+})
+
+describe('resolveThemeColor', () => {
+  it('un color comun vuelve igual', () => {
+    expect(resolveThemeColor('#c23b34')).toBe('#c23b34')
+    expect(resolveThemeColor(undefined)).toBe(undefined)
   })
 })

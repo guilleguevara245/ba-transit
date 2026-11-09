@@ -4,6 +4,8 @@ import Chevrons from './Chevrons.jsx'
 import MapCard from './MapCard.jsx'
 import SpeedGauge from './SpeedGauge.jsx'
 import { delayMinutes, speedPercent, trafficStatus } from '../utils/traffic.js'
+import { resolveThemeColor } from '../utils/color.js'
+import { useTheme } from '../hooks/useTheme.js'
 
 /**
  * Tarjeta de un tramo: el escudo de la ruta, un velocimetro con el
@@ -14,9 +16,13 @@ function SegmentCard({ segment }) {
   const { label, color } = trafficStatus(segment.status)
   const percent = speedPercent(segment)
   const delay = delayMinutes(segment)
+  // "Cortado" cambia de color con el tema: el encabezado (en el celular) usa el de ahora.
+  // useTheme vuelve a dibujar la tarjeta si se cambia el tema.
+  useTheme()
+  const headerColor = resolveThemeColor(color)
   return (
     <MapCard
-      color={color}
+      color={headerColor}
       badge={<span className="map-card-shield">{segment.access.road}</span>}
       kicker={segment.access.name}
       icon={<SpeedGauge percent={percent} color={color} />}
