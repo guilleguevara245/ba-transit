@@ -6,8 +6,10 @@ services:
       POSTGRES_DB: ${DB_NAME:-batransit}
       POSTGRES_USER: ${DB_USER:-batransit}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-batransit}
+    # Solo desde esta computadora: con la contraseña por defecto, no conviene
+    # que la base quede abierta a la red local.
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - ba-transit-data:/var/lib/postgresql/data
     healthcheck:

@@ -206,12 +206,8 @@ public class AccountController {
         }
     }
 
-    /** Render pone la IP real del visitante primera en X-Forwarded-For. */
+    /** La IP de quien pide (ver ClientIp: la primera de X-Forwarded-For se puede inventar). */
     static String clientIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        if (forwarded != null && !forwarded.isBlank()) {
-            return forwarded.split(",")[0].strip();
-        }
-        return request.getRemoteAddr();
+        return com.batransit.api.security.ClientIp.of(request);
     }
 }

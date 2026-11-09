@@ -13,7 +13,7 @@ import '../pages/AccountPage.css'
  * datos son tarjetas de /cuenta; Mis lugares, Avisos y Dispositivos tienen
  * su propia pagina.
  */
-export const ACCOUNT_SECTIONS = [
+const ACCOUNT_SECTIONS = [
   ['perfil', 'Perfil', '/cuenta'],
   ['lugares', 'Mis lugares', '/mis-lugares'],
   ['avisos', 'Avisos', '/notificaciones'],

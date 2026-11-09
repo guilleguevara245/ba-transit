@@ -73,6 +73,23 @@ class AccountServiceTest {
     }
 
     @Test
+    void unaContrasenaDelFormatoAnteriorSePasaAlNuevoAlEntrar() throws Exception {
+        service.register("ana@gmail.com", "contraseña1", "Ana");
+        // Como la guardaba la version anterior: PBKDF2-HMAC-SHA256 con 210.000 iteraciones.
+        byte[] salt = new byte[16];
+        byte[] old = javax.crypto.SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
+                .generateSecret(new javax.crypto.spec.PBEKeySpec("contraseña1".toCharArray(), salt, 210_000, 256))
+                .getEncoded();
+        java.util.Base64.Encoder b64 = java.util.Base64.getEncoder();
+        rows.get(0).setPasswordHash("pbkdf2$210000$" + b64.encodeToString(salt) + "$" + b64.encodeToString(old));
+
+        service.login("ana@gmail.com", "contraseña1");
+
+        assertThat(rows.get(0).getPasswordHash().startsWith("pbkdf2-sha512$")).isEqualTo(true);
+        assertThat(PasswordHasher.matches("contraseña1", rows.get(0).getPasswordHash())).isEqualTo(true);
+    }
+
+    @Test
     void crearCuentaEIngresar() {
         SessionResponse created = service.register("  Ana@Gmail.com ", "contraseña1", " Ana  Pérez ");
         assertThat(created.user().email()).isEqualTo("ana@gmail.com");

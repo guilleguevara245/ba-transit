@@ -96,6 +96,10 @@ public class AccountService {
         if (!ok) {
             throw new AccountException(HttpStatus.UNAUTHORIZED, "El mail o la contraseña no son correctos.");
         }
+        // Una contraseña guardada con el formato anterior se pasa al nuevo (ver PasswordHasher).
+        if (PasswordHasher.needsRehash(user.getPasswordHash())) {
+            user.setPasswordHash(PasswordHasher.hash(password));
+        }
         user.setLastLoginAt(Instant.now());
         return session(user);
     }

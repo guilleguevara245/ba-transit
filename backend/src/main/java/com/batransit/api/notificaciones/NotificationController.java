@@ -81,7 +81,6 @@ public class NotificationController {
     }
 
     static String clientIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        return forwarded != null && !forwarded.isBlank() ? forwarded.split(",")[0].strip() : request.getRemoteAddr();
+        return com.batransit.api.security.ClientIp.of(request);
     }
 }

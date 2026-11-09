@@ -31,6 +31,10 @@ class SecurityPiecesTest {
         assertThat(PasswordHasher.hash("mi clave segura").equals(hash)).isEqualTo(false);
         assertThat(PasswordHasher.matches("x", "formato-raro")).isEqualTo(false);
         assertThat(PasswordHasher.matches(null, hash)).isEqualTo(false);
+        // Las nuevas van con SHA512 y no hace falta rehacerlas; las del formato anterior (SHA256), si.
+        assertThat(hash.startsWith("pbkdf2-sha512$210000$")).isEqualTo(true);
+        assertThat(PasswordHasher.needsRehash(hash)).isEqualTo(false);
+        assertThat(PasswordHasher.needsRehash("pbkdf2$210000$AAAA$AAAA")).isEqualTo(true);
     }
 
     @Test

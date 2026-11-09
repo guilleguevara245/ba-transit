@@ -8,9 +8,10 @@ spring:
   application:
     name: ba-transit-backend
   datasource:
-    # sslmode=prefer: intenta SSL primero (lo que exige Neon en produccion)
-    # y si no esta disponible, sigue sin el (como el Postgres local de Docker).
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:batransit}?sslmode=prefer
+    # sslmode: prefer (por defecto) intenta SSL y, si no esta, sigue sin el
+    # (como el Postgres local de Docker). En produccion conviene DB_SSLMODE=require:
+    # con Neon la conexion va siempre cifrada y no puede caer a una sin cifrar.
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:batransit}?sslmode=${DB_SSLMODE:prefer}
     username: ${DB_USER:batransit}
     password: ${DB_PASSWORD:batransit}
   jpa:
