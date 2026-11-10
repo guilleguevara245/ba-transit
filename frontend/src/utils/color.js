@@ -27,8 +27,8 @@ export function resolveThemeColor(color) {
 }
 
 /**
- * Encabezado pintado de las tarjetas de los mapas (en el celular, como el
- * cartel del anden): las clases y las variables con el color y el texto que
+ * Encabezado pintado de las tarjetas de los mapas (como el cartel del
+ * anden): las clases y las variables con el color y el texto que
  * se lee encima. Sin color, la tarjeta queda como siempre.
  */
 export function cardHeader(color) {

@@ -89,7 +89,7 @@ export default function StationPopup({ station, stations, alerts, mode }) {
 
   return (
     <div className={`station-popup${header.className}`} style={header.style}>
-      {/* Franja del color de la linea en el borde de arriba de la tarjeta (en el celular, el encabezado entero). */}
+      {/* Franja del color de la linea en el borde de arriba (con color, la tarjeta lleva el encabezado entero y la franja no se ve). */}
       <span className="station-popup-stripe" style={{ background: station.lineColorHex }} aria-hidden="true" />
 
       {/* Linea y operadora. En subte y Premetro la letra ya nombra la linea
