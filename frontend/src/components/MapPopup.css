@@ -11,6 +11,30 @@
 
 .station-popup-container .leaflet-popup-content {
   margin: 14px 16px;
+  /*
+   * Nunca mas ancha que el mapa: con 300px de ancho maximo, en un celular
+   * la tarjeta (con sus margenes) pasaba al mapa y se cortaba a la
+   * derecha. 66px = los margenes del contenido (32), el borde del
+   * contenedor (2) y 16px de aire de cada lado. Mide el mapa (ver abajo),
+   * asi que tambien se ajusta al girar el celular.
+   */
+  max-width: calc(100cqw - 66px);
+}
+
+/* El mapa es la referencia de tamaño de sus tarjetas (100cqw = su ancho). */
+.leaflet-container:has(.station-popup-container) {
+  container-type: inline-size;
+}
+
+/*
+ * En el celular, con una tarjeta abierta, los botones + y - se ocultan:
+ * quedaban encima de la tarjeta (los controles van por arriba de los
+ * popups). El zoom con dos dedos sigue andando.
+ */
+@media (max-width: 760px) {
+  .leaflet-container:has(.station-popup-container) .leaflet-control-zoom {
+    visibility: hidden;
+  }
 }
 
 .station-popup {
