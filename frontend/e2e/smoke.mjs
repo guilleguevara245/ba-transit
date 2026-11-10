@@ -17,6 +17,7 @@ const CHECKS = [
   { path: '/lineas/subte-b', name: 'Línea B', expect: ['Línea B', 'Ramales y estaciones', 'Medrano'] },
   { path: '/mapa', name: 'Mapa', expect: ['Mapa de la red'], selector: '.leaflet-container' },
   { path: '/estado', name: 'Estado de los datos', expect: ['Estado de los datos', 'Horarios programados'] },
+  { path: '/contacto', name: 'Contacto', expect: ['Contacto', 'De qué se trata', 'Mandar mensaje'] },
 ]
 
 async function run() {

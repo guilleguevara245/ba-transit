@@ -45,9 +45,11 @@ public class AdminApiKeyFilter extends OncePerRequestFilter {
 
     /**
      * Las cuentas de usuario y los avisos escriben con su propia sesion o
-     * suscripcion (o, al ingresar, sin ella): no llevan la clave de administrador.
+     * suscripcion (o, al ingresar, sin ella), y el formulario de contacto es
+     * de cualquiera (con su propio freno): no llevan la clave de administrador.
      */
-    static final java.util.List<String> USER_PATHS = java.util.List.of("/api/v1/auth/", "/api/v1/cuenta", "/api/v1/notificaciones/");
+    static final java.util.List<String> USER_PATHS = java.util.List.of("/api/v1/auth/", "/api/v1/cuenta", "/api/v1/notificaciones/",
+            "/api/v1/contacto");
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {

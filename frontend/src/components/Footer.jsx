@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import ExternalTitle from './ExternalTitle.jsx'
 import InstallApp from './InstallApp.jsx'
 import { LogoMark } from './Logo.jsx'
@@ -8,7 +8,6 @@ import { OPERATOR_SITES } from '../utils/serviceHours.js'
 import './Footer.css'
 
 const STATUS_REFRESH_MS = 5 * 60_000
-const ISSUES_URL = 'https://github.com/guilleguevara245/ba-transit/issues'
 
 const TRAVEL = [
   ['/mapa', 'Mapa'],
@@ -49,18 +48,18 @@ export default function Footer() {
   const { data: status } = useApi('/api/v1/estado', { refreshMs: STATUS_REFRESH_MS })
   const failing = status?.overall === 'ERROR'
   const session = useSession()
+  // El formulario de contacto sabe desde que pantalla se abrio (ayuda con los errores).
+  const { pathname } = useLocation()
+  const contactState = pathname === '/contacto' ? undefined : { from: pathname }
 
   return (
     <footer className="footer">
       <div className="footer-band">
         <div className="wrap footer-band-row">
           <p>¿Encontraste un error o tenés una idea?</p>
-          <a className="footer-band-main" href={`${ISSUES_URL}/new`} target="_blank" rel="noreferrer">
+          <Link className="footer-band-main" to="/contacto" state={contactState}>
             Contanos
-          </a>
-          <a className="footer-band-alt" href={ISSUES_URL} target="_blank" rel="noreferrer">
-            Ver lo que ya se pidió
-          </a>
+          </Link>
         </div>
       </div>
 
@@ -148,9 +147,9 @@ export default function Footer() {
         <span className="footer-legal-links">
           <Link to="/privacidad">Privacidad</Link>
           <Link to="/condiciones">Condiciones</Link>
-          <a href={ISSUES_URL} target="_blank" rel="noreferrer">
+          <Link to="/contacto" state={contactState}>
             Contacto
-          </a>
+          </Link>
         </span>
       </div>
     </footer>

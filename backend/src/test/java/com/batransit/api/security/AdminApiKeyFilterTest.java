@@ -42,7 +42,7 @@ class AdminApiKeyFilterTest {
     @Test
     void lasCuentasDeUsuarioNoLlevanLaClave() throws Exception {
         AdminApiKeyFilter filter = new AdminApiKeyFilter("");
-        for (String uri : new String[] {"/api/v1/auth/ingreso", "/api/v1/cuenta/favoritos", "/api/v1/cuenta"}) {
+        for (String uri : new String[] {"/api/v1/auth/ingreso", "/api/v1/cuenta/favoritos", "/api/v1/cuenta", "/api/v1/contacto"}) {
             MockHttpServletRequest request = new MockHttpServletRequest("POST", uri);
             MockHttpServletResponse response = new MockHttpServletResponse();
             filter.doFilter(request, response, new MockFilterChain());

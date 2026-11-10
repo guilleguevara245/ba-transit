@@ -85,6 +85,8 @@ con APIs públicas, pruebas, integración continua y despliegue.
 - Aeropuertos: cómo llegar en colectivo y cuántos aviones están aterrizando o despegando en ese momento.
 - **Tu día**: pronóstico hora por hora (Open-Meteo) para la zona elegida, con la ubicación redondeada a unos 5 km.
 - Cuadro tarifario completo del AMBA y simulador del descuento Red SUBE.
+- Formulario de contacto que llega por mail (Brevo), con freno por IP, tope diario, campo trampa para bots y, con la
+  sesión iniciada, los datos de la cuenta.
 
 **Experiencia**
 - Modo claro y oscuro (sigue al sistema la primera vez), diseño adaptado a celular y feriados marcados en la fecha.
@@ -237,7 +239,8 @@ La API queda en `http://localhost:8080` y la documentación interactiva en `http
 | `TOMTOM_API_KEY` | estado del tránsito en los accesos | Accesos sin estado en vivo |
 | `AUTH_TOKEN_SECRET` | firma de las sesiones de las cuentas (32 caracteres o más) | clave temporal: las sesiones se pierden al reiniciar |
 | `GOOGLE_CLIENT_ID` | "Continuar con Google" | solo mail y contraseña |
-| `BREVO_API_KEY`, `MAIL_FROM` | mails para recuperar la contraseña (Brevo, plan gratuito) | sin "¿Olvidaste tu contraseña?" |
+| `BREVO_API_KEY`, `MAIL_FROM` | mails para recuperar la contraseña y del formulario de contacto (Brevo, plan gratuito) | sin "¿Olvidaste tu contraseña?" ni formulario de contacto |
+| `CONTACT_EMAIL` | a dónde llegan los mensajes del formulario de contacto | sin formulario de contacto |
 | `ADMIN_API_KEY` | endpoints de escritura (`POST`) | escritura deshabilitada |
 | `DB_SSLMODE` | modo SSL de la base (`require` en producción) | `prefer`: SSL si está disponible |
 

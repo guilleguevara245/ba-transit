@@ -6,8 +6,7 @@ import './ModePage.css'
 import './AboutPage.css'
 
 // Fecha de la ultima revision: actualizarla con cada cambio de esta pagina.
-const UPDATED = '8 de noviembre de 2026'
-const CONTACT_URL = 'https://github.com/guilleguevara245/ba-transit/issues'
+const UPDATED = '9 de noviembre de 2026'
 const CHECK_ICON = 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zm-4 9.5 2.7 2.7L16 9.8'
 
 /** Lo principal, para leer de un vistazo. */
@@ -109,7 +108,7 @@ const SERVER_SERVICES = [
   },
   {
     who: 'Brevo (envío de correos)',
-    why: 'Manda el mail para recuperar la contraseña. Recibe solo tu dirección y el mensaje.',
+    why: 'Manda el mail para recuperar la contraseña (recibe tu dirección y el mensaje) y los mensajes de Contacto (recibe lo que escribiste en el formulario).',
   },
 ]
 
@@ -119,6 +118,7 @@ const INDEX = [
   ['cuenta', 'Si creás una cuenta'],
   ['avisos', 'Si activás los avisos'],
   ['ubicacion', 'Tu ubicación'],
+  ['contacto', 'Si nos escribís'],
   ['servidor', 'El servidor'],
   ['externos', 'Servicios externos'],
   ['derechos', 'Tus derechos y contacto'],
@@ -233,6 +233,16 @@ export default function PrivacyPage() {
             </p>
           </section>
 
+          <section className="about-block" id="contacto">
+            <h2 className="about-heading">Si nos escribís</h2>
+            <p>
+              Lo que mandás desde <Link to="/contacto">Contacto</Link> llega por mail a quien hace BA Transit: tu nombre,
+              apellido y mail (para responderte), el mensaje, la pantalla desde donde lo abriste y el navegador que usás
+              (ayuda a encontrar los errores). Si escribís con la sesión iniciada, van también el número, el nombre, el
+              mail y la fecha de alta de tu cuenta. Los mensajes no se guardan en la base de datos del sitio.
+            </p>
+          </section>
+
           <section className="about-block" id="servidor">
             <h2 className="about-heading">El servidor</h2>
             <p>
@@ -245,8 +255,8 @@ export default function PrivacyPage() {
             <p>
               Dos cosas quedan un rato en la memoria del servidor (no en la base de datos) y se borran solas: las
               búsquedas de direcciones, un día y sin nada que diga quién las hizo, para no consultar dos veces la misma;
-              y cuántas búsquedas de direcciones e intentos de ingreso llegan desde cada dirección IP, hasta 15 minutos,
-              para frenar abusos.
+              y cuántas búsquedas de direcciones, intentos de ingreso y mensajes de contacto llegan desde cada dirección
+              IP (hasta una hora), para frenar abusos.
             </p>
             <p>
               El estado de cada fuente se puede ver en <Link to="/estado">Estado de los datos</Link>.
@@ -274,11 +284,8 @@ export default function PrivacyPage() {
               Información Pública.
             </p>
             <p>
-              Para consultas sobre esta política, escribí en{' '}
-              <a href={CONTACT_URL} target="_blank" rel="noreferrer">
-                <ExternalTitle text="el repositorio del proyecto" />
-              </a>
-              . Si la política cambia, se actualiza esta página y su fecha de revisión. Las reglas de uso del sitio
+              Para consultas sobre esta política, escribí desde <Link to="/contacto">Contacto</Link>. Si la política
+              cambia, se actualiza esta página y su fecha de revisión. Las reglas de uso del sitio
               están en las <Link to="/condiciones">Condiciones del servicio</Link>.
             </p>
           </section>

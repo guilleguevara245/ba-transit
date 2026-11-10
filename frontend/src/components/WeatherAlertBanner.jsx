@@ -20,7 +20,7 @@ import './WeatherAlertBanner.css'
 
 const REFRESH_MS = 10 * 60_000
 const STORAGE_KEY = 'ba-transit:alertas-clima-cerradas'
-// Pantallas donde la alerta no aporta (ingresar, cuenta, avisos, legales): ahi distrae.
+// Pantallas donde la alerta no aporta (ingresar, cuenta, avisos, legales, contacto): ahi distrae.
 const HIDDEN_ON = [
   '/ingresar',
   '/cuenta',
@@ -31,6 +31,7 @@ const HIDDEN_ON = [
   '/dispositivos',
   '/privacidad',
   '/condiciones',
+  '/contacto',
 ]
 
 /** En el celular cada alerta va en un renglon (el titulo); al tocarla se abre el detalle. */

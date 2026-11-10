@@ -76,5 +76,9 @@ app:
     # Remitente verificado en Brevo (por ejemplo, tu Gmail).
     from: ${MAIL_FROM:}
     from-name: BA Transit
+  contact:
+    # A donde llegan los mensajes del formulario de contacto (/contacto),
+    # por mail con Brevo. Vacio (o sin Brevo) = el formulario no aparece.
+    email: ${CONTACT_EMAIL:}
   # Direccion del sitio, para los links de los mails.
   site-url: ${SITE_URL:https://ba-transit.onrender.com}

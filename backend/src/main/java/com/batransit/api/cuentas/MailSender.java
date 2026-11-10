@@ -12,6 +12,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -64,15 +65,26 @@ public class MailSender {
 
     /** true si Brevo acepto el mail. */
     public boolean send(String to, String subject, String text, String html) {
+        return send(to, subject, text, html, null);
+    }
+
+    /**
+     * Igual, con "Responder a" (replyTo): al contestar el mail, la respuesta
+     * va a esa direccion y no al remitente del sitio. null: sin replyTo.
+     */
+    public boolean send(String to, String subject, String text, String html, String replyTo) {
         if (!isConfigured()) {
             return false;
         }
-        Map<String, Object> body = Map.of(
-                "sender", Map.of("name", fromName, "email", from),
-                "to", List.of(Map.of("email", to)),
-                "subject", subject,
-                "textContent", text,
-                "htmlContent", html);
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("sender", Map.of("name", fromName, "email", from));
+        body.put("to", List.of(Map.of("email", to)));
+        if (replyTo != null && !replyTo.isBlank()) {
+            body.put("replyTo", Map.of("email", replyTo));
+        }
+        body.put("subject", subject);
+        body.put("textContent", text);
+        body.put("htmlContent", html);
         try {
             restClient.post().uri(URL)
                     .header("api-key", apiKey)

@@ -66,7 +66,8 @@ La descripcion general del proyecto esta en el [README principal](../README.md).
 | `TOMTOM_API_KEY`             | Clave de la API de trafico de TomTom     | (vacio = Accesos sin estado en vivo) |
 | `AUTH_TOKEN_SECRET`          | Clave para firmar las sesiones (32+ caracteres) | (vacio = clave temporal: las sesiones se pierden al reiniciar) |
 | `GOOGLE_CLIENT_ID`           | ID de cliente de Google (publico)        | (vacio = sin "Continuar con Google") |
-| `BREVO_API_KEY`, `MAIL_FROM` | Mails para recuperar la contrasena (Brevo) | (vacio = sin recuperar contrasena) |
+| `BREVO_API_KEY`, `MAIL_FROM` | Mails para recuperar la contrasena y del contacto (Brevo) | (vacio = sin recuperar contrasena ni contacto) |
+| `CONTACT_EMAIL`              | A donde llegan los mensajes del formulario de contacto | (vacio = sin formulario de contacto) |
 | `SITE_URL`                   | Direccion del sitio, para los links de los mails y los avisos | `https://ba-transit.onrender.com` |
 | `DB_SSLMODE`                 | Modo SSL de la base                      | `prefer` (en produccion, `require`) |
 
@@ -133,6 +134,9 @@ Endpoints principales:
 - `/api/v1/auth/*` y `/api/v1/cuenta/*` - cuentas, sesiones por dispositivo, favoritos,
   lugares y preferencias (con el token de la sesion en `Authorization: Bearer`)
 - `/api/v1/notificaciones/*` - suscripcion a los avisos Web Push
+- `GET /api/v1/contacto`, `POST /api/v1/contacto` - formulario de contacto: lo manda por
+  mail a `CONTACT_EMAIL` (no se guarda), con limite por IP y por dia; con la sesion
+  iniciada agrega los datos de la cuenta
 
 La lista completa, con los parametros, esta en Swagger UI.
 

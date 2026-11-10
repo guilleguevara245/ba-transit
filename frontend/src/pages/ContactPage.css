@@ -1,0 +1,228 @@
+/*
+ * Contacto: la misma tarjeta que Ingresar (AccountPage.css). En el celular,
+ * una columna (el formulario y abajo los consejos); en computadora, el
+ * formulario ancho con los consejos al lado.
+ */
+.wrap.contact-page {
+  max-width: 560px;
+  padding-bottom: 48px;
+}
+
+.contact-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.contact-tips {
+  padding: 18px 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.contact-tips-title {
+  margin-bottom: 12px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.contact-tips ul {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.contact-tips li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+.contact-tips strong {
+  display: block;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.contact-tips a {
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+.contact-tips-icon {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  fill: none;
+  stroke: var(--accent-text);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Computadora: formulario ancho, nombre y apellido lado a lado, y los consejos fijos a la derecha. */
+@media (min-width: 900px) {
+  .wrap.contact-page {
+    max-width: 1080px;
+  }
+
+  .contact-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 28px;
+    align-items: start;
+  }
+
+  .contact-card {
+    padding: 30px 34px 28px;
+  }
+
+  .contact-message {
+    min-height: 220px;
+  }
+
+  /* El boton a su medida, a la derecha (en el celular ocupa todo el ancho). */
+  .contact-form .auth-submit {
+    align-self: flex-end;
+    min-width: 220px;
+  }
+
+  .contact-tips {
+    position: sticky;
+    top: 16px;
+    border-top: 4px solid var(--yellow);
+    box-shadow: var(--shadow);
+  }
+}
+
+.contact-fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  min-width: 0;
+}
+
+/* Como el titulo de los demas campos. */
+.contact-legend {
+  margin-bottom: 5px;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Como las pestañas de Ingresar / Crear cuenta. */
+.contact-kinds {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 1px solid var(--line);
+}
+
+.contact-kinds label {
+  position: relative;
+  padding: 9px 4px;
+  background: var(--bg);
+  color: var(--text-dim);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.4px;
+  text-align: center;
+  text-transform: uppercase;
+  cursor: pointer;
+  user-select: none;
+}
+
+.contact-kinds label + label {
+  border-left: 1px solid var(--line);
+}
+
+.contact-kinds label.active {
+  background: var(--ink);
+  color: var(--yellow);
+}
+
+/* El circulo de la opcion no se ve: la etiqueta entera es el boton. */
+.contact-kinds input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.contact-kinds label:has(input:focus-visible) {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+  z-index: 1;
+}
+
+.contact-message {
+  width: 100%;
+  min-height: 140px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.45;
+  resize: vertical;
+}
+
+.contact-message:focus {
+  outline: 2px solid var(--yellow);
+  outline-offset: 1px;
+}
+
+.contact-message[aria-invalid='true'] {
+  border-color: var(--interrupted);
+}
+
+.contact-message[aria-invalid='true']:focus {
+  outline-color: var(--interrupted);
+}
+
+.contact-message::placeholder {
+  color: var(--text-faint);
+}
+
+.contact-count {
+  align-self: flex-end;
+  font-size: 11px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-faint);
+}
+
+/* Trampa para bots: fuera de la vista y del orden de tabulacion. */
+.contact-trap {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* "Ingresaste como ...": pegado al subtitulo. */
+.contact-account {
+  margin-top: -6px;
+}
+
+/* Nombre y apellido, uno abajo del otro en el celular: con el mismo aire que los demas campos. */
+.contact-form .auth-name-row {
+  row-gap: 12px;
+}

@@ -24,6 +24,7 @@ const ParkingPage = lazy(() => import('./pages/ParkingPage.jsx'))
 const StatusPage = lazy(() => import('./pages/StatusPage.jsx'))
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage.jsx'))
 const TermsPage = lazy(() => import('./pages/TermsPage.jsx'))
+const ContactPage = lazy(() => import('./pages/ContactPage.jsx'))
 const LoginPage = lazy(() => import('./pages/LoginPage.jsx'))
 const RecoverPage = lazy(() => import('./pages/RecoverPage.jsx'))
 const ResetPage = lazy(() => import('./pages/ResetPage.jsx'))
@@ -63,6 +64,7 @@ export default function App() {
           <Route path="/estado" element={<StatusPage />} />
           <Route path="/privacidad" element={<PrivacyPage />} />
           <Route path="/condiciones" element={<TermsPage />} />
+          <Route path="/contacto" element={<ContactPage />} />
           <Route path="/ingresar" element={<LoginPage />} />
           <Route path="/cuenta" element={<AccountPage />} />
           <Route path="/notificaciones" element={<NotificationsPage />} />

@@ -1,13 +1,11 @@
 import { Link } from 'react-router-dom'
 import BackButton from '../components/BackButton.jsx'
-import ExternalTitle from '../components/ExternalTitle.jsx'
 import PageIndex from '../components/PageIndex.jsx'
 import './ModePage.css'
 import './AboutPage.css'
 
 // Fecha de la ultima revision: actualizarla con cada cambio de esta pagina.
-const UPDATED = '8 de noviembre de 2026'
-const CONTACT_URL = 'https://github.com/guilleguevara245/ba-transit/issues'
+const UPDATED = '9 de noviembre de 2026'
 
 /** Lo principal, para leer de un vistazo (el detalle esta en cada seccion). */
 const POINTS = [
@@ -162,11 +160,7 @@ export default function TermsPage() {
               revisión. Se rigen por las leyes de la República Argentina.
             </p>
             <p>
-              Para consultas, escribí en{' '}
-              <a href={CONTACT_URL} target="_blank" rel="noreferrer">
-                <ExternalTitle text="el repositorio del proyecto" />
-              </a>
-              .
+              Para consultas, escribí desde <Link to="/contacto">Contacto</Link>.
             </p>
           </section>
         </div>
