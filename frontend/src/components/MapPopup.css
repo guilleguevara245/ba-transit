@@ -532,10 +532,15 @@ button.station-popup-link {
   border-radius: 6px 6px 0 0;
 }
 
+/*
+ * El nombre se monta 1px sobre la linea de arriba: con zoom o escala de
+ * pantalla (125%, 150%) los dos fondos terminan en medio pixel y algunos
+ * navegadores dejaban una raya clara entre ellos.
+ */
 .station-popup.has-header .station-popup-name {
-  margin-top: 0;
+  margin-top: -1px;
   margin-bottom: 0;
-  padding-top: 6px;
+  padding-top: 7px;
   padding-bottom: 13px;
   font-size: 25px;
 }
