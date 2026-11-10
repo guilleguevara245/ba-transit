@@ -242,7 +242,7 @@ export default function DayWeather() {
           <div className="dw-place">
             <PlaceIcon tipo={shown.place.tipo} size="sm" />
             <strong>{shown.place.label}</strong>
-            <span>{shown.place.detail}</span>
+            {shown.place.detail && <span className="dw-place-detail">{shown.place.detail}</span>}
           </div>
         )}
         {primary.id !== 'casa' && !picking && (

@@ -99,3 +99,20 @@ export function trafficProblems(accesses) {
   }
   return list.sort((a, b) => SEVERITY.indexOf(b.status) - SEVERITY.indexOf(a.status))
 }
+
+/**
+ * El titulo del resumen: "Hay cortes en 1 acceso y demoras en 2 más" o
+ * "Hay demoras en 3 accesos". Cuenta accesos (no tramos): los cortes solo
+ * los que tienen alguna mano cortada; las demoras, el resto con problemas.
+ * null si no hay problemas.
+ */
+export function problemsTitle(problems) {
+  if (!problems?.length) return null
+  const accessesWith = (list) => new Set(list.map((p) => p.access.id)).size
+  const all = accessesWith(problems)
+  const cut = accessesWith(problems.filter((p) => p.status === 'CORTADO'))
+  const count = (n) => (n === 1 ? '1 acceso' : `${n} accesos`)
+  if (cut === 0) return `Hay demoras en ${count(all)}`
+  const slow = all - cut
+  return `Hay cortes en ${count(cut)}${slow > 0 ? ` y demoras en ${slow} más` : ''}`
+}

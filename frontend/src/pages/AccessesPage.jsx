@@ -16,7 +16,7 @@ import { holidayOn } from '../utils/holidays.js'
 import { useNow } from '../hooks/useNow.js'
 import { useFlash } from '../hooks/useFlash.js'
 import { formatLongDate } from '../utils/format.js'
-import { speedPercent, speedText, trafficProblems, trafficStatus, worstStatus } from '../utils/traffic.js'
+import { problemsTitle, speedPercent, speedText, trafficProblems, trafficStatus, worstStatus } from '../utils/traffic.js'
 import './ModePage.css'
 import './AirportsPage.css'
 import './AccessesPage.css'
@@ -231,10 +231,7 @@ function TrafficSummary({ accesses }) {
     )
   }
   const worst = problems[0].status
-  const title =
-    worst === 'CORTADO'
-      ? `Hay cortes en ${withProblems === 1 ? '1 acceso' : `${withProblems} accesos`}`
-      : `Hay demoras en ${withProblems === 1 ? '1 acceso' : `${withProblems} accesos`}`
+  const title = problemsTitle(problems)
   return (
     <div className="access-summary" role="status" style={{ '--status-color': trafficStatus(worst).color }}>
       <strong>{title}</strong>

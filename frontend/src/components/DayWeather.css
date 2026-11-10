@@ -27,7 +27,8 @@
   color: var(--text);
 }
 
-.dw-place span {
+/* Solo el detalle: el icono del lugar tambien es un span y tiene sus colores. */
+.dw-place-detail {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

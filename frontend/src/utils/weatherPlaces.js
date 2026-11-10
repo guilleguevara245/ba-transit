@@ -9,8 +9,8 @@ import { addressArea } from './placesStore.js'
  * exacta, y para el pronostico alcanza.
  */
 
-/** Por defecto, sin lugares ni zona: la Ciudad. */
-export const CAPITAL = { id: 'capital', label: 'Capital', detail: 'Elegí tu zona', lat: -34.6037, lon: -58.3816 }
+/** Por defecto, sin lugares ni zona: la Ciudad (sin detalle: al lado ya esta "Elegi tu zona"). */
+export const CAPITAL = { id: 'capital', label: 'Capital', detail: null, lat: -34.6037, lon: -58.3816 }
 
 /** Trabajo se muestra aparte solo si queda a mas de esto de Casa (si no, es el mismo clima). */
 export const SAME_WEATHER_KM = 3

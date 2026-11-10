@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   delayMinutes,
   lengthKm,
+  problemsTitle,
   speedPercent,
   speedText,
   trafficProblems,
@@ -84,5 +85,21 @@ describe('trafficProblems', () => {
     expect(problems.map((p) => p.status)).toEqual(['CONGESTIONADO', 'DEMORADO'])
     expect(problems[1]).toMatchObject({ segment: 'General Paz - Moreno', towards: 'Provincia' })
     expect(trafficProblems([{ id: 'x', segments: [{ name: 'a', status: 'FLUIDO' }] }])).toEqual([])
+  })
+})
+
+describe('problemsTitle', () => {
+  const p = (id, status) => ({ access: { id }, status })
+
+  it('cuenta los cortes solo en los accesos cortados y el resto como demoras', () => {
+    const problems = [p('ezeiza', 'CORTADO'), p('ezeiza', 'CORTADO'), p('norte', 'CONGESTIONADO'), p('oeste', 'DEMORADO')]
+    expect(problemsTitle(problems)).toBe('Hay cortes en 1 acceso y demoras en 2 más')
+  })
+
+  it('sin cortes, habla de demoras; con todo cortado, solo de cortes', () => {
+    expect(problemsTitle([p('norte', 'CONGESTIONADO'), p('norte', 'DEMORADO')])).toBe('Hay demoras en 1 acceso')
+    expect(problemsTitle([p('a', 'CORTADO'), p('b', 'CORTADO')])).toBe('Hay cortes en 2 accesos')
+    expect(problemsTitle([p('a', 'CORTADO'), p('a', 'DEMORADO')])).toBe('Hay cortes en 1 acceso')
+    expect(problemsTitle([])).toBeNull()
   })
 })
