@@ -32,7 +32,7 @@ export function MyStations({ lines, alerts, inPanel = false }) {
   const cards = mine.map(({ station, line }) => {
     const status = statusFor(worstAlertType(alerts.filter((a) => a.transportLineId === line.id)))
     return (
-      <div key={station.stationId} className="my-line-card">
+      <div key={station.stationId} className="my-line-card" style={{ '--fav-color': line.colorHex }}>
         <div className="my-line">
           {inPanel && <span className="fav-kind">Estación</span>}
           <Link to={stationPath(station)} className="my-line-link">

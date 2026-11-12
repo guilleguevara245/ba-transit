@@ -36,11 +36,17 @@
 }
 
 /* Las tarjetas de siempre, como renglones del panel. */
+/*
+ * Cada favorito con una franja a la izquierda, como las tarjetas de Estado
+ * de la red: el color de su linea (lineas y estaciones) o el amarillo del
+ * sitio (accesos y colectivos, que no tienen color de linea). Es una
+ * sombra para no correr el contenido.
+ */
 .fav-list .my-line-card {
   min-width: 0;
   border: none;
   border-top: 1px solid var(--line);
-  box-shadow: none;
+  box-shadow: inset 3px 0 0 var(--fav-color, var(--yellow));
 }
 
 .fav-list .my-line-card:first-child {

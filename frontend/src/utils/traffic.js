@@ -137,29 +137,40 @@ const GROUP_LABELS = {
 }
 
 /**
+ * La ruta de un acceso ("RN 9"). Si junta dos autopistas ("A002 · RN 205"),
+ * la del tramo, en el mismo orden que los tramos.
+ */
+export function accessRoad(access, segment) {
+  if (!access.road) return null
+  const roads = access.road.split(/\s*·\s*/)
+  const index = segment ? (access.segments ?? []).indexOf(segment) : -1
+  return roads.length > 1 && index >= 0 && roads[index] ? roads[index] : access.road
+}
+
+/**
  * Los accesos agrupados por estado, del peor al mejor, para la tarjeta del
- * inicio: [{ status, label, tone, names }]. Cada acceso va una vez, en su
- * peor estado (los que juntan dos autopistas, una vez por tramo). Los
- * fluidos y sin datos no aparecen.
+ * inicio: [{ status, label, tone, items: [{ name, road }] }]. Cada acceso va
+ * una vez, en su peor estado (los que juntan dos autopistas, una vez por
+ * tramo). Los fluidos y sin datos no aparecen.
  */
 export function accessGroups(accesses) {
   const byStatus = new Map()
-  const add = (status, name) => {
+  const add = (status, name, road) => {
     if (!GROUP_LABELS[status]) return
-    const names = byStatus.get(status) ?? []
-    if (!names.includes(name)) names.push(name)
-    byStatus.set(status, names)
+    const items = byStatus.get(status) ?? []
+    if (!items.some((item) => item.name === name)) items.push({ name, road })
+    byStatus.set(status, items)
   }
   for (const access of accesses ?? []) {
     const segments = access.segments ?? []
     if (access.name.includes('/')) {
-      for (const segment of segments) add(segment.status, accessShortName(access, segment))
+      for (const segment of segments) add(segment.status, accessShortName(access, segment), accessRoad(access, segment))
     } else {
-      add(worstStatus(segments), accessShortName(access))
+      add(worstStatus(segments), accessShortName(access), accessRoad(access))
     }
   }
   return [...SEVERITY]
     .reverse()
     .filter((status) => byStatus.has(status))
-    .map((status) => ({ status, ...GROUP_LABELS[status], names: byStatus.get(status) }))
+    .map((status) => ({ status, ...GROUP_LABELS[status], items: byStatus.get(status) }))
 }

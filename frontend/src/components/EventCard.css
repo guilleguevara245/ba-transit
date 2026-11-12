@@ -146,7 +146,6 @@
 .panel-title.events-tabs {
   justify-content: flex-start;
   gap: 4px;
-  border-bottom: 1px solid var(--line);
 }
 
 .events-tabs button {

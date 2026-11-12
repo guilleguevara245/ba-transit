@@ -46,7 +46,7 @@ export default function MyLines({ lines, alerts, inPanel = false }) {
       .sort((a, b) => a.sequenceOrder - b.sequenceOrder)
     const station = chosen[line.id]
     return (
-      <div key={line.id} className="my-line-card">
+      <div key={line.id} className="my-line-card" style={{ '--fav-color': line.colorHex }}>
         <div className="my-line">
           {inPanel && <span className="fav-kind">Línea</span>}
           <Link to={linePath(line)} className="my-line-link">

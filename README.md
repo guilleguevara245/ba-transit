@@ -46,8 +46,9 @@ con APIs públicas, pruebas, integración continua y despliegue.
 ## Funcionalidades
 
 **Estado de la red**
-- Estado de cada modo (trenes, subtes, Premetro, accesos) y alertas de servicio sincronizadas cada 5 minutos desde la
-  API Transporte de la Ciudad.
+- Estado de cada modo (trenes, subtes, Premetro, accesos) con las líneas o autopistas afectadas por cada problema, y
+  alertas de servicio sincronizadas cada 5 minutos desde la API Transporte de la Ciudad y la de Trenes Argentinos (con
+  el ramal afectado).
 - Alertas meteorológicas del Servicio Meteorológico Nacional (tormentas, lluvias, calor) que afectan al AMBA, con un
   consejo para quien va a viajar.
 - Eventos masivos, manifestaciones y obras que cortan calles, con aviso en las estaciones y los accesos cercanos, y

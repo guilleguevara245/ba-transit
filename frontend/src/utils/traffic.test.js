@@ -110,6 +110,7 @@ describe('accessShortName y accessGroups', () => {
   const access = (id, name, ...statuses) => ({
     id,
     name,
+    road: name.includes('/') ? 'A002 · RN 205' : 'RN 9',
     segments: statuses.map((status, i) => ({ name: `Autopista Tramo ${i + 1}`, status })),
   })
 
@@ -128,10 +129,10 @@ describe('accessShortName y accessGroups', () => {
       access('oeste', 'Acceso Oeste', 'DEMORADO'),
       access('riccheri', 'Riccheri / Ezeiza-Cañuelas', 'FLUIDO', 'CORTADO'),
     ])
-    expect(groups.map((g) => [g.label, g.tone, g.names])).toEqual([
-      ['Cortes', 'interrupted', ['Tramo 2']],
-      ['Congestión', 'interrupted', ['Acceso Norte']],
-      ['Demoras', 'delayed', ['Acceso Oeste']],
+    expect(groups.map((g) => [g.label, g.tone, g.items])).toEqual([
+      ['Cortes', 'interrupted', [{ name: 'Tramo 2', road: 'RN 205' }]],
+      ['Congestión', 'interrupted', [{ name: 'Acceso Norte', road: 'RN 9' }]],
+      ['Demoras', 'delayed', [{ name: 'Acceso Oeste', road: 'RN 9' }]],
     ])
   })
 

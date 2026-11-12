@@ -10,24 +10,29 @@ import { eventsOnAccesses } from '../utils/events.js'
 import LineBadge from './LineBadge.jsx'
 import StatusPill from './StatusPill.jsx'
 
-/** Cuantas lineas de tren se nombran en cada estado; el resto, "y N más". */
-const MAX_NAMED = 3
-
 /**
- * Las lineas de un estado: el subte y el Premetro con su insignia, los
- * trenes por nombre ("Belgrano Sur, Roca").
+ * Lo afectado en un estado, con su icono: la insignia de cada linea (la
+ * letra del subte, el tren en el color de su linea) o el cartel de la ruta
+ * de cada autopista. El nombre queda al pasar el mouse y para los lectores
+ * de pantalla. items: [{ key, icon, name }].
  */
+function GroupItems({ items }) {
+  return (
+    <span className="mode-group-lines">
+      {items.map((item) => (
+        <span key={item.key} className="mode-group-item" title={item.name}>
+          {item.icon}
+          <span className="visually-hidden">{item.name}</span>
+        </span>
+      ))}
+    </span>
+  )
+}
+
+/** Las lineas de un estado, con su insignia. */
 function GroupLines({ lines }) {
-  if (lines[0].mode !== 'TREN') {
-    return (
-      <span className="mode-group-lines">
-        {lines.map((line) => (
-          <LineBadge key={line.id} line={line} size="sm" />
-        ))}
-      </span>
-    )
-  }
-  return <span className="mode-group-lines">{namesText(lines.map((l) => l.name.replace(/^Línea\s+/i, '')))}</span>
+  const items = lines.map((line) => ({ key: line.id, icon: <LineBadge line={line} size="sm" />, name: line.name }))
+  return <GroupItems items={items} />
 }
 
 /**
@@ -50,6 +55,15 @@ function StatusRows({ rows }) {
   )
 }
 
+/**
+ * La franja de la tarjeta en el color del peor estado: verde si todo anda
+ * bien, naranja con demoras, obras o desvios y roja con interrupciones,
+ * cortes o congestion. rows (o grupos) vienen del peor al mejor, con tone.
+ */
+function stripeClass(rows) {
+  return `mode-card-${rows[0]?.tone ?? 'normal'}`
+}
+
 /** El estado de un modo: Interrupciones, Demoras, Obras o Desvíos, con sus lineas. */
 function ModeStatus({ groups, lines }) {
   const rows = groups
@@ -62,14 +76,6 @@ function ModeStatus({ groups, lines }) {
   return <StatusRows rows={rows} />
 }
 
-/** Los nombres de una lista, hasta MAX_NAMED; el resto, "y N más". */
-function namesText(names) {
-  const shown = names.slice(0, MAX_NAMED)
-  const more = names.length - shown.length
-  // Espacio que no se corta: "2 más" no queda partido en dos renglones.
-  return more > 0 ? `${shown.join(', ')} y ${more}\u00a0más` : shown.join(', ')
-}
-
 /** Tarjeta de Accesos: las autopistas con cortes, congestion o demoras. */
 function AccessesCard() {
   const { data } = useApi('/api/v1/accesos?resumen=true', { refreshMs: 5 * 60_000 })
@@ -78,18 +84,26 @@ function AccessesCard() {
   // Sin ninguna medicion (todo "sin datos") no se puede decir que este normal.
   const configured = Boolean(data?.configured) && worstStatus(accesses.flatMap((a) => a.segments)) !== 'SIN_DATOS'
   const rows = configured
-    ? accessGroups(accesses).map(({ status, label, tone, names }) => ({
+    ? accessGroups(accesses).map(({ status, label, tone, items }) => ({
         key: status,
         label,
         tone,
-        content: <span className="mode-group-lines">{namesText(names)}</span>,
+        content: (
+          <GroupItems
+            items={items.map(({ name, road }) => ({
+              key: name,
+              name,
+              icon: <span className="mode-road">{road ?? name}</span>,
+            }))}
+          />
+        ),
       }))
     : []
   const closures = eventsOnAccesses(events.data?.events, accesses).length
   const withDelays = accesses.filter((a) => ['DEMORADO', 'CONGESTIONADO', 'CORTADO'].includes(worstStatus(a.segments))).length
 
   return (
-    <Link className="mode-card chevrons-host" to="/accesos">
+    <Link className={`mode-card chevrons-host ${configured ? stripeClass(rows) : ''}`} to="/accesos">
       <div className="mode-name">
         <ModeIcon mode="ACCESOS" />
         <span className="mode-label">Accesos</span>
@@ -115,7 +129,11 @@ export default function ModeGrid({ lines, alerts }) {
         const { lineCount, alertCount, groups } = summary.get(mode)
 
         return (
-          <Link className="mode-card chevrons-host" key={mode} to={`/red/${MODE_SLUGS[mode]}`}>
+          <Link
+            className={`mode-card chevrons-host ${stripeClass(groups.map((g) => GROUP_LABELS[g.type] ?? GROUP_LABELS.DESVIO))}`}
+            key={mode}
+            to={`/red/${MODE_SLUGS[mode]}`}
+          >
             <div className="mode-name">
               <ModeIcon mode={mode} />
               <span className="mode-label">{MODE_LABELS_PLURAL[mode] ?? mode}</span>
