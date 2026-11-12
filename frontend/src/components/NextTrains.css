@@ -82,3 +82,61 @@
 .mini-trains-time .next-trains-icon {
   margin: 0 1px 0 0;
 }
+
+/* La etiqueta "según horario" (en la tarjeta de la estacion y en las del inicio), del color de la linea. */
+.next-trains-tag {
+  margin-left: 4px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  color: var(--text-dim);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.mini-trains-tag .next-trains-tag {
+  margin-left: 0;
+}
+
+/* El reloj gris antes de los horarios de cada sentido. */
+.next-trains-clock {
+  width: 1.05em;
+  height: 1.05em;
+  margin-right: 4px;
+  vertical-align: -2px;
+  fill: none;
+  stroke: var(--text-faint);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* "llegando": el tren y la palabra, del color de la linea (mas claro en el tema oscuro). */
+.next-trains-arriving {
+  color: var(--line-color, var(--accent-text));
+  white-space: nowrap;
+}
+
+:root[data-theme='dark'] .next-trains-arriving {
+  color: color-mix(in srgb, var(--line-color, var(--accent-text)) 70%, #fff);
+}
+
+.next-trains-arriving svg {
+  width: 1.1em;
+  height: 1.1em;
+  margin-right: 2px;
+  vertical-align: -3px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.next-trains-arriving svg circle {
+  fill: currentColor;
+  stroke: none;
+}

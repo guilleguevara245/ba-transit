@@ -55,9 +55,11 @@ function CompactTrains({ directions, scheduled = false, live = false, plainTimes
               {d.towards}
             </span>
             <strong>
-              {scheduled
-                ? (d.label ?? scheduleLabel(d))
-                : d.arrivals
+              <ClockIcon />
+              {scheduled ? (
+                <TimesLabel label={d.label ?? scheduleLabel(d)} />
+              ) : (
+                d.arrivals
                     .filter((a) => !a.cancelled)
                     .slice(0, 3)
                     .map((a, j) => (
@@ -66,10 +68,11 @@ function CompactTrains({ directions, scheduled = false, live = false, plainTimes
                         <span className="mini-trains-time">
                           {/* Los rapidos, con el rayo de la linea (sin la palabra: no entra). */}
                           <ServiceIcon name={a.service} label={a.service} />
-                          {serverArrivalText(a, plainTimes)}
+                          <TimeText text={serverArrivalText(a, plainTimes)} />
                         </span>
                       </Fragment>
-                    ))}
+                    ))
+              )}
             </strong>
           </li>
         ))}
@@ -80,7 +83,7 @@ function CompactTrains({ directions, scheduled = false, live = false, plainTimes
             En vivo <span className="live-dot" aria-hidden="true" />
           </>
         ) : (
-          'Según horario'
+          <ScheduleTag color={color} />
         )}
       </span>
     </div>
@@ -194,6 +197,7 @@ function LiveTrains({ data, color }) {
                 )}
               </Towards>
               <span className="next-trains-times">
+                <ClockIcon />
                 {d.arrivals.map((a, i) => {
                   const { destination, platform: own } = arrivalExtras(a, d.towards, platform)
                   return (
@@ -201,7 +205,11 @@ function LiveTrains({ data, color }) {
                       {/* El separador afuera: los horarios bajan de renglon entre uno y otro, no por la mitad. */}
                       {i > 0 && ' · '}
                       <span className={a.cancelled ? 'next-trains-cancelled' : undefined}>
-                        {a.cancelled ? <s>{serverArrivalText(a, scheduled)}</s> : serverArrivalText(a, scheduled)}
+                        {a.cancelled ? (
+                          <s>{serverArrivalText(a, scheduled)}</s>
+                        ) : (
+                          <TimeText text={serverArrivalText(a, scheduled)} />
+                        )}
                         {a.cancelled ? (
                           <CancelledTag />
                         ) : (
@@ -300,6 +308,47 @@ function CancelledTag() {
   )
 }
 
+/** Reloj gris antes de los horarios de cada sentido. */
+function ClockIcon() {
+  return (
+    <svg className="next-trains-clock" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+    </svg>
+  )
+}
+
+/** "llegando": un tren de frente y la palabra, del color de la linea. */
+function ArrivingTag({ estimated = false }) {
+  return (
+    <span className="next-trains-arriving">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <rect x="5" y="3" width="14" height="14" rx="3" />
+        <path d="M5 10h14M9 21l1.5-3M15 21l-1.5-3" />
+        <circle cx="9" cy="13.5" r="1" />
+        <circle cx="15" cy="13.5" r="1" />
+      </svg>
+      {estimated ? '~llegando' : 'llegando'}
+    </span>
+  )
+}
+
+/** Un horario: "llegando" con su icono; el resto, como texto. */
+function TimeText({ text }) {
+  if (text === 'llegando' || text === '~llegando') return <ArrivingTag estimated={text.startsWith('~')} />
+  return text
+}
+
+/** Una lista de horarios ya armada ("llegando · 15 min · 34 min"), con "llegando" marcado. */
+function TimesLabel({ label }) {
+  return label.split(' · ').map((part, i) => (
+    <Fragment key={i}>
+      {i > 0 && ' · '}
+      <TimeText text={part} />
+    </Fragment>
+  ))
+}
+
 /** La etiqueta "según horario", del color de la linea. */
 function ScheduleTag({ color }) {
   return (
@@ -325,7 +374,10 @@ function ScheduledTrains({ directions, source, stale = false, color }) {
               Hacia {d.towards}
               {d.headwayMinutes != null && <span className="next-trains-every">cada {d.headwayMinutes} min</span>}
             </Towards>
-            <span className="next-trains-times">{d.label ?? scheduleLabel(d)}</span>
+            <span className="next-trains-times">
+              <ClockIcon />
+              <TimesLabel label={d.label ?? scheduleLabel(d)} />
+            </span>
           </li>
         ))}
       </ul>
