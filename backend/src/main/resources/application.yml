@@ -76,6 +76,10 @@ app:
     # Remitente verificado en Brevo (por ejemplo, tu Gmail).
     from: ${MAIL_FROM:}
     from-name: BA Transit
+  trenes:
+    # Proximos trenes de Trenes Argentinos: API de Trenes de Ariel Aguirre
+    # (github.com/ariedro/api-trenes). Por defecto, su instancia publica.
+    sofse-url: ${TRENES_API_URL:https://ariedro.dev/api-trenes}
   contact:
     # A donde llegan los mensajes del formulario de contacto (/contacto),
     # por mail con Brevo. Vacio (o sin Brevo) = el formulario no aparece.

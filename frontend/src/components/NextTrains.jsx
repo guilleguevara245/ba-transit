@@ -4,14 +4,22 @@ import { useNow } from '../hooks/useNow.js'
 import { urquizaNextTrains } from '../utils/urquizaSchedule.js'
 import { STALE_TEXT } from '../utils/staleness.js'
 import { readableTextColor } from '../utils/color.js'
-import { formatArrival, hasLiveArrivals, nextTrainsPath, scheduleLabel, schedulePath } from '../utils/nextTrains.js'
+import {
+  hasLiveArrivals,
+  nextTrainsPath,
+  scheduleLabel,
+  schedulePath,
+  serverArrivalText,
+} from '../utils/nextTrains.js'
 
 const REFRESH_MS = 30_000
 const SCHEDULE_REFRESH_MS = 60_000
 
 /**
- * Proximos trenes de una estacion. En vivo: subte (pronostico de la API
- * Transporte) o Belgrano Norte (Ferrovias). Si el subte o el premetro no
+ * Proximos trenes de una estacion. Del servidor: subte (pronostico de la
+ * API Transporte), Belgrano Norte (Ferrovias) y las lineas de Trenes
+ * Argentinos (en vivo o con el horario programado, segun lo que informe
+ * la fuente: "scheduled"). Si el subte o el premetro no
  * tienen datos en vivo, se muestran las pasadas segun el horario
  * programado (GTFS), aclarado como tal. Sin ninguno de los dos, no muestra
  * nada (tampoco la tarjeta: con asCard el contenedor lo pone este
@@ -28,7 +36,7 @@ export default function NextTrains({ mode = 'SUBTE', lineCode, stationName, asCa
  * Version chica, para las tarjetas del inicio (Mis lineas y Mis
  * estaciones): un renglon por sentido con los dos proximos.
  */
-function CompactTrains({ directions, scheduled = false, live = false, color }) {
+function CompactTrains({ directions, scheduled = false, live = false, plainTimes = false, color }) {
   // Los chevrones van del color de la linea.
   return (
     <div className="mini-trains-box" style={color ? { '--line-color': color } : undefined}>
@@ -43,7 +51,10 @@ function CompactTrains({ directions, scheduled = false, live = false, color }) {
             <strong>
               {scheduled
                 ? (d.label ?? scheduleLabel(d))
-                : d.arrivals.slice(0, 2).map(formatArrival).join(' · ')}
+                : d.arrivals
+                    .slice(0, 2)
+                    .map((a) => serverArrivalText(a, plainTimes))
+                    .join(' · ')}
             </strong>
           </li>
         ))}
@@ -84,7 +95,16 @@ function ApiTrains({ mode, lineCode, stationName, asCard, compact, color }) {
   })
 
   if (compact) {
-    if (liveUsable) return <CompactTrains directions={live.data.directions.filter((d) => d.arrivals.length > 0)} live color={color} />
+    if (liveUsable) {
+      return (
+        <CompactTrains
+          directions={live.data.directions.filter((d) => d.arrivals.length > 0)}
+          live={!live.data.scheduled}
+          plainTimes={Boolean(live.data.scheduled)}
+          color={color}
+        />
+      )
+    }
     if (schedule.data?.available && schedule.data.directions.length > 0) {
       return <CompactTrains directions={schedule.data.directions} scheduled color={color} />
     }
@@ -127,10 +147,12 @@ function Towards({ index, count, children }) {
 }
 
 function LiveTrains({ data, color }) {
+  const scheduled = Boolean(data.scheduled)
   return (
     <div className="station-popup-section next-trains">
       <div className="station-popup-label">
-        Próximos trenes <span className="live-dot" aria-hidden="true" />
+        Próximos trenes{' '}
+        {scheduled ? <ScheduleTag color={color} /> : <span className="live-dot" aria-hidden="true" />}
       </div>
       <ul className="next-trains-list" style={color ? { '--line-color': color } : undefined}>
         {data.directions.map((d, i) => (
@@ -142,7 +164,7 @@ function LiveTrains({ data, color }) {
               {d.arrivals.map((a, i) => (
                 <span key={i}>
                   {i > 0 && ' · '}
-                  {formatArrival(a)}
+                  {serverArrivalText(a, scheduled)}
                   {a.destination && a.destination !== d.towards && (
                     <span className="next-trains-dest"> (a {a.destination})</span>
                   )}
@@ -152,11 +174,27 @@ function LiveTrains({ data, color }) {
           </li>
         ))}
       </ul>
-      {data.directions.some((d) => d.arrivals.some((a) => a.estimated)) && (
-        <div className="next-trains-note">~ estimado</div>
+      {scheduled ? (
+        <div className="next-trains-note">Horario programado: puede variar.</div>
+      ) : (
+        data.directions.some((d) => d.arrivals.some((a) => a.estimated)) && (
+          <div className="next-trains-note">~ estimado</div>
+        )
       )}
       {data.source && <div className="next-trains-note">Fuente: {data.source}</div>}
     </div>
+  )
+}
+
+/** La etiqueta "según horario", del color de la linea. */
+function ScheduleTag({ color }) {
+  return (
+    <span
+      className="next-trains-tag"
+      style={color ? { background: color, borderColor: color, color: readableTextColor(color) } : undefined}
+    >
+      según horario
+    </span>
   )
 }
 
@@ -164,13 +202,7 @@ function ScheduledTrains({ directions, source, stale = false, color }) {
   return (
     <div className="station-popup-section next-trains">
       <div className="station-popup-label">
-        Próximos trenes{' '}
-        <span
-          className="next-trains-tag"
-          style={color ? { background: color, borderColor: color, color: readableTextColor(color) } : undefined}
-        >
-          según horario
-        </span>
+        Próximos trenes <ScheduleTag color={color} />
       </div>
       <ul className="next-trains-list" style={color ? { '--line-color': color } : undefined}>
         {directions.map((d, i) => (

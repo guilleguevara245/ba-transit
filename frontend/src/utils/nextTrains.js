@@ -2,10 +2,20 @@ import { formatDuration } from './travelTime.js'
 
 /**
  * De donde salen los proximos trenes de una estacion: el subte usa el
- * pronostico de la API Transporte y el Belgrano Norte la pantalla de
- * Ferrovias. Para el resto de las lineas no hay datos en vivo (null).
+ * pronostico de la API Transporte, el Belgrano Norte la pantalla de
+ * Ferrovias y las lineas de Trenes Argentinos la API de Trenes de Ariel
+ * Aguirre (a veces en vivo, a veces el horario programado: lo dice
+ * "scheduled"). El Urquiza usa su horario, que esta en el sitio.
  */
-const LIVE_TRAIN_LINES = new Set(['BELGRANO_NORTE'])
+const LIVE_TRAIN_LINES = new Set([
+  'BELGRANO_NORTE',
+  'SARMIENTO',
+  'MITRE',
+  'ROCA',
+  'SAN_MARTIN',
+  'BELGRANO_SUR',
+  'TREN_DE_LA_COSTA',
+])
 
 export function nextTrainsPath(mode, lineCode, stationName) {
   if (!lineCode || !stationName) return null
@@ -19,6 +29,14 @@ export function nextTrainsPath(mode, lineCode, stationName) {
 export function formatArrival({ minutes, estimated }) {
   const text = minutes < 1 ? 'llegando' : formatDuration(minutes)
   return estimated ? `~${text}` : text
+}
+
+/**
+ * Un tren de la lista del servidor. Si todos son del horario programado
+ * (scheduled), van sin "~": la tarjeta ya dice "según horario".
+ */
+export function serverArrivalText(arrival, scheduled) {
+  return formatArrival(scheduled ? { ...arrival, estimated: false } : arrival)
 }
 
 /** Horario programado (GTFS): subte y premetro. null para el resto. */
@@ -49,7 +67,7 @@ export function scheduleLabel(direction, now = new Date()) {
   return direction.arrivals.map(formatArrival).join(' · ')
 }
 
-/** Si la linea tiene proximos trenes (en vivo u horario): subte, Premetro, Belgrano Norte y Urquiza. */
+/** Si la linea tiene proximos trenes (en vivo u horario): subte, Premetro, Urquiza y las de tren con datos del servidor. */
 export function hasTrainTimes(mode, lineCode) {
   return mode === 'SUBTE' || mode === 'PREMETRO' || (mode === 'TREN' && (LIVE_TRAIN_LINES.has(lineCode) || lineCode === 'URQUIZA'))
 }

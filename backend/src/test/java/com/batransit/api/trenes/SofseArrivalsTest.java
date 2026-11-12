@@ -1,0 +1,143 @@
+package com.batransit.api.trenes;
+
+import com.batransit.api.trenes.FerroviasArrivals.Direction;
+import com.batransit.api.trenes.SofseArrivals.Parsed;
+import com.batransit.api.trenes.SofseArrivals.Station;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.Instant;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class SofseArrivalsTest {
+
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+    /** El "timestamp" de la respuesta de ejemplo (Miguelete, 12/11/2026 14:44). */
+    private static final Instant ASKED = Instant.ofEpochSecond(1794505448L);
+
+    private static JsonNode resource(String name) throws IOException {
+        try (InputStream in = SofseArrivalsTest.class.getResourceAsStream("/trenes/" + name)) {
+            return MAPPER.readTree(in);
+        }
+    }
+
+    /** Un arribo armado a mano, con lo que mira el parser. */
+    private static String result(int sentido, int seconds, boolean scheduled, String to, int toId, String extra) {
+        return """
+                {"arribo": {"idElemento": 271, "parada": true, "programada": %s, "segundos": %d},
+                 "servicio": {"sentido": %d, "cancelacion": null, "oculto": false,
+                              "hasta": {"estacion": {"idElemento": %d, "nombre": "%s"}}%s}}
+                """.formatted(scheduled, seconds, sentido, toId, to, extra);
+    }
+
+    private static JsonNode response(String... results) throws IOException {
+        return MAPPER.readTree("{\"timestamp\": " + ASKED.getEpochSecond() + ", \"results\": ["
+                + String.join(",", results) + "]}");
+    }
+
+    @Test
+    void leeLaRespuestaRealDeMiguelete() throws IOException {
+        Parsed parsed = SofseArrivals.parse(resource("sofse-arribos-271.json"), ASKED);
+
+        assertThat(parsed.directions()).hasSize(1);
+        Direction toRetiro = parsed.directions().get(0);
+        assertThat(toRetiro.directionId()).isEqualTo(2);
+        assertThat(toRetiro.towards()).isEqualTo("Retiro");
+        assertThat(toRetiro.arrivals()).hasSize(1);
+        // 4042 s: 67 minutos, con el horario programado.
+        assertThat(toRetiro.arrivals().get(0).minutes()).isEqualTo(67);
+        assertThat(toRetiro.arrivals().get(0).estimated()).isTrue();
+        assertThat(parsed.scheduledOnly()).isTrue();
+    }
+
+    @Test
+    void descuentaElTiempoQuePasoDesdeLaRespuesta() throws IOException {
+        Parsed parsed = SofseArrivals.parse(resource("sofse-arribos-271.json"), ASKED.plusSeconds(120));
+        assertThat(parsed.directions().get(0).arrivals().get(0).minutes()).isEqualTo(65);
+    }
+
+    @Test
+    void agrupaPorSentidoConLaCabeceraInicialPrimeroYHastaTresPorSentido() throws IOException {
+        Parsed parsed = SofseArrivals.parse(response(
+                result(1, 900, false, "Tigre (C)", 500, ""),
+                result(2, 300, false, "Retiro (LGM)", 332, ""),
+                result(1, 120, false, "Tigre (C)", 500, ""),
+                result(1, 1500, false, "Victoria", 420, ""),
+                result(1, 2100, false, "Tigre (C)", 500, ""),
+                result(2, 1200, true, "Retiro (LGM)", 332, "")), ASKED);
+
+        assertThat(parsed.directions()).extracting(Direction::directionId).containsExactly(2, 1);
+        Direction out = parsed.directions().get(1);
+        assertThat(out.towards()).isEqualTo("Tigre (C)");
+        assertThat(out.arrivals()).extracting(a -> a.minutes()).containsExactly(2, 15, 25);
+        assertThat(out.arrivals().get(2).destination()).isEqualTo("Victoria");
+        assertThat(parsed.scheduledOnly()).isFalse();
+    }
+
+    @Test
+    void dejaAfueraCanceladosOcultosLosQueNoParanLosQueTerminanAcaYLosQueYaPasaron() throws IOException {
+        Parsed parsed = SofseArrivals.parse(response(
+                result(1, 600, false, "Tigre", 500, ", \"cancelacion\": {\"motivo\": \"Obras\"}"),
+                result(1, 700, false, "Tigre", 500, ", \"oculto\": true"),
+                result(1, 800, false, "Retiro", 271, ""),
+                result(1, -300, false, "Tigre", 500, ""),
+                """
+                {"arribo": {"idElemento": 271, "parada": false, "programada": false, "segundos": 900},
+                 "servicio": {"sentido": 1, "hasta": {"estacion": {"idElemento": 500, "nombre": "Tigre"}}}}
+                """,
+                result(1, 1000, false, "Tigre", 500, "")), ASKED);
+
+        assertThat(parsed.directions()).hasSize(1);
+        assertThat(parsed.directions().get(0).arrivals()).extracting(a -> a.minutes()).containsExactly(16);
+    }
+
+    @Test
+    void leeLasEstacionesYEmparejaPorUbicacion() throws IOException {
+        List<Station> stations = SofseArrivals.parseStations(resource("sofse-estaciones-retiro.json"));
+
+        assertThat(stations).extracting(Station::id).containsExactly(332, 463);
+        // Retiro del Mitre (nuestras coordenadas) queda mas cerca de la estacion 332 que de la del San Martin.
+        assertThat(SofseArrivals.nearest(stations, -34.5911, -58.3746, 450).id()).isEqualTo(332);
+        assertThat(SofseArrivals.nearest(stations, -34.5886, -58.3739, 450).id()).isEqualTo(463);
+        // Lejos de todas: ninguna.
+        assertThat(SofseArrivals.nearest(stations, -34.70, -58.50, 450)).isNull();
+    }
+
+    @Test
+    void leeLosRamalesYLasEstacionesRealesDelMitre() throws IOException {
+        assertThat(SofseArrivals.parseBranchIds(resource("sofse-ramales-mitre.json"))).containsExactly(9, 7, 5, 33, 35);
+
+        List<Station> suarez = SofseArrivals.parseStations(resource("sofse-estaciones-ramal-9.json"));
+        assertThat(suarez).hasSize(15);
+        // Los nombres no coinciden con los nuestros ("L.M.Drago", "J.L. Suárez"), la ubicacion si.
+        assertThat(SofseArrivals.nearest(suarez, -34.5812, -58.5163, 450).name()).isEqualTo("Miguelete");
+        assertThat(SofseArrivals.nearest(suarez, -34.5686, -58.4792, 450).id()).isEqualTo(236);
+    }
+
+    @Test
+    void sinResultadosNoHayTrenes() throws IOException {
+        Parsed parsed = SofseArrivals.parse(MAPPER.readTree("{\"timestamp\":1794505738,\"results\":[],\"total\":0}"), ASKED);
+        assertThat(parsed.directions()).isEmpty();
+        assertThat(parsed.scheduledOnly()).isTrue();
+    }
+
+    @Test
+    void leeLosRamalesConIdOIdRamal() throws IOException {
+        assertThat(SofseArrivals.parseBranchIds(MAPPER.readTree("[{\"id\": 9}, {\"id\": \"5\"}, {\"id\": 9}]")))
+                .containsExactly(9, 5);
+        assertThat(SofseArrivals.parseBranchIds(MAPPER.readTree("[{\"id_ramal\": \"7\", \"nombre\": \"Tigre\"}]")))
+                .containsExactly(7);
+    }
+
+    @Test
+    void sacaLaSiglaDeLaLineaDelNombre() {
+        assertThat(SofseArrivals.cleanName("Retiro (LGM)")).isEqualTo("Retiro");
+        assertThat(SofseArrivals.cleanName("Tigre (C)")).isEqualTo("Tigre (C)");
+        assertThat(SofseArrivals.cleanName("J. L. Suarez")).isEqualTo("J. L. Suarez");
+    }
+}

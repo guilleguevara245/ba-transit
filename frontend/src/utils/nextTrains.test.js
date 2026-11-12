@@ -1,11 +1,23 @@
 import { describe, expect, it } from 'vitest'
-import { clockIn, formatArrival, hasLiveArrivals, nextTrainsPath, scheduleLabel, schedulePath } from './nextTrains.js'
+import {
+  clockIn,
+  formatArrival,
+  hasLiveArrivals,
+  hasTrainTimes,
+  nextTrainsPath,
+  scheduleLabel,
+  schedulePath,
+  serverArrivalText,
+} from './nextTrains.js'
 
 describe('nextTrainsPath / schedulePath', () => {
-  it('subte y Belgrano Norte tienen vivo; subte y premetro tienen horario', () => {
+  it('subte y trenes (salvo el Urquiza) piden al servidor; subte y premetro tienen horario', () => {
     expect(nextTrainsPath('SUBTE', 'D', 'Bulnes')).toBe('/api/v1/subte/proximos?linea=D&estacion=Bulnes')
     expect(nextTrainsPath('TREN', 'BELGRANO_NORTE', 'Florida')).toBe('/api/v1/trenes/proximos?linea=BELGRANO_NORTE&estacion=Florida')
-    expect(nextTrainsPath('TREN', 'ROCA', 'Bernal')).toBe(null)
+    expect(nextTrainsPath('TREN', 'ROCA', 'Bernal')).toBe('/api/v1/trenes/proximos?linea=ROCA&estacion=Bernal')
+    expect(nextTrainsPath('TREN', 'URQUIZA', 'Artigas')).toBe(null)
+    expect(hasTrainTimes('TREN', 'TREN_DE_LA_COSTA')).toBe(true)
+    expect(hasTrainTimes('TREN', 'URQUIZA')).toBe(true)
     expect(schedulePath('PREMETRO', 'P', 'Pola')).toBe('/api/v1/subte/horario?linea=P&estacion=Pola')
     expect(schedulePath('TREN', 'ROCA', 'Bernal')).toBe(null)
   })
@@ -41,5 +53,13 @@ describe('formatArrival', () => {
     expect(formatArrival({ minutes: 87 })).toBe('1 h 27 min')
     expect(formatArrival({ minutes: 120 })).toBe('2 h')
     expect(formatArrival({ minutes: 65, estimated: true })).toBe('~1 h 5 min')
+  })
+})
+
+describe('serverArrivalText', () => {
+  it('si todo es del horario programado, sin "~"', () => {
+    expect(serverArrivalText({ minutes: 67, estimated: true }, true)).toBe('1 h 7 min')
+    expect(serverArrivalText({ minutes: 8, estimated: true }, false)).toBe('~8 min')
+    expect(serverArrivalText({ minutes: 8, estimated: false }, false)).toBe('8 min')
   })
 })

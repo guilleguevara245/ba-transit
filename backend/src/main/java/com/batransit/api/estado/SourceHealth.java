@@ -39,6 +39,7 @@ public class SourceHealth {
         SUBTE_HORARIO("Horario programado del subte", "API Transporte (Gobierno de la Ciudad)"),
         TRENES_AVISOS("Avisos de los trenes", "Trenes Argentinos"),
         FERROVIAS("Próximos trenes del Belgrano Norte", "Ferrovías"),
+        TRENES_SOFSE("Próximos trenes de Trenes Argentinos", "API de Trenes de Ariel Aguirre (ariedro)"),
         METROVIAS("Estado del Urquiza", "Metrovías"),
         SMN("Alertas meteorológicas", "Servicio Meteorológico Nacional"),
         PRONOSTICO("Pronóstico del clima", "Open-Meteo"),

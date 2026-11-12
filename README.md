@@ -58,8 +58,10 @@ con APIs públicas, pruebas, integración continua y despliegue.
 - Mapa interactivo de toda la red con recorridos reales, combinaciones y filtro de estaciones accesibles.
 - Página de cada línea y de cada estación: próximos trenes, último tren de la noche, historia, lugares cercanos,
   colectivos que paran cerca y accesibilidad.
-- Próximos trenes: en vivo para el subte (API Transporte) y el Belgrano Norte (pantallas de Ferrovías); según el
-  horario programado para el subte sin datos en vivo y para el Urquiza (horario de Metrovías, con servicio nocturno).
+- Próximos trenes: en vivo para el subte (API Transporte) y el Belgrano Norte (pantallas de Ferrovías); para el Roca,
+  Mitre, Sarmiento, San Martín, Belgrano Sur y Tren de la Costa, los de Trenes Argentinos (en vivo o según su horario,
+  como lo informe); según el horario programado para el subte sin datos en vivo y para el Urquiza (horario de
+  Metrovías, con servicio nocturno).
 - Estado del Urquiza leído del panel de Metrovías, y avisos de obras y servicios limitados de Trenes Argentinos.
 - **Cómo llegar**: planificador propio (algoritmo de Dijkstra sobre el grafo de la red) con combinaciones, tiempo
   estimado, opción de viajar solo por estaciones accesibles y enlace para compartir el viaje. Se puede salir desde una
@@ -167,6 +169,7 @@ flowchart LR
 | Alertas de subte y colectivos, próximos trenes del subte, colectivos y EcoBici | [API Transporte del Gobierno de la Ciudad](https://www.buenosaires.gob.ar/desarrollourbano/transporte/apitransporte) |
 | Avisos de los trenes | [Trenes Argentinos](https://www.argentina.gob.ar/transporte/trenes-argentinos/modificaciones-en-el-servicio-y-novedades) |
 | Próximos trenes del Belgrano Norte | [Ferrovías](http://proximostrenes.ferrovias.com.ar/) |
+| Próximos trenes de Trenes Argentinos | [API de Trenes](https://github.com/ariedro/api-trenes) de Ariel Aguirre, con [documentación](https://trenes.sofse.apidocs.ar/) de Enzo Notario |
 | Estado y horarios del Urquiza | [Metrovías](https://metrovias.com.ar/) |
 | Estacionamiento | [Buenos Aires Data](https://data.buenosaires.gob.ar/) y [OpenStreetMap](https://www.openstreetmap.org/copyright) (conurbano) |
 | Alertas meteorológicas | [Servicio Meteorológico Nacional](https://www.smn.gob.ar/alertas) |

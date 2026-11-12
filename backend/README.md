@@ -1,9 +1,9 @@
 # BA Transit: backend
 
 API REST de [BA Transit](https://ba-transit.onrender.com) (Java 21 + Spring Boot 3.5 + PostgreSQL). Reune las
-fuentes de transporte del AMBA (API Transporte de la Ciudad, Trenes Argentinos, Ferrovias, Metrovias, SMN, TomTom,
-adsb.lol, Open-Meteo y Georef), las guarda o las cachea y las sirve al frontend. Tambien maneja las cuentas de
-usuario, las sesiones por dispositivo y los avisos Web Push.
+fuentes de transporte del AMBA (API Transporte de la Ciudad, Trenes Argentinos, la API de Trenes de Ariel
+Aguirre, Ferrovias, Metrovias, SMN, TomTom, adsb.lol, Open-Meteo y Georef), las guarda o las cachea y las sirve al
+frontend. Tambien maneja las cuentas de usuario, las sesiones por dispositivo y los avisos Web Push.
 
 La descripcion general del proyecto esta en el [README principal](../README.md).
 
@@ -68,6 +68,7 @@ La descripcion general del proyecto esta en el [README principal](../README.md).
 | `GOOGLE_CLIENT_ID`           | ID de cliente de Google (publico)        | (vacio = sin "Continuar con Google") |
 | `BREVO_API_KEY`, `MAIL_FROM` | Mails para recuperar la contrasena y del contacto (Brevo) | (vacio = sin recuperar contrasena ni contacto) |
 | `CONTACT_EMAIL`              | A donde llegan los mensajes del formulario de contacto | (vacio = sin formulario de contacto) |
+| `TRENES_API_URL`             | API de Trenes (proximos trenes de Trenes Argentinos) | `https://ariedro.dev/api-trenes` |
 | `SITE_URL`                   | Direccion del sitio, para los links de los mails y los avisos | `https://ba-transit.onrender.com` |
 | `DB_SSLMODE`                 | Modo SSL de la base                      | `prefer` (en produccion, `require`) |
 
@@ -126,7 +127,9 @@ Endpoints principales:
 - `GET /api/v1/stats/alerts` - estadisticas de alertas por linea (total,
   activas, tipo mas frecuente)
 - `GET /api/v1/subte/proximos`, `GET /api/v1/subte/horario`, `GET /api/v1/trenes/proximos` -
-  proximos trenes en vivo o segun el horario
+  proximos trenes en vivo o segun el horario (los trenes: Ferrovias para el Belgrano Norte y
+  la API de Trenes de Ariel Aguirre para las lineas de Trenes Argentinos, emparejando cada
+  estacion por ubicacion)
 - `GET /api/v1/colectivos/vivo`, `GET /api/v1/ecobici`, `GET /api/v1/vuelos` - datos en vivo
 - `GET /api/v1/clima/alertas`, `GET /api/v1/clima/pronostico` - alertas del SMN y pronostico
 - `GET /api/v1/eventos`, `GET /api/v1/estado` - eventos masivos y salud de cada fuente
