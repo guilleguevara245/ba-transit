@@ -59,7 +59,31 @@
   color: var(--accent-text);
 }
 
-.mode-card:focus-visible {
+/*
+ * El titulo de la tarjeta es el enlace a la pagina del modo y cubre toda la
+ * tarjeta (con ::after), asi los iconos de las lineas pueden ser enlaces
+ * propios encima.
+ */
+.mode-card {
+  position: relative;
+}
+
+.mode-card-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.mode-card-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.mode-card-link:focus-visible {
+  outline: none;
+}
+
+.mode-card-link:focus-visible::after {
   outline: 2px solid var(--yellow);
   outline-offset: -2px;
 }
@@ -119,7 +143,28 @@
 
 .mode-group-item {
   position: relative;
+  z-index: 1;
   display: inline-flex;
+  color: inherit;
+  text-decoration: none;
+  transition: translate 0.12s ease;
+}
+
+.mode-group-item:hover {
+  translate: 0 -1px;
+}
+
+.mode-group-item:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+  border-radius: 999px;
+}
+
+/* En el celular los iconos son chicos para el dedo: tocar abre la tarjeta. */
+@media (hover: none), (pointer: coarse) {
+  .mode-group-item {
+    pointer-events: none;
+  }
 }
 
 /*

@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import Skeleton from '../components/Skeleton.jsx'
 import Chevrons from '../components/Chevrons.jsx'
 import ExternalTitle from '../components/ExternalTitle.jsx'
@@ -296,6 +297,16 @@ export default function AccessesPage() {
   const eventsState = useApi('/api/v1/eventos', { refreshMs: REFRESH_MS })
   const closures = data ? eventsOnAccesses(eventsState.data?.events, data.accesses) : []
   const hasGeometry = data?.accesses.some((a) => a.segments.some((s) => s.geometry.length > 1))
+  const { hash } = useLocation()
+
+  // Desde el inicio se llega con /accesos#acceso-norte: el router no baja
+  // solo hasta el ancla, y la tarjeta aparece recien con los datos.
+  const ready = Boolean(data)
+  useEffect(() => {
+    if (ready && hash.startsWith('#acceso-')) {
+      window.document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [hash, ready])
 
   return (
     <div className="wrap content">

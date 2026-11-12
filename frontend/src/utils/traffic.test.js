@@ -130,9 +130,9 @@ describe('accessShortName y accessGroups', () => {
       access('riccheri', 'Riccheri / Ezeiza-Cañuelas', 'FLUIDO', 'CORTADO'),
     ])
     expect(groups.map((g) => [g.label, g.tone, g.items])).toEqual([
-      ['Cortes', 'interrupted', [{ name: 'Tramo 2', road: 'RN 205' }]],
-      ['Congestión', 'interrupted', [{ name: 'Acceso Norte', road: 'RN 9' }]],
-      ['Demoras', 'delayed', [{ name: 'Acceso Oeste', road: 'RN 9' }]],
+      ['Cortes', 'interrupted', [{ id: 'riccheri', name: 'Tramo 2', road: 'RN 205' }]],
+      ['Congestión', 'interrupted', [{ id: 'norte', name: 'Acceso Norte', road: 'RN 9' }]],
+      ['Demoras', 'delayed', [{ id: 'oeste', name: 'Acceso Oeste', road: 'RN 9' }]],
     ])
   })
 

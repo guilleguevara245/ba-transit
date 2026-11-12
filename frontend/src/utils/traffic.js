@@ -149,24 +149,26 @@ export function accessRoad(access, segment) {
 
 /**
  * Los accesos agrupados por estado, del peor al mejor, para la tarjeta del
- * inicio: [{ status, label, tone, items: [{ name, road }] }]. Cada acceso va
+ * inicio: [{ status, label, tone, items: [{ id, name, road }] }]. Cada acceso va
  * una vez, en su peor estado (los que juntan dos autopistas, una vez por
  * tramo). Los fluidos y sin datos no aparecen.
  */
 export function accessGroups(accesses) {
   const byStatus = new Map()
-  const add = (status, name, road) => {
+  const add = (status, id, name, road) => {
     if (!GROUP_LABELS[status]) return
     const items = byStatus.get(status) ?? []
-    if (!items.some((item) => item.name === name)) items.push({ name, road })
+    if (!items.some((item) => item.name === name)) items.push({ id, name, road })
     byStatus.set(status, items)
   }
   for (const access of accesses ?? []) {
     const segments = access.segments ?? []
     if (access.name.includes('/')) {
-      for (const segment of segments) add(segment.status, accessShortName(access, segment), accessRoad(access, segment))
+      for (const segment of segments) {
+        add(segment.status, access.id, accessShortName(access, segment), accessRoad(access, segment))
+      }
     } else {
-      add(worstStatus(segments), accessShortName(access), accessRoad(access))
+      add(worstStatus(segments), access.id, accessShortName(access), accessRoad(access))
     }
   }
   return [...SEVERITY]

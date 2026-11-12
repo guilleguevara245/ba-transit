@@ -8,6 +8,7 @@ import { useApi } from '../hooks/useApi.js'
 import { accessGroups, worstStatus } from '../utils/traffic.js'
 import { eventsOnAccesses } from '../utils/events.js'
 import LineBadge from './LineBadge.jsx'
+import { linePath } from '../utils/lineSlug.js'
 import StatusPill from './StatusPill.jsx'
 
 /**
@@ -15,16 +16,18 @@ import StatusPill from './StatusPill.jsx'
  * letra del subte, el tren en el color de su linea) o el cartel de la ruta
  * de cada autopista. El nombre aparece en un cartel al pasar el mouse
  * (con el estilo del sitio, no el del navegador) y queda para los lectores
- * de pantalla. items: [{ key, icon, name }].
+ * de pantalla. Con mouse, cada icono lleva a su linea o autopista; en el
+ * celular (iconos chicos para el dedo) tocar abre la tarjeta entera.
+ * items: [{ key, icon, name, to }].
  */
 function GroupItems({ items }) {
   return (
     <span className="mode-group-lines">
       {items.map((item) => (
-        <span key={item.key} className="mode-group-item" data-tip={item.name}>
+        <Link key={item.key} className="mode-group-item" data-tip={item.name} to={item.to}>
           {item.icon}
           <span className="visually-hidden">{item.name}</span>
-        </span>
+        </Link>
       ))}
     </span>
   )
@@ -32,7 +35,12 @@ function GroupItems({ items }) {
 
 /** Las lineas de un estado, con su insignia. */
 function GroupLines({ lines }) {
-  const items = lines.map((line) => ({ key: line.id, icon: <LineBadge line={line} size="sm" title={null} />, name: line.name }))
+  const items = lines.map((line) => ({
+    key: line.id,
+    icon: <LineBadge line={line} size="sm" title={null} />,
+    name: line.name,
+    to: linePath(line),
+  }))
   return <GroupItems items={items} />
 }
 
@@ -91,10 +99,11 @@ function AccessesCard() {
         tone,
         content: (
           <GroupItems
-            items={items.map(({ name, road }) => ({
+            items={items.map(({ id, name, road }) => ({
               key: name,
               name,
               icon: <span className="mode-road">{road ?? name}</span>,
+              to: `/accesos#acceso-${id}`,
             }))}
           />
         ),
@@ -104,12 +113,12 @@ function AccessesCard() {
   const withDelays = accesses.filter((a) => ['DEMORADO', 'CONGESTIONADO', 'CORTADO'].includes(worstStatus(a.segments))).length
 
   return (
-    <Link className={`mode-card chevrons-host ${configured ? stripeClass(rows) : ''}`} to="/accesos">
-      <div className="mode-name">
+    <div className={`mode-card chevrons-host ${configured ? stripeClass(rows) : ''}`}>
+      <Link className="mode-name mode-card-link" to="/accesos">
         <ModeIcon mode="ACCESOS" />
         <span className="mode-label">Accesos</span>
         <Chevrons className="mode-arrow" />
-      </div>
+      </Link>
       {configured ? <StatusRows rows={rows} /> : <span className="mode-extra">Autopistas</span>}
       <div className="mode-alerts">
         {configured
@@ -117,7 +126,7 @@ function AccessesCard() {
           : 'Tránsito en las autopistas de acceso'}
         {closures > 0 && ` · ${closures} ${closures === 1 ? 'corte' : 'cortes'}`}
       </div>
-    </Link>
+    </div>
   )
 }
 
@@ -130,22 +139,21 @@ export default function ModeGrid({ lines, alerts }) {
         const { lineCount, alertCount, groups } = summary.get(mode)
 
         return (
-          <Link
+          <div
             className={`mode-card chevrons-host ${stripeClass(groups.map((g) => GROUP_LABELS[g.type] ?? GROUP_LABELS.DESVIO))}`}
             key={mode}
-            to={`/red/${MODE_SLUGS[mode]}`}
           >
-            <div className="mode-name">
+            <Link className="mode-name mode-card-link" to={`/red/${MODE_SLUGS[mode]}`}>
               <ModeIcon mode={mode} />
               <span className="mode-label">{MODE_LABELS_PLURAL[mode] ?? mode}</span>
               <Chevrons className="mode-arrow" />
-            </div>
+            </Link>
             <ModeStatus groups={groups} lines={lines} />
             <div className="mode-alerts">
               {lineCount} {lineCount === 1 ? 'línea' : 'líneas'} · {alertCount}{' '}
               {alertCount === 1 ? 'alerta activa' : 'alertas activas'}
             </div>
-          </Link>
+          </div>
         )
       })}
 
