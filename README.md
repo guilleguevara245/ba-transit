@@ -60,12 +60,14 @@ con APIs públicas, pruebas, integración continua y despliegue.
   colectivos que paran cerca y accesibilidad.
 - Próximos trenes: en vivo para el subte (API Transporte) y el Belgrano Norte (pantallas de Ferrovías); para el Roca,
   Mitre, Sarmiento, San Martín, Belgrano Sur y Tren de la Costa, los de Trenes Argentinos (en vivo o según su horario,
-  como lo informe); según el horario programado para el subte sin datos en vivo y para el Urquiza (horario de
-  Metrovías, con servicio nocturno).
-- Estado del Urquiza leído del panel de Metrovías, y avisos de obras y servicios limitados de Trenes Argentinos.
+  como lo informe, con el andén, los trenes rápidos y los cancelados); según el horario programado para el subte sin
+  datos en vivo y para el Urquiza (horario de Metrovías, con servicio nocturno).
+- Estado del Urquiza leído del panel de Metrovías; avisos de obras y servicios limitados de Trenes Argentinos y las
+  alertas del momento de su app (interrupciones, demoras).
 - **Cómo llegar**: planificador propio (algoritmo de Dijkstra sobre el grafo de la red) con combinaciones, tiempo
   estimado, opción de viajar solo por estaciones accesibles y enlace para compartir el viaje. Se puede salir desde una
-  dirección (Georef) o desde Mis lugares (Casa, Trabajo y otros).
+  dirección (Georef) o desde Mis lugares (Casa, Trabajo y otros). En los tramos en tren de Trenes Argentinos usa el
+  próximo tren que pasa, con su andén y la hora a la que llega.
 
 **Colectivos, accesos y más**
 - Colectivos en movimiento en tiempo real sobre el mapa, búsqueda por número, recorrido con paradas y tiempos, y
@@ -169,7 +171,7 @@ flowchart LR
 | Alertas de subte y colectivos, próximos trenes del subte, colectivos y EcoBici | [API Transporte del Gobierno de la Ciudad](https://www.buenosaires.gob.ar/desarrollourbano/transporte/apitransporte) |
 | Avisos de los trenes | [Trenes Argentinos](https://www.argentina.gob.ar/transporte/trenes-argentinos/modificaciones-en-el-servicio-y-novedades) |
 | Próximos trenes del Belgrano Norte | [Ferrovías](http://proximostrenes.ferrovias.com.ar/) |
-| Próximos trenes de Trenes Argentinos | [API de Trenes](https://github.com/ariedro/api-trenes) de Ariel Aguirre, con [documentación](https://trenes.sofse.apidocs.ar/) de Enzo Notario |
+| Próximos trenes y alertas de Trenes Argentinos | [API de Trenes](https://github.com/ariedro/api-trenes) de Ariel Aguirre, con [documentación](https://trenes.sofse.apidocs.ar/) de Enzo Notario |
 | Estado y horarios del Urquiza | [Metrovías](https://metrovias.com.ar/) |
 | Estacionamiento | [Buenos Aires Data](https://data.buenosaires.gob.ar/) y [OpenStreetMap](https://www.openstreetmap.org/copyright) (conurbano) |
 | Alertas meteorológicas | [Servicio Meteorológico Nacional](https://www.smn.gob.ar/alertas) |
@@ -276,7 +278,8 @@ npm install --no-save playwright && npx playwright install chromium && node e2e/
 
 ## Limitaciones conocidas
 
-- Los trenes (salvo Belgrano Norte) no tienen datos en vivo: Trenes Argentinos no publica una API abierta.
+- Trenes Argentinos no publica una API abierta: sus datos llegan por la API de Trenes (un proyecto comunitario), y
+  muchas veces traen solo el horario programado, sin seguir al tren.
 - La API Transporte dio de baja los cortes y eventos, y hoy no responde con semáforos ni datos de movilidad: los
   eventos se cargan a mano y esos servicios se prueban una vez por semana por si vuelven.
 - El estacionamiento del conurbano sale de OpenStreetMap (colaborativo): en algunos partidos hay pocos datos.

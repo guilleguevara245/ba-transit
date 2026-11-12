@@ -6,6 +6,7 @@ import com.batransit.api.repository.StationRepository;
 import com.batransit.api.trenes.FerroviasArrivals.Direction;
 import com.batransit.api.trenes.FerroviasArrivalsClient.Snapshot;
 import com.batransit.api.trenes.SofseArrivals.Parsed;
+import com.batransit.api.trenes.SofseArrivals.Trip;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,6 +30,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * scheduled: los horarios son los programados, sin seguimiento del tren.
  * Los destinos de Trenes Argentinos se muestran con el nombre que tienen en
  * el sitio ("Plaza C." o "Retiro - LSM" son "Plaza Constitución" y "Retiro").
+ * Para esas lineas tambien da los proximos trenes entre dos estaciones,
+ * con la hora de llegada (Como llegar).
  */
 @RestController
 @RequestMapping("/api/v1/trenes")
@@ -45,6 +48,13 @@ public class TrainArrivalsController {
                                    List<Direction> directions) {
         static ArrivalsResponse unavailable() {
             return new ArrivalsResponse(false, null, null, false, List.of());
+        }
+    }
+
+    public record TripResponse(boolean available, Instant updatedAt, String source, boolean scheduled,
+                               List<Trip> trains) {
+        static TripResponse unavailable() {
+            return new TripResponse(false, null, null, false, List.of());
         }
     }
 
@@ -87,7 +97,7 @@ public class TrainArrivalsController {
         return sofseStation(code, gerencia, station.trim())
                 .flatMap(sofse::arrivals)
                 .map(s -> {
-                    Parsed parsed = withOurNames(code, gerencia, s.parsed());
+                    Parsed parsed = SofseArrivals.renamed(s.parsed(), ourNames(code, gerencia, s.parsed()));
                     return new ArrivalsResponse(true, s.fetchedAt(), SOFSE_SOURCE, parsed.scheduledOnly(),
                             parsed.directions());
                 })
@@ -95,10 +105,38 @@ public class TrainArrivalsController {
     }
 
     /**
-     * Los destinos con el nombre de nuestra estacion de la linea que esta en
-     * el mismo lugar; si no hay ninguna cerca, queda el de SOFSE.
+     * GET /api/v1/trenes/viaje?linea=MITRE&desde=Retiro&hasta=Belgrano C:
+     * los proximos trenes que salen de una estacion y paran en la otra, con
+     * la hora de salida y la de llegada (solo las lineas de Trenes Argentinos).
      */
-    private Parsed withOurNames(String line, int gerencia, Parsed parsed) {
+    @GetMapping("/viaje")
+    public TripResponse trip(@RequestParam("linea") String line, @RequestParam("desde") String from,
+                             @RequestParam("hasta") String to) {
+        String code = line.trim().toUpperCase(Locale.ROOT);
+        Integer gerencia = SofseArrivals.GERENCIAS.get(code);
+        if (gerencia == null) {
+            return TripResponse.unavailable();
+        }
+        Optional<Integer> toId = sofseStation(code, gerencia, to.trim());
+        if (toId.isEmpty()) {
+            return TripResponse.unavailable();
+        }
+        return sofseStation(code, gerencia, from.trim())
+                .flatMap(sofse::arrivals)
+                .map(s -> {
+                    List<Trip> trips = SofseArrivals.trips(s.parsed(), toId.get(), Instant.now());
+                    trips = SofseArrivals.renamedTrips(trips, ourNames(code, gerencia, s.parsed()));
+                    boolean scheduled = trips.stream().filter(t -> !t.cancelled()).allMatch(Trip::scheduled);
+                    return new TripResponse(true, s.fetchedAt(), SOFSE_SOURCE, scheduled, trips);
+                })
+                .orElseGet(TripResponse::unavailable);
+    }
+
+    /**
+     * Para cada destino de SOFSE, el nombre de nuestra estacion de la linea
+     * que esta en el mismo lugar (los que no tienen una cerca no figuran).
+     */
+    private Map<String, String> ourNames(String line, int gerencia, Parsed parsed) {
         List<MapStation> ours = lineStations(line);
         Map<String, String> names = new HashMap<>();
         parsed.destinationIds().forEach((name, id) -> sofse.station(gerencia, id)
@@ -109,7 +147,7 @@ public class TrainArrivalsController {
                         .filter(e -> e.getValue() <= SofseArrivals.MAX_METERS)
                         .min(Comparator.comparingDouble(Map.Entry::getValue)))
                 .ifPresent(e -> names.put(name, e.getKey().stationName())));
-        return SofseArrivals.renamed(parsed, names);
+        return names;
     }
 
     /** Nuestras estaciones de una linea de tren (guardadas un rato). */

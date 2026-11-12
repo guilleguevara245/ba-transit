@@ -111,7 +111,9 @@ Endpoints principales:
 - `GET /api/v1/lines/{lineId}` - una linea por id
 - `GET /api/v1/lines/{lineId}/branches` - ramales de una linea
 - `GET /api/v1/branches/{branchId}/stations` - estaciones de un ramal
-- `GET /api/v1/alerts`, `POST /api/v1/alerts` - alertas de servicio
+- `GET /api/v1/alerts`, `POST /api/v1/alerts` - alertas de servicio (cargadas a mano, del
+  subte desde la API Transporte y de los trenes desde la pagina de modificaciones del servicio
+  y la API de Trenes, cada 5 minutos)
 - `GET /api/v1/lines/{lineId}/alerts` - alertas de una linea
 - `GET /api/v1/fares`, `GET /api/v1/fares?mode=TREN`, `POST /api/v1/fares` -
   tarifas
@@ -129,7 +131,10 @@ Endpoints principales:
 - `GET /api/v1/subte/proximos`, `GET /api/v1/subte/horario`, `GET /api/v1/trenes/proximos` -
   proximos trenes en vivo o segun el horario (los trenes: Ferrovias para el Belgrano Norte y
   la API de Trenes de Ariel Aguirre para las lineas de Trenes Argentinos, emparejando cada
-  estacion por ubicacion)
+  estacion por ubicacion; de esas lineas trae tambien el anden, el tipo de servicio y los
+  trenes cancelados)
+- `GET /api/v1/trenes/viaje?linea=&desde=&hasta=` - proximos trenes de Trenes Argentinos
+  entre dos estaciones de una linea, con la hora de salida y la de llegada (Como llegar)
 - `GET /api/v1/colectivos/vivo`, `GET /api/v1/ecobici`, `GET /api/v1/vuelos` - datos en vivo
 - `GET /api/v1/clima/alertas`, `GET /api/v1/clima/pronostico` - alertas del SMN y pronostico
 - `GET /api/v1/eventos`, `GET /api/v1/estado` - eventos masivos y salud de cada fuente

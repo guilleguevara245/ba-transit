@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import { useApi } from '../hooks/useApi.js'
 import Chevrons from './Chevrons.jsx'
 import { useNow } from '../hooks/useNow.js'
@@ -5,11 +6,13 @@ import { urquizaNextTrains } from '../utils/urquizaSchedule.js'
 import { STALE_TEXT } from '../utils/staleness.js'
 import { readableTextColor } from '../utils/color.js'
 import {
+  arrivalDetails,
   hasLiveArrivals,
   nextTrainsPath,
   scheduleLabel,
   schedulePath,
   serverArrivalText,
+  sharedPlatform,
 } from '../utils/nextTrains.js'
 
 const REFRESH_MS = 30_000
@@ -53,6 +56,7 @@ function CompactTrains({ directions, scheduled = false, live = false, plainTimes
               {scheduled
                 ? (d.label ?? scheduleLabel(d))
                 : d.arrivals
+                    .filter((a) => !a.cancelled)
                     .slice(0, 3)
                     .map((a) => serverArrivalText(a, plainTimes).replaceAll(' ', '\u00a0'))
                     .join(' · ')}
@@ -149,6 +153,15 @@ function Towards({ index, count, children }) {
 
 function LiveTrains({ data, color }) {
   const scheduled = Boolean(data.scheduled)
+  // Leyendas de los trenes ("No se detiene en..."): una vez cada una, con el tren al que corresponde.
+  const notes = []
+  for (const d of data.directions) {
+    for (const a of d.arrivals) {
+      if (a.note && !a.cancelled && !notes.some((n) => n.text === a.note)) {
+        notes.push({ text: a.note, when: serverArrivalText(a, scheduled) })
+      }
+    }
+  }
   return (
     <div className="station-popup-section next-trains">
       <div className="station-popup-label">
@@ -156,25 +169,40 @@ function LiveTrains({ data, color }) {
         {scheduled ? <ScheduleTag color={color} /> : <span className="live-dot" aria-hidden="true" />}
       </div>
       <ul className="next-trains-list" style={color ? { '--line-color': color } : undefined}>
-        {data.directions.map((d, i) => (
-          <li key={d.directionId}>
-            <Towards index={i} count={data.directions.length}>
-              Hacia {d.towards}
-            </Towards>
-            <span className="next-trains-times">
-              {d.arrivals.map((a, i) => (
-                <span key={i}>
-                  {i > 0 && ' · '}
-                  {serverArrivalText(a, scheduled)}
-                  {a.destination && a.destination !== d.towards && (
-                    <span className="next-trains-dest"> (a {a.destination})</span>
-                  )}
-                </span>
-              ))}
-            </span>
-          </li>
-        ))}
+        {data.directions.map((d, i) => {
+          // Si todos salen del mismo anden, va una vez junto al sentido.
+          const platform = sharedPlatform(d.arrivals)
+          return (
+            <li key={d.directionId}>
+              <Towards index={i} count={data.directions.length}>
+                Hacia {d.towards}
+                {platform && ` · andén ${platform}`}
+              </Towards>
+              <span className="next-trains-times">
+                {d.arrivals.map((a, i) => {
+                  const details = arrivalDetails(a, d.towards, platform)
+                  return (
+                    <Fragment key={i}>
+                      {/* El separador afuera: los horarios bajan de renglon entre uno y otro, no por la mitad. */}
+                      {i > 0 && ' · '}
+                      <span className={a.cancelled ? 'next-trains-cancelled' : undefined}>
+                        {a.cancelled ? <s>{serverArrivalText(a, scheduled)}</s> : serverArrivalText(a, scheduled)}
+                        {a.service && <span className="next-trains-service">{a.service}</span>}
+                        {details && <span className="next-trains-dest"> ({details})</span>}
+                      </span>
+                    </Fragment>
+                  )
+                })}
+              </span>
+            </li>
+          )
+        })}
       </ul>
+      {notes.map((n) => (
+        <div key={n.text} className="next-trains-note next-trains-legend">
+          {n.when}: {n.text}
+        </div>
+      ))}
       {scheduled ? (
         <div className="next-trains-note">Horario programado: puede variar.</div>
       ) : (

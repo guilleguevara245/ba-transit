@@ -14,13 +14,14 @@ import { useApi } from '../hooks/useApi.js'
 import { useClockPrefs } from '../hooks/useClockPrefs.js'
 import { useNow } from '../hooks/useNow.js'
 import { useSavedPlaces } from '../hooks/useSavedPlaces.js'
+import { useTripTrains } from '../hooks/useTripTrains.js'
 import { distanceText, isSavedAddress } from '../utils/addressSearch.js'
 import { formatClock, formatClock12 } from '../utils/format.js'
 import { buildPlaces } from '../utils/places.js'
 import { findStationPlace, placePhrase } from '../utils/placesStore.js'
 import { MAX_ACCESS_KM, googleMapsUrl, isAddress, planTrip, walkingAlternative } from '../utils/planner.js'
 import { formatDuration } from '../utils/travelTime.js'
-import { tripStrip, tripTimeline } from '../utils/tripTimeline.js'
+import { trainText, tripStrip, tripTimeline } from '../utils/tripTimeline.js'
 import './ModePage.css'
 import './AirportsPage.css'
 import './TripPlannerPage.css'
@@ -156,8 +157,7 @@ const nameKey = (point) => point?.stationId ?? point?.text ?? ''
  * El viaje paso a paso. Al aparecer se dibuja de arriba hacia abajo: cada
  * parada y cada tramo entran en orden (--i), con la linea creciendo.
  */
-function Timeline({ legs, start, formato }) {
-  const items = tripTimeline(legs)
+function Timeline({ items, start, formato }) {
   return (
     <ol className="planner-timeline">
       {items.map((item, i) => {
@@ -202,6 +202,12 @@ function Timeline({ legs, start, formato }) {
             <div className="planner-stop-text">
               <strong>{item.name}</strong>
               {item.text && <span>{item.text}</span>}
+              {item.train && (
+                <span className="planner-train">
+                  {trainText(item.train, item.towards, (d) => clockText(d, formato))}
+                  {item.train.note && <small>{item.train.note}</small>}
+                </span>
+              )}
             </div>
           </li>
         )
@@ -307,6 +313,11 @@ export default function TripPlannerPage() {
   )
   const plan = result?.legs ? result : null
   const rides = plan ? plan.legs.filter((l) => l.type === 'ride') : []
+  // Los tramos en tren de Trenes Argentinos van con el proximo tren real (salida y llegada).
+  const trains = useTripTrains(plan?.legs)
+  const items = useMemo(() => (plan ? tripTimeline(plan.legs, { trains, start: now }) : []), [plan, trains, now])
+  const withTrainTimes = items.some((item) => item.train)
+  const totalMinutes = withTrainTimes ? Math.round(items.at(-1).at) : plan?.minutes
   const walking = origin && destination && !samePlace ? walkingAlternative(origin, destination) : null
   // Caminando se llega antes (o el viaje no sube a ningun tren): se avisa.
   const walkIsBetter = walking && (!plan || rides.length === 0 || walking.minutes <= plan.minutes)
@@ -440,13 +451,13 @@ export default function TripPlannerPage() {
             <div className="planner-result">
               <div className="planner-summary">
                 <div>
-                  <strong>≈ {formatDuration(plan.minutes)}</strong>
+                  <strong>≈ {formatDuration(totalMinutes)}</strong>
                   <span>
                     {plan.transfers === 0
                       ? 'Sin combinaciones'
                       : `${plan.transfers} ${plan.transfers === 1 ? 'combinación' : 'combinaciones'}`}{' '}
                     · si salís ahora, llegás ≈{' '}
-                    {clockText(new Date(now.getTime() + plan.minutes * 60_000), clock.formato)}
+                    {clockText(new Date(now.getTime() + totalMinutes * 60_000), clock.formato)}
                   </span>
                 </div>
                 <Strip legs={plan.legs} />
@@ -454,13 +465,15 @@ export default function TripPlannerPage() {
               {/* Con key, otro viaje vuelve a dibujarse desde el origen. */}
               <Timeline
                 key={`${plan.legs.map((leg) => `${leg.type}:${nameKey(leg.from)}`).join('|')}>${nameKey(plan.legs.at(-1).to)}`}
-                legs={plan.legs}
+                items={items}
                 start={now}
                 formato={clock.formato}
               />
               <p className="planner-note">
-                Tiempo estimado por distancia, más unos minutos de espera en cada combinación. No incluye la espera
-                inicial{withAddress ? ', y a pie se cuenta por calles, no en línea recta' : ''}.
+                {withTrainTimes
+                  ? 'En los tramos en tren de Trenes Argentinos se cuenta el próximo tren que pasa, con su horario (puede variar). El resto es tiempo estimado por distancia, más unos minutos de espera en cada combinación'
+                  : 'Tiempo estimado por distancia, más unos minutos de espera en cada combinación. No incluye la espera inicial'}
+                {withAddress ? ', y a pie se cuenta por calles, no en línea recta' : ''}.
               </p>
               <div className="planner-actions">
                 <button type="button" className="share-button" onClick={share}>

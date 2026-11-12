@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  arrivalDetails,
   clockIn,
   formatArrival,
   hasLiveArrivals,
@@ -8,6 +9,8 @@ import {
   scheduleLabel,
   schedulePath,
   serverArrivalText,
+  sharedPlatform,
+  tripTrainsPath,
 } from './nextTrains.js'
 
 describe('nextTrainsPath / schedulePath', () => {
@@ -61,5 +64,36 @@ describe('serverArrivalText', () => {
     expect(serverArrivalText({ minutes: 67, estimated: true }, true)).toBe('1 h 7 min')
     expect(serverArrivalText({ minutes: 8, estimated: true }, false)).toBe('~8 min')
     expect(serverArrivalText({ minutes: 8, estimated: false }, false)).toBe('8 min')
+  })
+})
+
+describe('arrivalDetails / sharedPlatform', () => {
+  it('destino si no es el del sentido, andén si no es el de todos, o cancelado', () => {
+    expect(arrivalDetails({ minutes: 5, destination: 'Tigre' }, 'Tigre')).toBe(null)
+    expect(arrivalDetails({ minutes: 5, destination: 'Bartolomé Mitre', platform: '3' }, 'Tigre')).toBe(
+      'a Bartolomé Mitre, andén 3',
+    )
+    expect(arrivalDetails({ minutes: 5, destination: 'Tigre', platform: '3' }, 'Tigre', '3')).toBe(null)
+    expect(arrivalDetails({ minutes: 5, destination: 'Victoria', platform: '2', cancelled: true }, 'Tigre')).toBe(
+      'cancelado',
+    )
+  })
+
+  it('el andén va una vez si todos los que corren salen del mismo', () => {
+    expect(sharedPlatform([{ platform: '2' }, { platform: '1', cancelled: true }, { platform: '2' }])).toBe('2')
+    expect(sharedPlatform([{ platform: '2' }, { platform: '1' }])).toBe(null)
+    expect(sharedPlatform([{ minutes: 3 }, { minutes: 9 }])).toBe(null)
+    expect(sharedPlatform([])).toBe(null)
+  })
+})
+
+describe('tripTrainsPath', () => {
+  it('solo las líneas de Trenes Argentinos y entre dos estaciones distintas', () => {
+    expect(tripTrainsPath('MITRE', 'Retiro', 'Belgrano C')).toBe(
+      '/api/v1/trenes/viaje?linea=MITRE&desde=Retiro&hasta=Belgrano%20C',
+    )
+    expect(tripTrainsPath('BELGRANO_NORTE', 'Retiro', 'Boulogne Sur Mer')).toBe(null)
+    expect(tripTrainsPath('URQUIZA', 'Lacroze', 'Lemos')).toBe(null)
+    expect(tripTrainsPath('ROCA', 'Wilde', 'Wilde')).toBe(null)
   })
 })

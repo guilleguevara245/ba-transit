@@ -264,6 +264,27 @@
   color: var(--text-dim);
 }
 
+/* El tren a tomar (Trenes Argentinos): hora, anden y tipo, con el color de la linea al costado. */
+.planner-stop-text .planner-train {
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-top: 4px;
+  padding: 4px 9px;
+  border-left: 3px solid var(--out, var(--line));
+  border-radius: 0 6px 6px 0;
+  background: var(--bg);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.planner-train small {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-dim);
+}
+
 .planner-track {
   justify-self: center;
   width: 6px;

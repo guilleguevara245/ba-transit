@@ -2,13 +2,16 @@ package com.batransit.api.trenes;
 
 import com.batransit.api.trenes.FerroviasArrivals.Arrival;
 import com.batransit.api.trenes.FerroviasArrivals.Direction;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -26,7 +29,10 @@ import java.util.TreeMap;
  *                  "hasta": {"estacion": {"idElemento": 332, "nombre": "Retiro (LGM)"}}, ...}}]}
  *
  * "programada": true quiere decir que el horario es el programado (sin
- * seguimiento del tren); false, que hay una estimacion en vivo.
+ * seguimiento del tren); false, que hay una estimacion en vivo. Ademas
+ * cada servicio trae su recorrido ("estaciones", con los segundos que
+ * faltan para cada una y el anden donde lo hay), el tipo de servicio
+ * ("tipo": "Normal" u otro), una leyenda opcional y si esta cancelado.
  */
 public final class SofseArrivals {
 
@@ -40,6 +46,10 @@ public final class SofseArrivals {
             "TREN_DE_LA_COSTA", 41);
 
     static final int MAX_PER_DIRECTION = 3;
+    /** Con los cancelados que hay entre medio, como mucho estos por sentido. */
+    static final int MAX_WITH_CANCELLED = 5;
+    /** Viajes que se devuelven para Como llegar. */
+    static final int MAX_TRIPS = 4;
     /** Un tren que ya paso hace mas de un minuto no se muestra. */
     private static final int PAST_SECONDS = -60;
 
@@ -50,16 +60,42 @@ public final class SofseArrivals {
      * Los sentidos con sus proximos trenes. scheduledOnly: ninguno tiene
      * estimacion en vivo (todos son del horario programado).
      * destinationIds: el numero de estacion de SOFSE de cada destino, para
-     * poder mostrarlo con el nombre que tiene en el sitio.
+     * poder mostrarlo con el nombre que tiene en el sitio. trains: los
+     * trenes con su recorrido, para armar viajes (Como llegar).
      */
-    public record Parsed(List<Direction> directions, boolean scheduledOnly, Map<String, Integer> destinationIds) {
+    public record Parsed(List<Direction> directions, boolean scheduledOnly, Map<String, Integer> destinationIds,
+                         List<Train> trains) {
+        public Parsed(List<Direction> directions, boolean scheduledOnly, Map<String, Integer> destinationIds) {
+            this(directions, scheduledOnly, destinationIds, List.of());
+        }
     }
 
     /** Una estacion de SOFSE con su ubicacion. */
     public record Station(int id, String name, double latitude, double longitude) {
     }
 
-    private record Item(int sentido, int seconds, boolean scheduled, String destination) {
+    /** Una parada del recorrido de un tren: cuando pasa y si para. */
+    public record RouteStop(int id, boolean stops, Instant at) {
+    }
+
+    /**
+     * Un tren que para en la estacion consultada: cuando pasa (at), hacia
+     * donde va y su recorrido entero (para saber a que hora llega a otra).
+     */
+    public record Train(int sentido, Instant at, boolean scheduled, String destination, String platform,
+                       String service, String note, boolean cancelled, List<RouteStop> route) {
+    }
+
+    /**
+     * Un viaje en un tren: cuando sale de una estacion y cuando llega a otra.
+     * scheduled: los horarios son los programados (sin seguimiento del tren).
+     */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public record Trip(Instant departure, Instant arrival, boolean scheduled, String destination, String platform,
+                       String service, String note, boolean cancelled) {
+        Trip withDestination(String name) {
+            return new Trip(departure, arrival, scheduled, name, platform, service, note, cancelled);
+        }
     }
 
     /** Hasta donde se busca la estacion nuestra que corresponde a una de SOFSE. */
@@ -70,30 +106,27 @@ public final class SofseArrivals {
      * (los segundos que trae cada arribo se cuentan desde su "timestamp").
      */
     public static Parsed parse(JsonNode root, Instant now) {
-        long elapsed = 0;
         long timestamp = root.path("timestamp").asLong(0);
-        if (timestamp > 0) {
-            elapsed = Math.max(0, Math.min(600, now.getEpochSecond() - timestamp));
-        }
-        List<Item> items = new ArrayList<>();
+        // Los "segundos" se cuentan desde el timestamp de la respuesta (si es razonable; si no, desde ahora).
+        Instant base = timestamp > 0 && Math.abs(now.getEpochSecond() - timestamp) <= 600
+                ? Instant.ofEpochSecond(timestamp) : now;
+        List<Train> trains = new ArrayList<>();
         Map<String, Integer> destinationIds = new LinkedHashMap<>();
         for (JsonNode result : root.path("results")) {
             JsonNode arrival = result.path("arribo");
             JsonNode service = result.path("servicio");
-            if (service.path("oculto").asBoolean(false) || hasValue(service.path("cancelacion"))
-                    || !arrival.path("parada").asBoolean(true)) {
+            int here = arrival.path("idElemento").asInt(-2);
+            if (service.path("oculto").asBoolean(false) || !arrival.path("parada").asBoolean(true)
+                    || !forPassengers(service)) {
                 continue;
             }
             JsonNode to = service.path("hasta").path("estacion");
             // Termina aca: es una llegada, no un tren para tomar.
-            if (to.path("idElemento").asInt(-1) == arrival.path("idElemento").asInt(-2)) {
+            if (to.path("idElemento").asInt(-1) == here || !arrival.path("segundos").isNumber()) {
                 continue;
             }
-            if (!arrival.path("segundos").isNumber()) {
-                continue;
-            }
-            int seconds = (int) (arrival.path("segundos").asLong() - elapsed);
-            if (seconds < PAST_SECONDS) {
+            Instant at = base.plusSeconds(arrival.path("segundos").asLong());
+            if (at.isBefore(now.plusSeconds(PAST_SECONDS))) {
                 continue;
             }
             String destination = cleanName(to.path("nombre").asText(""));
@@ -101,27 +134,69 @@ public final class SofseArrivals {
             if (!destination.isEmpty() && destinationId != null) {
                 destinationIds.putIfAbsent(destination, destinationId);
             }
-            items.add(new Item(service.path("sentido").asInt(0), seconds,
-                    arrival.path("programada").asBoolean(true), destination.isEmpty() ? null : destination));
+            List<RouteStop> route = route(service.path("estaciones"), base);
+            trains.add(new Train(service.path("sentido").asInt(0), at, arrival.path("programada").asBoolean(true),
+                    destination.isEmpty() ? null : destination, platform(arrival, service, here),
+                    serviceType(service), text(service.path("leyenda")), hasValue(service.path("cancelacion")),
+                    route));
         }
+        trains.sort(Comparator.comparing(Train::at));
         // El sentido 2 va hacia la cabecera inicial (Retiro, Once, Constitucion...): va primero, como en el resto del sitio.
-        Map<Integer, List<Item>> bySentido = new TreeMap<>(Comparator.comparingInt((Integer s) -> s == 2 ? 0 : 1)
+        Map<Integer, List<Train>> bySentido = new TreeMap<>(Comparator.comparingInt((Integer s) -> s == 2 ? 0 : 1)
                 .thenComparingInt(s -> s));
-        for (Item item : items) {
-            bySentido.computeIfAbsent(item.sentido(), k -> new ArrayList<>()).add(item);
+        for (Train train : trains) {
+            bySentido.computeIfAbsent(train.sentido(), k -> new ArrayList<>()).add(train);
         }
         List<Direction> directions = new ArrayList<>();
-        for (Map.Entry<Integer, List<Item>> entry : bySentido.entrySet()) {
-            List<Item> list = entry.getValue();
-            list.sort(Comparator.comparingInt(Item::seconds));
-            List<Item> next = list.subList(0, Math.min(MAX_PER_DIRECTION, list.size()));
-            List<Arrival> arrivals = next.stream()
-                    .map(i -> new Arrival(Math.max(0, Math.floorDiv(i.seconds(), 60)), i.scheduled(), i.destination()))
-                    .toList();
-            directions.add(new Direction(entry.getKey(), towards(arrivals), arrivals));
+        for (Map.Entry<Integer, List<Train>> entry : bySentido.entrySet()) {
+            List<Arrival> arrivals = new ArrayList<>();
+            int running = 0;
+            for (Train train : entry.getValue()) {
+                if (running == MAX_PER_DIRECTION || arrivals.size() == MAX_WITH_CANCELLED) {
+                    break;
+                }
+                long seconds = train.at().getEpochSecond() - now.getEpochSecond();
+                arrivals.add(new Arrival((int) Math.max(0, Math.floorDiv(seconds, 60)), train.scheduled(),
+                        train.destination(), train.platform(), train.service(), train.note(), train.cancelled()));
+                if (!train.cancelled()) {
+                    running++;
+                }
+            }
+            if (running > 0) {
+                directions.add(new Direction(entry.getKey(), towards(arrivals), List.copyOf(arrivals)));
+            }
         }
-        boolean scheduledOnly = items.stream().allMatch(Item::scheduled);
-        return new Parsed(directions, scheduledOnly, destinationIds);
+        boolean scheduledOnly = trains.stream().filter(t -> !t.cancelled()).allMatch(Train::scheduled);
+        return new Parsed(directions, scheduledOnly, destinationIds, List.copyOf(trains));
+    }
+
+    /**
+     * Los proximos trenes que van de la estacion consultada a otra (por su
+     * numero de SOFSE) y paran ahi: cuando salen y cuando llegan.
+     */
+    public static List<Trip> trips(Parsed parsed, int toId, Instant now) {
+        List<Trip> trips = new ArrayList<>();
+        int running = 0;
+        for (Train train : parsed.trains()) {
+            if (running == MAX_TRIPS) {
+                break;
+            }
+            if (train.at().isBefore(now.plusSeconds(PAST_SECONDS))) {
+                continue;
+            }
+            RouteStop stop = train.route().stream()
+                    .filter(s -> s.id() == toId && s.stops() && s.at() != null && s.at().isAfter(train.at()))
+                    .findFirst().orElse(null);
+            if (stop == null) {
+                continue;
+            }
+            trips.add(new Trip(train.at(), stop.at(), train.scheduled(), train.destination(), train.platform(),
+                    train.service(), train.note(), train.cancelled()));
+            if (!train.cancelled()) {
+                running++;
+            }
+        }
+        return trips;
     }
 
     /**
@@ -135,24 +210,107 @@ public final class SofseArrivals {
         List<Direction> directions = new ArrayList<>();
         for (Direction direction : parsed.directions()) {
             List<Arrival> arrivals = direction.arrivals().stream()
-                    .map(a -> new Arrival(a.minutes(), a.estimated(),
-                            a.destination() == null ? null : names.getOrDefault(a.destination(), a.destination())))
+                    .map(a -> a.destination() == null ? a
+                            : a.withDestination(names.getOrDefault(a.destination(), a.destination())))
                     .toList();
             directions.add(new Direction(direction.directionId(), towards(arrivals), arrivals));
         }
-        return new Parsed(directions, parsed.scheduledOnly(), parsed.destinationIds());
+        return new Parsed(directions, parsed.scheduledOnly(), parsed.destinationIds(), parsed.trains());
     }
 
-    /** Hacia donde va el sentido: el destino que mas se repite entre los proximos (a igualdad, el primero). */
+    /** Los viajes con los destinos renombrados, como en renamed. */
+    public static List<Trip> renamedTrips(List<Trip> trips, Map<String, String> names) {
+        return trips.stream()
+                .map(t -> t.destination() == null ? t
+                        : t.withDestination(names.getOrDefault(t.destination(), t.destination())))
+                .toList();
+    }
+
+    /**
+     * Hacia donde va el sentido: el destino que mas se repite entre los
+     * proximos que corren (a igualdad, el primero).
+     */
     private static String towards(List<Arrival> arrivals) {
         Map<String, Integer> count = new LinkedHashMap<>();
         for (Arrival arrival : arrivals) {
-            if (arrival.destination() != null) {
+            if (arrival.destination() != null && !arrival.cancelled()) {
                 count.merge(arrival.destination(), 1, Integer::sum);
             }
         }
         return count.entrySet().stream().max(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey).orElse("—");
+    }
+
+    /** El recorrido del tren: cada estacion con cuando pasa (en vivo si lo hay) y si para. */
+    private static List<RouteStop> route(JsonNode stations, Instant base) {
+        List<RouteStop> route = new ArrayList<>();
+        for (JsonNode station : stations) {
+            Integer id = number(station.path("idElemento"));
+            if (id == null) {
+                continue;
+            }
+            Instant at = station.path("segundos").isNumber()
+                    ? base.plusSeconds(station.path("segundos").asLong())
+                    : instant(station.path("llegada").path("programada"));
+            if (at == null) {
+                at = instant(station.path("salida").path("programada"));
+            }
+            route.add(new RouteStop(id, station.path("parada").asBoolean(true), at));
+        }
+        return List.copyOf(route);
+    }
+
+    /** El anden donde para el tren en esta estacion, si lo informan. */
+    private static String platform(JsonNode arrival, JsonNode service, int here) {
+        String own = text(arrival.path("anden").path("nombre"));
+        if (own != null) {
+            return own;
+        }
+        for (JsonNode station : service.path("estaciones")) {
+            if (station.path("idElemento").asInt(-1) == here) {
+                return text(station.path("anden").path("nombre"));
+            }
+        }
+        return null;
+    }
+
+    /** El tipo de servicio si no es el comun ("Rapido", "Expreso"...); null si es el comun. */
+    private static String serviceType(JsonNode service) {
+        String name = text(service.path("tipo").path("nombre"));
+        return name == null || name.equalsIgnoreCase("Normal") ? null : name;
+    }
+
+    /** Los trenes sin pasajeros (vacios, de traslado) no se muestran. */
+    private static boolean forPassengers(JsonNode service) {
+        String kind = text(service.path("tipo").path("clasificacion").path("nombre"));
+        return kind == null || kind.toLowerCase(Locale.ROOT).contains("pasajer");
+    }
+
+    /** Un texto (o el texto de un objeto: "texto", "descripcion", "nombre"); null si esta vacio. */
+    static String text(JsonNode node) {
+        if (node.isObject()) {
+            for (String field : List.of("texto", "descripcion", "nombre", "leyenda")) {
+                String value = text(node.path(field));
+                if (value != null) {
+                    return value;
+                }
+            }
+            return null;
+        }
+        if (!node.isTextual()) {
+            return null;
+        }
+        // Tambien los espacios que no cortan (el texto de las alertas los trae).
+        String value = node.asText().replaceAll("[\\s\\u00a0\\u202f]+", " ").strip();
+        return value.isEmpty() ? null : value;
+    }
+
+    private static Instant instant(JsonNode node) {
+        try {
+            return node.isTextual() ? Instant.parse(node.asText().strip()) : null;
+        } catch (DateTimeParseException e) {
+            return null;
+        }
     }
 
     /** Lee la respuesta de /infraestructura/estaciones (los numeros vienen como texto). */

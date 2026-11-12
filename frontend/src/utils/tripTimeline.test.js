@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { tripStrip, tripTimeline } from './tripTimeline.js'
+import { trainText, tripStrip, tripTimeline, withTrains } from './tripTimeline.js'
 
 const station = (name, line, color) => ({ stationName: name, lineName: `Línea ${line}`, lineColorHex: color })
 const ITU = station('Ituzaingó', 'Sarmiento', '#00a7e1')
@@ -97,5 +97,57 @@ describe('tripStrip', () => {
     ]
     expect(tripStrip(legs)).toHaveLength(1)
     expect(tripTimeline(legs)[3]).toMatchObject({ track: 'wait', text: 'Esperá el tren del otro ramal · ≈ 4 min' })
+  })
+})
+
+describe('con los trenes de Trenes Argentinos', () => {
+  const START = new Date('2026-11-12T18:00:00Z')
+  const at = (min) => new Date(START.getTime() + min * 60_000).toISOString()
+  const trip = (dep, arr, extra = {}) => ({ departure: at(dep), arrival: at(arr), scheduled: true, ...extra })
+
+  it('toma el primer tren que se alcanza y sigue su horario', () => {
+    // Se llega a Ituzaingó a los 11 min: el de los 9 ya se fue, el de los 14 cancelado; sale el de los 20.
+    const trains = {
+      1: [trip(9, 50), trip(14, 55, { cancelled: true }), trip(20, 62, { platform: '2', destination: 'Once' })],
+    }
+    const items = tripTimeline(LEGS, { trains, start: START })
+    const stops = items.filter((i) => i.type === 'stop')
+    // Ituzaingó a los 20 (con la espera), Once a los 62, la H 2 min caminando más su espera promedio.
+    expect(stops.map((s) => Math.round(s.at))).toEqual([0, 20, 62, 68, 69])
+    expect(stops[1].train).toMatchObject({ platform: '2' })
+    expect(stops[1].towards).toBe('Once')
+    const segments = items.filter((i) => i.type === 'segment').map((i) => i.text)
+    expect(segments[0]).toBe('Caminá unos 600 m hasta Ituzaingó · ≈ 11 min y 9 min de espera')
+    expect(segments[1]).toBe('11 estaciones · 42 min')
+  })
+
+  it('después de combinar a pie, cambia la espera promedio por la real', () => {
+    const legs = [LEGS[1], { ...LEGS[2], to: station('Plaza Miserere', 'Sarmiento', '#00a7e1') }, { ...LEGS[1] }]
+    // A Once se llega a los 45; caminando 2 min (6 menos la espera de 4) se está a los 47: sale a los 50.
+    const { legs: timed, offset } = withTrains(legs, { 2: [trip(46, 60), trip(50, 70)] }, START)
+    expect(offset).toBe(0)
+    expect(timed[1].minutes).toBe(5)
+    expect(timed[1].wait).toBe(3)
+    expect(timed[2].minutes).toBe(20)
+  })
+
+  it('si el viaje empieza en el tren, arranca cuando sale', () => {
+    const items = tripTimeline([LEGS[1]], { trains: { 0: [trip(7, 49)] }, start: START })
+    expect(items[0].at).toBe(7)
+    expect(items.at(-1).at).toBe(49)
+  })
+
+  it('sin trenes que se alcancen (o sin datos), queda la estimación', () => {
+    expect(tripTimeline(LEGS, { trains: { 1: [trip(5, 40)] }, start: START }).at(-1).at).toBe(63)
+    expect(tripTimeline(LEGS, { trains: {}, start: START }).at(-1).at).toBe(63)
+    expect(tripTimeline(LEGS, { trains: { 1: null }, start: START }).at(-1).at).toBe(63)
+  })
+
+  it('nombra el tren con su hora, destino si cambia, andén y tipo', () => {
+    const clock = (d) => `${d.getUTCHours()}:${String(d.getUTCMinutes()).padStart(2, '0')}`
+    expect(trainText(trip(32, 50), 'Once', clock)).toBe('Tren de las 18:32 · según horario')
+    expect(
+      trainText(trip(32, 50, { destination: 'Victoria', platform: '2', service: 'Rápido', scheduled: false }), 'Tigre', clock),
+    ).toBe('Tren de las 18:32 a Victoria · andén 2 · Rápido · en vivo')
   })
 })

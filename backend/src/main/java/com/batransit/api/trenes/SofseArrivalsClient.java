@@ -99,6 +99,12 @@ public class SofseArrivalsClient {
         return Optional.ofNullable(station).map(Station::id);
     }
 
+    /** Los ramales de una linea con sus alertas (no se guardan: las alertas cambian). Null si no respondio. */
+    public JsonNode branches(int gerencia) {
+        JsonNode node = get("/infraestructura/ramales?idGerencia=" + gerencia);
+        return node != null && node.isArray() ? node : null;
+    }
+
     /** Una estacion de SOFSE de la linea, por su numero (vacio si no esta o no se pudo pedir la lista). */
     public Optional<Station> station(int gerencia, int id) {
         return catalog(gerencia).stream().filter(s -> s.id() == id).findFirst();

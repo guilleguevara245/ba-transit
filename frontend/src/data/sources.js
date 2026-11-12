@@ -100,11 +100,11 @@ export const SOURCE_GROUPS = [
         when: 'live',
       },
       {
-        what: 'Próximos trenes de Trenes Argentinos',
+        what: 'Próximos trenes y alertas de Trenes Argentinos',
         source: 'API de Trenes de Ariel Aguirre (ariedro), que consulta el servicio de Trenes Argentinos',
         url: 'https://github.com/ariedro/api-trenes',
         detail:
-          'Próximos trenes de cada estación del Roca, Mitre, Sarmiento, San Martín, Belgrano Sur y Tren de la Costa, con su destino. Cuando la fuente no sigue al tren, se muestra el horario programado. Gracias a Ariel Aguirre por el proyecto y a Enzo Notario por su documentación.',
+          'Próximos trenes de cada estación del Roca, Mitre, Sarmiento, San Martín, Belgrano Sur y Tren de la Costa, con su destino, el andén, los trenes rápidos y los cancelados; en Cómo llegar, el próximo tren de cada tramo y a qué hora llega. También las alertas del momento de su app (interrupciones, demoras), cada 5 minutos. Cuando la fuente no sigue al tren, se muestra el horario programado. Gracias a Ariel Aguirre por el proyecto y a Enzo Notario por su documentación.',
         when: 'live',
       },
     ],

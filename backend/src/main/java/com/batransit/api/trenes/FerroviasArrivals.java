@@ -1,5 +1,7 @@
 package com.batransit.api.trenes;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -77,7 +79,22 @@ public final class FerroviasArrivals {
     private FerroviasArrivals() {
     }
 
-    public record Arrival(int minutes, boolean estimated, String destination) {
+    /**
+     * Un tren por llegar. platform, service y note solo los informa Trenes
+     * Argentinos (anden, tipo de servicio si no es el comun, como "Rapido",
+     * y una leyenda del servicio); cancelled: el tren figura pero no corre.
+     */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public record Arrival(int minutes, boolean estimated, String destination, String platform, String service,
+                          String note, boolean cancelled) {
+        public Arrival(int minutes, boolean estimated, String destination) {
+            this(minutes, estimated, destination, null, null, null, false);
+        }
+
+        /** El mismo tren con otro nombre de destino. */
+        public Arrival withDestination(String name) {
+            return new Arrival(minutes, estimated, name, platform, service, note, cancelled);
+        }
     }
 
     public record Direction(int directionId, String towards, List<Arrival> arrivals) {

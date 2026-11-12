@@ -39,6 +39,39 @@ export function serverArrivalText(arrival, scheduled) {
   return formatArrival(scheduled ? { ...arrival, estimated: false } : arrival)
 }
 
+/** El anden si todos los trenes que corren en el sentido salen del mismo (se dice una vez); si no, null. */
+export function sharedPlatform(arrivals) {
+  const running = (arrivals ?? []).filter((a) => !a.cancelled)
+  const first = running[0]?.platform
+  return first && running.every((a) => a.platform === first) ? first : null
+}
+
+/**
+ * Lo que se agrega entre parentesis a un tren de la lista: el destino si
+ * no es el del sentido y el anden si no es el de todos ("a Mitre, andén
+ * 3"), o "cancelado". null si no hay nada que agregar.
+ */
+export function arrivalDetails(arrival, towards, shared = null) {
+  if (arrival.cancelled) return 'cancelado'
+  const parts = []
+  if (arrival.destination && arrival.destination !== towards) parts.push(`a ${arrival.destination}`)
+  if (arrival.platform && arrival.platform !== shared) parts.push(`andén ${arrival.platform}`)
+  return parts.length > 0 ? parts.join(', ') : null
+}
+
+/**
+ * Lineas de Trenes Argentinos: las que tienen viajes con hora de llegada
+ * (Como llegar) en /api/v1/trenes/viaje.
+ */
+export const TRIP_TRAIN_LINES = new Set(['SARMIENTO', 'MITRE', 'ROCA', 'SAN_MARTIN', 'BELGRANO_SUR', 'TREN_DE_LA_COSTA'])
+
+/** El pedido de los proximos trenes entre dos estaciones de una linea (o null si la linea no los tiene). */
+export function tripTrainsPath(lineCode, from, to) {
+  if (!TRIP_TRAIN_LINES.has(lineCode) || !from || !to || from === to) return null
+  const q = (v) => encodeURIComponent(v)
+  return `/api/v1/trenes/viaje?linea=${q(lineCode)}&desde=${q(from)}&hasta=${q(to)}`
+}
+
 /** Horario programado (GTFS): subte y premetro. null para el resto. */
 export function schedulePath(mode, lineCode, stationName) {
   if (!lineCode || !stationName || (mode !== 'SUBTE' && mode !== 'PREMETRO')) return null

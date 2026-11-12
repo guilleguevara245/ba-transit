@@ -1,8 +1,10 @@
 package com.batransit.api.trenes;
 
+import com.batransit.api.trenes.FerroviasArrivals.Arrival;
 import com.batransit.api.trenes.FerroviasArrivals.Direction;
 import com.batransit.api.trenes.SofseArrivals.Parsed;
 import com.batransit.api.trenes.SofseArrivals.Station;
+import com.batransit.api.trenes.SofseArrivals.Trip;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -105,7 +107,7 @@ class SofseArrivalsTest {
     }
 
     @Test
-    void dejaAfueraCanceladosOcultosLosQueNoParanLosQueTerminanAcaYLosQueYaPasaron() throws IOException {
+    void dejaAfueraOcultosLosQueNoParanLosQueTerminanAcaYLosQueYaPasaronYMarcaLosCancelados() throws IOException {
         Parsed parsed = SofseArrivals.parse(response(
                 result(1, 600, false, "Tigre", 500, ", \"cancelacion\": {\"motivo\": \"Obras\"}"),
                 result(1, 700, false, "Tigre", 500, ", \"oculto\": true"),
@@ -118,8 +120,72 @@ class SofseArrivalsTest {
                 result(1, 1000, false, "Tigre", 500, "")), ASKED);
 
         assertThat(parsed.directions()).hasSize(1);
-        assertThat(parsed.directions().get(0).arrivals()).extracting(a -> a.minutes()).containsExactly(16);
+        // El cancelado se muestra (tachado), pero no cuenta para los tres ni para el destino.
+        assertThat(parsed.directions().get(0).arrivals()).extracting(a -> a.minutes()).containsExactly(10, 16);
+        assertThat(parsed.directions().get(0).arrivals()).extracting(a -> a.cancelled()).containsExactly(true, false);
     }
+
+    @Test
+    void cuentaTresQueCorrenAunqueHayaCanceladosEntreMedio() throws IOException {
+        String cancelled = ", \"cancelacion\": {\"motivo\": \"Falta de personal\"}";
+        Parsed parsed = SofseArrivals.parse(response(
+                result(1, 60, false, "Tigre", 500, ""),
+                result(1, 300, false, "Tigre", 500, cancelled),
+                result(1, 600, false, "Tigre", 500, ""),
+                result(1, 900, false, "Tigre", 500, ""),
+                result(1, 1200, false, "Tigre", 500, "")), ASKED);
+
+        assertThat(parsed.directions().get(0).arrivals()).extracting(a -> a.minutes()).containsExactly(1, 5, 10, 15);
+        // Un sentido con solo cancelados no se muestra.
+        Parsed none = SofseArrivals.parse(response(result(1, 300, false, "Tigre", 500, cancelled)), ASKED);
+        assertThat(none.directions()).isEmpty();
+    }
+
+    @Test
+    void traeElAndenElTipoDeServicioYLaLeyenda() throws IOException {
+        Parsed parsed = SofseArrivals.parse(response(
+                result(1, 300, false, "Tigre", 500, """
+                        , "tipo": {"nombre": "Rápido", "clasificacion": {"nombre": "Pasajeros"}},
+                          "leyenda": "No se detiene en Belgrano C",
+                          "estaciones": [{"idElemento": 271, "parada": true, "segundos": 300, "anden": {"nombre": "3"}}]
+                        """),
+                result(1, 600, false, "Tigre", 500, ", \"tipo\": {\"nombre\": \"Normal\"}"),
+                result(1, 700, false, "Tigre", 500,
+                        ", \"tipo\": {\"nombre\": \"Normal\", \"clasificacion\": {\"nombre\": \"Vacío\"}}")),
+                ASKED);
+
+        List<Arrival> arrivals = parsed.directions().get(0).arrivals();
+        assertThat(arrivals).hasSize(2);
+        assertThat(arrivals.get(0).platform()).isEqualTo("3");
+        assertThat(arrivals.get(0).service()).isEqualTo("Rápido");
+        assertThat(arrivals.get(0).note()).isEqualTo("No se detiene en Belgrano C");
+        // El comun no lleva tipo; uno sin pasajeros no se muestra.
+        assertThat(arrivals.get(1).service()).isNull();
+        assertThat(arrivals.get(1).platform()).isNull();
+    }
+
+    @Test
+    void armaElViajeHastaOtraEstacionConLaHoraDeLlegada() throws IOException {
+        Parsed parsed = SofseArrivals.parse(resource("sofse-arribos-271.json"), ASKED);
+
+        // De Miguelete a Retiro: sale 18:51:30 y llega 19:24 (UTC).
+        List<Trip> trips = SofseArrivals.trips(parsed, 332, ASKED);
+        assertThat(trips).hasSize(1);
+        assertThat(trips.get(0).departure()).isEqualTo(Instant.parse("2026-11-12T18:51:30Z"));
+        assertThat(trips.get(0).arrival()).isEqualTo(Instant.parse("2026-11-12T19:24:00Z"));
+        assertThat(trips.get(0).scheduled()).isTrue();
+        assertThat(trips.get(0).destination()).isEqualTo("Retiro");
+        // Belgrano R esta despues y el tren para: si.
+        assertThat(SofseArrivals.trips(parsed, 35, ASKED)).hasSize(1);
+        // L. M. Drago (no para), Chilavert (quedo atras) y una de otra linea: no.
+        assertThat(SofseArrivals.trips(parsed, 236, ASKED)).isEmpty();
+        assertThat(SofseArrivals.trips(parsed, 79, ASKED)).isEmpty();
+        assertThat(SofseArrivals.trips(parsed, 9999, ASKED)).isEmpty();
+
+        List<Trip> renamed = SofseArrivals.renamedTrips(trips, Map.of("Retiro", "Retiro Mitre"));
+        assertThat(renamed.get(0).destination()).isEqualTo("Retiro Mitre");
+    }
+
 
     @Test
     void leeLasEstacionesYEmparejaPorUbicacion() throws IOException {
