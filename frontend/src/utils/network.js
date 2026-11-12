@@ -66,11 +66,16 @@ export const GROUP_LABELS = {
   DESVIO: { label: 'Desvíos', tone: 'delayed' },
 }
 
+/**
+ * El estado de una linea segun su peor alerta, con los mismos nombres que
+ * "Estado de la red" (Interrupciones, Demoras, Obras, Desvíos). Un tipo que
+ * no se conoce queda como "Alertas activas".
+ */
 export function statusFor(worstType) {
-  if (worstType === 'INTERRUPCION') return { label: 'Interrupciones', className: 'status-interrupted' }
-  if (worstType === 'DEMORA') return { label: 'Demoras', className: 'status-delayed' }
-  if (worstType) return { label: 'Alertas activas', className: 'status-delayed' }
-  return { label: 'Normal', className: 'status-normal' }
+  if (!worstType) return { label: 'Normal', className: 'status-normal' }
+  const group = GROUP_LABELS[worstType]
+  if (!group) return { label: 'Alertas activas', className: 'status-delayed' }
+  return { label: group.label, className: `status-${group.tone}` }
 }
 
 /** Tipo de alerta mas grave de una linea (o null si no tiene alertas). */

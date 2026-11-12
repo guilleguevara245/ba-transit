@@ -4,9 +4,9 @@ import {
   formatClock12,
   formatDayDate,
   formatLongDate,
-  formatNumericDate,
   formatRelativeTime,
   formatShortDate,
+  formatWeekdayDay,
   updatedLabel,
   yearsSince,
 } from './format.js'
@@ -79,10 +79,14 @@ describe('updatedLabel', () => {
   })
 })
 
-describe('formatClock12 y formatNumericDate', () => {
-  it('hora de 12 horas y fecha con numeros, en Buenos Aires', () => {
+describe('formatClock12 y formatWeekdayDay', () => {
+  it('hora de 12 horas y fecha corta con el dia, en Buenos Aires', () => {
     expect(formatClock12(new Date('2026-10-31T02:49:00Z'))).toEqual({ time: '11:49', suffix: 'p. m.' })
     expect(formatClock12(new Date('2026-10-30T11:05:00Z'))).toEqual({ time: '8:05', suffix: 'a. m.' })
-    expect(formatNumericDate(new Date('2026-10-31T02:49:00Z'))).toBe('30/10/26')
+    // 23:49 del viernes 30 en Buenos Aires (ya sabado en UTC).
+    expect(formatWeekdayDay(new Date('2026-10-31T02:49:00Z'))).toBe('Viernes 30')
+    expect(formatWeekdayDay(new Date('2026-11-12T23:00:00Z'))).toBe('Jueves 12')
+    expect(formatWeekdayDay(new Date('2026-11-12T23:00:00Z'), { short: true })).toBe('Jue 12')
+    expect(formatWeekdayDay(new Date('2026-11-14T15:00:00Z'), { short: true })).toBe('Sáb 14')
   })
 })

@@ -11,7 +11,7 @@ import {
   scheduleText,
   shiftMonth,
 } from '../utils/calendar.js'
-import { formatClock, formatClock12, formatDayDate, formatNumericDate } from '../utils/format.js'
+import { formatClock, formatClock12, formatDayDate, formatWeekdayDay } from '../utils/format.js'
 import './ClockPanel.css'
 
 const FORMATS = [
@@ -174,7 +174,7 @@ export default function ClockPanel({ id, now, todayKey, clock, onChange }) {
           {clock.fecha === 'larga'
             ? formatDayDate(now)
             : clock.fecha === 'corta'
-              ? formatNumericDate(now)
+              ? formatWeekdayDay(now)
               : 'Solo la hora'}
         </small>
       </div>

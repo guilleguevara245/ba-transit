@@ -7,7 +7,7 @@ import { TABS } from './navTabs.js'
 import AccountButton from './AccountButton.jsx'
 import { useClockPrefs } from '../hooks/useClockPrefs.js'
 import { useNow } from '../hooks/useNow.js'
-import { formatClock, formatClock12, formatDayDate, formatNumericDate, formatShortDate } from '../utils/format.js'
+import { formatClock, formatClock12, formatDayDate, formatShortDate, formatWeekdayDay } from '../utils/format.js'
 import { holidayOn, localDateKey } from '../utils/holidays.js'
 import './Header.css'
 
@@ -68,7 +68,12 @@ function Clock({ now }) {
       </>
     )
   } else if (clock.fecha === 'corta') {
-    date = <span>{formatNumericDate(now)}</span>
+    date = (
+      <>
+        <span className="clock-date-long">{formatWeekdayDay(now)}</span>
+        <span className="clock-date-short">{formatWeekdayDay(now, { short: true })}</span>
+      </>
+    )
   }
 
   return (

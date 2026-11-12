@@ -44,7 +44,10 @@ describe('statusFor', () => {
   it('traduce el peor tipo de alerta a un estado', () => {
     expect(statusFor('INTERRUPCION').label).toBe('Interrupciones')
     expect(statusFor('DEMORA').label).toBe('Demoras')
-    expect(statusFor('OBRA').label).toBe('Alertas activas')
+    expect(statusFor('OBRA')).toEqual({ label: 'Obras', className: 'status-delayed' })
+    expect(statusFor('DESVIO')).toEqual({ label: 'Desvíos', className: 'status-delayed' })
+    expect(statusFor('INTERRUPCION').className).toBe('status-interrupted')
+    expect(statusFor('OTRO').label).toBe('Alertas activas')
     expect(statusFor(null).label).toBe('Normal')
   })
 })

@@ -40,14 +40,18 @@ export function formatClock12(date) {
   return { time: `${get('hour')}:${get('minute')}`, suffix: period }
 }
 
-/** "30/10/26": la fecha corta con numeros. */
-export function formatNumericDate(date) {
-  return new Intl.DateTimeFormat('es-AR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: '2-digit',
-    timeZone: TIME_ZONE,
-  }).format(date)
+/**
+ * "Jueves 12" (o "Jue 12" con short): el dia de la semana y el numero, para
+ * la fecha corta del reloj, en hora de Buenos Aires.
+ */
+export function formatWeekdayDay(date, { short = false } = {}) {
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat('es-AR', { weekday: short ? 'short' : 'long', day: 'numeric', timeZone: TIME_ZONE })
+      .formatToParts(date)
+      .map((part) => [part.type, part.value]),
+  )
+  const weekday = parts.weekday.replace(/\./g, '')
+  return `${weekday.charAt(0).toUpperCase()}${weekday.slice(1)} ${parts.day}`
 }
 
 /** sáb 24 oct */
