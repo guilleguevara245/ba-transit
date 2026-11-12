@@ -116,7 +116,7 @@ class SubteAlertSyncServiceTest {
 
     @Test
     void noTocaLasAlertasDeOtrasFuentes() {
-        Alert deTrenes = new Alert(lineaA, AlertType.OBRA, "Aviso de trenes", "Trenes Argentinos", "trenes-ar:x", null, null);
+        Alert deTrenes = new Alert(lineaA, AlertType.OBRA, "Alerta de trenes", "API Trenes Argentinos", "sofse:MITRE:1", null, null);
         when(alertRepository.findByActiveTrueAndExternalIdIsNotNull()).thenReturn(List.of(deTrenes));
         when(apiClient.fetchSubteAlerts()).thenReturn(feed(entity("alerta-1", 3, "Sigue", "LineaA")));
 

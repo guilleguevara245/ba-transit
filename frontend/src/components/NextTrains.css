@@ -1,0 +1,26 @@
+/*
+ * El rayo de los trenes rapidos, del color de la linea: en la tarjeta de
+ * la estacion (junto a "Rápido") y en las tarjetas chicas del inicio
+ * (solo el rayo, junto al horario). En el tema oscuro, mas claro para
+ * que se vea sobre el fondo.
+ */
+.next-trains-bolt {
+  width: 1.15em;
+  height: 1.15em;
+  margin: 0 1px 0 -2px;
+  vertical-align: -3px;
+  fill: var(--line-color, var(--accent-text));
+}
+
+:root[data-theme='dark'] .next-trains-bolt {
+  fill: color-mix(in srgb, var(--line-color, var(--accent-text)) 70%, #fff);
+}
+
+/* Cada horario de la tarjeta chica va entero: si no entran, bajan de renglon entre uno y otro. */
+.mini-trains-time {
+  white-space: nowrap;
+}
+
+.mini-trains-time .next-trains-bolt {
+  margin: 0 1px 0 0;
+}

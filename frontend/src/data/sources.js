@@ -78,12 +78,11 @@ export const SOURCE_GROUPS = [
         when: 'fixed',
       },
       {
-        what: 'Avisos y servicios especiales',
+        what: 'Servicios especiales',
         source: 'Trenes Argentinos — Modificaciones en el servicio y novedades',
         url: TRENES_AVISOS_URL,
-        detail:
-          'Obras, recorridos limitados, interrupciones y estaciones cerradas de Roca, Mitre, Sarmiento, San Martín, Belgrano Sur y Tren de la Costa. Los servicios especiales se cargan a mano.',
-        when: { every: '15 min' },
+        detail: 'Servicios especiales y cambios programados de los trenes, cargados a mano a partir de los avisos oficiales.',
+        when: 'manual',
       },
       {
         what: 'Estado del Urquiza',

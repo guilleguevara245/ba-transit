@@ -26,9 +26,8 @@ import java.util.Set;
  *     "contenido": "El servicio J.L. Suárez se encuentra interrumpido...",
  *     "vigencia_desde": "2026-11-11 13:27:00", "vigencia_hasta": null}]}
  *
- * Son las del momento (interrupciones, demoras, cambios de anden); los
- * avisos programados (obras, cronogramas) siguen saliendo de la pagina de
- * modificaciones del servicio.
+ * Son la unica fuente automatica de alertas de los trenes (las de la app
+ * oficial: interrupciones, demoras, cambios de anden, obras).
  */
 public final class SofseAlerts {
 

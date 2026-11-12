@@ -112,8 +112,8 @@ Endpoints principales:
 - `GET /api/v1/lines/{lineId}/branches` - ramales de una linea
 - `GET /api/v1/branches/{branchId}/stations` - estaciones de un ramal
 - `GET /api/v1/alerts`, `POST /api/v1/alerts` - alertas de servicio (cargadas a mano, del
-  subte desde la API Transporte y de los trenes desde la pagina de modificaciones del servicio
-  y la API de Trenes, cada 5 minutos)
+  subte desde la API Transporte y de las lineas de Trenes Argentinos desde la API de Trenes,
+  cada 5 minutos)
 - `GET /api/v1/lines/{lineId}/alerts` - alertas de una linea
 - `GET /api/v1/fares`, `GET /api/v1/fares?mode=TREN`, `POST /api/v1/fares` -
   tarifas

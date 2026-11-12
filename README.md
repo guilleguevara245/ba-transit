@@ -62,8 +62,8 @@ con APIs públicas, pruebas, integración continua y despliegue.
   Mitre, Sarmiento, San Martín, Belgrano Sur y Tren de la Costa, los de Trenes Argentinos (en vivo o según su horario,
   como lo informe, con el andén, los trenes rápidos y los cancelados); según el horario programado para el subte sin
   datos en vivo y para el Urquiza (horario de Metrovías, con servicio nocturno).
-- Estado del Urquiza leído del panel de Metrovías; avisos de obras y servicios limitados de Trenes Argentinos y las
-  alertas del momento de su app (interrupciones, demoras).
+- Estado del Urquiza leído del panel de Metrovías, y las alertas de la app de Trenes Argentinos (interrupciones,
+  demoras, obras) para sus seis líneas.
 - **Cómo llegar**: planificador propio (algoritmo de Dijkstra sobre el grafo de la red) con combinaciones, tiempo
   estimado, opción de viajar solo por estaciones accesibles y enlace para compartir el viaje. Se puede salir desde una
   dirección (Georef) o desde Mis lugares (Casa, Trabajo y otros). En los tramos en tren de Trenes Argentinos usa el
@@ -139,7 +139,9 @@ flowchart LR
   polígono de la alerta contiene puntos de la Ciudad y el conurbano.
 - **Fuentes sin API pública**: el estado del Urquiza se lee de la conexión en tiempo real (SignalR) del panel de
   Metrovías; los próximos trenes del Belgrano Norte, del HTML de las pantallas de Ferrovías; el horario del Urquiza,
-  del PDF oficial, validado al cargarlo (así apareció y se corrigió un error de tipeo del original).
+  del PDF oficial, validado al cargarlo (así apareció y se corrigió un error de tipeo del original). Los próximos
+  trenes, los recorridos y las alertas de Trenes Argentinos llegan por la API de Trenes (comunitaria), que consulta el
+  servicio de su app oficial.
 - **Cuidar los cupos gratuitos**: TomTom da 20.000 consultas por mes. Cada medición se reutiliza 20 minutos y hay un
   tope diario; si dos tramos caen en el mismo tramo de TomTom, se muestran como uno en lugar de repetir el dato.
   Los aviones se piden a adsb.lol solo cuando alguien mira la sección, y el dato se reutiliza 30 segundos.
@@ -169,7 +171,7 @@ flowchart LR
 | Dato | Fuente |
 |---|---|
 | Alertas de subte y colectivos, próximos trenes del subte, colectivos y EcoBici | [API Transporte del Gobierno de la Ciudad](https://www.buenosaires.gob.ar/desarrollourbano/transporte/apitransporte) |
-| Avisos de los trenes | [Trenes Argentinos](https://www.argentina.gob.ar/transporte/trenes-argentinos/modificaciones-en-el-servicio-y-novedades) |
+| Servicios especiales de los trenes (cargados a mano) | [Trenes Argentinos](https://www.argentina.gob.ar/transporte/trenes-argentinos/modificaciones-en-el-servicio-y-novedades) |
 | Próximos trenes del Belgrano Norte | [Ferrovías](http://proximostrenes.ferrovias.com.ar/) |
 | Próximos trenes y alertas de Trenes Argentinos | [API de Trenes](https://github.com/ariedro/api-trenes) de Ariel Aguirre, con [documentación](https://trenes.sofse.apidocs.ar/) de Enzo Notario |
 | Estado y horarios del Urquiza | [Metrovías](https://metrovias.com.ar/) |
@@ -202,7 +204,7 @@ ba-transit/
 │       │   ├── direcciones/  búsqueda de direcciones (Georef)
 │       │   ├── notificaciones/ avisos Web Push (cifrado, VAPID, reglas)
 │       │   ├── eventos/      eventos masivos y cortes (carga manual)
-│       │   ├── trenes/       avisos, Ferrovías y Metrovías
+│       │   ├── trenes/       Trenes Argentinos (API de Trenes), Ferrovías y Metrovías
 │       │   ├── estado/       salud de cada fuente de datos
 │       │   └── security/     clave de escritura e IP real de cada pedido
 │       └── resources/db/migration/   migraciones Flyway

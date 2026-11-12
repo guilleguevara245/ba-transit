@@ -14,6 +14,7 @@ import {
   serverArrivalText,
   sharedPlatform,
 } from '../utils/nextTrains.js'
+import './NextTrains.css'
 
 const REFRESH_MS = 30_000
 const SCHEDULE_REFRESH_MS = 60_000
@@ -58,8 +59,16 @@ function CompactTrains({ directions, scheduled = false, live = false, plainTimes
                 : d.arrivals
                     .filter((a) => !a.cancelled)
                     .slice(0, 3)
-                    .map((a) => serverArrivalText(a, plainTimes).replaceAll(' ', '\u00a0'))
-                    .join(' · ')}
+                    .map((a, j) => (
+                      <Fragment key={j}>
+                        {j > 0 && ' · '}
+                        <span className="mini-trains-time">
+                          {/* Los rapidos, con el rayo de la linea (sin la palabra: no entra). */}
+                          {isFastService(a.service) && <BoltIcon label={a.service} />}
+                          {serverArrivalText(a, plainTimes)}
+                        </span>
+                      </Fragment>
+                    ))}
             </strong>
           </li>
         ))}
@@ -187,7 +196,12 @@ function LiveTrains({ data, color }) {
                       {i > 0 && ' · '}
                       <span className={a.cancelled ? 'next-trains-cancelled' : undefined}>
                         {a.cancelled ? <s>{serverArrivalText(a, scheduled)}</s> : serverArrivalText(a, scheduled)}
-                        {a.service && <span className="next-trains-service">{a.service}</span>}
+                        {a.service && (
+                          <span className="next-trains-service">
+                            {isFastService(a.service) && <BoltIcon />}
+                            {a.service}
+                          </span>
+                        )}
                         {details && <span className="next-trains-dest"> ({details})</span>}
                       </span>
                     </Fragment>
@@ -212,6 +226,28 @@ function LiveTrains({ data, color }) {
       )}
       {data.source && <div className="next-trains-note">Fuente: {data.source}</div>}
     </div>
+  )
+}
+
+/** Los servicios que no paran en todas (rapido, semirrapido, expreso) llevan un rayo. */
+const isFastService = (name) => Boolean(name) && /r[aá]pido|expreso/i.test(name)
+
+/**
+ * Rayo del color de la linea, para los trenes rapidos. Con label (donde
+ * no esta escrito el tipo de servicio) se lee en voz alta.
+ */
+function BoltIcon({ label }) {
+  const icon = (
+    <svg className="next-trains-bolt" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M13.5 2 4.5 13.5h6.2L9.8 22l9.7-12.2h-6.4L13.5 2Z" />
+    </svg>
+  )
+  if (!label) return icon
+  return (
+    <>
+      {icon}
+      <span className="visually-hidden">{label}: </span>
+    </>
   )
 }
 
