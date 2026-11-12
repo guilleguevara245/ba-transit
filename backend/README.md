@@ -134,7 +134,10 @@ Endpoints principales:
   estacion por ubicacion; de esas lineas trae tambien el anden, el tipo de servicio y los
   trenes cancelados)
 - `GET /api/v1/trenes/viaje?linea=&desde=&hasta=` - proximos trenes de Trenes Argentinos
-  entre dos estaciones de una linea, con la hora de salida y la de llegada (Como llegar)
+  entre dos estaciones de una linea, con la hora de salida y la de llegada (Como llegar).
+  Los tipos de servicio (Normal, Rapido...) no estan documentados: el log anota cada uno la
+  primera vez que aparece (buscar "tipo de servicio nuevo"), y una vez por hora se piden los
+  arribos de la cabecera de cada ramal de las seis lineas para verlos todos
 - `GET /api/v1/colectivos/vivo`, `GET /api/v1/ecobici`, `GET /api/v1/vuelos` - datos en vivo
 - `GET /api/v1/clima/alertas`, `GET /api/v1/clima/pronostico` - alertas del SMN y pronostico
 - `GET /api/v1/eventos`, `GET /api/v1/estado` - eventos masivos y salud de cada fuente

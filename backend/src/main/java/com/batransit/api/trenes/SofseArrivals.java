@@ -10,9 +10,11 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -311,6 +313,61 @@ public final class SofseArrivals {
         } catch (DateTimeParseException e) {
             return null;
         }
+    }
+
+    /**
+     * Los tipos de servicio de una respuesta de arribos, uno por linea y
+     * tipo ("Mitre: id 1 \"Normal\" (Pasajeros, subclasificacion 1)"), para
+     * ir anotando cuales existen (la API no los documenta).
+     */
+    public static List<String> serviceTypes(JsonNode root) {
+        Set<String> types = new LinkedHashSet<>();
+        for (JsonNode result : root.path("results")) {
+            JsonNode service = result.path("servicio");
+            JsonNode type = service.path("tipo");
+            if (type.isMissingNode() || type.isNull()) {
+                continue;
+            }
+            types.add("%s: id %s \"%s\" (%s, subclasificacion %s)".formatted(
+                    service.path("gerencia").path("nombre").asText("?"), type.path("id").asText("?"),
+                    type.path("nombre").asText(""), type.path("clasificacion").path("nombre").asText("?"),
+                    type.path("subclasificacion").asText("?")));
+        }
+        return List.copyOf(types);
+    }
+
+    /** Las leyendas de los servicios tal como vienen (texto u objeto), con su linea: "Roca: ...". */
+    public static List<String> legends(JsonNode root) {
+        Set<String> legends = new LinkedHashSet<>();
+        for (JsonNode result : root.path("results")) {
+            JsonNode service = result.path("servicio");
+            JsonNode legend = service.path("leyenda");
+            if (hasValue(legend)) {
+                String raw = legend.isTextual() ? legend.asText() : legend.toString();
+                legends.add(service.path("gerencia").path("nombre").asText("?") + ": "
+                        + (raw.length() > 300 ? raw.substring(0, 300) + "..." : raw));
+            }
+        }
+        return List.copyOf(legends);
+    }
+
+    /**
+     * Las estaciones donde empiezan los ramales de una linea (de
+     * /infraestructura/ramales), sin repetir: ahi pasan todos los trenes del
+     * ramal, los que salen y los que llegan.
+     */
+    public static List<Integer> branchStarts(JsonNode branches) {
+        List<Integer> ids = new ArrayList<>();
+        for (JsonNode branch : branches) {
+            Integer id = number(branch.path("id_estacion_inicial"));
+            if (id == null) {
+                id = number(branch.path("cabecera_inicial").path("id"));
+            }
+            if (id != null && !ids.contains(id)) {
+                ids.add(id);
+            }
+        }
+        return ids;
     }
 
     /** Lee la respuesta de /infraestructura/estaciones (los numeros vienen como texto). */

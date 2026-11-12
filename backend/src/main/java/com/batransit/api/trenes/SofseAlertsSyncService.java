@@ -16,7 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -31,6 +33,10 @@ import java.util.Set;
  *
  * Si una linea no responde, sus alertas guardadas quedan como estaban (una
  * fuente caida no borra nada); las que ya no figuran se dan de baja.
+ *
+ * Ademas, una vez por hora pide los arribos de la estacion donde empieza
+ * cada ramal de las seis lineas: asi el log anota los tipos de servicio que
+ * existen (Normal, Rapido...) aunque nadie este mirando esas estaciones.
  */
 @Service
 public class SofseAlertsSyncService {
@@ -38,12 +44,15 @@ public class SofseAlertsSyncService {
     private static final Logger log = LoggerFactory.getLogger(SofseAlertsSyncService.class);
 
     static final String SOURCE_NAME = "API Trenes Argentinos";
+    /** Cada cuanto se relevan las cabeceras de los ramales (para anotar los tipos de servicio). */
+    static final Duration SURVEY_EVERY = Duration.ofHours(1);
 
     private final SofseArrivalsClient client;
     private final AlertRepository alertRepository;
     private final TransportLineRepository lineRepository;
     private final TransactionTemplate transactionTemplate;
     private SourceHealth health = SourceHealth.NOOP;
+    private Instant lastSurvey = Instant.EPOCH;
 
     public SofseAlertsSyncService(SofseArrivalsClient client, AlertRepository alertRepository,
                                   TransportLineRepository lineRepository, PlatformTransactionManager transactionManager) {
@@ -63,10 +72,12 @@ public class SofseAlertsSyncService {
     public void sync() {
         Instant now = Instant.now();
         Map<String, List<SofseAlert>> byLine = new LinkedHashMap<>();
+        List<Integer> starts = new ArrayList<>();
         for (Map.Entry<String, Integer> line : SofseArrivals.GERENCIAS.entrySet()) {
             JsonNode branches = client.branches(line.getValue());
             if (branches != null) {
                 byLine.put(line.getKey(), SofseAlerts.parse(branches, now));
+                starts.addAll(SofseArrivals.branchStarts(branches));
             }
         }
         if (byLine.isEmpty()) {
@@ -81,6 +92,17 @@ public class SofseAlertsSyncService {
             health.fail(SourceHealth.Source.TRENES_SOFSE_ALERTAS, "error al guardar");
             log.error("Alertas de Trenes Argentinos: error al guardar ({})", e.getClass().getSimpleName());
         }
+        // Despues de guardar las alertas, para no demorarlas.
+        survey(starts, now);
+    }
+
+    /** Una vez por hora, los arribos de cada cabecera (los tipos de servicio quedan en el log). */
+    private void survey(List<Integer> stations, Instant now) {
+        if (stations.isEmpty() || lastSurvey.plus(SURVEY_EVERY).isAfter(now)) {
+            return;
+        }
+        lastSurvey = now;
+        stations.stream().distinct().forEach(client::arrivals);
     }
 
     private void apply(Map<String, List<SofseAlert>> byLine) {

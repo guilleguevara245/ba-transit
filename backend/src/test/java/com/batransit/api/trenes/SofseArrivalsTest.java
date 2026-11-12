@@ -211,6 +211,36 @@ class SofseArrivalsTest {
     }
 
     @Test
+    void anotaLosTiposDeServicioYLasLeyendasConSuLinea() throws IOException {
+        assertThat(SofseArrivals.serviceTypes(resource("sofse-arribos-271.json")))
+                .containsExactly("Mitre: id 1 \"Normal\" (Pasajeros, subclasificacion 1)");
+        JsonNode mixed = response(
+                result(1, 300, false, "Tigre", 500, """
+                        , "gerencia": {"nombre": "Mitre"},
+                          "tipo": {"id": 2, "nombre": "Rápido", "clasificacion": {"nombre": "Pasajeros"}, "subclasificacion": 1},
+                          "leyenda": "No se detiene en Belgrano C"
+                        """),
+                result(1, 600, false, "Tigre", 500, """
+                        , "gerencia": {"nombre": "Mitre"},
+                          "tipo": {"id": 2, "nombre": "Rápido", "clasificacion": {"nombre": "Pasajeros"}, "subclasificacion": 1},
+                          "leyenda": {"texto": "Para en todas"}
+                        """),
+                result(1, 900, false, "Tigre", 500, ""));
+        assertThat(SofseArrivals.serviceTypes(mixed))
+                .containsExactly("Mitre: id 2 \"Rápido\" (Pasajeros, subclasificacion 1)");
+        assertThat(SofseArrivals.legends(mixed))
+                .containsExactly("Mitre: No se detiene en Belgrano C", "Mitre: {\"texto\":\"Para en todas\"}");
+    }
+
+    @Test
+    void lasCabecerasDeLosRamalesSinRepetir() throws IOException {
+        // Retiro (tres ramales), Victoria y Villa Ballester.
+        assertThat(SofseArrivals.branchStarts(resource("sofse-ramales-mitre.json"))).containsExactly(332, 409, 412);
+        assertThat(SofseArrivals.branchStarts(MAPPER.readTree("[{\"cabecera_inicial\": {\"id\": 7}}, {}]")))
+                .containsExactly(7);
+    }
+
+    @Test
     void sinResultadosNoHayTrenes() throws IOException {
         Parsed parsed = SofseArrivals.parse(MAPPER.readTree("{\"timestamp\":1794505738,\"results\":[],\"total\":0}"), ASKED);
         assertThat(parsed.directions()).isEmpty();

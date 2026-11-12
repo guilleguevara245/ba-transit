@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -59,7 +60,13 @@ public class SofseArrivalsClient {
     private final Clock clock;
     private SourceHealth health = SourceHealth.NOOP;
 
+    /** Cuantas leyendas de ejemplo se anotan en el log (para ver su formato, no todas). */
+    static final int LEGEND_SAMPLES = 20;
+
     private final Map<Integer, Entry<Snapshot>> arrivals = new ConcurrentHashMap<>();
+    /** Tipos de servicio y leyendas ya anotados en el log (desde que arranco el servicio). */
+    private final Set<String> seenTypes = ConcurrentHashMap.newKeySet();
+    private final Set<String> seenLegends = ConcurrentHashMap.newKeySet();
     private final Map<Integer, Entry<List<Station>>> catalogs = new ConcurrentHashMap<>();
 
     @Autowired
@@ -123,6 +130,7 @@ public class SofseArrivalsClient {
         Snapshot snapshot = null;
         JsonNode root = get("/arribos/estacion/" + stationId + "?cantidad=" + REQUESTED);
         if (root != null && root.has("results")) {
+            noteServiceTypes(root);
             snapshot = new Snapshot(now, SofseArrivals.parse(root, now));
             health.ok(SourceHealth.Source.TRENES_SOFSE);
         } else if (root != null) {
@@ -130,6 +138,24 @@ public class SofseArrivalsClient {
         }
         arrivals.put(stationId, new Entry<>(now, snapshot));
         return Optional.ofNullable(snapshot);
+    }
+
+    /**
+     * Anota en el log cada tipo de servicio que aparece por primera vez (por
+     * linea) y algunas leyendas de ejemplo: la API no documenta que valores
+     * pueden venir, asi se ve cuales existen (en Render: buscar "tipo de servicio").
+     */
+    private void noteServiceTypes(JsonNode root) {
+        for (String type : SofseArrivals.serviceTypes(root)) {
+            if (seenTypes.add(type)) {
+                log.info("Trenes (SOFSE): tipo de servicio nuevo -> {}", type);
+            }
+        }
+        for (String legend : SofseArrivals.legends(root)) {
+            if (seenLegends.size() < LEGEND_SAMPLES && seenLegends.add(legend)) {
+                log.info("Trenes (SOFSE): leyenda de ejemplo -> {}", legend);
+            }
+        }
     }
 
     /** Las estaciones de una linea (de todos sus ramales), guardadas un dia. */
