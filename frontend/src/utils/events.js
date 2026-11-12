@@ -38,6 +38,7 @@ const parse = (value) => {
  * hasta el 30 de noviembre". Empieza en mayuscula.
  */
 export function eventWhen(event, now = new Date()) {
+  if (event.source === 'CIUDAD') return publishedText(event, now)
   const start = parse(event.startsAt)
   const end = parse(event.endsAt)
   let text
@@ -52,6 +53,18 @@ export function eventWhen(event, now = new Date()) {
     text = 'en curso'
   }
   return text.charAt(0).toUpperCase() + text.slice(1)
+}
+
+/**
+ * Los cortes leidos de las noticias de la Ciudad no traen horario: se dice
+ * cuando se publico la noticia ("Publicado hoy", "ayer", "el 6 de noviembre").
+ */
+export function publishedText(event, now = new Date()) {
+  const date = parse(event.startsAt)
+  if (!date) return 'Publicado por la Ciudad'
+  if (dayKey(date) === dayKey(now)) return 'Publicado hoy'
+  if (dayKey(date) === dayKey(new Date(now.getTime() - 24 * 3600_000))) return 'Publicado ayer'
+  return `Publicado ${dayText(date, now)}`
 }
 
 /** "HUMBOLDT · AV CORRIENTES" -> "Humboldt · Av Corrientes" (el feed viene en mayusculas). */

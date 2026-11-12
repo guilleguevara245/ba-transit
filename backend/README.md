@@ -140,7 +140,8 @@ Endpoints principales:
   arribos de la cabecera de cada ramal de las seis lineas para verlos todos
 - `GET /api/v1/colectivos/vivo`, `GET /api/v1/ecobici`, `GET /api/v1/vuelos` - datos en vivo
 - `GET /api/v1/clima/alertas`, `GET /api/v1/clima/pronostico` - alertas del SMN y pronostico
-- `GET /api/v1/eventos`, `GET /api/v1/estado` - eventos masivos y salud de cada fuente
+- `GET /api/v1/eventos`, `GET /api/v1/estado` - eventos masivos y cortes (cargados a mano y, cada
+  hora, los que anuncian las noticias de buenosaires.gob.ar: source CIUDAD) y salud de cada fuente
 - `GET /api/v1/direcciones?q=` - direcciones del AMBA (Georef), con limite de pedidos por IP
 - `/api/v1/auth/*` y `/api/v1/cuenta/*` - cuentas, sesiones por dispositivo, favoritos,
   lugares y preferencias (con el token de la sesion en `Authorization: Bearer`)

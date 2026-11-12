@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { eventWhen, eventsNear, eventsOnAccesses, prettyStreets } from './events.js'
+import { eventWhen, eventsNear, eventsOnAccesses, prettyStreets, publishedText } from './events.js'
 
 const now = new Date('2026-10-25T22:00:00-03:00')
 
@@ -37,5 +37,17 @@ describe('eventsNear / eventsOnAccesses', () => {
       { event: recital, access: 'Acceso Oeste' },
       { event: manual, access: null },
     ])
+  })
+})
+
+describe('publishedText', () => {
+  const now = new Date('2026-11-12T18:00:00-03:00')
+  it('los cortes de la Ciudad dicen cuándo se publicó la noticia', () => {
+    const at = (iso) => ({ source: 'CIUDAD', startsAt: iso })
+    expect(publishedText(at('2026-11-12T00:00:00-03:00'), now)).toBe('Publicado hoy')
+    expect(publishedText(at('2026-11-11T00:00:00-03:00'), now)).toBe('Publicado ayer')
+    expect(publishedText(at('2026-11-06T00:00:00-03:00'), now)).toBe('Publicado el 6 de noviembre')
+    expect(eventWhen(at('2026-11-06T00:00:00-03:00'), now)).toBe('Publicado el 6 de noviembre')
+    expect(publishedText({ source: 'CIUDAD' }, now)).toBe('Publicado por la Ciudad')
   })
 })

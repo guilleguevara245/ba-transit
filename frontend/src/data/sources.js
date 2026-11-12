@@ -149,6 +149,14 @@ export const SOURCE_GROUPS = [
         when: { every: '20 min' },
       },
       {
+        what: 'Cortes de tránsito',
+        source: 'Noticias del Gobierno de la Ciudad de Buenos Aires',
+        url: 'https://buenosaires.gob.ar/noticias-relacionadas/Tr%C3%A1nsito',
+        detail:
+          'Las noticias que anuncian cortes, desvíos o zonas cerradas (eventos, maratones, operativos), con enlace a cada una; se muestran una semana desde que se publican. Los eventos grandes se cargan además a mano, con calles y horarios.',
+        when: { every: '1 h' },
+      },
+      {
         what: 'Peajes',
         source: 'Resoluciones de Vialidad Nacional y de la Provincia (vía La Nación y Ámbito)',
         url: 'https://www.argentina.gob.ar/obras-publicas/vialidad-nacional',

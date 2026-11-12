@@ -8,10 +8,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
- * Eventos masivos y cortes de transito, cargados a mano (POST con la clave
- * de administrador) a partir de anuncios oficiales.
+ * Eventos masivos y cortes de transito: cargados a mano (POST con la clave
+ * de administrador, o en una migracion) a partir de anuncios oficiales, y
+ * los cortes que publica la Ciudad en sus noticias (CityNoticesSyncService).
  *
  * La API Transporte tenia una ruta /transito/v1/eventos, pero en su
  * especificacion esta dada de baja y responde HTTP 500 (octubre de 2026).
@@ -30,11 +33,21 @@ public class CityEventService {
         this.repository = repository;
     }
 
-    /** Los que no terminaron, del mas proximo al mas lejano. */
+    /**
+     * Los que no terminaron, del mas proximo al mas lejano. Si un corte
+     * esta cargado a mano y tambien salio de las noticias (misma url), va
+     * una sola vez: el cargado a mano, que tiene calles y horarios.
+     */
     @Transactional(readOnly = true)
     public List<CityEvent> current() {
         Instant now = Instant.now();
-        return repository.findCurrent(now).stream()
+        List<PublicEvent> events = repository.findCurrent(now);
+        Set<String> manualUrls = events.stream()
+                .filter(e -> PublicEvent.SOURCE_MANUAL.equals(e.getSource()) && e.getUrl() != null)
+                .map(PublicEvent::getUrl)
+                .collect(Collectors.toSet());
+        return events.stream()
+                .filter(e -> PublicEvent.SOURCE_MANUAL.equals(e.getSource()) || !manualUrls.contains(e.getUrl()))
                 .map(CityEvent::from)
                 .sorted(Comparator.comparing((CityEvent e) -> e.startsAt() == null ? now : e.startsAt()))
                 .limit(MAX_EVENTS)

@@ -13,4 +13,7 @@ public interface PublicEventRepository extends JpaRepository<PublicEvent, Long> 
     @Query("select e from PublicEvent e where e.active = true and (e.endsAt is null or e.endsAt > :now) "
             + "order by e.startsAt")
     List<PublicEvent> findCurrent(@Param("now") Instant now);
+
+    /** Si ya hay un evento (activo o no) de esa noticia: no se vuelve a cargar. */
+    boolean existsByUrl(String url);
 }

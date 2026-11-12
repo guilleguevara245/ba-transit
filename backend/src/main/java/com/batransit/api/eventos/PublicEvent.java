@@ -10,7 +10,10 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.Instant;
 
-/** Evento masivo o corte cargado a mano (ver V40). */
+/**
+ * Evento masivo o corte (ver V40): cargado a mano (source MANUAL) o leido
+ * de las noticias de la Ciudad (source CIUDAD, ver V62).
+ */
 @Entity
 @Table(name = "public_event")
 public class PublicEvent {
@@ -52,8 +55,14 @@ public class PublicEvent {
     @Column(nullable = false)
     private boolean active = true;
 
+    @Column(nullable = false, length = 20)
+    private String source = SOURCE_MANUAL;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
+
+    public static final String SOURCE_MANUAL = "MANUAL";
+    public static final String SOURCE_CITY = "CIUDAD";
 
     protected PublicEvent() {
         // Constructor vacio requerido por JPA.
@@ -74,6 +83,19 @@ public class PublicEvent {
         this.affectsAccesses = affectsAccesses;
         this.active = true;
         this.createdAt = Instant.now();
+    }
+
+    /** Un corte leido de una noticia de la Ciudad: se muestra desde que se publico, unos dias. */
+    public static PublicEvent fromCityNews(String title, String summary, String url, Instant publishedAt,
+                                           Instant showUntil) {
+        PublicEvent event = new PublicEvent("CORTE", title, summary, null, publishedAt, showUntil, null, null, url,
+                false);
+        event.source = SOURCE_CITY;
+        return event;
+    }
+
+    public String getSource() {
+        return source == null ? SOURCE_MANUAL : source;
     }
 
     public Long getId() {

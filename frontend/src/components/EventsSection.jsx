@@ -52,14 +52,18 @@ function EventsList({ events, loading }) {
       )}
       {events.length > MAX_EVENTS && <p className="events-more">Y {events.length - MAX_EVENTS} más.</p>}
 
-      <p className="events-source">Eventos masivos y cortes destacados, cargados a partir de anuncios oficiales.</p>
+      <p className="events-source">
+        Cortes publicados por el Gobierno de la Ciudad (se revisan cada hora) y eventos masivos cargados a partir de
+        anuncios oficiales.
+      </p>
     </>
   )
 }
 
 /**
- * Eventos y cortes del inicio: eventos masivos, manifestaciones y obras
- * grandes que cortan calles (cargados a mano). Siempre
+ * Eventos y cortes del inicio: los cortes que publica la Ciudad en sus
+ * noticias (con enlace a la noticia) y los eventos masivos, manifestaciones
+ * y obras grandes que cortan calles (cargados a mano). Siempre
  * visible, debajo de las tarifas: si no hay ninguno lo dice, asi se sabe
  * que la seccion existe. Al lado, la pestaña Noticias (titulares del
  * transporte del AMBA); la ultima elegida se recuerda.

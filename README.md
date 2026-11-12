@@ -50,7 +50,8 @@ con APIs públicas, pruebas, integración continua y despliegue.
   API Transporte de la Ciudad.
 - Alertas meteorológicas del Servicio Meteorológico Nacional (tormentas, lluvias, calor) que afectan al AMBA, con un
   consejo para quien va a viajar.
-- Eventos masivos, manifestaciones y obras que cortan calles, con aviso en las estaciones y los accesos cercanos.
+- Eventos masivos, manifestaciones y obras que cortan calles, con aviso en las estaciones y los accesos cercanos, y
+  los cortes que publica la Ciudad en sus noticias (leídos cada hora).
 - **Estado de los datos**: una página muestra cuándo respondió cada fuente por última vez y si alguna está fallando,
   con un indicador en el pie de todas las páginas.
 
@@ -175,6 +176,7 @@ flowchart LR
 | Próximos trenes del Belgrano Norte | [Ferrovías](http://proximostrenes.ferrovias.com.ar/) |
 | Próximos trenes y alertas de Trenes Argentinos | [API de Trenes](https://github.com/ariedro/api-trenes) de Ariel Aguirre, con [documentación](https://trenes.sofse.apidocs.ar/) de Enzo Notario |
 | Estado y horarios del Urquiza | [Metrovías](https://metrovias.com.ar/) |
+| Cortes de tránsito | [Noticias del Gobierno de la Ciudad](https://buenosaires.gob.ar/noticias-relacionadas/Tr%C3%A1nsito) |
 | Estacionamiento | [Buenos Aires Data](https://data.buenosaires.gob.ar/) y [OpenStreetMap](https://www.openstreetmap.org/copyright) (conurbano) |
 | Alertas meteorológicas | [Servicio Meteorológico Nacional](https://www.smn.gob.ar/alertas) |
 | Tránsito en los accesos | [TomTom Traffic](https://www.tomtom.com/products/traffic-apis/) |
@@ -203,7 +205,7 @@ ba-transit/
 │       │   ├── cuentas/      cuentas de usuario, sesiones y favoritos
 │       │   ├── direcciones/  búsqueda de direcciones (Georef)
 │       │   ├── notificaciones/ avisos Web Push (cifrado, VAPID, reglas)
-│       │   ├── eventos/      eventos masivos y cortes (carga manual)
+│       │   ├── eventos/      eventos masivos y cortes (carga manual y noticias de la Ciudad)
 │       │   ├── trenes/       Trenes Argentinos (API de Trenes), Ferrovías y Metrovías
 │       │   ├── estado/       salud de cada fuente de datos
 │       │   └── security/     clave de escritura e IP real de cada pedido
