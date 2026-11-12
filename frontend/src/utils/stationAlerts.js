@@ -37,15 +37,20 @@ export function mentionsStation(text, stationName) {
 /**
  * Reparte las alertas de una linea respecto de una estacion:
  * - here: nombran a esta estacion (por ejemplo, "Estacion Medrano cerrada").
- * - line: no nombran ninguna estacion de la linea, afectan a toda la linea.
- * - elsewhere: nombran otras estaciones de la linea, pero no esta.
+ * - line: no nombran ninguna estacion de la linea, afectan a toda la linea
+ *   (o a un ramal de esta estacion).
+ * - elsewhere: nombran otras estaciones de la linea, pero no esta, o son de
+ *   un ramal que no pasa por esta estacion.
+ * branchIds: los ramales de la estacion (una estacion compartida tiene
+ * varios); sin ellos, el ramal de la alerta no se tiene en cuenta.
  */
-export function splitAlertsForStation(alerts, station, lineStationNames) {
+export function splitAlertsForStation(alerts, station, lineStationNames, branchIds = null) {
   const result = { here: [], line: [], elsewhere: [] }
   const others = [...new Set(lineStationNames)].filter((n) => n !== station.stationName)
   for (const alert of alerts ?? []) {
     const text = `${alert.title ?? ''} ${alert.description ?? ''}`
-    if (mentionsStation(text, station.stationName)) result.here.push(alert)
+    if (alert.branchId != null && branchIds && !branchIds.includes(alert.branchId)) result.elsewhere.push(alert)
+    else if (mentionsStation(text, station.stationName)) result.here.push(alert)
     else if (others.some((name) => mentionsStation(text, name))) result.elsewhere.push(alert)
     else result.line.push(alert)
   }

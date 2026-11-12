@@ -21,9 +21,27 @@
   max-width: calc(100cqw - 66px);
 }
 
-/* El mapa es la referencia de tamaño de sus tarjetas (100cqw = su ancho). */
+/*
+ * El mapa es la referencia de tamaño de sus tarjetas (100cqw = su ancho,
+ * 100cqh = su alto; el mapa siempre tiene un alto fijo, asi que medirlo
+ * no cambia su tamaño).
+ */
 .leaflet-container:has(.station-popup-container) {
-  container-type: inline-size;
+  container-type: size;
+}
+
+/*
+ * Nunca mas alta que el mapa: en un mapa bajo (el de la pagina de una
+ * linea), una tarjeta con proximos trenes y alertas no entraba y se
+ * cortaba arriba. Si no entra, se desplaza adentro. Va en el contenedor
+ * (no en el contenido) para no recortar el encabezado de color, que llega
+ * hasta los bordes. 56px = el piquito de abajo (20) y el aire de arriba y
+ * abajo (16 + 20).
+ */
+.station-popup-container .leaflet-popup-content-wrapper {
+  max-height: calc(100cqh - 56px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 /*

@@ -48,6 +48,8 @@ class SofseAlertsTest {
                 "El servicio J.L. Suárez se encuentra interrumpido tras fallas en el suministro electrico. Disculpa las molestias");
         assertThat(alert.effect()).isEqualTo(1);
         assertThat(alert.cause()).isEqualTo(2);
+        // Es del ramal Retiro-J.L. Suárez: termina en la estacion 190.
+        assertThat(alert.branchEnd()).isEqualTo(190);
         // Antes de que empiece a regir, no.
         assertThat(SofseAlerts.parse(resource("sofse-ramales-mitre.json"), Instant.parse("2026-11-11T16:00:00Z")))
                 .isEmpty();
@@ -77,11 +79,68 @@ class SofseAlertsTest {
                 "El servicio se encuentra normalizado tras fallas en el sistema de alimentación eléctrica.",
                 ", \"criticidad_orden\": 4, \"criticidad_color_fondo\": \"#dff0d8\"") + ","
                 + alert(2, "OTHER_EFFECT", "Servicio restablecido entre Maipú y Delta", "") + ","
-                + alert(3, "OTHER_EFFECT", "Por un aviso en verde", ", \"criticidad_color_fondo\": \"#DFF0D8\"") + ","
                 + alert(4, "REDUCED_SERVICE", "Servicio limitado hasta que se normalice la situación",
                 ", \"criticidad_color_fondo\": \"#fcf8e3\"") + "]}]");
 
         assertThat(SofseAlerts.parse(node, NOW)).extracting(SofseAlert::id).containsExactly(4);
+    }
+
+    @Test
+    void laAlertaDeUnTrenPuntualTerminaCuandoElTrenYaPaso() throws IOException {
+        // Tal como estaban en el Sarmiento (12/11/2026), sin fecha de fin.
+        JsonNode node = MAPPER.readTree("[{\"id\": 51, \"alerta\": [" + alert(99691, "SIGNIFICANT_DELAYS",
+                "El tren de 17:59 hs de Jáuregui a Moreno circula con 13 minutos aproximadamente de demora por "
+                        + "problemas técnicos. Disculpá las molestias ocasionadas.",
+                ", \"vigencia_desde\": \"2026-11-12 17:54:00\"") + ","
+                + alert(99697, "SIGNIFICANT_DELAYS", "El tren de 18:52 hs de Moreno a Mercedes se encuentra demorado "
+                        + "en su partida por problemas técnicos.", ", \"vigencia_desde\": \"2026-11-12 19:04:00\"") + "]}]");
+
+        // 18:30: los dos siguen (el de las 17:59, con 13 de demora, vale hasta las 18:57).
+        assertThat(SofseAlerts.parse(node, Instant.parse("2026-11-12T21:30:00Z"))).extracting(SofseAlert::id)
+                .containsExactly(99691);
+        // 19:09: el de las 17:59 ya paso; el de las 18:52 sigue hasta las 19:37.
+        assertThat(SofseAlerts.parse(node, Instant.parse("2026-11-12T22:09:00Z"))).extracting(SofseAlert::id)
+                .containsExactly(99697);
+        assertThat(SofseAlerts.parse(node, Instant.parse("2026-11-12T22:40:00Z"))).isEmpty();
+    }
+
+    @Test
+    void unTrenDeLaMadrugadaAvisadoLaNocheAnterior() throws IOException {
+        JsonNode node = MAPPER.readTree("[{\"id\": 1, \"alerta\": [" + alert(5, "NO_SERVICE",
+                "El tren de las 5.10 de Once a Moreno no circulará.", ", \"vigencia_desde\": \"2026-11-12 22:00:00\"")
+                + "]}]");
+        // A las 23 sigue: es del 13 a la madrugada.
+        assertThat(SofseAlerts.parse(node, Instant.parse("2026-11-13T02:00:00Z"))).hasSize(1);
+        assertThat(SofseAlerts.parse(node, Instant.parse("2026-11-13T09:00:00Z"))).isEmpty();
+    }
+
+    @Test
+    void elVerdeNoQuiereDecirNormalizado() throws IOException {
+        // Tal como estaba en el Belgrano Sur (12/11/2026): en verde, pero el servicio sigue limitado.
+        JsonNode node = MAPPER.readTree("[{\"id\": 21, \"id_estacion_final\": 263, \"alerta\": [" + alert(96776,
+                "OTHER_EFFECT", "Los trenes del ramal Dr. Sáenz - M.C.G. Belgrano circulan con recorrido limitado "
+                        + "entre Tapiales y M.C.G. Belgrano, por obras. Más información en trenesargentinos.gob.ar  ",
+                ", \"criticidad_color_fondo\": \"#dff0d8\"") + "]}]");
+
+        List<SofseAlert> alerts = SofseAlerts.parse(node, NOW);
+        assertThat(alerts).extracting(SofseAlert::id).containsExactly(96776);
+        assertThat(alerts.get(0).type()).isEqualTo(AlertType.OBRA);
+        assertThat(alerts.get(0).branchEnd()).isEqualTo(263);
+    }
+
+    @Test
+    void laMismaAlertaEnDosRamalesEsDeLaLinea() throws IOException {
+        JsonNode node = MAPPER.readTree("["
+                + "{\"id\": 25, \"cabecera_final\": {\"id\": 150}, \"alerta\": ["
+                + alert(1, "SIGNIFICANT_DELAYS", "Demoras en todos los ramales", "") + ","
+                + alert(2, "SIGNIFICANT_DELAYS", "El servicio G. Catán circula con demoras", "") + "]},"
+                + "{\"id\": 21, \"cabecera_final\": {\"id\": 263}, \"alerta\": ["
+                + alert(1, "SIGNIFICANT_DELAYS", "Demoras en todos los ramales", "") + "]}]");
+
+        List<SofseAlert> alerts = SofseAlerts.parse(node, NOW);
+        assertThat(alerts).extracting(SofseAlert::id).containsExactly(1, 2);
+        assertThat(alerts.get(0).branchEnd()).isNull();
+        assertThat(alerts.get(1).branchEnd()).isEqualTo(150);
     }
 
     @Test

@@ -4,17 +4,21 @@ import com.batransit.api.domain.AlertType;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.text.Normalizer;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Alertas de la app de Trenes Argentinos: vienen dentro de cada ramal en
@@ -32,8 +36,13 @@ import java.util.Set;
 public final class SofseAlerts {
 
     static final String ID_PREFIX = "sofse:";
-    /** El fondo verde con que la app marca los avisos de servicio normalizado. */
-    static final String RESOLVED_BACKGROUND = "#dff0d8";
+    /** Cuanto despues de su salida (y su demora) deja de mostrarse la alerta de un tren puntual. */
+    static final Duration TRAIN_ALERT_WINDOW = Duration.ofMinutes(45);
+    /** "el tren de 17:59 hs", "el tren de las 8.15" (sobre el texto sin tildes y en minusculas). */
+    private static final Pattern TRAIN_TIME = Pattern.compile("\\btren(?:es)? de (?:las )?(\\d{1,2})[:.](\\d{2})\\b");
+    /** "con 13 minutos aproximadamente de demora", "una demora de 20 minutos". */
+    private static final Pattern DELAY = Pattern.compile(
+            "(\\d{1,3}) minutos? (?:aproximadamente )?de (?:demora|atraso)|(?:demora|atraso) de (\\d{1,3}) minutos?");
     /** Las fechas de vigencia vienen en hora de Buenos Aires, sin zona. */
     static final ZoneId ZONE = ZoneId.of("America/Argentina/Buenos_Aires");
     private static final DateTimeFormatter DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm[:ss]");
@@ -53,8 +62,16 @@ public final class SofseAlerts {
     private SofseAlerts() {
     }
 
-    /** Una alerta vigente de la linea. */
-    public record SofseAlert(int id, AlertType type, String description, Integer cause, Integer effect) {
+    /**
+     * Una alerta vigente de la linea. branchEnd: la estacion de SOFSE donde
+     * termina el ramal de la alerta (para saber cual de nuestros ramales
+     * es); null si la alerta figura en mas de un ramal (es de la linea).
+     */
+    public record SofseAlert(int id, AlertType type, String description, Integer cause, Integer effect,
+                             Integer branchEnd) {
+        SofseAlert withoutBranch() {
+            return new SofseAlert(id, type, description, cause, effect, null);
+        }
     }
 
     /**
@@ -62,22 +79,34 @@ public final class SofseAlerts {
      * alerta que figura en varios ramales cuenta una vez).
      */
     public static List<SofseAlert> parse(JsonNode branches, Instant now) {
-        Set<Integer> seen = new LinkedHashSet<>();
-        List<SofseAlert> alerts = new ArrayList<>();
+        Map<Integer, SofseAlert> alerts = new LinkedHashMap<>();
         for (JsonNode branch : branches) {
+            Integer end = number(branch.path("id_estacion_final"));
+            if (end == null) {
+                end = number(branch.path("cabecera_final").path("id"));
+            }
             for (JsonNode alert : branch.path("alerta")) {
                 Integer id = number(alert.path("id"));
                 String text = SofseArrivals.text(alert.path("contenido"));
-                if (id == null || text == null || !enabled(alert, now) || resolved(alert, text) || !seen.add(id)) {
+                if (id == null || text == null || !enabled(alert, now) || resolved(text)
+                        || trainPassed(alert, text, now)) {
+                    continue;
+                }
+                SofseAlert seen = alerts.get(id);
+                if (seen != null) {
+                    // La misma alerta en otro ramal: es de la linea.
+                    if (!Objects.equals(seen.branchEnd(), end)) {
+                        alerts.put(id, seen.withoutBranch());
+                    }
                     continue;
                 }
                 String effect = alert.path("efecto_gtfs").asText("");
                 String cause = alert.path("causa_gtfs").asText("");
-                alerts.add(new SofseAlert(id, typeOf(effect, cause, text), text, CAUSES.get(cause),
-                        EFFECTS.get(effect)));
+                alerts.put(id, new SofseAlert(id, typeOf(effect, cause, text), text, CAUSES.get(cause),
+                        EFFECTS.get(effect), end));
             }
         }
-        return alerts;
+        return new ArrayList<>(alerts.values());
     }
 
     /** Habilitada y dentro de su vigencia (sin fechas, vale siempre). */
@@ -92,14 +121,45 @@ public final class SofseAlerts {
     }
 
     /**
-     * Avisos de que el servicio volvio a la normalidad ("El servicio se
-     * encuentra normalizado tras..."): la app los muestra en verde y duran
-     * unos minutos. No son una alerta (la linea no tiene problemas).
+     * Las alertas de un tren puntual ("El tren de 17:59 hs de Jáuregui a
+     * Moreno circula con 13 minutos aproximadamente de demora") suelen
+     * quedar publicadas sin fecha de fin. Se dan por terminadas cuando ese
+     * tren ya paso: TRAIN_ALERT_WINDOW despues de su salida mas la demora
+     * que diga el texto.
      */
-    static boolean resolved(JsonNode alert, String text) {
-        if (RESOLVED_BACKGROUND.equalsIgnoreCase(alert.path("criticidad_color_fondo").asText("").strip())) {
-            return true;
+    static boolean trainPassed(JsonNode alert, String text, Instant now) {
+        Matcher time = TRAIN_TIME.matcher(normalize(text));
+        if (!time.find()) {
+            return false;
         }
+        int hour = Integer.parseInt(time.group(1));
+        int minute = Integer.parseInt(time.group(2));
+        if (hour > 23 || minute > 59) {
+            return false;
+        }
+        Instant published = dateTime(alert.path("vigencia_desde"));
+        ZonedDateTime base = (published == null ? now : published).atZone(ZONE);
+        ZonedDateTime departure = base.toLocalDate().atTime(hour, minute).atZone(ZONE);
+        // Publicada a la noche por un tren de la madrugada siguiente.
+        if (departure.isBefore(base.minusHours(12))) {
+            departure = departure.plusDays(1);
+        }
+        Matcher delay = DELAY.matcher(normalize(text));
+        int delayMinutes = 0;
+        if (delay.find()) {
+            delayMinutes = Integer.parseInt(delay.group(1) != null ? delay.group(1) : delay.group(2));
+        }
+        return departure.toInstant().plus(Duration.ofMinutes(delayMinutes)).plus(TRAIN_ALERT_WINDOW).isBefore(now);
+    }
+
+    /**
+     * Avisos de que el servicio volvio a la normalidad ("El servicio se
+     * encuentra normalizado tras..."): duran unos minutos y no son una
+     * alerta (la linea no tiene problemas). Se reconocen por el texto: el
+     * verde con que la app los marca tambien lo usa para avisos que siguen
+     * vigentes ("circulan con recorrido limitado ... por obras").
+     */
+    static boolean resolved(String text) {
         String t = normalize(text);
         return t.contains("normalizad") || t.contains("se normalizo") || t.contains("restablecid")
                 || t.contains("regularizad");

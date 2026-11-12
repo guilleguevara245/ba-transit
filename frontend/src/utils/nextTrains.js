@@ -25,18 +25,17 @@ export function nextTrainsPath(mode, lineCode, stationName) {
   return null
 }
 
-/** "8 min", "1 h 27 min" (desde la hora), "llegando" o "~8 min" si es estimado. */
-export function formatArrival({ minutes, estimated }) {
-  const text = minutes < 1 ? 'llegando' : formatDuration(minutes)
-  return estimated ? `~${text}` : text
+/**
+ * "8 min", "1 h 27 min" (desde la hora) o "llegando". Los estimados van
+ * igual, sin "~": la tarjeta ya dice "según horario" o que hay estimados.
+ */
+export function formatArrival({ minutes }) {
+  return minutes < 1 ? 'llegando' : formatDuration(minutes)
 }
 
-/**
- * Un tren de la lista del servidor. Si todos son del horario programado
- * (scheduled), van sin "~": la tarjeta ya dice "según horario".
- */
-export function serverArrivalText(arrival, scheduled) {
-  return formatArrival(scheduled ? { ...arrival, estimated: false } : arrival)
+/** Un tren de la lista del servidor (en vivo o del horario programado), como formatArrival. */
+export function serverArrivalText(arrival) {
+  return formatArrival(arrival)
 }
 
 /** El anden si todos los trenes que corren en el sentido salen del mismo (se dice una vez); si no, null. */

@@ -47,3 +47,23 @@ describe('splitAlertsForStation', () => {
     expect(r.line.map((a) => a.id)).toEqual([2])
   })
 })
+
+describe('splitAlertsForStation con ramales', () => {
+  const alerts = [
+    { id: 1, branchId: 7, description: 'El servicio G. Catán circula con demoras por problemas técnicos.' },
+    { id: 2, branchId: null, description: 'Servicio con demoras en toda la línea.' },
+  ]
+  const names = ['Dr. A. Sáenz', 'Tapiales', 'González Catán', 'Marinos del Crucero Gral. Belgrano']
+
+  it('la alerta de un ramal no es de las estaciones de otro', () => {
+    const r = splitAlertsForStation(alerts, { stationName: 'Marinos del Crucero Gral. Belgrano' }, names, [8])
+    expect(r.line.map((a) => a.id)).toEqual([2])
+    expect(r.elsewhere.map((a) => a.id)).toEqual([1])
+  })
+
+  it('en una estacion del ramal (o compartida) si cuenta', () => {
+    expect(splitAlertsForStation(alerts, { stationName: 'Tapiales' }, names, [7, 8]).line.map((a) => a.id)).toEqual([1, 2])
+    // Sin los ramales de la estacion, como antes.
+    expect(splitAlertsForStation(alerts, { stationName: 'Tapiales' }, names).line.map((a) => a.id)).toEqual([1, 2])
+  })
+})

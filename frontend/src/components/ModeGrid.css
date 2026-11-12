@@ -3,10 +3,8 @@
   /* 4 columnas en escritorio y 2 en tablet y celular. */
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1px;
+  /* El panel de "Estado de la red" pone el borde y la sombra; el gap deja ver las lineas. */
   background: var(--line);
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow);
-  margin-bottom: 40px;
 }
 
 .mode-card {
@@ -58,6 +56,54 @@
   color: var(--text-faint);
 }
 
+/* Un renglon por estado, con sus lineas (las que andan bien no van). */
+.mode-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+}
+
+/* Punto, estado y lo afectado; si lo afectado no entra, sigue debajo de si mismo. */
+.mode-group {
+  display: grid;
+  grid-template-columns: 8px auto minmax(0, 1fr);
+  align-items: start;
+  column-gap: 6px;
+  line-height: 20px;
+}
+
+.mode-group strong {
+  font-weight: 600;
+}
+
+.mode-group-dot {
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.mode-group-interrupted {
+  color: var(--interrupted);
+}
+
+.mode-group-delayed {
+  color: var(--delayed);
+}
+
+.mode-group-lines {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  color: var(--text);
+}
+
 @media (max-width: 900px) {
   .modes {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -79,6 +125,15 @@
   .mode-alerts {
     font-size: 11px;
     line-height: 1.35;
+  }
+
+  /* Columnas angostas: lo afectado va siempre en el renglon de abajo, alineado con el estado. */
+  .mode-group {
+    grid-template-columns: 8px minmax(0, 1fr);
+  }
+
+  .mode-group-lines {
+    grid-column: 2;
   }
 }
 

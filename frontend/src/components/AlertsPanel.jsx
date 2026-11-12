@@ -70,6 +70,7 @@ export default function AlertsPanel({ alerts, lines }) {
               <Link className="alert-line" to={linePath(line ?? { id: alert.transportLineId })}>
                 {line ? line.name : `Línea #${alert.transportLineId}`}
               </Link>
+              {alert.branchName && <span className="alert-branch">Ramal {alert.branchName}</span>}
             </div>
             <div className="alert-desc">{alert.description}</div>
             <div className="alert-meta">

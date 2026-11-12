@@ -39,7 +39,7 @@ describe('hasLiveArrivals', () => {
 describe('scheduleLabel', () => {
   const now = new Date(2026, 9, 26, 5, 0)
   it('proximas pasadas aproximadas', () => {
-    expect(scheduleLabel({ headwayMinutes: 5, arrivals: [{ minutes: 2, estimated: true }, { minutes: 7, estimated: true }] }, now)).toBe('~2 min · ~7 min')
+    expect(scheduleLabel({ headwayMinutes: 5, arrivals: [{ minutes: 2, estimated: true }, { minutes: 7, estimated: true }] }, now)).toBe('2 min · 7 min')
   })
   it('antes del servicio muestra el primer tren', () => {
     expect(scheduleLabel({ headwayMinutes: null, arrivals: [{ minutes: 30, estimated: true }] }, now)).toBe('Primer tren 5:30')
@@ -56,15 +56,17 @@ describe('formatArrival', () => {
     expect(formatArrival({ minutes: 26 })).toBe('26 min')
     expect(formatArrival({ minutes: 87 })).toBe('1 h 27 min')
     expect(formatArrival({ minutes: 120 })).toBe('2 h')
-    expect(formatArrival({ minutes: 65, estimated: true })).toBe('~1 h 5 min')
+    // Los estimados, sin "~".
+    expect(formatArrival({ minutes: 65, estimated: true })).toBe('1 h 5 min')
   })
 })
 
 describe('serverArrivalText', () => {
-  it('si todo es del horario programado, sin "~"', () => {
+  it('en vivo o estimado, sin "~"', () => {
     expect(serverArrivalText({ minutes: 67, estimated: true }, true)).toBe('1 h 7 min')
-    expect(serverArrivalText({ minutes: 8, estimated: true }, false)).toBe('~8 min')
+    expect(serverArrivalText({ minutes: 8, estimated: true }, false)).toBe('8 min')
     expect(serverArrivalText({ minutes: 8, estimated: false }, false)).toBe('8 min')
+    expect(serverArrivalText({ minutes: 0, estimated: true })).toBe('llegando')
   })
 })
 

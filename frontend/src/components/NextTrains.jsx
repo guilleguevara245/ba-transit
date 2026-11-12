@@ -42,7 +42,7 @@ export default function NextTrains({ mode = 'SUBTE', lineCode, stationName, asCa
  * estaciones): un renglon por sentido con los tres proximos (si no entran,
  * los horarios bajan al renglon de abajo, sin cortar ninguno).
  */
-function CompactTrains({ directions, scheduled = false, live = false, plainTimes = false, color }) {
+function CompactTrains({ directions, scheduled = false, live = false, color }) {
   // Los chevrones van del color de la linea.
   return (
     <div className="mini-trains-box" style={color ? { '--line-color': color } : undefined}>
@@ -68,7 +68,7 @@ function CompactTrains({ directions, scheduled = false, live = false, plainTimes
                         <span className="mini-trains-time">
                           {/* Los rapidos, con el rayo de la linea (sin la palabra: no entra). */}
                           <ServiceIcon name={a.service} label={a.service} />
-                          <TimeText text={serverArrivalText(a, plainTimes)} />
+                          <TimeText text={serverArrivalText(a)} />
                         </span>
                       </Fragment>
                     ))
@@ -118,7 +118,6 @@ function ApiTrains({ mode, lineCode, stationName, asCard, compact, color }) {
         <CompactTrains
           directions={live.data.directions.filter((d) => d.arrivals.length > 0)}
           live={!live.data.scheduled}
-          plainTimes={Boolean(live.data.scheduled)}
           color={color}
         />
       )
@@ -171,7 +170,7 @@ function LiveTrains({ data, color }) {
   for (const d of data.directions) {
     for (const a of d.arrivals) {
       if (a.note && !a.cancelled && !notes.some((n) => n.text === a.note)) {
-        notes.push({ text: a.note, when: serverArrivalText(a, scheduled) })
+        notes.push({ text: a.note, when: serverArrivalText(a) })
       }
     }
   }
@@ -206,9 +205,9 @@ function LiveTrains({ data, color }) {
                       {i > 0 && ' · '}
                       <span className={a.cancelled ? 'next-trains-cancelled' : undefined}>
                         {a.cancelled ? (
-                          <s>{serverArrivalText(a, scheduled)}</s>
+                          <s>{serverArrivalText(a)}</s>
                         ) : (
-                          <TimeText text={serverArrivalText(a, scheduled)} />
+                          <TimeText text={serverArrivalText(a)} />
                         )}
                         {a.cancelled ? (
                           <CancelledTag />
@@ -246,7 +245,7 @@ function LiveTrains({ data, color }) {
         <div className="next-trains-note">Horario programado: puede variar.</div>
       ) : (
         data.directions.some((d) => d.arrivals.some((a) => a.estimated)) && (
-          <div className="next-trains-note">~ estimado</div>
+          <div className="next-trains-note">Algunos horarios son estimados: puede variar.</div>
         )
       )}
       {data.source && <div className="next-trains-note">Fuente: {data.source}</div>}
@@ -319,7 +318,7 @@ function ClockIcon() {
 }
 
 /** "llegando": un tren de frente y la palabra, del color de la linea. */
-function ArrivingTag({ estimated = false }) {
+function ArrivingTag() {
   return (
     <span className="next-trains-arriving">
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -328,14 +327,14 @@ function ArrivingTag({ estimated = false }) {
         <circle cx="9" cy="13.5" r="1" />
         <circle cx="15" cy="13.5" r="1" />
       </svg>
-      {estimated ? '~llegando' : 'llegando'}
+      llegando
     </span>
   )
 }
 
 /** Un horario: "llegando" con su icono; el resto, como texto. */
 function TimeText({ text }) {
-  if (text === 'llegando' || text === '~llegando') return <ArrivingTag estimated={text.startsWith('~')} />
+  if (text === 'llegando') return <ArrivingTag />
   return text
 }
 

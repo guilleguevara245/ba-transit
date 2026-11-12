@@ -152,6 +152,7 @@ export default function StationPage() {
     alerts,
     station,
     lineStations.map((s) => s.stationName),
+    branches.map((b) => b.branchId),
   )
   const closed = alertSplit.here.some((a) => /cerrad/i.test(a.description ?? ''))
   const years = yearsSince(station.openedOn)

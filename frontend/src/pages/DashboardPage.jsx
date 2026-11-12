@@ -54,28 +54,34 @@ export default function DashboardPage() {
           <FavoritesPanel lines={lines} alerts={alerts} />
         </div>
       </div>
-      <div className="section-label section-label-row">
-        <span>Estado de la red</span>
-        {alertsState.updatedAt && (
-          <span className="updated-at" title={alertsState.updatedAt.toLocaleString('es-AR')}>
-            {/* now se usa para que el texto se recalcule cada 30 segundos */}
-            Actualizado {formatRelativeTime(alertsState.updatedAt.toISOString(), now)}
-          </span>
+      {/* Un panel con el titulo adentro, como "Tus favoritos" y "Alertas destacadas". */}
+      <section className="network-panel" aria-labelledby="network-title">
+        <header className="network-head">
+          <h2 id="network-title">Estado de la red</h2>
+          {alertsState.updatedAt && (
+            <span className="updated-at" title={alertsState.updatedAt.toLocaleString('es-AR')}>
+              {/* now se usa para que el texto se recalcule cada 30 segundos */}
+              Actualizado {formatRelativeTime(alertsState.updatedAt.toISOString(), now)}
+            </span>
+          )}
+        </header>
+        {error && ready && (
+          <div className="stale-text network-stale" role="status">
+            No se pudo actualizar; se muestran los últimos datos disponibles.
+          </div>
         )}
-      </div>
-
-      {loading && <Skeleton variant="cards" count={6} label="Cargando estado de la red…" />}
-
-      {error && !ready && <ErrorMessage what="el estado de la red" error={error} />}
-      {error && ready && (
-        <div className="stale-text" role="status">
-          No se pudo actualizar; se muestran los últimos datos disponibles.
-        </div>
-      )}
+        {ready ? (
+          <ModeGrid lines={lines} alerts={alerts} />
+        ) : (
+          <div className="network-wait">
+            {loading && <Skeleton variant="cards" count={4} label="Cargando estado de la red…" />}
+            {error && <ErrorMessage what="el estado de la red" error={error} />}
+          </div>
+        )}
+      </section>
 
       {ready && (
         <>
-          <ModeGrid lines={lines} alerts={alerts} />
           <div className="grid-main">
             <AlertsPanel alerts={alerts} lines={lines} />
             <div className="panel-stack">

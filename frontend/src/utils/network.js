@@ -6,9 +6,10 @@ const SEVERITY = { INTERRUPCION: 3, DEMORA: 2, DESVIO: 1, OBRA: 1 }
 
 /**
  * A partir de la lista de lineas y de alertas activas, arma un mapa
- * mode -> { lineCount, alertCount, worstType }. "worstType" es el
- * tipo de alerta mas grave presente en ese modo, usado para pintar
- * el status pill.
+ * mode -> { lineCount, alertCount, worstType, groups }. "worstType" es el
+ * tipo de alerta mas grave presente en ese modo; "groups", las lineas con
+ * alertas agrupadas por su peor alerta ([{ type, lineIds }], del estado
+ * mas grave al mas leve).
  */
 export function summarizeByMode(lines, alerts) {
   const lineModeById = new Map(lines.map((line) => [line.id, line.mode]))
@@ -16,7 +17,7 @@ export function summarizeByMode(lines, alerts) {
 
   for (const line of lines) {
     if (!summary.has(line.mode)) {
-      summary.set(line.mode, { lineCount: 0, alertCount: 0, worstType: null })
+      summary.set(line.mode, { lineCount: 0, alertCount: 0, worstType: null, groups: [] })
     }
     summary.get(line.mode).lineCount += 1
   }
@@ -34,7 +35,35 @@ export function summarizeByMode(lines, alerts) {
     }
   }
 
+  // Cada linea con alertas, en el grupo de su peor alerta ("Interrupciones: Roca"), del
+  // estado mas grave al mas leve y en el orden de las lineas. Las que andan bien no van.
+  for (const line of lines) {
+    const type = worstAlertType(alerts.filter((a) => a.transportLineId === line.id))
+    if (!type) continue
+    const entry = summary.get(line.mode)
+    let group = entry.groups.find((g) => g.type === type)
+    if (!group) {
+      group = { type, lineIds: [] }
+      entry.groups.push(group)
+    }
+    group.lineIds.push(line.id)
+  }
+  for (const entry of summary.values()) {
+    entry.groups.sort((a, b) => (SEVERITY[b.type] ?? 0) - (SEVERITY[a.type] ?? 0) || GROUP_ORDER.indexOf(a.type) - GROUP_ORDER.indexOf(b.type))
+  }
+
   return summary
+}
+
+/** A igual gravedad, las obras antes que los desvios. */
+const GROUP_ORDER = ['INTERRUPCION', 'DEMORA', 'OBRA', 'DESVIO']
+
+/** Como se nombra cada grupo en "Estado de la red", y su color. */
+export const GROUP_LABELS = {
+  INTERRUPCION: { label: 'Interrupciones', tone: 'interrupted' },
+  DEMORA: { label: 'Demoras', tone: 'delayed' },
+  OBRA: { label: 'Obras', tone: 'delayed' },
+  DESVIO: { label: 'Desvíos', tone: 'delayed' },
 }
 
 export function statusFor(worstType) {

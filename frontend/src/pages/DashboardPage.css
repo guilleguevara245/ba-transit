@@ -37,3 +37,36 @@
     translate: 0 10px;
   }
 }
+
+/* "Estado de la red": un panel con el titulo adentro y las tarjetas de cada modo. */
+.network-panel {
+  margin-bottom: 40px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.network-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.network-head h2 {
+  margin: 0;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.network-stale {
+  padding: 8px 14px 0;
+}
+
+.network-wait {
+  padding: 14px;
+}

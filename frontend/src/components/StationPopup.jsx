@@ -83,7 +83,11 @@ export default function StationPopup({ station, stations, alerts, mode }) {
   const lineAlerts = alerts.filter((alert) => alert.transportLineId === station.lineId)
   // Una alerta que nombra una estacion ("Estacion Medrano cerrada") solo afecta a esa estacion.
   const lineNames = stations.filter((s) => s.lineId === station.lineId).map((s) => s.stationName)
-  const split = splitAlertsForStation(lineAlerts, station, lineNames)
+  // Una alerta de un ramal (en los trenes) solo cuenta en sus estaciones.
+  const branchIds = stations
+    .filter((s) => s.lineId === station.lineId && s.stationName === station.stationName)
+    .map((s) => s.branchId)
+  const split = splitAlertsForStation(lineAlerts, station, lineNames, branchIds)
   const operator = shortOperator(station.lineOperator)
   const header = cardHeader(station.lineColorHex)
 

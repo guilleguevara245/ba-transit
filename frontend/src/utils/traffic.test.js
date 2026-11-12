@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
+  accessGroups,
+  accessShortName,
   delayMinutes,
   lengthKm,
   problemsTitle,
@@ -101,5 +103,41 @@ describe('problemsTitle', () => {
     expect(problemsTitle([p('a', 'CORTADO'), p('b', 'CORTADO')])).toBe('Hay cortes en 2 accesos')
     expect(problemsTitle([p('a', 'CORTADO'), p('a', 'DEMORADO')])).toBe('Hay cortes en 1 acceso')
     expect(problemsTitle([])).toBeNull()
+  })
+})
+
+describe('accessShortName y accessGroups', () => {
+  const access = (id, name, ...statuses) => ({
+    id,
+    name,
+    segments: statuses.map((status, i) => ({ name: `Autopista Tramo ${i + 1}`, status })),
+  })
+
+  it('acorta el nombre del acceso', () => {
+    expect(accessShortName({ name: 'Acceso Norte (Panamericana)' })).toBe('Acceso Norte')
+    expect(accessShortName({ name: 'Autopista Buenos Aires - La Plata' })).toBe('Buenos Aires - La Plata')
+    expect(accessShortName({ name: 'Riccheri / Ezeiza-Cañuelas' }, { name: 'Autopista Ezeiza–Cañuelas' })).toBe(
+      'Ezeiza–Cañuelas',
+    )
+  })
+
+  it('agrupa por el peor estado de cada acceso y deja afuera los fluidos', () => {
+    const groups = accessGroups([
+      access('la-plata', 'Autopista Buenos Aires - La Plata', 'FLUIDO', 'FLUIDO'),
+      access('norte', 'Acceso Norte (Panamericana)', 'FLUIDO', 'CONGESTIONADO'),
+      access('oeste', 'Acceso Oeste', 'DEMORADO'),
+      access('riccheri', 'Riccheri / Ezeiza-Cañuelas', 'FLUIDO', 'CORTADO'),
+    ])
+    expect(groups.map((g) => [g.label, g.tone, g.names])).toEqual([
+      ['Cortes', 'interrupted', ['Tramo 2']],
+      ['Congestión', 'interrupted', ['Acceso Norte']],
+      ['Demoras', 'delayed', ['Acceso Oeste']],
+    ])
+  })
+
+  it('sin problemas o sin datos no hay grupos', () => {
+    expect(accessGroups([access('oeste', 'Acceso Oeste', 'FLUIDO')])).toEqual([])
+    expect(accessGroups([access('oeste', 'Acceso Oeste')])).toEqual([])
+    expect(accessGroups(undefined)).toEqual([])
   })
 })

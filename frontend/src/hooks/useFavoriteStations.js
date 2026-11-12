@@ -1,32 +1,40 @@
 import { useCallback, useState } from 'react'
 
-const STORAGE_KEY = 'ba-transit:estaciones-favoritas'
+/** Donde se guardaba antes la eleccion (se borra: ya no se recuerda). */
+const OLD_STORAGE_KEY = 'ba-transit:estaciones-favoritas'
 
-function read() {
+function forgetOldChoice() {
   try {
-    const parsed = JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? '{}')
-    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {}
+    window.localStorage.removeItem(OLD_STORAGE_KEY)
   } catch {
-    return {}
+    // Sin almacenamiento: no hay nada que borrar.
   }
 }
 
+/** La eleccion en memoria: sobrevive a ir y volver entre paginas, no a recargar. */
+let memory = null
+
 /**
- * Estacion elegida para cada linea favorita ({ idDeLinea: nombre }), para
- * mostrar sus proximos trenes en "Mis lineas". Se guarda en el navegador.
+ * Estacion elegida en cada linea de "Mis lineas" ({ idDeLinea: nombre }),
+ * para ver sus proximos trenes. Dura mientras el sitio esta abierto (aunque
+ * se vaya a otra pagina y se vuelva): al recargar vuelve a "Elegí tu
+ * estación…". Para tener una estacion siempre a mano esta "Mis
+ * estaciones" (la estrella de la estacion).
  */
 export function useFavoriteStations() {
-  const [stations, setStations] = useState(read)
+  const [stations, setStations] = useState(() => {
+    if (memory === null) {
+      forgetOldChoice()
+      memory = {}
+    }
+    return memory
+  })
 
   const setStation = useCallback((lineId, stationName) => {
-    const next = { ...read() }
+    const next = { ...memory }
     if (stationName) next[lineId] = stationName
     else delete next[lineId]
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-    } catch {
-      // Sin almacenamiento: la eleccion dura hasta recargar.
-    }
+    memory = next
     setStations(next)
   }, [])
 

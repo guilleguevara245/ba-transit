@@ -116,3 +116,50 @@ export function problemsTitle(problems) {
   const slow = all - cut
   return `Hay cortes en ${count(cut)}${slow > 0 ? ` y demoras en ${slow} más` : ''}`
 }
+
+/**
+ * Nombre corto de un acceso para la tarjeta del inicio: sin lo que va
+ * entre parentesis ni "Autopista" adelante. Si el acceso junta dos
+ * autopistas ("Riccheri / Ezeiza-Cañuelas"), el nombre del tramo.
+ */
+export function accessShortName(access, segment) {
+  const name = access.name.includes('/') && segment ? segment.name : access.name
+  return name
+    .replace(/\s*\(.*\)\s*/, '')
+    .replace(/^Autopista\s+/i, '')
+    .trim()
+}
+
+const GROUP_LABELS = {
+  CORTADO: { label: 'Cortes', tone: 'interrupted' },
+  CONGESTIONADO: { label: 'Congestión', tone: 'interrupted' },
+  DEMORADO: { label: 'Demoras', tone: 'delayed' },
+}
+
+/**
+ * Los accesos agrupados por estado, del peor al mejor, para la tarjeta del
+ * inicio: [{ status, label, tone, names }]. Cada acceso va una vez, en su
+ * peor estado (los que juntan dos autopistas, una vez por tramo). Los
+ * fluidos y sin datos no aparecen.
+ */
+export function accessGroups(accesses) {
+  const byStatus = new Map()
+  const add = (status, name) => {
+    if (!GROUP_LABELS[status]) return
+    const names = byStatus.get(status) ?? []
+    if (!names.includes(name)) names.push(name)
+    byStatus.set(status, names)
+  }
+  for (const access of accesses ?? []) {
+    const segments = access.segments ?? []
+    if (access.name.includes('/')) {
+      for (const segment of segments) add(segment.status, accessShortName(access, segment))
+    } else {
+      add(worstStatus(segments), accessShortName(access))
+    }
+  }
+  return [...SEVERITY]
+    .reverse()
+    .filter((status) => byStatus.has(status))
+    .map((status) => ({ status, ...GROUP_LABELS[status], names: byStatus.get(status) }))
+}

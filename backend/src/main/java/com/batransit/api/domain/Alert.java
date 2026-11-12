@@ -71,6 +71,11 @@ public class Alert {
     @Column(name = "source_effect")
     private Integer sourceEffect;
 
+    /** El ramal al que se refiere, si es de uno solo (null: toda la linea). Ver V64. */
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "branch_id")
+    private Branch branch;
+
     protected Alert() {
         // Constructor vacio requerido por JPA.
     }
@@ -95,6 +100,14 @@ public class Alert {
 
     public Long getId() {
         return id;
+    }
+
+    public Branch getBranch() {
+        return branch;
+    }
+
+    public void setBranch(Branch branch) {
+        this.branch = branch;
     }
 
     public Long transportLineId() {
