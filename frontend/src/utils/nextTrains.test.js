@@ -9,6 +9,7 @@ import {
   scheduleLabel,
   schedulePath,
   serverArrivalText,
+  serviceKind,
   sharedPlatform,
   tripTrainsPath,
 } from './nextTrains.js'
@@ -95,5 +96,17 @@ describe('tripTrainsPath', () => {
     expect(tripTrainsPath('BELGRANO_NORTE', 'Retiro', 'Boulogne Sur Mer')).toBe(null)
     expect(tripTrainsPath('URQUIZA', 'Lacroze', 'Lemos')).toBe(null)
     expect(tripTrainsPath('ROCA', 'Wilde', 'Wilde')).toBe(null)
+  })
+})
+
+describe('serviceKind', () => {
+  it('rápido (y expreso), semirrápido y directo; el resto, sin icono', () => {
+    expect(serviceKind('Rápido')).toBe('rapido')
+    expect(serviceKind('Expreso')).toBe('rapido')
+    expect(serviceKind('Semirrápido')).toBe('semirrapido')
+    expect(serviceKind('SEMIRRAPIDO')).toBe('semirrapido')
+    expect(serviceKind('Directo')).toBe('directo')
+    expect(serviceKind('Diferencial')).toBe(null)
+    expect(serviceKind(null)).toBe(null)
   })
 })

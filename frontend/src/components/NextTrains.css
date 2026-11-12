@@ -1,19 +1,77 @@
 /*
- * El rayo de los trenes rapidos, del color de la linea: en la tarjeta de
- * la estacion (junto a "Rápido") y en las tarjetas chicas del inicio
- * (solo el rayo, junto al horario). En el tema oscuro, mas claro para
- * que se vea sobre el fondo.
+ * Iconos de la lista de proximos trenes: el tipo de servicio (rayo de
+ * zigzag doble para los rapidos, rayo simple para los semirrapidos,
+ * flecha hasta el final para los directos), del color de la linea; el
+ * cartel del anden; y la marca de cancelado. En el tema
+ * oscuro, el color de la linea va mas claro para que se vea sobre el fondo.
  */
-.next-trains-bolt {
+.next-trains-icon {
   width: 1.15em;
   height: 1.15em;
-  margin: 0 1px 0 -2px;
+  margin-right: 2px;
   vertical-align: -3px;
-  fill: var(--line-color, var(--accent-text));
+  fill: currentColor;
 }
 
-:root[data-theme='dark'] .next-trains-bolt {
-  fill: color-mix(in srgb, var(--line-color, var(--accent-text)) 70%, #fff);
+.next-trains-icon .stroke {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.next-trains-bolt,
+.next-trains-direct {
+  color: var(--line-color, var(--accent-text));
+}
+
+:root[data-theme='dark'] .next-trains-bolt,
+:root[data-theme='dark'] .next-trains-direct {
+  color: color-mix(in srgb, var(--line-color, var(--accent-text)) 70%, #fff);
+}
+
+.next-trains-service .next-trains-icon {
+  margin-left: -2px;
+}
+
+/* "andén 2": el numero en un cartel oscuro (claro en el tema oscuro), sin separarse de la palabra. */
+.next-trains-platform {
+  white-space: nowrap;
+}
+
+.next-trains-platform-sign {
+  display: inline-block;
+  min-width: 1.3em;
+  padding: 0 3px;
+  border-radius: 4px;
+  background: var(--text);
+  color: var(--surface);
+  font-size: 0.82em;
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: center;
+  vertical-align: 1px;
+}
+
+/* Cancelado: etiqueta roja con la cruz, al lado del horario tachado. */
+.next-trains-cancel-tag {
+  margin-left: 5px;
+  padding: 0 6px 0 4px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--interrupted) 13%, transparent);
+  color: var(--interrupted);
+  font-size: 11px;
+  font-weight: 700;
+  vertical-align: 1px;
+  white-space: nowrap;
+}
+
+.next-trains-cancel-tag .next-trains-icon {
+  width: 1.1em;
+  height: 1.1em;
+  margin-right: 2px;
+  vertical-align: -3px;
 }
 
 /* Cada horario de la tarjeta chica va entero: si no entran, bajan de renglon entre uno y otro. */
@@ -21,6 +79,6 @@
   white-space: nowrap;
 }
 
-.mini-trains-time .next-trains-bolt {
+.mini-trains-time .next-trains-icon {
   margin: 0 1px 0 0;
 }

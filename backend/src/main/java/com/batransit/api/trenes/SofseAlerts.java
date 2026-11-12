@@ -32,6 +32,8 @@ import java.util.Set;
 public final class SofseAlerts {
 
     static final String ID_PREFIX = "sofse:";
+    /** El fondo verde con que la app marca los avisos de servicio normalizado. */
+    static final String RESOLVED_BACKGROUND = "#dff0d8";
     /** Las fechas de vigencia vienen en hora de Buenos Aires, sin zona. */
     static final ZoneId ZONE = ZoneId.of("America/Argentina/Buenos_Aires");
     private static final DateTimeFormatter DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm[:ss]");
@@ -66,7 +68,7 @@ public final class SofseAlerts {
             for (JsonNode alert : branch.path("alerta")) {
                 Integer id = number(alert.path("id"));
                 String text = SofseArrivals.text(alert.path("contenido"));
-                if (id == null || text == null || !enabled(alert, now) || !seen.add(id)) {
+                if (id == null || text == null || !enabled(alert, now) || resolved(alert, text) || !seen.add(id)) {
                     continue;
                 }
                 String effect = alert.path("efecto_gtfs").asText("");
@@ -87,6 +89,20 @@ public final class SofseAlerts {
         Instant from = dateTime(alert.path("vigencia_desde"));
         Instant to = dateTime(alert.path("vigencia_hasta"));
         return (from == null || !from.isAfter(now)) && (to == null || to.isAfter(now));
+    }
+
+    /**
+     * Avisos de que el servicio volvio a la normalidad ("El servicio se
+     * encuentra normalizado tras..."): la app los muestra en verde y duran
+     * unos minutos. No son una alerta (la linea no tiene problemas).
+     */
+    static boolean resolved(JsonNode alert, String text) {
+        if (RESOLVED_BACKGROUND.equalsIgnoreCase(alert.path("criticidad_color_fondo").asText("").strip())) {
+            return true;
+        }
+        String t = normalize(text);
+        return t.contains("normalizad") || t.contains("se normalizo") || t.contains("restablecid")
+                || t.contains("regularizad");
     }
 
     /**

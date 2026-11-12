@@ -47,16 +47,37 @@ export function sharedPlatform(arrivals) {
 }
 
 /**
- * Lo que se agrega entre parentesis a un tren de la lista: el destino si
- * no es el del sentido y el anden si no es el de todos ("a Mitre, andén
- * 3"), o "cancelado". null si no hay nada que agregar.
+ * Lo que se agrega a un tren de la lista: el destino si no es el del
+ * sentido y el anden si no es el de todos (shared). Un cancelado no lleva
+ * anden. Cada uno, null si no va.
  */
+export function arrivalExtras(arrival, towards, shared = null) {
+  const destination = arrival.destination && arrival.destination !== towards ? arrival.destination : null
+  const platform = !arrival.cancelled && arrival.platform && arrival.platform !== shared ? arrival.platform : null
+  return { destination, platform }
+}
+
+/** Lo mismo como texto ("a Mitre, andén 3"), o "cancelado". null si no hay nada que agregar. */
 export function arrivalDetails(arrival, towards, shared = null) {
   if (arrival.cancelled) return 'cancelado'
+  const { destination, platform } = arrivalExtras(arrival, towards, shared)
   const parts = []
-  if (arrival.destination && arrival.destination !== towards) parts.push(`a ${arrival.destination}`)
-  if (arrival.platform && arrival.platform !== shared) parts.push(`andén ${arrival.platform}`)
+  if (destination) parts.push(`a ${destination}`)
+  if (platform) parts.push(`andén ${platform}`)
   return parts.length > 0 ? parts.join(', ') : null
+}
+
+/**
+ * El tipo de servicio, para su icono: 'rapido' (rapido o expreso),
+ * 'semirrapido', 'directo' o null (el comun u otro).
+ */
+export function serviceKind(name) {
+  if (!name) return null
+  const n = name.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase()
+  if (n.includes('semirrapido') || n.includes('semi rapido') || n.includes('semi-rapido')) return 'semirrapido'
+  if (n.includes('rapido') || n.includes('expreso')) return 'rapido'
+  if (n.includes('directo')) return 'directo'
+  return null
 }
 
 /**

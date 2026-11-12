@@ -15,13 +15,14 @@ import { useClockPrefs } from '../hooks/useClockPrefs.js'
 import { useNow } from '../hooks/useNow.js'
 import { useSavedPlaces } from '../hooks/useSavedPlaces.js'
 import { useTripTrains } from '../hooks/useTripTrains.js'
+import { Platform, ServiceIcon } from '../components/NextTrains.jsx'
 import { distanceText, isSavedAddress } from '../utils/addressSearch.js'
 import { formatClock, formatClock12 } from '../utils/format.js'
 import { buildPlaces } from '../utils/places.js'
 import { findStationPlace, placePhrase } from '../utils/placesStore.js'
 import { MAX_ACCESS_KM, googleMapsUrl, isAddress, planTrip, walkingAlternative } from '../utils/planner.js'
 import { formatDuration } from '../utils/travelTime.js'
-import { trainText, tripStrip, tripTimeline } from '../utils/tripTimeline.js'
+import { trainLead, tripStrip, tripTimeline } from '../utils/tripTimeline.js'
 import './ModePage.css'
 import './AirportsPage.css'
 import './TripPlannerPage.css'
@@ -204,7 +205,23 @@ function Timeline({ items, start, formato }) {
               {item.text && <span>{item.text}</span>}
               {item.train && (
                 <span className="planner-train">
-                  {trainText(item.train, item.towards, (d) => clockText(d, formato))}
+                  <span>
+                    {trainLead(item.train, item.towards, (d) => clockText(d, formato))}
+                    {item.train.platform && (
+                      <>
+                        {' · '}
+                        <Platform number={item.train.platform} />
+                      </>
+                    )}
+                    {item.train.service && (
+                      <>
+                        {' · '}
+                        <ServiceIcon name={item.train.service} />
+                        {item.train.service}
+                      </>
+                    )}
+                    {item.train.scheduled ? ' · según horario' : ' · en vivo'}
+                  </span>
                   {item.train.note && <small>{item.train.note}</small>}
                 </span>
               )}

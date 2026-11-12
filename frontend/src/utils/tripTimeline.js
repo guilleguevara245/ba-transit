@@ -47,14 +47,19 @@ export function withTrains(legs, trains, start) {
   return { legs: out, offset }
 }
 
+/** El comienzo: "Tren de las 15:32" y el destino si no es el del sentido ("a Victoria"). */
+export function trainLead(train, towards, clock) {
+  const to = train.destination && train.destination !== towards ? ` a ${train.destination}` : ''
+  return `Tren de las ${clock(new Date(train.departure))}${to}`
+}
+
 /**
  * Como se nombra el tren a tomar: "Tren de las 15:32 a Victoria · andén 2
  * · Rápido · según horario" (el destino, si no es el del sentido). clock:
  * da formato a la hora, como el resto del viaje.
  */
 export function trainText(train, towards, clock) {
-  const to = train.destination && train.destination !== towards ? ` a ${train.destination}` : ''
-  const parts = [`Tren de las ${clock(new Date(train.departure))}${to}`]
+  const parts = [trainLead(train, towards, clock)]
   if (train.platform) parts.push(`andén ${train.platform}`)
   if (train.service) parts.push(train.service)
   parts.push(train.scheduled ? 'según horario' : 'en vivo')

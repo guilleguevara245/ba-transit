@@ -315,10 +315,6 @@
   text-decoration-thickness: 1.5px;
 }
 
-.next-trains-cancelled .next-trains-dest {
-  color: var(--interrupted);
-}
-
 /* Tipo de servicio que no es el comun ("Rápido"): chico, al lado del horario. */
 .next-trains-service {
   margin-left: 4px;

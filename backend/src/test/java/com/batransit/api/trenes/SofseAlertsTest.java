@@ -71,6 +71,20 @@ class SofseAlertsTest {
     }
 
     @Test
+    void losAvisosDeServicioNormalizadoNoSonAlertas() throws IOException {
+        // Tal como lo mando la API para el Tren de la Costa (12/11/2026, en verde y por 23 minutos).
+        JsonNode node = MAPPER.readTree("[{\"id\": 41, \"alerta\": [" + alert(99694, "OTHER_EFFECT",
+                "El servicio se encuentra normalizado tras fallas en el sistema de alimentación eléctrica.",
+                ", \"criticidad_orden\": 4, \"criticidad_color_fondo\": \"#dff0d8\"") + ","
+                + alert(2, "OTHER_EFFECT", "Servicio restablecido entre Maipú y Delta", "") + ","
+                + alert(3, "OTHER_EFFECT", "Por un aviso en verde", ", \"criticidad_color_fondo\": \"#DFF0D8\"") + ","
+                + alert(4, "REDUCED_SERVICE", "Servicio limitado hasta que se normalice la situación",
+                ", \"criticidad_color_fondo\": \"#fcf8e3\"") + "]}]");
+
+        assertThat(SofseAlerts.parse(node, NOW)).extracting(SofseAlert::id).containsExactly(4);
+    }
+
+    @Test
     void conEfectoGenericoElTipoSaleDelTexto() {
         assertThat(SofseAlerts.typeOf("OTHER_EFFECT", "OTHER_CAUSE", "Servicio suspendido entre A y B"))
                 .isEqualTo(AlertType.INTERRUPCION);

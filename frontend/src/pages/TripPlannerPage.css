@@ -259,13 +259,15 @@
   color: var(--text);
 }
 
-.planner-stop-text span {
+/* Solo los textos de la parada (no lo que va adentro del recuadro del tren). */
+.planner-stop-text > span {
   font-size: 13px;
   color: var(--text-dim);
 }
 
 /* El tren a tomar (Trenes Argentinos): hora, anden y tipo, con el color de la linea al costado. */
 .planner-stop-text .planner-train {
+  --line-color: var(--out);
   align-self: flex-start;
   display: flex;
   flex-direction: column;
