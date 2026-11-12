@@ -34,7 +34,8 @@ export default function NextTrains({ mode = 'SUBTE', lineCode, stationName, asCa
 
 /**
  * Version chica, para las tarjetas del inicio (Mis lineas y Mis
- * estaciones): un renglon por sentido con los dos proximos.
+ * estaciones): un renglon por sentido con los tres proximos (si no entran,
+ * los horarios bajan al renglon de abajo, sin cortar ninguno).
  */
 function CompactTrains({ directions, scheduled = false, live = false, plainTimes = false, color }) {
   // Los chevrones van del color de la linea.
@@ -52,8 +53,8 @@ function CompactTrains({ directions, scheduled = false, live = false, plainTimes
               {scheduled
                 ? (d.label ?? scheduleLabel(d))
                 : d.arrivals
-                    .slice(0, 2)
-                    .map((a) => serverArrivalText(a, plainTimes))
+                    .slice(0, 3)
+                    .map((a) => serverArrivalText(a, plainTimes).replaceAll(' ', '\u00a0'))
                     .join(' · ')}
             </strong>
           </li>

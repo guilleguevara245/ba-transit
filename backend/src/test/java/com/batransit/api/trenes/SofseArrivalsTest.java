@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -77,6 +78,30 @@ class SofseArrivalsTest {
         assertThat(out.arrivals()).extracting(a -> a.minutes()).containsExactly(2, 15, 25);
         assertThat(out.arrivals().get(2).destination()).isEqualTo("Victoria");
         assertThat(parsed.scheduledOnly()).isFalse();
+        // El numero de estacion de cada destino, para buscarle nuestro nombre.
+        assertThat(parsed.destinationIds()).containsExactly(
+                Map.entry("Tigre (C)", 500), Map.entry("Retiro", 332), Map.entry("Victoria", 420));
+    }
+
+    @Test
+    void cambiaLosDestinosPorLosNombresDelSitio() throws IOException {
+        Parsed parsed = SofseArrivals.parse(response(
+                result(2, 300, true, "Plaza C.", 1, ""),
+                result(2, 900, true, "Plaza C.", 1, ""),
+                result(1, 120, true, "Bosques", 2, ""),
+                result(1, 600, true, "La Plata", 3, "")), ASKED);
+
+        Parsed renamed = SofseArrivals.renamed(parsed, Map.of("Plaza C.", "Plaza Constitución"));
+
+        assertThat(renamed.directions().get(0).towards()).isEqualTo("Plaza Constitución");
+        assertThat(renamed.directions().get(0).arrivals()).extracting(a -> a.destination())
+                .containsOnly("Plaza Constitución");
+        // Los que no tienen nombre nuestro quedan como vienen.
+        assertThat(renamed.directions().get(1).towards()).isEqualTo("Bosques");
+        assertThat(renamed.directions().get(1).arrivals()).extracting(a -> a.destination())
+                .containsExactly("Bosques", "La Plata");
+        assertThat(renamed.scheduledOnly()).isTrue();
+        assertThat(SofseArrivals.renamed(parsed, Map.of())).isSameAs(parsed);
     }
 
     @Test
@@ -137,6 +162,7 @@ class SofseArrivalsTest {
     @Test
     void sacaLaSiglaDeLaLineaDelNombre() {
         assertThat(SofseArrivals.cleanName("Retiro (LGM)")).isEqualTo("Retiro");
+        assertThat(SofseArrivals.cleanName("Retiro - LSM")).isEqualTo("Retiro");
         assertThat(SofseArrivals.cleanName("Tigre (C)")).isEqualTo("Tigre (C)");
         assertThat(SofseArrivals.cleanName("J. L. Suarez")).isEqualTo("J. L. Suarez");
     }

@@ -46,8 +46,6 @@ public class SofseArrivalsClient {
     static final Duration CATALOG_BACKOFF = Duration.ofMinutes(10);
     /** Cuantos arribos pedir: alcanza para los dos sentidos. */
     static final int REQUESTED = 12;
-    /** Hasta donde se busca la estacion de SOFSE que corresponde a la nuestra. */
-    static final double MAX_METERS = 450;
 
     public record Snapshot(Instant fetchedAt, Parsed parsed) {
     }
@@ -97,8 +95,13 @@ public class SofseArrivalsClient {
      * o si no se pudieron pedir las estaciones.
      */
     public Optional<Integer> stationId(int gerencia, double latitude, double longitude) {
-        Station station = SofseArrivals.nearest(catalog(gerencia), latitude, longitude, MAX_METERS);
+        Station station = SofseArrivals.nearest(catalog(gerencia), latitude, longitude, SofseArrivals.MAX_METERS);
         return Optional.ofNullable(station).map(Station::id);
+    }
+
+    /** Una estacion de SOFSE de la linea, por su numero (vacio si no esta o no se pudo pedir la lista). */
+    public Optional<Station> station(int gerencia, int id) {
+        return catalog(gerencia).stream().filter(s -> s.id() == id).findFirst();
     }
 
     /** Proximos trenes de una estacion de SOFSE, o vacio si la API no respondio. */

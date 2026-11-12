@@ -49,8 +49,10 @@ public final class SofseArrivals {
     /**
      * Los sentidos con sus proximos trenes. scheduledOnly: ninguno tiene
      * estimacion en vivo (todos son del horario programado).
+     * destinationIds: el numero de estacion de SOFSE de cada destino, para
+     * poder mostrarlo con el nombre que tiene en el sitio.
      */
-    public record Parsed(List<Direction> directions, boolean scheduledOnly) {
+    public record Parsed(List<Direction> directions, boolean scheduledOnly, Map<String, Integer> destinationIds) {
     }
 
     /** Una estacion de SOFSE con su ubicacion. */
@@ -59,6 +61,9 @@ public final class SofseArrivals {
 
     private record Item(int sentido, int seconds, boolean scheduled, String destination) {
     }
+
+    /** Hasta donde se busca la estacion nuestra que corresponde a una de SOFSE. */
+    public static final double MAX_METERS = 450;
 
     /**
      * Lee la respuesta de /arribos/estacion/{id}. now: cuando se pidio
@@ -71,6 +76,7 @@ public final class SofseArrivals {
             elapsed = Math.max(0, Math.min(600, now.getEpochSecond() - timestamp));
         }
         List<Item> items = new ArrayList<>();
+        Map<String, Integer> destinationIds = new LinkedHashMap<>();
         for (JsonNode result : root.path("results")) {
             JsonNode arrival = result.path("arribo");
             JsonNode service = result.path("servicio");
@@ -91,6 +97,10 @@ public final class SofseArrivals {
                 continue;
             }
             String destination = cleanName(to.path("nombre").asText(""));
+            Integer destinationId = number(to.path("idElemento"));
+            if (!destination.isEmpty() && destinationId != null) {
+                destinationIds.putIfAbsent(destination, destinationId);
+            }
             items.add(new Item(service.path("sentido").asInt(0), seconds,
                     arrival.path("programada").asBoolean(true), destination.isEmpty() ? null : destination));
         }
@@ -108,18 +118,37 @@ public final class SofseArrivals {
             List<Arrival> arrivals = next.stream()
                     .map(i -> new Arrival(Math.max(0, Math.floorDiv(i.seconds(), 60)), i.scheduled(), i.destination()))
                     .toList();
-            directions.add(new Direction(entry.getKey(), towards(next), arrivals));
+            directions.add(new Direction(entry.getKey(), towards(arrivals), arrivals));
         }
         boolean scheduledOnly = items.stream().allMatch(Item::scheduled);
-        return new Parsed(directions, scheduledOnly);
+        return new Parsed(directions, scheduledOnly, destinationIds);
+    }
+
+    /**
+     * Los mismos trenes con los destinos renombrados (names: nombre de SOFSE
+     * -> nombre del sitio; los que no estan quedan como vienen).
+     */
+    public static Parsed renamed(Parsed parsed, Map<String, String> names) {
+        if (names.isEmpty()) {
+            return parsed;
+        }
+        List<Direction> directions = new ArrayList<>();
+        for (Direction direction : parsed.directions()) {
+            List<Arrival> arrivals = direction.arrivals().stream()
+                    .map(a -> new Arrival(a.minutes(), a.estimated(),
+                            a.destination() == null ? null : names.getOrDefault(a.destination(), a.destination())))
+                    .toList();
+            directions.add(new Direction(direction.directionId(), towards(arrivals), arrivals));
+        }
+        return new Parsed(directions, parsed.scheduledOnly(), parsed.destinationIds());
     }
 
     /** Hacia donde va el sentido: el destino que mas se repite entre los proximos (a igualdad, el primero). */
-    private static String towards(List<Item> items) {
+    private static String towards(List<Arrival> arrivals) {
         Map<String, Integer> count = new LinkedHashMap<>();
-        for (Item item : items) {
-            if (item.destination() != null) {
-                count.merge(item.destination(), 1, Integer::sum);
+        for (Arrival arrival : arrivals) {
+            if (arrival.destination() != null) {
+                count.merge(arrival.destination(), 1, Integer::sum);
             }
         }
         return count.entrySet().stream().max(Map.Entry.comparingByValue())
@@ -177,9 +206,9 @@ public final class SofseArrivals {
         return Math.sqrt(x * x + y * y) * 6_371_000;
     }
 
-    /** "Retiro (LGM)" -> "Retiro": la sigla de la linea ya se sabe por la tarjeta. */
+    /** "Retiro (LGM)" o "Retiro - LSM" -> "Retiro": la sigla de la linea ya se sabe por la tarjeta. */
     static String cleanName(String name) {
-        return name.replaceAll("\\s*\\([A-Z]{2,4}\\)\\s*$", "").strip();
+        return name.replaceAll("\\s*(\\([A-Z]{2,4}\\)|-\\s*[A-Z]{2,4})\\s*$", "").strip();
     }
 
     private static boolean hasValue(JsonNode node) {

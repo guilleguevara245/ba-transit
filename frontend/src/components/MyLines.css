@@ -57,17 +57,20 @@
 
 .mini-trains li {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
-  gap: 12px;
+  column-gap: 12px;
 }
 
 .mini-trains-towards {
   color: var(--text-dim);
 }
 
+/* Cada horario va entero (con espacios que no cortan); si no entran, bajan a la derecha. */
 .mini-trains strong {
+  margin-left: auto;
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+  text-align: right;
 }
 
 .mini-trains-empty {
