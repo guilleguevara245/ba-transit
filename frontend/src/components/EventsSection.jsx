@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import ModeIcon from './ModeIcon.jsx'
 import ExternalTitle from './ExternalTitle.jsx'
 import NewsList from './NewsList.jsx'
 import { useApi } from '../hooks/useApi.js'
@@ -94,8 +95,9 @@ export default function EventsSection() {
           className={tab === 'eventos' ? 'active' : ''}
           onClick={() => choose('eventos')}
         >
+          <ModeIcon mode="EVENTOS" size="title" />
           Eventos y cortes
-          {events.length > 0 && <span className="count">{events.length}</span>}
+          {events.length > 0 && <span className="tab-count">{events.length}</span>}
         </button>
         <button
           type="button"
@@ -106,6 +108,7 @@ export default function EventsSection() {
           className={tab === 'noticias' ? 'active' : ''}
           onClick={() => choose('noticias')}
         >
+          <ModeIcon mode="NOTICIAS" size="title" />
           Noticias
         </button>
       </div>

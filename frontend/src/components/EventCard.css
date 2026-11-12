@@ -166,6 +166,63 @@
   margin-left: 14px;
 }
 
+/*
+ * Cada pestaña con su icono en un cuadro, como los titulos de los otros
+ * paneles: en amarillo la elegida, en gris la otra.
+ */
+.events-tabs .mode-icon {
+  margin-right: 2px;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.events-tabs button:not(.active) .mode-icon {
+  background: var(--surface-hover);
+  color: var(--text-faint);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+/* Cuantos eventos hay: un numero en una pastilla, amarilla si la pestaña esta elegida. */
+.tab-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--surface-hover);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--text-dim);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.events-tabs button.active .tab-count {
+  background: var(--yellow);
+  box-shadow: none;
+  color: #17171a;
+}
+
+/* En un renglon; en el celular, un poco mas juntas para que entren las dos. */
+.events-tabs button {
+  white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  .events-tabs button {
+    gap: 6px;
+    font-size: 16px;
+  }
+
+  .events-tabs button + button {
+    margin-left: 8px;
+  }
+}
+
 .events-tabs button.active {
   border-bottom-color: var(--yellow);
   color: var(--text);

@@ -27,9 +27,12 @@ export default function FaresPanel({ fares, showMore = true }) {
 
       {summary.map((row) => (
         <div className="fare-row" key={row.mode}>
-          <span className="name">
-            {row.label}
-            {row.hint && <small>{row.hint}</small>}
+          <span className="fare-who">
+            <ModeIcon mode={row.mode} size="sm" />
+            <span className="name">
+              {row.label}
+              {row.hint && <small>{row.hint}</small>}
+            </span>
           </span>
           <span className="value">
             {row.from && <small>desde</small>}

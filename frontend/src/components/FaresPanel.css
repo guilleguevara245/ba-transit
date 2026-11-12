@@ -5,7 +5,8 @@
 .fare-row {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
+  gap: 10px;
   padding: 9px 0;
   font-size: 13px;
   border-bottom: 1px solid var(--line);
@@ -13,6 +14,14 @@
 
 .fare-row:last-of-type {
   border-bottom: none;
+}
+
+/* El icono del modo y su nombre. */
+.fare-who {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
 }
 
 .fare-row .name {
