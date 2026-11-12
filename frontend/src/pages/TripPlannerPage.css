@@ -205,13 +205,17 @@
   background: var(--out);
 }
 
+/*
+ * A pie (o esperando): puntos redondos en lugar de la linea. Con "round"
+ * cada tramo entra con un numero entero de puntos, asi la separacion es
+ * pareja tambien donde un tramo se junta con el siguiente.
+ */
 .planner-rail.in-walk::before,
 .planner-rail.out-walk::after,
 .planner-rail.in-wait::before,
 .planner-rail.out-wait::after {
-  width: 0;
-  border-left: 3px dotted var(--text-faint);
-  background: none;
+  width: 4px;
+  background: radial-gradient(circle, var(--text-faint) 1.7px, transparent 2.1px) center top / 4px 8px round;
 }
 
 .planner-rail.no-in::before,
@@ -269,9 +273,8 @@
 
 .planner-seg-walk .planner-track,
 .planner-seg-wait .planner-track {
-  width: 0;
-  border-left: 3px dotted var(--text-faint);
-  background: none;
+  width: 4px;
+  background: radial-gradient(circle, var(--text-faint) 1.7px, transparent 2.1px) center top / 4px 8px round;
 }
 
 /*
@@ -334,10 +337,16 @@
   color: var(--text-dim);
 }
 
+/* A pie o esperando: un circulo gris del tamaño del de cada linea, con el icono en blanco. */
 .planner-seg-text .trip-icon {
-  width: 16px;
-  height: 16px;
-  color: var(--text-faint);
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+  padding: 3px;
+  border-radius: 50%;
+  background: var(--text-faint);
+  color: var(--surface);
+  stroke-width: 2.4;
 }
 
 .planner-note {
