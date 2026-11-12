@@ -42,3 +42,23 @@
   height: 15px;
   stroke-width: 2.1;
 }
+
+/* Para el titulo de un panel ("Tus favoritos", "Estado de la red"). */
+.mode-icon-title {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+}
+
+.mode-icon-title svg {
+  width: 17px;
+  height: 17px;
+  stroke-width: 2;
+}
+
+@media (max-width: 520px) {
+  .mode-icon-title {
+    width: 26px;
+    height: 26px;
+  }
+}

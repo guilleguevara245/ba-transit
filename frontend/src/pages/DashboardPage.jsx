@@ -3,6 +3,7 @@ import Greeting from '../components/Greeting.jsx'
 import SearchBar from '../components/SearchBar.jsx'
 import DayWeather from '../components/DayWeather.jsx'
 import ModeGrid from '../components/ModeGrid.jsx'
+import ModeIcon from '../components/ModeIcon.jsx'
 import FavoritesPanel from '../components/FavoritesPanel.jsx'
 import AccountInvite from '../components/AccountInvite.jsx'
 import AlertsPanel from '../components/AlertsPanel.jsx'
@@ -57,7 +58,10 @@ export default function DashboardPage() {
       {/* Un panel con el titulo adentro, como "Tus favoritos" y "Alertas destacadas". */}
       <section className="network-panel" aria-labelledby="network-title">
         <header className="network-head">
-          <h2 id="network-title">Estado de la red</h2>
+          <h2 id="network-title" className="panel-heading">
+            <ModeIcon mode="RED" size="title" />
+            Estado de la red
+          </h2>
           {alertsState.updatedAt && (
             <span className="updated-at" title={alertsState.updatedAt.toLocaleString('es-AR')}>
               {/* now se usa para que el texto se recalcule cada 30 segundos */}

@@ -118,7 +118,57 @@
 }
 
 .mode-group-item {
+  position: relative;
   display: inline-flex;
+}
+
+/*
+ * Cartel con el nombre al pasar el mouse, con el estilo de las etiquetas
+ * del mapa: arriba del icono, con una flechita.
+ */
+.mode-group-item[data-tip]::after,
+.mode-group-item[data-tip]::before {
+  position: absolute;
+  left: 50%;
+  z-index: 5;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+}
+
+.mode-group-item[data-tip]::after {
+  content: attr(data-tip);
+  bottom: calc(100% + 8px);
+  translate: -50% 0;
+  padding: 5px 9px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-raised);
+  color: var(--text);
+  box-shadow: 0 4px 14px rgba(23, 23, 26, 0.14);
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.mode-group-item[data-tip]::before {
+  content: '';
+  bottom: calc(100% + 3px);
+  width: 8px;
+  height: 8px;
+  translate: -50% 0;
+  rotate: 45deg;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-raised);
+  z-index: 6;
+}
+
+.mode-group-item[data-tip]:hover::after,
+.mode-group-item[data-tip]:hover::before {
+  opacity: 1;
 }
 
 /* El cartel de la ruta, como en Accesos, en chico. */

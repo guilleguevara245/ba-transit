@@ -37,3 +37,59 @@
   fill: var(--yellow);
   stroke: var(--yellow-deep);
 }
+
+/*
+ * La campana: al pasar el mouse (o llegar con el teclado) se balancea una
+ * vez; al hacer clic suena fuerte antes de abrir los avisos. Gira desde
+ * arriba, como una campana colgada. Sin animacion si se pidio menos
+ * movimiento.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .notif-link svg {
+    transform-origin: 50% 12%;
+  }
+
+  .notif-link:hover svg,
+  .notif-link:focus-visible svg {
+    animation: bell-swing 0.7s ease-in-out;
+  }
+
+  .notif-link.ringing svg {
+    animation: bell-ring 0.45s ease-in-out;
+  }
+}
+
+@keyframes bell-swing {
+  20% {
+    rotate: -14deg;
+  }
+  45% {
+    rotate: 10deg;
+  }
+  70% {
+    rotate: -5deg;
+  }
+}
+
+@keyframes bell-ring {
+  10% {
+    rotate: 18deg;
+    scale: 1.25;
+  }
+  25% {
+    rotate: -18deg;
+  }
+  40% {
+    rotate: 14deg;
+  }
+  55% {
+    rotate: -10deg;
+    scale: 1.2;
+  }
+  70% {
+    rotate: 6deg;
+  }
+  85% {
+    rotate: -3deg;
+  }
+}

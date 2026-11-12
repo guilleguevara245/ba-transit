@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Chevrons from './Chevrons.jsx'
+import ModeIcon from './ModeIcon.jsx'
 import './AlertsPanel.css'
 import { formatRelativeTime } from '../utils/format.js'
 import { ALERT_TYPE_LABELS } from '../constants.js'
@@ -32,7 +33,10 @@ export default function AlertsPanel({ alerts, lines }) {
   return (
     <div className="panel">
       <div className="panel-title alerts-head">
-        <span>Alertas destacadas</span>
+        <span className="panel-heading">
+          <ModeIcon mode="ALERTAS" size="title" />
+          Alertas destacadas
+        </span>
         {showFilters ? (
           <div className="alert-filters" role="group" aria-label="Filtrar alertas">
             {ALERT_FILTERS.map((f) => (

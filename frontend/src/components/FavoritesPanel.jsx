@@ -1,3 +1,4 @@
+import ModeIcon from './ModeIcon.jsx'
 import MyBuses from './MyBuses.jsx'
 import MyLines from './MyLines.jsx'
 import NotificationsLink from './NotificationsLink.jsx'
@@ -22,7 +23,10 @@ export default function FavoritesPanel({ lines, alerts }) {
   return (
     <section className="fav-panel" aria-labelledby="fav-title">
       <header className="fav-head">
-        <h2 id="fav-title">Tus favoritos</h2>
+        <h2 id="fav-title" className="panel-heading">
+          <ModeIcon mode="FAVORITOS" size="title" />
+          Tus favoritos
+        </h2>
         {ready && <NotificationsLink compact />}
       </header>
       {total === 0 ? (

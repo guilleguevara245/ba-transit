@@ -48,19 +48,20 @@
 
 .network-head {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
+  min-height: 54px;
   padding: 10px 14px;
   border-bottom: 1px solid var(--line);
 }
 
-.network-head h2 {
-  margin: 0;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--text);
+/* Celular: lo de la derecha del titulo, chico y en dos renglones si hace falta. */
+@media (max-width: 520px) {
+  .network-head .updated-at {
+    font-size: 11px;
+    text-align: right;
+  }
 }
 
 .network-stale {

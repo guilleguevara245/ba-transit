@@ -13,14 +13,15 @@ import StatusPill from './StatusPill.jsx'
 /**
  * Lo afectado en un estado, con su icono: la insignia de cada linea (la
  * letra del subte, el tren en el color de su linea) o el cartel de la ruta
- * de cada autopista. El nombre queda al pasar el mouse y para los lectores
+ * de cada autopista. El nombre aparece en un cartel al pasar el mouse
+ * (con el estilo del sitio, no el del navegador) y queda para los lectores
  * de pantalla. items: [{ key, icon, name }].
  */
 function GroupItems({ items }) {
   return (
     <span className="mode-group-lines">
       {items.map((item) => (
-        <span key={item.key} className="mode-group-item" title={item.name}>
+        <span key={item.key} className="mode-group-item" data-tip={item.name}>
           {item.icon}
           <span className="visually-hidden">{item.name}</span>
         </span>
@@ -31,7 +32,7 @@ function GroupItems({ items }) {
 
 /** Las lineas de un estado, con su insignia. */
 function GroupLines({ lines }) {
-  const items = lines.map((line) => ({ key: line.id, icon: <LineBadge line={line} size="sm" />, name: line.name }))
+  const items = lines.map((line) => ({ key: line.id, icon: <LineBadge line={line} size="sm" title={null} />, name: line.name }))
   return <GroupItems items={items} />
 }
 

@@ -157,6 +157,26 @@ body {
   justify-content: space-between;
 }
 
+/* Titulo de un panel con su icono: "Tus favoritos", "Estado de la red"... */
+.panel-heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  .panel-heading {
+    gap: 8px;
+    font-size: 17px;
+  }
+}
+
 .panel-title span.count {
   font-size: 12px;
   font-weight: 400;

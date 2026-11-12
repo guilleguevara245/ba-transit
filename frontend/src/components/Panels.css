@@ -38,7 +38,7 @@
 .grid-main .panel > .panel-title {
   margin: -22px -24px 16px;
   padding: 10px 24px;
-  min-height: 48px;
+  min-height: 54px;
   border-bottom: 1px solid var(--line);
   font-size: 17px;
   font-weight: 700;

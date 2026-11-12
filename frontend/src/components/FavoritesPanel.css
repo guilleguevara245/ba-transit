@@ -12,16 +12,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  min-height: 54px;
   padding: 10px 14px;
   border-bottom: 1px solid var(--line);
-}
-
-.fav-head h2 {
-  margin: 0;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--text);
 }
 
 .fav-empty {
@@ -109,6 +102,11 @@
 @media (max-width: 600px) {
   .fav-kind {
     display: none;
+  }
+
+  .notif-link.notif-link-compact {
+    font-size: 11px;
+    text-align: right;
   }
 
   .fav-list .my-line-trains {

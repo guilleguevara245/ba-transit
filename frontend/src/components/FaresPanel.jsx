@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import Chevrons from './Chevrons.jsx'
+import ModeIcon from './ModeIcon.jsx'
 import './FaresPanel.css'
 import { formatCurrency, formatLongDate } from '../utils/format.js'
 import { fareSummary } from '../utils/fares.js'
@@ -15,7 +16,12 @@ export default function FaresPanel({ fares, showMore = true }) {
 
   return (
     <div className="panel side-panel">
-      <div className="panel-title">Tarifas vigentes</div>
+      <div className="panel-title">
+        <span className="panel-heading">
+          <ModeIcon mode="SUBE" size="title" />
+          Tarifas vigentes
+        </span>
+      </div>
 
       {summary.length === 0 && <div className="loading-text">Todavía no hay tarifas cargadas.</div>}
 

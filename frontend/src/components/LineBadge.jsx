@@ -16,14 +16,15 @@ function TrainIcon() {
 /**
  * Badge circular de una linea con su color oficial. Subte y premetro
  * muestran su letra; los trenes, un icono de tren (sus codigos, como
- * "SAN_MARTIN", no entran en un circulo).
+ * "SAN_MARTIN", no entran en un circulo). title: el texto al pasar el
+ * mouse (null para no poner ninguno, si ya hay un cartel propio).
  */
-export default function LineBadge({ line, size = 'md' }) {
+export default function LineBadge({ line, size = 'md', title = line.name }) {
   const isTrain = line.mode === 'TREN'
   const style = { background: line.colorHex, color: readableTextColor(line.colorHex) }
 
   return (
-    <span className={`line-badge line-badge-${size}`} style={style} title={line.name}>
+    <span className={`line-badge line-badge-${size}`} style={style} title={title ?? undefined}>
       {isTrain ? <TrainIcon /> : line.code}
     </span>
   )
