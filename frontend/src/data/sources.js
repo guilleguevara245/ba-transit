@@ -6,7 +6,7 @@
  * dia), 'manual' (se carga a mano cuando cambia el dato oficial), 'fixed'
  * (datos de una fecha), 'search' (se consulta al buscar) o { every: '5 min' }.
  */
-const API_TRANSPORTE = 'API Transporte del Gobierno de la Ciudad de Buenos Aires'
+const API_TRANSPORTE = 'API Transporte GCBA (Gobierno de la Ciudad de Buenos Aires)'
 const API_TRANSPORTE_URL = 'https://api-transporte.buenosaires.gob.ar/'
 const TRENES_AVISOS_URL =
   'https://www.argentina.gob.ar/transporte/trenes-argentinos/modificaciones-en-el-servicio-y-novedades'
@@ -27,7 +27,7 @@ export const SOURCE_GROUPS = [
       },
       {
         what: 'Frecuencias programadas',
-        source: 'API Transporte (Gobierno de la Ciudad), GTFS del subte',
+        source: 'API Transporte GCBA, GTFS del subte',
         url: 'https://www.buenosaires.gob.ar/desarrollourbano/transporte/apitransporte',
         detail:
           'Frecuencia por franja horaria y tiempo entre estaciones, para estimar las próximas pasadas cuando no hay datos en vivo.',
@@ -122,7 +122,7 @@ export const SOURCE_GROUPS = [
       },
       {
         what: 'Recorridos y paradas',
-        source: 'API Transporte (Gobierno de la Ciudad), GTFS de colectivos',
+        source: 'API Transporte GCBA, GTFS de colectivos',
         url: API_TRANSPORTE_URL,
         detail: 'Recorrido y paradas de cada línea, y el tiempo entre parada y parada.',
         when: 'daily',

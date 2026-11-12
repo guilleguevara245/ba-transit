@@ -36,7 +36,7 @@ export default function BusAlerts({ shortName }) {
               )}
             </p>
           )}
-          <div className="bus-alert-source">Fuente: API Transporte (Gobierno de la Ciudad)</div>
+          <div className="bus-alert-source">Fuente: API Transporte GCBA</div>
         </div>
       ))}
     </section>

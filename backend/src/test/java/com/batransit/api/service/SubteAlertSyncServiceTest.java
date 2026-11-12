@@ -89,7 +89,7 @@ class SubteAlertSyncServiceTest {
 
     @Test
     void actualizaUnaAlertaExistenteSinDuplicarla() {
-        Alert existing = new Alert(lineaA, AlertType.DEMORA, "Texto viejo", "API Transporte", "alerta-1", null, 3);
+        Alert existing = new Alert(lineaA, AlertType.DEMORA, "Texto viejo", "API Transporte GCBA", "alerta-1", null, 3);
         when(alertRepository.findByExternalId("alerta-1")).thenReturn(Optional.of(existing));
         when(apiClient.fetchSubteAlerts()).thenReturn(feed(entity("alerta-1", 4, "Texto nuevo", "LineaA")));
 
@@ -102,8 +102,8 @@ class SubteAlertSyncServiceTest {
 
     @Test
     void desactivaLasAlertasQueYaNoEstanEnElFeed() {
-        Alert resuelta = new Alert(lineaA, AlertType.DEMORA, "Ya resuelta", "API Transporte", "vieja", null, null);
-        Alert vigente = new Alert(lineaA, AlertType.DEMORA, "Sigue", "API Transporte", "alerta-1", null, null);
+        Alert resuelta = new Alert(lineaA, AlertType.DEMORA, "Ya resuelta", "API Transporte GCBA", "vieja", null, null);
+        Alert vigente = new Alert(lineaA, AlertType.DEMORA, "Sigue", "API Transporte GCBA", "alerta-1", null, null);
         when(alertRepository.findByActiveTrueAndExternalIdIsNotNull()).thenReturn(List.of(resuelta, vigente));
         when(alertRepository.findByExternalId("alerta-1")).thenReturn(Optional.of(vigente));
         when(apiClient.fetchSubteAlerts()).thenReturn(feed(entity("alerta-1", 3, "Sigue", "LineaA")));
@@ -127,7 +127,7 @@ class SubteAlertSyncServiceTest {
 
     @Test
     void noDesactivaUnaAlertaVigenteSiFallaSuProcesamiento() {
-        Alert vigente = new Alert(lineaA, AlertType.DEMORA, "Sigue", "API Transporte", "alerta-rota", null, null);
+        Alert vigente = new Alert(lineaA, AlertType.DEMORA, "Sigue", "API Transporte GCBA", "alerta-rota", null, null);
         when(alertRepository.findByActiveTrueAndExternalIdIsNotNull()).thenReturn(List.of(vigente));
         when(lineRepository.findByModeAndCodeIgnoreCase(TransportMode.SUBTE, "B"))
                 .thenThrow(new IllegalStateException("falla simulada"));

@@ -49,7 +49,8 @@ public class SubteAlertSyncService {
     void setHealth(SourceHealth health) {
         this.health = health;
     }
-    private static final String SOURCE_NAME = "API Transporte";
+    /** Como se muestra la fuente ("Fuente: API Transporte GCBA"), para no confundirla con la de los trenes. */
+    private static final String SOURCE_NAME = "API Transporte GCBA";
 
     /**
      * Cuando una misma alerta del feed afecta a varias lineas, se guarda
