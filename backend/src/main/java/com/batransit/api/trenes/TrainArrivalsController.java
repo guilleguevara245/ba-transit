@@ -29,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequestMapping("/api/v1/trenes")
 public class TrainArrivalsController {
 
-    static final String SOFSE_SOURCE = "Trenes Argentinos, vía la API de Trenes de Ariel Aguirre";
+    static final String SOFSE_SOURCE = "API Trenes Argentinos";
     /** Cuanto se recuerda que estacion de SOFSE es cada una nuestra (si no se encontro, menos). */
     static final Duration MATCH_MAX_AGE = Duration.ofHours(24);
     static final Duration NO_MATCH_MAX_AGE = Duration.ofHours(1);
