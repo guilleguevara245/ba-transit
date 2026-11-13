@@ -272,27 +272,22 @@ public class ColectivoService {
     }
 
     /**
-     * Los otros carteles de la misma linea (la 42B si es la 42A) que paran en
-     * esa parada, para avisar de todos los que pasan por ella.
+     * Los otros carteles de la misma linea (la 42B si es la 42A). Si paran en
+     * una parada lo decide StopMatcher (la misma parada o una al lado).
      */
-    public List<BusRoute> otherSignsAtStop(BusRoute route, String stopId) {
+    public List<BusRoute> otherSigns(BusRoute route) {
         String number = lineNumber(route.shortName());
         if (number.isEmpty()) {
             return List.of();
         }
         return requireCatalog().routes().values().stream()
                 .filter(r -> !r.id().equals(route.id()) && number.equals(lineNumber(r.shortName())))
-                .filter(r -> r.directions().stream().anyMatch(d -> d.stops().stream()
-                        .anyMatch(stop -> stop.id().equals(stopId))))
                 .sorted(Comparator.comparing((BusRoute r) -> naturalKey(r.shortName())))
                 .toList();
     }
 
-    /**
-     * Las lineas pedidas (por su cartel: "303A", "163") que paran en esa
-     * parada: los otros colectivos favoritos de quien la tiene guardada.
-     */
-    public List<BusRoute> routesAtStop(java.util.Collection<String> shortNames, String stopId) {
+    /** Las lineas con esos carteles ("303A", "163"): los otros colectivos favoritos de quien guardo una parada. */
+    public List<BusRoute> routesNamed(java.util.Collection<String> shortNames) {
         java.util.Set<String> wanted = shortNames.stream().map(n -> normalize(n).replaceAll("\\s+", ""))
                 .collect(java.util.stream.Collectors.toSet());
         if (wanted.isEmpty()) {
@@ -300,8 +295,6 @@ public class ColectivoService {
         }
         return requireCatalog().routes().values().stream()
                 .filter(r -> wanted.contains(normalize(r.shortName()).replaceAll("\\s+", "")))
-                .filter(r -> r.directions().stream().anyMatch(d -> d.stops().stream()
-                        .anyMatch(stop -> stop.id().equals(stopId))))
                 .sorted(Comparator.comparing((BusRoute r) -> naturalKey(r.shortName())))
                 .toList();
     }

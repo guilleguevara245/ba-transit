@@ -46,7 +46,7 @@ export default function MyBuses({ inPanel = false }) {
               {moving != null && (
                 <small className={moving > 0 ? 'my-bus-moving' : undefined}>
                   {moving > 0 && <i className="live-dot" aria-hidden="true" />}
-                  {movingLabel(moving)}
+                  <span className="my-bus-moving-text">{movingLabel(moving)}</span>
                 </small>
               )}
             </span>

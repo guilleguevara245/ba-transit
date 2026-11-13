@@ -211,7 +211,21 @@
 
 .my-bus-moving .live-dot,
 .live-count .live-dot {
+  flex-shrink: 0;
   margin-left: 0;
+}
+
+/* Con el punto al lado, los puntos suspensivos van en el texto (en el celular "1 colectivo en viv" se cortaba). */
+.my-bus-moving {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.my-bus-moving-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .my-bus-live {
@@ -289,8 +303,8 @@
 
 /*
  * Celular: el nombre de la parada usa todo el renglon y el proximo
- * colectivo pasa abajo ("● 6 min · 18 min  a 3 paradas"); la estrella
- * queda arriba a la derecha.
+ * colectivo pasa abajo ("6 min · 18 min" y debajo "a 3 paradas"); la
+ * estrella queda arriba a la derecha.
  */
 @media (max-width: 600px) {
   .my-line-stop {
@@ -302,12 +316,17 @@
     order: 2;
   }
 
+  /* Los horarios y debajo, alineado con el primero, a cuantas paradas esta ("a 3 paradas"). */
   .my-line-stop .my-stop-next {
     order: 3;
     flex-basis: 100%;
-    flex-direction: row;
-    align-items: baseline;
-    gap: 8px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
     padding-left: 54px;
+  }
+
+  .my-line-stop .my-stop-next small {
+    padding-left: 22px;
   }
 }

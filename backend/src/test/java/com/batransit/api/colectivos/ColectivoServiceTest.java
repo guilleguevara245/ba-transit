@@ -116,13 +116,10 @@ class ColectivoServiceTest {
     }
 
     @Test
-    void losOtrosFavoritosQueParanEnLaParada() throws IOException {
+    void lasLineasPorSuCartel() throws IOException {
         ColectivoService service = loadedService();
-        // Plaza Italia (P2) es parada de la 152 y de la 8; La Boca (P3), solo de la 152.
-        assertThat(service.routesAtStop(java.util.List.of("8", "60"), "P2")).extracting(BusRoute::id)
-                .containsExactly("R8");
-        assertThat(service.routesAtStop(java.util.List.of("8"), "P3")).isEmpty();
-        assertThat(service.routesAtStop(java.util.List.of(), "P2")).isEmpty();
+        assertThat(service.routesNamed(java.util.List.of("8", "60"))).extracting(BusRoute::id).containsExactly("R8");
+        assertThat(service.routesNamed(java.util.List.of())).isEmpty();
     }
 
     @Test

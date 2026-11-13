@@ -70,15 +70,17 @@ public class BusStopController {
 
         // Los otros carteles de la linea que paran aca (42A y 42B) y los otros colectivos favoritos que
         // tambien paran aca (303 y 163, para el mismo viaje): se avisa de todos, cada uno con su cartel.
-        java.util.Map<String, BusRoute> extra = new java.util.LinkedHashMap<>();
-        service.otherSignsAtStop(route, stopId).forEach(r -> extra.putIfAbsent(r.id(), r));
+        // Cada una con su codigo de parada (o la de al lado, para el mismo lado: ver StopMatcher).
+        java.util.Map<String, BusRoute> candidates = new java.util.LinkedHashMap<>();
+        service.otherSigns(route).forEach(r -> candidates.putIfAbsent(r.id(), r));
         List<String> wanted = BusPositionsController.parseLines(favorites).stream().limit(MAX_FAVORITE_LINES).toList();
-        service.routesAtStop(wanted, stopId).forEach(r -> extra.putIfAbsent(r.id(), r));
-        extra.remove(route.id());
-        List<BusRoute> others = List.copyOf(extra.values());
+        service.routesNamed(wanted).forEach(r -> candidates.putIfAbsent(r.id(), r));
+        candidates.remove(route.id());
+        java.util.Map<BusRoute, StopMatcher.Match> others = new java.util.LinkedHashMap<>();
+        candidates.values().forEach(r -> StopMatcher.find(r, direction, stopIndex).ifPresent(m -> others.put(r, m)));
         List<String> lines = new ArrayList<>();
         lines.add(route.shortName());
-        others.forEach(r -> lines.add(r.shortName()));
+        others.keySet().forEach(r -> lines.add(r.shortName()));
 
         Optional<Fetched> feed = client.get("/colectivos/vehiclePositionsSimple", BusPositionsController.MAX_AGE);
         if (feed.isEmpty()) {
@@ -87,15 +89,8 @@ public class BusStopController {
         }
         long now = Instant.now().getEpochSecond();
         List<Approaching> buses = new ArrayList<>(approachingFor(feed.get(), route, direction, stopIndex, now));
-        for (BusRoute other : others) {
-            for (BusDirection d : other.directions()) {
-                int index = indexOf(d.stops(), stopId);
-                if (index >= 0) {
-                    buses.addAll(approachingFor(feed.get(), other, d, index, now));
-                    break;
-                }
-            }
-        }
+        others.forEach((other, match) ->
+                buses.addAll(approachingFor(feed.get(), other, match.direction(), match.stopIndex(), now)));
         return new StopResponse(route.id(), route.shortName(), directionId, direction.headsign(), stop.id(), stop.name(),
                 true, feed.get().fetchedAt(), StopArrivals.merge(buses), lines);
     }
