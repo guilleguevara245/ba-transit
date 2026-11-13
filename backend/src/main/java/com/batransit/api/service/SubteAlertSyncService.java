@@ -51,6 +51,8 @@ public class SubteAlertSyncService {
     }
     /** Como se muestra la fuente ("Fuente: API Transporte GCBA"), para no confundirla con la de los trenes. */
     private static final String SOURCE_NAME = "API Transporte GCBA";
+    /** La fuente de las alertas de la deteccion de paros que se saco: si queda alguna activa, se da de baja. */
+    static final String LEGACY_OUTAGE_SOURCE = "Pronóstico en vivo (API Transporte GCBA)";
 
     /**
      * Cuando una misma alerta del feed afecta a varias lineas, se guarda
@@ -176,9 +178,13 @@ public class SubteAlertSyncService {
     private int deactivateNoLongerPresent(Set<String> feedEntityIds) {
         // Solo las alertas que vinieron de este feed: las de otras fuentes
         // (por ejemplo, las alertas de los trenes) tienen su propia sincronizacion.
+        // Tambien las de la deteccion de paros que se saco (v32.4): la migracion V65 las
+        // desactivo, pero el servidor anterior, que siguio andando durante el deploy, pudo
+        // volver a activarlas.
         List<Alert> toDeactivate = alertRepository.findByActiveTrueAndExternalIdIsNotNull().stream()
-                .filter(a -> SOURCE_NAME.equals(a.getSource()))
-                .filter(a -> !feedEntityIds.contains(feedEntityIdOf(a.getExternalId())))
+                .filter(a -> LEGACY_OUTAGE_SOURCE.equals(a.getSource())
+                        || (SOURCE_NAME.equals(a.getSource())
+                        && !feedEntityIds.contains(feedEntityIdOf(a.getExternalId()))))
                 .toList();
         toDeactivate.forEach(a -> a.setActive(false));
         return toDeactivate.size();
