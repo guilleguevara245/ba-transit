@@ -8,7 +8,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * Calcula los proximos trenes de una estacion a partir del pronostico
@@ -157,6 +159,36 @@ public final class SubteArrivals {
     }
 
     /** Un tren que espera en la cabecera y sale en menos de esto se muestra en la cabecera. */
+    /** Para contar como tren andando, una hora del pronostico entre hace esto y dentro de LINE_AHEAD_SECONDS. */
+    static final long LINE_BEHIND_SECONDS = 120;
+    static final long LINE_AHEAD_SECONDS = 2 * 3600;
+
+    /**
+     * Las lineas (A, B, ... H) con algun tren en el pronostico: un viaje
+     * con alguna hora real (no de relleno) cerca de ahora. Una linea que
+     * deberia andar y no aparece aca no tiene trenes (paro o corte total).
+     */
+    public static Set<String> linesWithTrains(JsonNode feed, long nowEpochSeconds) {
+        long headerTs = feed.path("Header").path("timestamp").asLong(0);
+        Set<String> lines = new TreeSet<>();
+        for (JsonNode entity : feed.path("Entity")) {
+            JsonNode trip = entity.path("Linea");
+            String route = normalize(trip.path("Route_Id").asText(""));
+            if (!route.startsWith("linea") || route.length() != "linea".length() + 1) {
+                continue;
+            }
+            for (JsonNode stop : trip.path("Estaciones")) {
+                long time = stop.path("arrival").path("time").asLong(0);
+                if (!isFiller(time, headerTs) && time >= nowEpochSeconds - LINE_BEHIND_SECONDS
+                        && time <= nowEpochSeconds + LINE_AHEAD_SECONDS) {
+                    lines.add(route.substring("linea".length()).toUpperCase(Locale.ROOT));
+                    break;
+                }
+            }
+        }
+        return lines;
+    }
+
     static final long DEPARTING_SECONDS = 60;
 
     /**

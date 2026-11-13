@@ -79,6 +79,12 @@ public class SubteScheduleService {
         return schedule != null;
     }
 
+    /** Si la linea tiene que estar andando ahora (ver SubteSchedule.inService); false sin horario cargado. */
+    public boolean inService(String lineCode, LocalDateTime now, int marginSeconds) {
+        SubteSchedule current = schedule;
+        return current != null && current.inService(lineCode, now, marginSeconds);
+    }
+
     public List<SubteSchedule.Direction> nextArrivals(String lineCode, String stationName) {
         SubteSchedule current = schedule;
         if (current == null) {
