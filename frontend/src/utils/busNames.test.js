@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
+  nextBusText,
+  parseStopFavorite,
+  stopFavoriteId,
   alertsForBus,
   busDescription,
   busFavoriteId,
@@ -115,5 +118,20 @@ describe('headsignName', () => {
     expect(headsignName('A EST. MORON')).toBe('Est. Moron')
     expect(headsignName('Ramal 14 - IDA')).toBe('Ramal 14 - IDA')
     expect(headsignName('A COLECTORA PTA. 2 FORD')).toBe('Colectora Pta. 2 Ford')
+  })
+})
+
+describe('paradas favoritas', () => {
+  it('arma y lee el id', () => {
+    expect(stopFavoriteId('1234', 0, '5678')).toBe('1234:0:5678')
+    expect(parseStopFavorite('1234:1:5678')).toEqual({ routeId: '1234', directionId: 1, stopId: '5678' })
+    expect(parseStopFavorite('roto')).toBeNull()
+  })
+
+  it('el proximo colectivo', () => {
+    expect(nextBusText([])).toBeNull()
+    expect(nextBusText([{ arriving: true, minutes: 0, stopsAway: 0 }])).toEqual({ time: 'Llegando', detail: null })
+    expect(nextBusText([{ minutes: 6, stopsAway: 3 }])).toEqual({ time: '6 min', detail: 'a 3 paradas' })
+    expect(nextBusText([{ minutes: null, stopsAway: 1 }])).toEqual({ time: 'a 1 parada', detail: null })
   })
 })

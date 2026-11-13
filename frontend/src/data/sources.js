@@ -117,7 +117,8 @@ export const SOURCE_GROUPS = [
         what: 'Colectivos en vivo y alertas',
         source: API_TRANSPORTE,
         url: API_TRANSPORTE_URL,
-        detail: 'Posición de cada colectivo y alertas de servicio de cada línea.',
+        detail:
+          'Posición de cada colectivo, alertas de servicio de cada línea y, para las paradas guardadas, cuánto le falta al próximo colectivo (con los minutos entre paradas del recorrido).',
         when: 'live',
       },
       {

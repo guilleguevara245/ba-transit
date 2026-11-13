@@ -231,3 +231,58 @@
   outline: 2px solid var(--yellow);
   outline-offset: -2px;
 }
+
+/* Parada favorita: el proximo colectivo a la derecha ("6 min" y debajo "a 3 paradas"). */
+.my-stop-next {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+  text-align: right;
+  line-height: 1.25;
+}
+
+.my-stop-next strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.my-stop-next strong .live-dot {
+  margin-left: 0;
+}
+
+.my-stop-next small {
+  font-size: 12px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+/*
+ * Celular: el nombre de la parada usa todo el renglon y el proximo
+ * colectivo pasa abajo ("● 6 min · 18 min  a 3 paradas"); la estrella
+ * queda arriba a la derecha.
+ */
+@media (max-width: 600px) {
+  .my-line-stop {
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+
+  .my-line-stop .favorite-button {
+    order: 2;
+  }
+
+  .my-line-stop .my-stop-next {
+    order: 3;
+    flex-basis: 100%;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 8px;
+    padding-left: 54px;
+  }
+}

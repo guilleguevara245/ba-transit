@@ -258,6 +258,32 @@
  */
 .bus-stop {
   position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.bus-stop-button {
+  flex: 1;
+  min-width: 0;
+}
+
+/*
+ * La estrella de cada parada: no se muestra en todas (son muchas), solo al
+ * pasar el mouse, en la parada elegida o si ya esta guardada.
+ */
+.bus-stop-fav {
+  flex-shrink: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+}
+
+.bus-stop:hover .bus-stop-fav,
+.bus-stop:focus-within .bus-stop-fav,
+.bus-stop:has(.bus-stop-button.active) .bus-stop-fav,
+.bus-stop-fav:has(.favorite-button.active) {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .bus-stop::before {

@@ -73,7 +73,7 @@ con APIs públicas, pruebas, integración continua y despliegue.
 
 **Colectivos, accesos y más**
 - Colectivos en movimiento en tiempo real sobre el mapa, búsqueda por número, recorrido con paradas y tiempos, y
-  avisos de cada línea.
+  avisos de cada línea. Paradas favoritas con el próximo colectivo que viene: cuántos minutos y paradas le faltan.
 - Tránsito en las autopistas de acceso (TomTom Traffic), medido en cada mano (hacia CABA y hacia Provincia), y cuadro
   de peajes que resalta la tarifa vigente según la hora pico.
 - Estacionamiento: 2.700 garajes y las playas de la Ciudad, lugares para motos, 1.600 playas del conurbano

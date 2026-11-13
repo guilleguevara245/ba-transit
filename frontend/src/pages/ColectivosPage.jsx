@@ -3,7 +3,7 @@ import UpdatedAt from '../components/UpdatedAt.jsx'
 import MyBuses from '../components/MyBuses.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import ModeIcon from '../components/ModeIcon.jsx'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import BackButton from '../components/BackButton.jsx'
 import BusRouteMap from '../components/BusRouteMap.jsx'
@@ -20,6 +20,7 @@ import {
   busTitle,
   headsignName,
   operatorName,
+  stopFavoriteId,
   stopName,
 } from '../utils/busNames.js'
 import { formatDuration } from '../utils/travelTime.js'
@@ -50,7 +51,7 @@ function detailPath(routeId, line, headsign) {
   return `/api/v1/colectivos/${encodeURIComponent(routeId)}${query ? `?${query}` : ''}`
 }
 
-function RouteDetail({ routeId, line, headsign, initialDirection }) {
+function RouteDetail({ routeId, line, headsign, initialDirection, initialStop }) {
   const { data: route, loading, error } = useApi(detailPath(routeId, line, headsign))
   const [directionIndex, setDirectionIndex] = useState(0)
   // Parada elegida en la lista: { index, n } (n cambia en cada toque, para volver a centrarla).
@@ -72,6 +73,19 @@ function RouteDetail({ routeId, line, headsign, initialDirection }) {
 
   // Al cambiar de sentido, la parada elegida deja de valer.
   useEffect(() => setFocusedStop(null), [directionIndex, route])
+
+  // Si se llego desde una parada favorita (&parada=), se marca esa parada una vez.
+  const stopApplied = useRef(false)
+  useEffect(() => {
+    if (stopApplied.current || !route || !initialStop) return
+    const direction = route.directions[directionIndex]
+    if (initialDirection != null && direction?.directionId !== initialDirection) return
+    const index = direction?.stops.findIndex((s) => s.id === initialStop) ?? -1
+    if (index >= 0) {
+      stopApplied.current = true
+      setFocusedStop({ index, n: 1 })
+    }
+  }, [route, directionIndex, initialStop, initialDirection])
 
   if (loading) return <Skeleton variant="map" label="Cargando recorrido…" />
   if (String(error ?? '').includes('respondió 404')) {
@@ -208,6 +222,15 @@ function RouteDetail({ routeId, line, headsign, initialDirection }) {
                         <span className="bus-stop-minutes">+{formatDuration(minutes)}</span>
                       )}
                     </button>
+                    {/* Guardar la parada: aparece al pasar el mouse, en la elegida o si ya esta guardada. */}
+                    <span className="bus-stop-fav">
+                      <FavoriteButton
+                        kind="paradas"
+                        id={stopFavoriteId(route.id, direction.directionId, stop.id)}
+                        name={`la parada ${stopName(stop.name)} de la ${busTitle(route)}`}
+                        compact
+                      />
+                    </span>
                   </li>
                 )
               })}
@@ -318,6 +341,7 @@ export default function ColectivosPage() {
                 line={searchParams.get('numero')}
                 headsign={searchParams.get('destino')}
                 initialDirection={searchParams.has('sentido') ? Number(searchParams.get('sentido')) : null}
+                initialStop={searchParams.get('parada')}
               />
             </>
           ) : (

@@ -21,11 +21,14 @@ public final class AccountModels {
 
     /**
      * Favoritos: los mismos grupos que guarda el sitio en el navegador.
-     * colectivos: el cartel de cada linea ("152", "53A").
+     * colectivos: el cartel de cada linea ("152", "53A"). paradas: una
+     * parada de una linea, "linea:sentido:parada" con los ids del feed
+     * ("1234:0:5678").
      */
-    public record Favorites(List<Long> lineas, List<Long> estaciones, List<String> accesos, List<String> colectivos) {
+    public record Favorites(List<Long> lineas, List<Long> estaciones, List<String> accesos, List<String> colectivos,
+                            List<String> paradas) {
         public static Favorites empty() {
-            return new Favorites(List.of(), List.of(), List.of(), List.of());
+            return new Favorites(List.of(), List.of(), List.of(), List.of(), List.of());
         }
     }
 

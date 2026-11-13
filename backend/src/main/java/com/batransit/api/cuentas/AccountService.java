@@ -38,6 +38,8 @@ public class AccountService {
     private static final Pattern ACCESS_ID = Pattern.compile("^[a-z0-9-]{1,40}$");
     /** Cartel de un colectivo: "152", "53A", "8C". */
     private static final Pattern BUS_LINE = Pattern.compile("^[0-9A-Z]{1,8}$");
+    /** Una parada favorita: "linea:sentido:parada" con los ids del feed de colectivos. */
+    private static final Pattern BUS_STOP = Pattern.compile("^[\\w.-]{1,24}:\\d{1,2}:[\\w.-]{1,24}$");
     /** Para que "mail inexistente" tarde lo mismo que "contrasena incorrecta". */
     private static final String DUMMY_HASH = PasswordHasher.hash("contraseña de relleno");
 
@@ -480,7 +482,16 @@ public class AccountService {
         if (f == null) {
             return Favorites.empty();
         }
-        return new Favorites(ids(f.lineas()), ids(f.estaciones()), accesses(f.accesos()), buses(f.colectivos()));
+        return new Favorites(ids(f.lineas()), ids(f.estaciones()), accesses(f.accesos()), buses(f.colectivos()),
+                stops(f.paradas()));
+    }
+
+    private static List<String> stops(List<String> values) {
+        if (values == null) {
+            return List.of();
+        }
+        return new ArrayList<>(values.stream().filter(Objects::nonNull).filter(v -> BUS_STOP.matcher(v).matches())
+                .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new))).stream().limit(MAX_FAVORITES).toList();
     }
 
     private static List<Long> ids(List<Long> values) {

@@ -154,3 +154,32 @@ export function headsignName(headsign) {
   const to = headsignTo(headsign)
   return to && to === to.toUpperCase() && /\p{L}/u.test(to) ? titleCase(to) : to
 }
+
+/** El id de favorito de una parada de una linea: "linea:sentido:parada" ("1234:0:5678"). */
+export function stopFavoriteId(routeId, directionId, stopId) {
+  return `${routeId}:${directionId}:${stopId}`
+}
+
+/** El id de favorito de una parada, separado: { routeId, directionId, stopId } (o null si no sirve). */
+export function parseStopFavorite(id) {
+  const match = /^([\w.-]{1,24}):(\d{1,2}):([\w.-]{1,24})$/.exec(id ?? '')
+  return match ? { routeId: match[1], directionId: Number(match[2]), stopId: match[3] } : null
+}
+
+/** "a 1 parada" / "a 4 paradas". */
+export function stopsAwayText(stops) {
+  return stops === 1 ? 'a 1 parada' : `a ${stops} paradas`
+}
+
+/**
+ * Lo que dice una parada favorita del proximo colectivo: { time, detail }.
+ * "Llegando", o "6 min" con "a 3 paradas"; sin minutos del horario, solo
+ * las paradas. null si no viene ninguno.
+ */
+export function nextBusText(buses) {
+  const next = buses?.[0]
+  if (!next) return null
+  if (next.arriving) return { time: 'Llegando', detail: null }
+  if (next.minutes == null) return { time: stopsAwayText(next.stopsAway), detail: null }
+  return { time: `${next.minutes} min`, detail: stopsAwayText(next.stopsAway) }
+}

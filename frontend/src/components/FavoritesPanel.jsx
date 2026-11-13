@@ -1,6 +1,7 @@
 import ModeIcon from './ModeIcon.jsx'
 import MyBuses from './MyBuses.jsx'
 import MyLines from './MyLines.jsx'
+import MyStops from './MyStops.jsx'
 import NotificationsLink from './NotificationsLink.jsx'
 import { MyAccesses, MyStations } from './MyPlaces.jsx'
 import { useFavoriteList } from '../hooks/useFavoriteList.js'
@@ -8,7 +9,7 @@ import './FavoritesPanel.css'
 
 /**
  * "Tus favoritos" en el inicio: un solo panel con un renglon por favorito
- * (lineas, estaciones, accesos y colectivos), el estado siempre en la misma
+ * (lineas, estaciones, accesos, colectivos y paradas), el estado siempre en la misma
  * columna y, debajo de cada uno, sus proximos trenes si los tiene. Arriba a
  * la derecha, el acceso a los avisos.
  */
@@ -17,7 +18,8 @@ export default function FavoritesPanel({ lines, alerts }) {
     useFavoriteList('lineas').ids.length +
     useFavoriteList('estaciones').ids.length +
     useFavoriteList('accesos').ids.length +
-    useFavoriteList('colectivos').ids.length
+    useFavoriteList('colectivos').ids.length +
+    useFavoriteList('paradas').ids.length
   const ready = Boolean(lines && alerts)
 
   return (
@@ -31,8 +33,8 @@ export default function FavoritesPanel({ lines, alerts }) {
       </header>
       {total === 0 ? (
         <p className="fav-empty">
-          Tocá la <span className="star">★</span> en cualquier línea, estación, acceso o colectivo para seguir su estado
-          desde acá. Se guardan en este navegador.
+          Tocá la <span className="star">★</span> en cualquier línea, estación, acceso, colectivo o parada para seguir su
+          estado desde acá. Se guardan en este navegador.
         </p>
       ) : (
         <div className="fav-list">
@@ -40,6 +42,7 @@ export default function FavoritesPanel({ lines, alerts }) {
           {ready && <MyStations lines={lines} alerts={alerts} inPanel />}
           <MyAccesses inPanel />
           <MyBuses inPanel />
+          <MyStops inPanel />
         </div>
       )}
     </section>
