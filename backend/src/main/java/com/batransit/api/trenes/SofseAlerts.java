@@ -162,17 +162,23 @@ public final class SofseAlerts {
      */
     static boolean resolved(String text) {
         String t = normalize(text);
+        // "Se restablece parcialmente" o "reanuda de forma parcial": todavia falta una parte.
+        if (t.contains("parcial")) {
+            return false;
+        }
         return t.contains("normalizad") || t.contains("se normalizo") || t.contains("restablecid")
                 || t.contains("regularizad") || RESUMED.matcher(t).find();
     }
 
     /**
-     * "reanuda su recorrido", "se reanudo el servicio", "vuelven a circular",
-     * "circula con normalidad". En presente o pasado: "se reanudara a las
-     * 23" (futuro) es un aviso de que todavia no anda.
+     * "reanuda su recorrido", "se reanudo el servicio", "restablece su
+     * recorrido", "vuelven a circular", "circula con normalidad". En
+     * presente o pasado: "se reanudara a las 23" (futuro) es un aviso de
+     * que todavia no anda.
      */
     private static final Pattern RESUMED = Pattern.compile(
             "\\breanud(?:a|an|o|aron|ado|ada|ados|adas)\\b"
+                    + "|\\brestablec(?:e|en|io|ieron)\\b"
                     + "|\\b(?:vuelve|vuelven|volvio|volvieron) a (?:circular|prestar servicio|funcionar)\\b"
                     + "|\\bcircula(?:n)? con normalidad\\b");
 

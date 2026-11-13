@@ -92,10 +92,15 @@ class SofseAlertsTest {
                 "El servicio José L. Suárez reanuda su recorrido completo entre cabeceras tras fallas en el "
                         + "suministro eléctrico.", "") + ","
                 + alert(2, "OTHER_EFFECT", "Los trenes vuelven a circular entre Tigre y Retiro.", "") + ","
-                + alert(3, "NO_SERVICE", "Sin servicio. El servicio se reanudará a las 23 hs.", "") + "]}]");
+                + alert(3, "NO_SERVICE", "Sin servicio. El servicio se reanudará a las 23 hs.", "") + ","
+                // Como en el Roca (13/11/2026).
+                + alert(4, "SIGNIFICANT_DELAYS", "El servicio Ezeiza restablece su recorrido completo con demoras y "
+                        + "cancelaciones tras obstrucción de vías por árbol caído en Llavallol.", "") + ","
+                + alert(5, "REDUCED_SERVICE", "Se restablece parcialmente el servicio entre Haedo y Temperley.", "")
+                + "]}]");
 
-        // El que dice que se reanudara (todavia no anda) sigue siendo alerta.
-        assertThat(SofseAlerts.parse(node, NOW)).extracting(SofseAlert::id).containsExactly(3);
+        // El que dice que se reanudara (todavia no anda) y el parcial siguen siendo alertas.
+        assertThat(SofseAlerts.parse(node, NOW)).extracting(SofseAlert::id).containsExactly(3, 5);
     }
 
     @Test
