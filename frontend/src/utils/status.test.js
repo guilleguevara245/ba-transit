@@ -31,8 +31,22 @@ describe('statusGroups', () => {
       ['trenes', 'SIN_DATOS'],
       ['otros', 'OK'],
     ])
-    expect(groups[0].sources.map((s) => s.name)).toEqual(['Alertas', 'Horarios programados'])
+    expect(groups[0].sources.map((s) => s.name)).toEqual(['Alertas', 'Próximas formaciones del subte'])
     expect(groups[2].sources[0].name).toBe('Fuente nueva')
+  })
+
+  it('las de Trenes Argentinos van en Trenes', () => {
+    const groups = statusGroups([
+      { key: 'ferrovias', what: 'Próximos trenes del Belgrano Norte', status: 'OK' },
+      { key: 'trenes-sofse-alertas', what: 'Alertas de Trenes Argentinos', status: 'OK' },
+      { key: 'trenes-sofse', what: 'Próximos trenes de Trenes Argentinos', status: 'OK' },
+    ])
+    expect(groups.map((g) => g.id)).toEqual(['trenes'])
+    expect(groups[0].sources.map((s) => s.name)).toEqual([
+      'Próximos trenes del Belgrano Norte',
+      'Alertas de Trenes Argentinos',
+      'Próximos trenes de Trenes Argentinos',
+    ])
   })
 
   it('sin fuentes, sin grupos', () => {

@@ -30,14 +30,15 @@ export const STATUS_GROUPS = [
     id: 'subte',
     title: 'Subte',
     icon: 'SUBTE',
-    items: { 'subte-alertas': 'Alertas', 'subte-horario': 'Horarios programados' },
+    items: { 'subte-alertas': 'Alertas', 'subte-horario': 'Próximas formaciones del subte' },
   },
   {
     id: 'trenes',
     title: 'Trenes',
     icon: 'TREN',
     items: {
-      'trenes-avisos': 'Avisos de Trenes Argentinos',
+      'trenes-sofse': 'Próximos trenes de Trenes Argentinos',
+      'trenes-sofse-alertas': 'Alertas de Trenes Argentinos',
       ferrovias: 'Próximos trenes del Belgrano Norte',
       metrovias: 'Estado del Urquiza',
     },

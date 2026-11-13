@@ -36,7 +36,7 @@ public class SourceHealth {
         SUBTE_ALERTAS("Alertas del subte", "API Transporte GCBA (Gobierno de la Ciudad)"),
         TRANSPORTE_VIVO("Subte, colectivos y EcoBici en vivo", "API Transporte GCBA (Gobierno de la Ciudad)"),
         COLECTIVOS_RECORRIDOS("Recorridos de colectivos", "API Transporte GCBA (Gobierno de la Ciudad)"),
-        SUBTE_HORARIO("Horario programado del subte", "API Transporte GCBA (Gobierno de la Ciudad)"),
+        SUBTE_HORARIO("Próximas formaciones del subte", "API Transporte GCBA (Gobierno de la Ciudad)"),
         FERROVIAS("Próximos trenes del Belgrano Norte", "Ferrovías"),
         TRENES_SOFSE("Próximos trenes de Trenes Argentinos", "API de Trenes de Ariel Aguirre (ariedro)"),
         TRENES_SOFSE_ALERTAS("Alertas de Trenes Argentinos", "API de Trenes de Ariel Aguirre (ariedro)"),
