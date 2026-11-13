@@ -36,8 +36,25 @@ class TextRepairTest {
     void reconoceLasLetrasPerdidas() {
         assertThat(TextRepair.lostLetters("893 MU?ECAS")).isTrue();
         assertThat(TextRepair.lostLetters("2012 CASTA\uFFFDEDA")).isTrue();
+        assertThat(TextRepair.lostLetters("1285 HUMBERTO 1?")).isTrue();
         assertThat(TextRepair.lostLetters("893 MUÑECAS")).isFalse();
         assertThat(TextRepair.lostLetters("¿Viene?")).isFalse();
         assertThat(TextRepair.lostLetters(null)).isFalse();
+    }
+
+    @Test
+    void adivinaLasLetrasQueElFeedTraeComoSignoDePregunta() {
+        // Todos los casos que trae el feed: entre vocales, Ñ.
+        assertThat(TextRepair.fix("893 MU?ECAS")).isEqualTo("893 MUÑECAS");
+        assertThat(TextRepair.fix("2012 CASTA?EDA")).isEqualTo("2012 CASTAÑEDA");
+        assertThat(TextRepair.fix("NU?EZ")).isEqualTo("NUÑEZ");
+        assertThat(TextRepair.fix("Mu?ecas")).isEqualTo("Muñecas");
+        // "LL?N" e "I?N" al final: ÓN.
+        assertThat(TextRepair.fix("CALLE INTERNA PABELL?N 2 C.U.")).isEqualTo("CALLE INTERNA PABELLÓN 2 C.U.");
+        assertThat(TextRepair.fix("ESTACI?N")).isEqualTo("ESTACIÓN");
+        // Un numero con "?": ordinal.
+        assertThat(TextRepair.fix("1285 HUMBERTO 1?")).isEqualTo("1285 HUMBERTO 1º");
+        // Un signo de pregunta de verdad queda.
+        assertThat(TextRepair.fix("¿Viene?")).isEqualTo("¿Viene?");
     }
 }

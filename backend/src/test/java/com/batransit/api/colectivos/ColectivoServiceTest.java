@@ -81,9 +81,8 @@ class ColectivoServiceTest {
     }
 
     @Test
-    void conLetrasPerdidasSeVuelveABajarAunqueSeaNueva() throws IOException {
-        // La copia es de hace 2 horas pero se leyo con la version que perdia la "Ñ"; el ultimo
-        // intento de bajar el feed lo corto un reinicio (una version nueva) hace 30 minutos.
+    void laCopiaConLetrasPerdidasSeArreglaAlCargarla() throws IOException {
+        // La copia (de hace 2 horas) la guardo una version que no adivinaba las letras: "MU?ECAS".
         Instant now = Instant.parse("2026-11-13T02:00:00Z");
         BusModels.Catalog fresh = loadedService().current().orElseThrow();
         BusModels.BusRoute any = fresh.routes().values().iterator().next();
@@ -105,14 +104,22 @@ class ColectivoServiceTest {
 
             @Override
             public java.util.Optional<Instant> lastAttempt() {
-                return java.util.Optional.of(now.minus(Duration.ofMinutes(30)));
+                return java.util.Optional.empty();
             }
         };
         ColectivoService service = new ColectivoService(new TransporteApiProperties(), "", "/colectivos/feed-gtfs", store);
         service.restoreSnapshot();
-        assertThat(service.needsRefresh(Duration.ofHours(24), now)).isTrue();
-        // Si el intento cortado fue recien, se espera un poco (no se baja en cada reinicio).
-        assertThat(service.needsRefresh(Duration.ofHours(24), now.minus(Duration.ofMinutes(25)))).isFalse();
+
+        assertThat(service.find(any.id()).directions().get(0).stops().get(0).name()).isEqualTo("893 MUÑECAS");
+        // No hace falta volver a bajar el feed por eso.
+        assertThat(service.needsRefresh(Duration.ofHours(24), now)).isFalse();
+    }
+
+    @Test
+    void elNumeroDeLaLineaSinElCartel() {
+        assertThat(ColectivoService.lineNumber("42A")).isEqualTo("42");
+        assertThat(ColectivoService.lineNumber("422-1C")).isEqualTo("422");
+        assertThat(ColectivoService.lineNumber("R8/99")).isEqualTo("");
     }
 
     @Test

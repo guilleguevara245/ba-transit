@@ -54,6 +54,20 @@ export function parseBusShortName(shortName) {
   return { number: match[1], sign: match[2].toUpperCase() }
 }
 
+/**
+ * Varios carteles de la misma linea en una parada: "Línea 42 · Carteles A y B".
+ * Con uno solo, como busTitle.
+ */
+export function busSignsTitle(shortNames) {
+  const names = (shortNames ?? []).filter(Boolean)
+  if (names.length < 2) return names.length ? busTitle({ shortName: names[0] }) : ''
+  const parsed = names.map(parseBusShortName)
+  const signs = parsed.map((p) => p.sign).filter(Boolean)
+  if (signs.length < 2 || parsed.some((p) => p.number !== parsed[0].number)) return names.join(' y ')
+  const list = signs.length === 2 ? signs.join(' y ') : `${signs.slice(0, -1).join(', ')} y ${signs[signs.length - 1]}`
+  return `Línea ${parsed[0].number} · Carteles ${list}`
+}
+
 /** El id de favorito de una linea: su cartel sin espacios y en mayusculas ("53a " -> "53A"); null si no sirve. */
 export function busFavoriteId(shortName) {
   const id = (shortName ?? '').replace(/\s+/g, '').toUpperCase()

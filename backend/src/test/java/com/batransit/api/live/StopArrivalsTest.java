@@ -92,4 +92,18 @@ class StopArrivalsTest {
         assertThat(bus.minutes()).isNull();
         assertThat(bus.stopsAway()).isEqualTo(4);
     }
+
+    @Test
+    void variosCartelesJuntosDelQueLlegaPrimero() {
+        List<Approaching> a = List.of(new Approaching("1", 6, 3, false, 20).withLine("42A"),
+                new Approaching("2", 15, 7, false, 20).withLine("42A"));
+        List<Approaching> b = List.of(new Approaching("3", 0, 0, true, 10).withLine("42B"),
+                new Approaching("4", 9, 4, false, 20).withLine("42B"));
+        List<Approaching> all = new ArrayList<>(a);
+        all.addAll(b);
+
+        List<Approaching> merged = StopArrivals.merge(all);
+        assertThat(merged).extracting(Approaching::id).containsExactly("3", "1", "4");
+        assertThat(merged).extracting(Approaching::line).containsExactly("42B", "42A", "42B");
+    }
 }

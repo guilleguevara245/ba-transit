@@ -37,9 +37,35 @@ final class StopArrivals {
     /**
      * Un colectivo que viene: minutes, lo que le falta segun el horario
      * (null si el feed no trae los minutos de esas paradas); stopsAway,
-     * cuantas paradas le faltan (la elegida incluida).
+     * cuantas paradas le faltan (la elegida incluida); line, el cartel (solo
+     * si la parada junta varios).
      */
-    record Approaching(String id, Integer minutes, int stopsAway, boolean arriving, long ageSeconds) {
+    record Approaching(String id, Integer minutes, int stopsAway, boolean arriving, long ageSeconds, String line) {
+
+        Approaching(String id, Integer minutes, int stopsAway, boolean arriving, long ageSeconds) {
+            this(id, minutes, stopsAway, arriving, ageSeconds, null);
+        }
+
+        /** El mismo, con el cartel de la linea ("42B"). */
+        Approaching withLine(String sign) {
+            return new Approaching(id, minutes, stopsAway, arriving, ageSeconds, sign);
+        }
+    }
+
+    /**
+     * Los de varios carteles juntos, del que llega primero al ultimo: los que
+     * estan llegando, despues por minutos (sin minutos, al final) y por
+     * paradas; un mismo colectivo una sola vez.
+     */
+    static List<Approaching> merge(List<Approaching> buses) {
+        java.util.Map<String, Approaching> byId = new java.util.LinkedHashMap<>();
+        buses.stream()
+                .sorted(Comparator.comparing((Approaching a) -> !a.arriving())
+                        .thenComparing(a -> a.minutes() == null ? Integer.MAX_VALUE : a.minutes())
+                        .thenComparingInt(Approaching::stopsAway))
+                .forEach(a -> byId.putIfAbsent(a.id(), a));
+        List<Approaching> sorted = List.copyOf(byId.values());
+        return sorted.size() > MAX_BUSES ? List.copyOf(sorted.subList(0, MAX_BUSES)) : sorted;
     }
 
     private StopArrivals() {

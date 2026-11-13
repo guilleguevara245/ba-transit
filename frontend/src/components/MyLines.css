@@ -256,6 +256,27 @@
 }
 
 /* El reloj, como en los proximos trenes (el espacio lo da el gap). */
+/* Cada horario con su cartel (si paran varios de la linea): la letra en un cuadrito oscuro. */
+.my-stop-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.my-stop-sign {
+  display: inline-grid;
+  place-items: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 3px;
+  border-radius: 4px;
+  background: var(--ink);
+  color: #fff;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .my-stop-next .next-trains-clock {
   margin-right: 0;
 }

@@ -11,6 +11,7 @@ import {
   headsignName,
   headsignTo,
   movingLabel,
+  busSignsTitle,
   parseBusShortName,
   plainText,
   operatorName,
@@ -61,6 +62,12 @@ describe('colectivos favoritos', () => {
     expect(busFavoriteId('152')).toBe('152')
     expect(busFavoriteId('no vale!')).toBeNull()
     expect(busFavoriteId(null)).toBeNull()
+  })
+
+  it('busSignsTitle junta los carteles de una parada', () => {
+    expect(busSignsTitle(['42A'])).toBe('Línea 42 · Cartel A')
+    expect(busSignsTitle(['42A', '42B'])).toBe('Línea 42 · Carteles A y B')
+    expect(busSignsTitle(['60A', '60B', '60C'])).toBe('Línea 60 · Carteles A, B y C')
   })
 
   it('movingLabel', () => {

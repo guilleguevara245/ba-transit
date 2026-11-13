@@ -25,7 +25,8 @@ function sharedGet(path) {
  * (por ejemplo, las alertas, que el backend sincroniza cada 5 minutos).
  * En los refrescos no vuelve a mostrar "cargando": si fallan, se
  * conservan los ultimos datos y solo se informa el error. Mientras la
- * pestaña del navegador esta oculta no se hacen pedidos. Con path null
+ * pestaña del navegador esta oculta no se hacen pedidos, y al volver se
+ * pide enseguida si el dato ya estaba para renovarse. Con path null
  * no se pide nada (sirve para pedidos que dependen de otro dato).
  *
  * reload() vuelve a pedir ahora (boton "Actualizar"): mientras tanto
@@ -39,6 +40,7 @@ export function useApi(path, { refreshMs } = {}) {
     let cancelled = false
     let timer = null
     let hasLoaded = false
+    let loadedAt = 0
 
     setState(INITIAL_STATE)
 
@@ -67,6 +69,7 @@ export function useApi(path, { refreshMs } = {}) {
         const result = await sharedGet(path)
         if (!cancelled) {
           hasLoaded = true
+          loadedAt = Date.now()
           setState({ data: result, loading: false, error: null, updatedAt: new Date(), refreshing: false })
         }
       } catch (err) {
@@ -81,12 +84,21 @@ export function useApi(path, { refreshMs } = {}) {
     loadRef.current = load
     load()
 
+    // Al volver a la pestaña (o desbloquear el celular), si el dato ya
+    // tendria que haberse renovado, se pide enseguida en lugar de esperar
+    // al proximo turno.
+    function onVisible() {
+      if (!document.hidden && refreshMs && hasLoaded && Date.now() - loadedAt >= refreshMs) load()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+
     // Si el componente se desmonta (o cambia el path) antes de que
     // termine el fetch, "cancelled" evita actualizar un estado viejo.
     return () => {
       cancelled = true
       clearTimeout(timer)
       loadRef.current = null
+      document.removeEventListener('visibilitychange', onVisible)
     }
   }, [path, refreshMs])
 

@@ -4,7 +4,7 @@ import FavoriteButton from './FavoriteButton.jsx'
 import { ArrivingTag, ClockIcon } from './NextTrains.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { useFavoriteList } from '../hooks/useFavoriteList.js'
-import { busTitle, headsignName, nextBusText, parseStopFavorite, stopName } from '../utils/busNames.js'
+import { busSignsTitle, headsignName, nextBusText, parseBusShortName, parseStopFavorite, stopName } from '../utils/busNames.js'
 import './MyLines.css'
 
 const REFRESH_MS = 30_000
@@ -12,7 +12,8 @@ const REFRESH_MS = 30_000
 /**
  * Una parada favorita: el proximo colectivo de esa linea que viene hacia
  * ella ("6 min · a 3 paradas", o "Llegando"), segun su posicion en vivo y
- * los minutos entre paradas del horario.
+ * los minutos entre paradas del horario. Si paran otros carteles de la
+ * misma linea, tambien se cuentan y cada horario lleva su cartel.
  */
 function StopRow({ id, inPanel }) {
   const fav = parseStopFavorite(id)
@@ -35,10 +36,27 @@ function StopRow({ id, inPanel }) {
     parada: fav.stopId,
   })}`
   const next = nextBusText(data?.buses)
+  // Si paran varios carteles de la linea (42A y 42B), cada horario dice de cual es.
+  const lines = data?.lines?.length ? data.lines : line ? [line] : []
+  const severalSigns = lines.length > 1
   // Los dos proximos: "llegando" con el colectivo de frente (como los trenes) o los minutos.
   const times = (data?.buses ?? [])
     .slice(0, 2)
-    .map((b) => (b.arriving ? <ArrivingTag key={b.id} kind="bus" /> : b.minutes != null ? `${b.minutes} min` : null))
+    .map((b) => {
+      const when = b.arriving ? <ArrivingTag kind="bus" /> : b.minutes != null ? `${b.minutes} min` : null
+      if (!when) return null
+      const sign = severalSigns && b.line ? parseBusShortName(b.line).sign || b.line : null
+      return (
+        <span key={b.id} className="my-stop-time">
+          {sign && (
+            <span className="my-stop-sign" title={`Cartel ${sign}`}>
+              {sign}
+            </span>
+          )}
+          {when}
+        </span>
+      )
+    })
     .filter(Boolean)
 
   let status
@@ -72,12 +90,12 @@ function StopRow({ id, inPanel }) {
       <div className="my-line my-line-stop">
         {inPanel && <span className="fav-kind">Parada</span>}
         <Link to={href} className="my-line-link">
-          <span className="my-bus-number">{line ?? '·'}</span>
+          <span className="my-bus-number">{severalSigns ? parseBusShortName(line).number : (line ?? '·')}</span>
           <span className="my-place-text">
             <span className="my-line-name">{name}</span>
             {line && (
               <small>
-                {busTitle({ shortName: line })}
+                {busSignsTitle(lines)}
                 {to && ` · hacia ${to}`}
               </small>
             )}

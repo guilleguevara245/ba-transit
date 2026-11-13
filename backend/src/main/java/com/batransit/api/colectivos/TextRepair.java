@@ -27,18 +27,54 @@ public final class TextRepair {
 
     /** Una letra perdida: el caracter de reemplazo o un "?" entre letras ("MU?ECAS"). */
     private static final java.util.regex.Pattern LOST_LETTER =
-            java.util.regex.Pattern.compile("\uFFFD|\\p{L}\\?\\p{L}");
+            java.util.regex.Pattern.compile("\uFFFD|\\p{L}\\?\\p{L}|\\d\\?(?!\\p{L})");
+    private static final String VOWELS = "AEIOUaeiouÁÉÍÓÚáéíóú";
 
-    /**
-     * Si el texto perdio alguna letra al leerlo (la "Ñ" de un renglon en
-     * Windows-1252 leido como UTF-8): eso ya no se puede arreglar aca, hay
-     * que volver a leer el feed.
-     */
+    /** Si el texto perdio alguna letra (el feed trae "?" en su lugar: "MU?ECAS", "HUMBERTO 1?"). */
     public static boolean lostLetters(String text) {
         return text != null && LOST_LETTER.matcher(text).find();
     }
 
     public static String fix(String text) {
+        return guessLostLetters(fixDoubleEncoding(text));
+    }
+
+    /**
+     * El feed trae algunas letras como "?" (se perdieron antes de publicarlo,
+     * no se pueden recuperar de los bytes). Se adivinan con reglas que
+     * cubren todos los casos del feed: entre dos vocales es una Ñ (PE?A,
+     * MU?ECAS, CASTA?EDA, NU?EZ); al final, despues de "LL" o "I", "?N" es
+     * "ÓN" (PABELL?N, ESTACI?N); un numero con "?" es un ordinal
+     * (HUMBERTO 1?). Lo que no entra en ninguna regla queda como estaba.
+     */
+    static String guessLostLetters(String text) {
+        if (text == null || text.indexOf('?') < 0) {
+            return text;
+        }
+        StringBuilder out = new StringBuilder(text);
+        for (int i = 0; i < out.length(); i++) {
+            if (out.charAt(i) != '?') {
+                continue;
+            }
+            char before = i > 0 ? out.charAt(i - 1) : ' ';
+            char after = i + 1 < out.length() ? out.charAt(i + 1) : ' ';
+            boolean wordEndsAfter = i + 2 >= out.length() || !Character.isLetter(out.charAt(i + 2));
+            boolean lower = Character.isLowerCase(before) || Character.isLowerCase(after);
+            if (VOWELS.indexOf(before) >= 0 && VOWELS.indexOf(after) >= 0) {
+                out.setCharAt(i, lower ? 'ñ' : 'Ñ');
+            } else if ((after == 'N' || after == 'n') && wordEndsAfter
+                    && (before == 'I' || before == 'i' || (i >= 2 && "Ll".indexOf(before) >= 0
+                    && "Ll".indexOf(out.charAt(i - 2)) >= 0))) {
+                out.setCharAt(i, lower ? 'ó' : 'Ó');
+            } else if (Character.isDigit(before) && !Character.isLetter(after)) {
+                out.setCharAt(i, 'º');
+            }
+        }
+        return out.toString();
+    }
+
+    /** Textos doblemente codificados ("MORÃ³N"): se vuelven a leer como UTF-8. */
+    static String fixDoubleEncoding(String text) {
         if (text == null || (text.indexOf('Ã') < 0 && text.indexOf('Â') < 0)) {
             return text;
         }

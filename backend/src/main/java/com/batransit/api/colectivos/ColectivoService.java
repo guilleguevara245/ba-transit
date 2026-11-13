@@ -64,19 +64,7 @@ public class ColectivoService {
     private final ColectivoSnapshotStore snapshotStore;
     /** Ultimo intento de bajar el feed, para no reintentar cada hora si falla. */
     private volatile Instant lastAttempt;
-    /**
-     * La copia de la base se leyo con una version anterior que perdia letras
-     * ("MU?ECAS"): se usa mientras tanto, pero se vuelve a bajar el feed
-     * enseguida en lugar de esperar a que tenga un dia.
-     */
-    private volatile boolean snapshotNeedsReparse;
     static final Duration RETRY_AFTER_FAILURE = Duration.ofHours(6);
-    /**
-     * Con la copia con letras perdidas se espera menos despues de un intento
-     * que no termino: suele ser un reinicio por una nueva version (varias
-     * seguidas cortaban la descarga y despues se esperaban 6 horas).
-     */
-    static final Duration REPARSE_RETRY_AFTER = Duration.ofMinutes(20);
 
     /** Sin copia en la base (tests). */
     public ColectivoService(TransporteApiProperties apiProperties, String customUrl, String feedPath) {
@@ -103,8 +91,6 @@ public class ColectivoService {
     /** Descarga y procesa el feed. Si algo falla, se conserva lo que habia. */
     public void refresh() {
         lastAttempt = Instant.now();
-        // Una sola vez: si el feed nuevo tambien trae algun "?", no se lo vuelve a bajar cada hora.
-        snapshotNeedsReparse = false;
         if (snapshotStore != null) {
             snapshotStore.markAttempt(lastAttempt);
         }
@@ -171,13 +157,10 @@ public class ColectivoService {
             return;
         }
         snapshotStore.load().ifPresent(saved -> {
-            catalog.compareAndSet(null, saved);
+            // Una copia guardada por una version anterior puede tener las letras sin adivinar ("MU?ECAS").
+            catalog.compareAndSet(null, withLostLettersGuessed(saved));
             log.info("Colectivos: {} lineas cargadas desde la copia de la base (feed del {}).",
                     saved.routes().size(), saved.loadedAt());
-            if (lostLetters(saved)) {
-                snapshotNeedsReparse = true;
-                log.info("Colectivos: la copia tiene letras perdidas; se vuelve a bajar el feed.");
-            }
         });
         // Si el ultimo intento de bajar el feed no termino (el servidor se reinicio en el
         // medio), no se reintenta enseguida: se espera RETRY_AFTER_FAILURE desde ese intento.
@@ -188,25 +171,35 @@ public class ColectivoService {
         });
     }
 
-    /**
-     * Si hace falta bajar el feed: no hay datos, los que hay tienen mas de
-     * maxAge o son de una copia con letras perdidas.
-     */
+    /** Si hace falta bajar el feed: no hay datos o los que hay tienen mas de maxAge. */
     public boolean needsRefresh(Duration maxAge, Instant now) {
-        Duration wait = snapshotNeedsReparse ? REPARSE_RETRY_AFTER : RETRY_AFTER_FAILURE;
-        if (lastAttempt != null && lastAttempt.plus(wait).isAfter(now)) {
+        if (lastAttempt != null && lastAttempt.plus(RETRY_AFTER_FAILURE).isAfter(now)) {
             return false;
         }
         Catalog loaded = catalog.get();
-        return loaded == null || snapshotNeedsReparse || loaded.loadedAt().plus(maxAge).isBefore(now);
+        return loaded == null || loaded.loadedAt().plus(maxAge).isBefore(now);
     }
 
-    /** Si alguna parada o destino perdio letras al leerse (ver TextRepair.lostLetters). */
-    static boolean lostLetters(Catalog catalog) {
-        return catalog.routes().values().stream()
+    /** La copia con los nombres de paradas y destinos con las letras perdidas adivinadas (TextRepair.fix). */
+    static Catalog withLostLettersGuessed(Catalog catalog) {
+        boolean any = catalog.routes().values().stream()
                 .flatMap(r -> r.directions().stream())
                 .anyMatch(d -> TextRepair.lostLetters(d.headsign())
                         || d.stops().stream().anyMatch(s -> TextRepair.lostLetters(s.name())));
+        if (!any) {
+            return catalog;
+        }
+        java.util.Map<String, BusRoute> routes = new java.util.LinkedHashMap<>();
+        catalog.routes().forEach((id, r) -> routes.put(id, new BusRoute(r.id(), r.shortName(), r.longName(),
+                r.agency(), r.color(), r.directions().stream()
+                .map(d -> new BusModels.BusDirection(d.directionId(), TextRepair.fix(d.headsign()), d.shape(),
+                        d.stops().stream()
+                                .map(st -> new BusModels.BusStop(st.id(), TextRepair.fix(st.name()), st.latitude(),
+                                        st.longitude()))
+                                .toList(),
+                        d.minutes()))
+                .toList())));
+        return new Catalog(routes, catalog.loadedAt());
     }
 
     /** Usado por los tests y por refresh(). */
@@ -276,6 +269,28 @@ public class ColectivoService {
 
     public BusRoute find(String routeId) {
         return find(routeId, null, null);
+    }
+
+    /**
+     * Los otros carteles de la misma linea (la 42B si es la 42A) que paran en
+     * esa parada, para avisar de todos los que pasan por ella.
+     */
+    public List<BusRoute> otherSignsAtStop(BusRoute route, String stopId) {
+        String number = lineNumber(route.shortName());
+        if (number.isEmpty()) {
+            return List.of();
+        }
+        return requireCatalog().routes().values().stream()
+                .filter(r -> !r.id().equals(route.id()) && number.equals(lineNumber(r.shortName())))
+                .filter(r -> r.directions().stream().anyMatch(d -> d.stops().stream()
+                        .anyMatch(stop -> stop.id().equals(stopId))))
+                .sorted(Comparator.comparing((BusRoute r) -> naturalKey(r.shortName())))
+                .toList();
+    }
+
+    /** El numero de la linea, sin el cartel: "42A" -> "42"; vacio si no empieza con un numero. */
+    static String lineNumber(String shortName) {
+        return normalize(shortName).replaceAll("\\s+", "").replaceAll("\\D.*", "");
     }
 
     /**

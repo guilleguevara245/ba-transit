@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -32,10 +33,12 @@ public class BusStopController {
     /**
      * line y headsign: el cartel y hacia donde va el sentido; stopName: la
      * parada. live: si hay datos en vivo (si no, buses vacio no quiere
-     * decir que no venga ninguno).
+     * decir que no venga ninguno). lines: los carteles que paran aca
+     * (la linea elegida primero); cada colectivo trae el suyo.
      */
     public record StopResponse(String routeId, String line, int direction, String headsign, String stopId,
-                               String stopName, boolean live, Instant updatedAt, List<Approaching> buses) {
+                               String stopName, boolean live, Instant updatedAt, List<Approaching> buses,
+                               List<String> lines) {
     }
 
     private final TransporteLiveClient client;
@@ -60,16 +63,39 @@ public class BusStopController {
         }
         BusStop stop = direction.stops().get(stopIndex);
 
+        // Los otros carteles de la linea que paran aca (42A y 42B): se avisa de todos, cada uno con su cartel.
+        List<BusRoute> others = service.otherSignsAtStop(route, stopId);
+        List<String> lines = new ArrayList<>();
+        lines.add(route.shortName());
+        others.forEach(r -> lines.add(r.shortName()));
+
         Optional<Fetched> feed = client.get("/colectivos/vehiclePositionsSimple", BusPositionsController.MAX_AGE);
         if (feed.isEmpty()) {
             return new StopResponse(route.id(), route.shortName(), directionId, direction.headsign(), stop.id(),
-                    stop.name(), false, null, List.of());
+                    stop.name(), false, null, List.of(), lines);
         }
-        List<Vehicle> vehicles = BusPositionsController.vehiclesOf(feed.get().body(), route.id(), route.shortName(),
-                Instant.now().getEpochSecond());
-        List<Approaching> buses = StopArrivals.approaching(direction, stopIndex, sameDirection(route, direction, vehicles));
+        long now = Instant.now().getEpochSecond();
+        List<Approaching> buses = new ArrayList<>(approachingFor(feed.get(), route, direction, stopIndex, now));
+        for (BusRoute other : others) {
+            for (BusDirection d : other.directions()) {
+                int index = indexOf(d.stops(), stopId);
+                if (index >= 0) {
+                    buses.addAll(approachingFor(feed.get(), other, d, index, now));
+                    break;
+                }
+            }
+        }
         return new StopResponse(route.id(), route.shortName(), directionId, direction.headsign(), stop.id(), stop.name(),
-                true, feed.get().fetchedAt(), buses);
+                true, feed.get().fetchedAt(), StopArrivals.merge(buses), lines);
+    }
+
+    /** Los colectivos de una linea que vienen a la parada stopIndex de ese sentido, con su cartel. */
+    private static List<Approaching> approachingFor(Fetched feed, BusRoute route, BusDirection direction,
+                                                    int stopIndex, long now) {
+        List<Vehicle> vehicles = BusPositionsController.vehiclesOf(feed.body(), route.id(), route.shortName(), now);
+        return StopArrivals.approaching(direction, stopIndex, sameDirection(route, direction, vehicles)).stream()
+                .map(a -> a.withLine(route.shortName()))
+                .toList();
     }
 
     /** La primera vez que el sentido pasa por la parada. */
