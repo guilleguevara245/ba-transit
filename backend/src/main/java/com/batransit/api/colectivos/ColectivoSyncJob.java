@@ -30,7 +30,8 @@ public class ColectivoSyncJob {
         service.restoreSnapshot();
     }
 
-    @Scheduled(initialDelay = 60_000, fixedDelay = 60 * 60 * 1000L)
+    // Se mira cada 10 minutos (es solo comparar horas); el feed se baja cuando hace falta.
+    @Scheduled(initialDelay = 60_000, fixedDelay = 10 * 60 * 1000L)
     public void run() {
         if (service.needsRefresh(MAX_AGE, clock.instant())) {
             service.refresh();

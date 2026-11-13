@@ -81,6 +81,41 @@ class ColectivoServiceTest {
     }
 
     @Test
+    void conLetrasPerdidasSeVuelveABajarAunqueSeaNueva() throws IOException {
+        // La copia es de hace 2 horas pero se leyo con la version que perdia la "Ñ"; el ultimo
+        // intento de bajar el feed lo corto un reinicio (una version nueva) hace 30 minutos.
+        Instant now = Instant.parse("2026-11-13T02:00:00Z");
+        BusModels.Catalog fresh = loadedService().current().orElseThrow();
+        BusModels.BusRoute any = fresh.routes().values().iterator().next();
+        BusModels.BusDirection d = any.directions().get(0);
+        java.util.List<BusModels.BusStop> stops = new java.util.ArrayList<>(d.stops());
+        BusModels.BusStop first = stops.get(0);
+        stops.set(0, new BusModels.BusStop(first.id(), "893 MU?ECAS", first.latitude(), first.longitude()));
+        BusModels.BusRoute broken = new BusModels.BusRoute(any.id(), any.shortName(), any.longName(), any.agency(),
+                any.color(), java.util.List.of(new BusModels.BusDirection(d.directionId(), d.headsign(), d.shape(),
+                stops, d.minutes())));
+        java.util.Map<String, BusModels.BusRoute> routes = new java.util.HashMap<>(fresh.routes());
+        routes.put(any.id(), broken);
+        BusModels.Catalog old = new BusModels.Catalog(routes, now.minus(Duration.ofHours(2)));
+        ColectivoSnapshotStore store = new ColectivoSnapshotStore(null, null) {
+            @Override
+            public java.util.Optional<BusModels.Catalog> load() {
+                return java.util.Optional.of(old);
+            }
+
+            @Override
+            public java.util.Optional<Instant> lastAttempt() {
+                return java.util.Optional.of(now.minus(Duration.ofMinutes(30)));
+            }
+        };
+        ColectivoService service = new ColectivoService(new TransporteApiProperties(), "", "/colectivos/feed-gtfs", store);
+        service.restoreSnapshot();
+        assertThat(service.needsRefresh(Duration.ofHours(24), now)).isTrue();
+        // Si el intento cortado fue recien, se espera un poco (no se baja en cada reinicio).
+        assertThat(service.needsRefresh(Duration.ofHours(24), now.minus(Duration.ofMinutes(25)))).isFalse();
+    }
+
+    @Test
     void lineaInexistenteEsNotFound() throws IOException {
         ColectivoService service = loadedService();
 

@@ -71,6 +71,12 @@ public class ColectivoService {
      */
     private volatile boolean snapshotNeedsReparse;
     static final Duration RETRY_AFTER_FAILURE = Duration.ofHours(6);
+    /**
+     * Con la copia con letras perdidas se espera menos despues de un intento
+     * que no termino: suele ser un reinicio por una nueva version (varias
+     * seguidas cortaban la descarga y despues se esperaban 6 horas).
+     */
+    static final Duration REPARSE_RETRY_AFTER = Duration.ofMinutes(20);
 
     /** Sin copia en la base (tests). */
     public ColectivoService(TransporteApiProperties apiProperties, String customUrl, String feedPath) {
@@ -187,7 +193,8 @@ public class ColectivoService {
      * maxAge o son de una copia con letras perdidas.
      */
     public boolean needsRefresh(Duration maxAge, Instant now) {
-        if (lastAttempt != null && lastAttempt.plus(RETRY_AFTER_FAILURE).isAfter(now)) {
+        Duration wait = snapshotNeedsReparse ? REPARSE_RETRY_AFTER : RETRY_AFTER_FAILURE;
+        if (lastAttempt != null && lastAttempt.plus(wait).isAfter(now)) {
             return false;
         }
         Catalog loaded = catalog.get();
