@@ -21,3 +21,13 @@ export function useLiveTrains(mode, lineCode) {
   if (!data?.available || !data.trains?.length) return null
   return { trains: data.trains, estimated: Boolean(data.estimated), updatedAt: data.updatedAt }
 }
+
+/**
+ * Cuantos trenes de la linea andan ahora, para las tarjetas de Tus
+ * favoritos (como los colectivos en la calle). null si la linea no tiene
+ * trenes en vivo o la fuente no respondio.
+ */
+export function useLiveTrainCount(mode, lineCode) {
+  const { data } = useApi(liveTrainsPath(mode, lineCode), { refreshMs: REFRESH_MS })
+  return data?.available ? (data.trains?.length ?? 0) : null
+}

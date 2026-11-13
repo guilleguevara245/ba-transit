@@ -158,25 +158,40 @@
 .symbols-help-button {
   display: grid;
   place-items: center;
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   padding: 0;
-  border: 1.5px solid color-mix(in srgb, var(--text-dim) 40%, transparent);
+  border: none;
   border-radius: 50%;
-  background: var(--surface);
-  color: var(--text-dim);
-  font-family: 'Inter', sans-serif;
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1;
+  background: none;
+  color: var(--accent-text);
   cursor: pointer;
-  user-select: none;
+}
+
+.symbols-help-button svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .symbols-help-button:hover,
 .symbols-help-button[aria-expanded='true'] {
-  border-color: var(--text-dim);
-  color: var(--text);
+  background: color-mix(in srgb, var(--yellow) 18%, transparent);
+}
+
+.symbols-help-button:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+}
+
+/* Con la lista abierta no hace falta el cartel. */
+.symbols-help-button[aria-expanded='true']::after,
+.symbols-help-button[aria-expanded='true']::before {
+  display: none;
 }
 
 .symbols-help-box {

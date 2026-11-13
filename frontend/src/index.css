@@ -507,4 +507,18 @@ body {
   .has-tip[data-tip]:hover::before {
     opacity: 1;
   }
+
+  /* Debajo, para lo que esta arriba de todo (los encabezados de los paneles). */
+  .has-tip-below[data-tip]::after {
+    top: calc(100% + 9px);
+    bottom: auto;
+  }
+
+  .has-tip-below[data-tip]::before {
+    top: calc(100% + 4px);
+    bottom: auto;
+    border: none;
+    border-top: 1px solid var(--line);
+    border-left: 1px solid var(--line);
+  }
 }

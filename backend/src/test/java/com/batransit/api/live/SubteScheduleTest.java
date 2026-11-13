@@ -88,9 +88,12 @@ class SubteScheduleTest {
     @Test
     void enHorarioDeServicioLaLineaTieneQueAndar() {
         // Lunes 26/10: al mediodia si; a las 3 de la manana y al ratito de abrir, no.
-        assertTrue(schedule.inService("B", LocalDateTime.of(2026, 10, 26, 13, 0), 20 * 60));
-        assertFalse(schedule.inService("B", LocalDateTime.of(2026, 10, 26, 3, 0), 20 * 60));
-        assertFalse(schedule.inService("B", LocalDateTime.of(2026, 10, 26, 5, 35), 20 * 60));
-        assertFalse(schedule.inService("Z", LocalDateTime.of(2026, 10, 26, 13, 0), 20 * 60));
+        assertTrue(schedule.inService("B", LocalDateTime.of(2026, 10, 26, 13, 0), 20 * 60, 0));
+        assertFalse(schedule.inService("B", LocalDateTime.of(2026, 10, 26, 3, 0), 20 * 60, 0));
+        assertFalse(schedule.inService("B", LocalDateTime.of(2026, 10, 26, 5, 35), 20 * 60, 0));
+        assertFalse(schedule.inService("Z", LocalDateTime.of(2026, 10, 26, 13, 0), 20 * 60, 0));
+        // La ultima salida de la B es a las 23: a las 22:50 tiene que andar; a las 23:10 ya no.
+        assertTrue(schedule.inService("B", LocalDateTime.of(2026, 11, 12, 22, 50), 20 * 60, 0));
+        assertFalse(schedule.inService("B", LocalDateTime.of(2026, 11, 12, 23, 10), 20 * 60, 0));
     }
 }

@@ -1,8 +1,10 @@
 import { Fragment, useEffect, useId, useRef, useState } from 'react'
 import { useApi } from '../hooks/useApi.js'
+import { useLiveTrainCount } from '../hooks/useLiveTrains.js'
 import Chevrons from './Chevrons.jsx'
 import { useNow } from '../hooks/useNow.js'
 import { urquizaNextTrains } from '../utils/urquizaSchedule.js'
+import { trainsMovingLabel } from '../utils/liveTrains.js'
 import { STALE_TEXT } from '../utils/staleness.js'
 import { readableTextColor } from '../utils/color.js'
 import {
@@ -42,7 +44,7 @@ export default function NextTrains({ mode = 'SUBTE', lineCode, stationName, asCa
  * estaciones): un renglon por sentido con los tres proximos (si no entran,
  * los horarios bajan al renglon de abajo, sin cortar ninguno).
  */
-function CompactTrains({ directions, scheduled = false, live = false, color }) {
+function CompactTrains({ directions, scheduled = false, live = false, color, moving = null }) {
   // Los chevrones van del color de la linea.
   return (
     <div className="mini-trains-box" style={color ? { '--line-color': color } : undefined}>
@@ -78,7 +80,12 @@ function CompactTrains({ directions, scheduled = false, live = false, color }) {
         ))}
       </ul>
       <span className="mini-trains-tag">
-        {live ? (
+        {live && moving > 0 ? (
+          // Como los colectivos: cuantos andan ahora en toda la linea (con el GPS o estimados).
+          <>
+            <span className="live-dot" aria-hidden="true" /> {trainsMovingLabel(moving)}
+          </>
+        ) : live ? (
           <>
             En vivo <span className="live-dot" aria-hidden="true" />
           </>
@@ -118,6 +125,8 @@ function ApiTrains({ mode, lineCode, stationName, asCard, compact, color }) {
   const schedule = useApi(wantsSchedule ? schedulePath(mode, lineCode, stationName) : null, {
     refreshMs: SCHEDULE_REFRESH_MS,
   })
+  // En las tarjetas chicas, cuantos trenes de la linea andan ahora.
+  const moving = useLiveTrainCount(compact ? mode : null, lineCode)
 
   if (compact) {
     if (liveUsable) {
@@ -126,6 +135,7 @@ function ApiTrains({ mode, lineCode, stationName, asCard, compact, color }) {
           directions={live.data.directions.filter((d) => d.arrivals.length > 0)}
           live={!live.data.scheduled}
           color={color}
+          moving={moving}
         />
       )
     }
@@ -359,7 +369,8 @@ const SYMBOLS = [
 ]
 
 /**
- * "?" que abre "Que significa cada simbolo": arriba a la derecha de Tus
+ * Boton con un signo de pregunta (el mismo trazo que la campana) que abre
+ * "Que significa cada simbolo": arriba a la derecha de Tus
  * favoritos y de los proximos trenes de una estacion. Se cierra con Escape,
  * tocando afuera o con el mismo boton.
  */
@@ -385,14 +396,16 @@ export function SymbolsHelp({ className = '' }) {
     <div className={`symbols-help ${className}`.trim()} ref={box}>
       <button
         type="button"
-        className="symbols-help-button"
+        className="symbols-help-button has-tip has-tip-below"
+        data-tip="Qué significa cada símbolo"
         aria-expanded={open}
         aria-controls={id}
         aria-label="Qué significa cada símbolo"
-        title="Qué significa cada símbolo"
         onClick={() => setOpen((o) => !o)}
       >
-        ?
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.3a2.5 2.5 0 0 1 4.85.85c0 1.65-2.45 2.2-2.45 3.6M12 17h.01" />
+        </svg>
       </button>
       {open && (
         <div className="symbols-help-box" id={id} role="dialog" aria-label="Qué significa cada símbolo">

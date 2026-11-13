@@ -39,7 +39,8 @@ import java.util.regex.Pattern;
 /**
  * Lineas de subte sin servicio (paro o corte total), que la API del GCBA
  * no siempre avisa: si en horario de servicio el pronostico en vivo de una
- * linea sigue sin ningun tren durante CONFIRM, se guarda una alerta
+ * linea sigue sin ningun tren durante CONFIRM (CONFIRM_WITH_NEWS si no anda
+ * ninguna y hay una noticia de paro), se guarda una alerta
  * "Sin servicio" de la linea; cuando vuelven a aparecer trenes (o termina
  * el horario), se da de baja. Si una noticia reciente habla de un paro, se
  * dice el motivo; el Premetro (que no esta en el pronostico) se marca solo
@@ -60,8 +61,18 @@ public class SubteOutageService {
     static final List<String> LINES = List.of("A", "B", "C", "D", "E", "H");
     /** Cuanto tiene que seguir una linea sin trenes para avisar (un hueco del pronostico no es un paro). */
     static final Duration CONFIRM = Duration.ofMinutes(10);
-    /** Lejos del primer y del ultimo tren del dia no se avisa (los horarios de punta varian un poco). */
-    static final int SCHEDULE_MARGIN_SECONDS = 20 * 60;
+    /**
+     * Con una noticia de paro y ninguna linea andando alcanza con menos: no
+     * es un hueco de una linea sino toda la red.
+     */
+    static final Duration CONFIRM_WITH_NEWS = Duration.ofMinutes(3);
+    /** Al abrir no se avisa hasta que pasen los primeros trenes (el primero sale un poco antes o despues). */
+    static final int AFTER_FIRST_SECONDS = 20 * 60;
+    /**
+     * Hasta la ultima salida de la cabecera se avisa: los trenes que salen
+     * a esa hora siguen andando un rato, asi que el pronostico no se vacia antes.
+     */
+    static final int BEFORE_LAST_SECONDS = 0;
     /** Un pronostico con el encabezado mas viejo que esto esta congelado: no dice nada de los trenes. */
     static final Duration STALE_FEED = Duration.ofMinutes(30);
     /** Las noticias que cuentan para el motivo: las de las ultimas horas. */
@@ -97,7 +108,7 @@ public class SubteOutageService {
     record Outage(String lineCode, TransportMode mode, String description) {
     }
 
-    @Scheduled(initialDelay = 150_000L, fixedDelay = 2 * 60_000L)
+    @Scheduled(initialDelay = 60_000L, fixedDelay = 60_000L)
     public void check() {
         Optional<Fetched> feed = client.get("/subtes/forecastGTFS", SubteArrivalsController.MAX_AGE);
         if (feed.isEmpty()) {
@@ -112,7 +123,7 @@ public class SubteOutageService {
         Set<String> running = SubteArrivals.linesWithTrains(body, now.getEpochSecond());
         LocalDateTime local = LocalDateTime.ofInstant(now, BUENOS_AIRES);
         for (String line : LINES) {
-            if (running.contains(line) || !schedule.inService(line, local, SCHEDULE_MARGIN_SECONDS)) {
+            if (running.contains(line) || !schedule.inService(line, local, AFTER_FIRST_SECONDS, BEFORE_LAST_SECONDS)) {
                 emptySince.remove(line);
             } else {
                 emptySince.putIfAbsent(line, now);
@@ -139,10 +150,12 @@ public class SubteOutageService {
      * del paro lo incluye.
      */
     static List<Outage> outages(Map<String, Instant> emptySince, Instant now, Optional<NewsItem> strike) {
+        boolean wholeNetwork = strike.isPresent() && LINES.stream().allMatch(emptySince::containsKey);
+        Duration confirm = wholeNetwork ? CONFIRM_WITH_NEWS : CONFIRM;
         Map<String, Instant> confirmed = new LinkedHashMap<>();
         for (String line : LINES) {
             Instant since = emptySince.get(line);
-            if (since != null && !since.plus(CONFIRM).isAfter(now)) {
+            if (since != null && !since.plus(confirm).isAfter(now)) {
                 confirmed.put(line, since);
             }
         }

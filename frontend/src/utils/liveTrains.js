@@ -13,3 +13,8 @@ export function positionAge(iso, now) {
 export function branchName(branch) {
   return branch.replace(/\s*-\s*/g, ' - ')
 }
+
+/** "5 en las vías ahora", como "9 en la calle ahora" de los colectivos. */
+export function trainsMovingLabel(count) {
+  return `${count.toLocaleString('es-AR')} en las vías ahora`
+}

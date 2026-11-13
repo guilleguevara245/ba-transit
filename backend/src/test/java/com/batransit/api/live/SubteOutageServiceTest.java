@@ -62,6 +62,15 @@ class SubteOutageServiceTest {
     }
 
     @Test
+    void conNoticiaDeParoYSinNingunaLineaSeAvisaAntes() {
+        Optional<NewsItem> strike = SubteOutageService.strikeNews(
+                List.of(news("Paro de subte en todas las líneas", Duration.ofHours(1))), NOW);
+        assertThat(SubteOutageService.outages(allEmptySince(Duration.ofMinutes(4)), NOW, strike)).hasSize(7);
+        // Sin la noticia, cuatro minutos todavia no alcanzan.
+        assertThat(SubteOutageService.outages(allEmptySince(Duration.ofMinutes(4)), NOW, Optional.empty())).isEmpty();
+    }
+
+    @Test
     void elPremetroNoSeMarcaSiAndaAlgunaLineaOLaNoticiaNoLoIncluye() {
         Optional<NewsItem> soloSubte = SubteOutageService.strikeNews(
                 List.of(news("Paro en la línea B del subte", Duration.ofHours(1))), NOW);

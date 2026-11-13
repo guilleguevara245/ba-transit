@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { branchName, positionAge } from './liveTrains.js'
+import { branchName, positionAge, trainsMovingLabel } from './liveTrains.js'
 
 describe('positionAge', () => {
   const now = new Date('2026-11-12T22:30:00Z')
@@ -15,5 +15,12 @@ describe('branchName', () => {
   it('separa las cabeceras con espacios', () => {
     expect(branchName('Retiro-Cabred')).toBe('Retiro - Cabred')
     expect(branchName('Once - Moreno')).toBe('Once - Moreno')
+  })
+})
+
+describe('trainsMovingLabel', () => {
+  it('como los colectivos en la calle', () => {
+    expect(trainsMovingLabel(1)).toBe('1 en las vías ahora')
+    expect(trainsMovingLabel(5)).toBe('5 en las vías ahora')
   })
 })
