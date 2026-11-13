@@ -19,6 +19,9 @@ export default function SearchBar() {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState(null)
   const [buses, setBuses] = useState(null)
+  // Para que busqueda son los resultados que hay, y si fallo todo.
+  const [loadedFor, setLoadedFor] = useState(null)
+  const [failed, setFailed] = useState(false)
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
   const containerRef = useRef(null)
@@ -32,6 +35,7 @@ export default function SearchBar() {
     if (debouncedQuery.length < MIN_CHARS) {
       setResults(null)
       setBuses(null)
+      setLoadedFor(null)
       return
     }
 
@@ -47,6 +51,8 @@ export default function SearchBar() {
       if (cancelled) return
       setResults(data)
       setBuses(Array.isArray(busData) ? busData : null)
+      setFailed(data === null && busData === null)
+      setLoadedFor(debouncedQuery)
       setActiveIndex(-1)
       setOpen(true)
     })
@@ -72,10 +78,13 @@ export default function SearchBar() {
     setQuery('')
     setResults(null)
     setBuses(null)
+    setLoadedFor(null)
     navigate(option.href)
   }
 
   function handleKeyDown(event) {
+    // Mientras busca, los resultados que hay son de lo escrito antes.
+    if (searching && event.key !== 'Escape') return
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault()
       setOpen(true)
@@ -93,7 +102,10 @@ export default function SearchBar() {
   }
 
   const showDropdown = open && debouncedQuery.length >= MIN_CHARS
-  const activeOption = showDropdown ? options[activeIndex] : undefined
+  // Mientras llega la respuesta (el servidor puede tardar si estaba dormido)
+  // se dice "Buscando", no "Sin resultados".
+  const searching = loadedFor !== debouncedQuery
+  const activeOption = showDropdown && !searching ? options[activeIndex] : undefined
 
   return (
     <div className="search-wrap" ref={containerRef}>
@@ -125,35 +137,48 @@ export default function SearchBar() {
 
       {showDropdown && (
         <div className="search-results" id={listboxId} role="listbox">
-          {options.length === 0 && <div className="search-empty">Sin resultados para “{debouncedQuery}”</div>}
-
-          {options.map((option, index) => (
-            <div key={option.key}>
-              {(index === 0 || options[index - 1].group !== option.group) && (
-                <div className="search-section-label" role="presentation">
-                  {option.group}
-                </div>
-              )}
-              <div
-                id={`${listboxId}-${option.key}`}
-                role="option"
-                aria-selected={index === activeIndex}
-                className={index === activeIndex ? 'search-result-row active' : 'search-result-row'}
-                onMouseEnter={() => setActiveIndex(index)}
-                onClick={() => choose(option)}
-              >
-                {option.group === 'Colectivos' ? (
-                  <span className="result-bus" style={{ background: option.color }}>
-                    {option.name.replace(/^Línea\s+/, '').replace(' · Cartel ', '')}
-                  </span>
-                ) : (
-                  <span className="result-dot" style={{ background: option.color }}></span>
-                )}
-                <span className="result-name">{option.name}</span>
-                <span className="result-meta">{option.meta}</span>
-              </div>
+          {searching && (
+            <div className="search-empty" role="status">
+              Buscando “{debouncedQuery}”…
             </div>
-          ))}
+          )}
+          {!searching && failed && (
+            <div className="search-empty" role="status">
+              No pudimos buscar ahora. Probá de nuevo en un rato.
+            </div>
+          )}
+          {!searching && !failed && options.length === 0 && (
+            <div className="search-empty">Sin resultados para “{debouncedQuery}”</div>
+          )}
+
+          {!searching &&
+            options.map((option, index) => (
+              <div key={option.key}>
+                {(index === 0 || options[index - 1].group !== option.group) && (
+                  <div className="search-section-label" role="presentation">
+                    {option.group}
+                  </div>
+                )}
+                <div
+                  id={`${listboxId}-${option.key}`}
+                  role="option"
+                  aria-selected={index === activeIndex}
+                  className={index === activeIndex ? 'search-result-row active' : 'search-result-row'}
+                  onMouseEnter={() => setActiveIndex(index)}
+                  onClick={() => choose(option)}
+                >
+                  {option.group === 'Colectivos' ? (
+                    <span className="result-bus" style={{ background: option.color }}>
+                      {option.name.replace(/^Línea\s+/, '').replace(' · Cartel ', '')}
+                    </span>
+                  ) : (
+                    <span className="result-dot" style={{ background: option.color }}></span>
+                  )}
+                  <span className="result-name">{option.name}</span>
+                  <span className="result-meta">{option.meta}</span>
+                </div>
+              </div>
+            ))}
         </div>
       )}
     </div>

@@ -1,5 +1,11 @@
+/*
+ * z-index: el buscador entra con una animacion (home-enter), que lo deja en
+ * su propia capa; sin esto, en el celular el desplegable queda debajo de la
+ * tarjeta del clima, que viene despues.
+ */
 .search-wrap {
   position: relative;
+  z-index: 30;
   padding-bottom: 30px;
 }
 

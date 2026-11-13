@@ -17,6 +17,13 @@ class TextRepairTest {
     }
 
     @Test
+    void arreglaLasMayusculasLeidasComoIso() {
+        // UTF-8 leido como ISO-8859-1: el segundo byte de "Ñ", "Ó"... es un caracter de control.
+        assertThat(TextRepair.fix("CAÃ\u0091UELAS")).isEqualTo("CAÑUELAS");
+        assertThat(TextRepair.fix("AV. PEÃ\u0091A Y MORÃ\u0093N")).isEqualTo("AV. PEÑA Y MORÓN");
+    }
+
+    @Test
     void loQueNoSePuedeArreglarQuedaIgual() {
         assertThat(TextRepair.fix(null)).isEqualTo(null);
         assertThat(TextRepair.fix("")).isEqualTo("");

@@ -241,29 +241,18 @@
 }
 
 /* Celular: siguen de a dos, mas compactas (una por fila ocupaba media pantalla). */
+/*
+ * Celular: una tarjeta debajo de la otra (Trenes, Subtes, Premetro,
+ * Accesos), con todo el ancho para el estado y sus lineas en un renglon.
+ */
 @media (max-width: 520px) {
+  .modes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .mode-card {
     gap: 10px;
-    padding: 14px 12px;
-  }
-
-  .mode-name {
-    gap: 8px;
-    font-size: 14px;
-  }
-
-  .mode-alerts {
-    font-size: 11px;
-    line-height: 1.35;
-  }
-
-  /* Columnas angostas: lo afectado va siempre en el renglon de abajo, alineado con el estado. */
-  .mode-group {
-    grid-template-columns: 8px minmax(0, 1fr);
-  }
-
-  .mode-group-lines {
-    grid-column: 2;
+    padding: 14px 16px;
   }
 }
 
