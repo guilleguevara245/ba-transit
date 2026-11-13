@@ -68,6 +68,7 @@ describe('colectivos favoritos', () => {
     expect(busSignsTitle(['42A'])).toBe('Línea 42 · Cartel A')
     expect(busSignsTitle(['42A', '42B'])).toBe('Línea 42 · Carteles A y B')
     expect(busSignsTitle(['60A', '60B', '60C'])).toBe('Línea 60 · Carteles A, B y C')
+    expect(busSignsTitle(['303A', '163'])).toBe('Líneas 303A y 163')
   })
 
   it('movingLabel', () => {

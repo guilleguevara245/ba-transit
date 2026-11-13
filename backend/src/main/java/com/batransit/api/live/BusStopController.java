@@ -33,13 +33,17 @@ public class BusStopController {
     /**
      * line y headsign: el cartel y hacia donde va el sentido; stopName: la
      * parada. live: si hay datos en vivo (si no, buses vacio no quiere
-     * decir que no venga ninguno). lines: los carteles que paran aca
-     * (la linea elegida primero); cada colectivo trae el suyo.
+     * decir que no venga ninguno). lines: los carteles que paran aca (la
+     * linea elegida primero, sus otros carteles y los colectivos favoritos
+     * pedidos en ?lineas=); cada colectivo trae el suyo.
      */
     public record StopResponse(String routeId, String line, int direction, String headsign, String stopId,
                                String stopName, boolean live, Instant updatedAt, List<Approaching> buses,
                                List<String> lines) {
     }
+
+    /** Cuantos colectivos favoritos se miran en una parada, como mucho. */
+    static final int MAX_FAVORITE_LINES = 8;
 
     private final TransporteLiveClient client;
     private final ColectivoService service;
@@ -51,7 +55,8 @@ public class BusStopController {
 
     @GetMapping("/{routeId}/parada/{stopId}")
     public StopResponse stop(@PathVariable String routeId, @PathVariable String stopId,
-                             @RequestParam(name = "sentido", defaultValue = "0") int directionId) {
+                             @RequestParam(name = "sentido", defaultValue = "0") int directionId,
+                             @RequestParam(name = "lineas", required = false) String favorites) {
         BusRoute route = service.find(routeId);
         BusDirection direction = route.directions().stream()
                 .filter(d -> d.directionId() == directionId)
@@ -63,8 +68,14 @@ public class BusStopController {
         }
         BusStop stop = direction.stops().get(stopIndex);
 
-        // Los otros carteles de la linea que paran aca (42A y 42B): se avisa de todos, cada uno con su cartel.
-        List<BusRoute> others = service.otherSignsAtStop(route, stopId);
+        // Los otros carteles de la linea que paran aca (42A y 42B) y los otros colectivos favoritos que
+        // tambien paran aca (303 y 163, para el mismo viaje): se avisa de todos, cada uno con su cartel.
+        java.util.Map<String, BusRoute> extra = new java.util.LinkedHashMap<>();
+        service.otherSignsAtStop(route, stopId).forEach(r -> extra.putIfAbsent(r.id(), r));
+        List<String> wanted = BusPositionsController.parseLines(favorites).stream().limit(MAX_FAVORITE_LINES).toList();
+        service.routesAtStop(wanted, stopId).forEach(r -> extra.putIfAbsent(r.id(), r));
+        extra.remove(route.id());
+        List<BusRoute> others = List.copyOf(extra.values());
         List<String> lines = new ArrayList<>();
         lines.add(route.shortName());
         others.forEach(r -> lines.add(r.shortName()));

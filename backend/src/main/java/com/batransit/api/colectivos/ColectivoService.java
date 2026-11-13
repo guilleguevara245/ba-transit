@@ -288,6 +288,24 @@ public class ColectivoService {
                 .toList();
     }
 
+    /**
+     * Las lineas pedidas (por su cartel: "303A", "163") que paran en esa
+     * parada: los otros colectivos favoritos de quien la tiene guardada.
+     */
+    public List<BusRoute> routesAtStop(java.util.Collection<String> shortNames, String stopId) {
+        java.util.Set<String> wanted = shortNames.stream().map(n -> normalize(n).replaceAll("\\s+", ""))
+                .collect(java.util.stream.Collectors.toSet());
+        if (wanted.isEmpty()) {
+            return List.of();
+        }
+        return requireCatalog().routes().values().stream()
+                .filter(r -> wanted.contains(normalize(r.shortName()).replaceAll("\\s+", "")))
+                .filter(r -> r.directions().stream().anyMatch(d -> d.stops().stream()
+                        .anyMatch(stop -> stop.id().equals(stopId))))
+                .sorted(Comparator.comparing((BusRoute r) -> naturalKey(r.shortName())))
+                .toList();
+    }
+
     /** El numero de la linea, sin el cartel: "42A" -> "42"; vacio si no empieza con un numero. */
     static String lineNumber(String shortName) {
         return normalize(shortName).replaceAll("\\s+", "").replaceAll("\\D.*", "");

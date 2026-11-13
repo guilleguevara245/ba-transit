@@ -54,18 +54,28 @@ export function parseBusShortName(shortName) {
   return { number: match[1], sign: match[2].toUpperCase() }
 }
 
+/** "A y B", "A, B y C". */
+function listText(items) {
+  return items.length < 3 ? items.join(' y ') : `${items.slice(0, -1).join(', ')} y ${items[items.length - 1]}`
+}
+
+/** Si son todos carteles de la misma linea (42A y 42B): cada horario lleva solo la letra. */
+export function sameBusNumber(shortNames) {
+  const parsed = (shortNames ?? []).filter(Boolean).map(parseBusShortName)
+  return parsed.length > 0 && parsed.every((p) => p.sign && p.number === parsed[0].number)
+}
+
 /**
- * Varios carteles de la misma linea en una parada: "Línea 42 · Carteles A y B".
- * Con uno solo, como busTitle.
+ * Las lineas de una parada favorita: "Línea 42 · Carteles A y B" (la misma
+ * linea) o "Líneas 303A y 163" (otros colectivos favoritos que paran ahi).
+ * Con una sola, como busTitle.
  */
 export function busSignsTitle(shortNames) {
   const names = (shortNames ?? []).filter(Boolean)
   if (names.length < 2) return names.length ? busTitle({ shortName: names[0] }) : ''
+  if (!sameBusNumber(names)) return `Líneas ${listText(names)}`
   const parsed = names.map(parseBusShortName)
-  const signs = parsed.map((p) => p.sign).filter(Boolean)
-  if (signs.length < 2 || parsed.some((p) => p.number !== parsed[0].number)) return names.join(' y ')
-  const list = signs.length === 2 ? signs.join(' y ') : `${signs.slice(0, -1).join(', ')} y ${signs[signs.length - 1]}`
-  return `Línea ${parsed[0].number} · Carteles ${list}`
+  return `Línea ${parsed[0].number} · Carteles ${listText(parsed.map((p) => p.sign))}`
 }
 
 /** El id de favorito de una linea: su cartel sin espacios y en mayusculas ("53a " -> "53A"); null si no sirve. */
