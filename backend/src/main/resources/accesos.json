@@ -7,7 +7,7 @@
       "ruta": "RN 1",
       "conecta": "CABA ↔ Avellaneda, Quilmes, Berazategui, La Plata",
       "concesionaria": "AUBASA",
-      "rutasTomTom": ["RN1"],
+      "rutasTomTom": ["RN-01"],
       "tramos": [
         { "nombre": "Avellaneda – Quilmes", "lat": -34.7005, "lon": -58.2775,
           "manos": [
@@ -27,7 +27,7 @@
       "ruta": "RN 9",
       "conecta": "CABA ↔ Vicente López, San Isidro, Tigre, Pilar, Escobar",
       "concesionaria": "Autopistas del Sol",
-      "rutasTomTom": ["RN9", "RN8"],
+      "rutasTomTom": ["AU09", "AU08"],
       "tramos": [
         { "nombre": "General Paz – Márquez", "lat": -34.5180, "lon": -58.5100,
           "manos": [
@@ -47,7 +47,7 @@
       "ruta": "RN 7",
       "conecta": "CABA ↔ Haedo, Morón, Moreno, Luján",
       "concesionaria": "Grupo Concesionario del Oeste",
-      "rutasTomTom": ["RN7"],
+      "rutasTomTom": ["AU07"],
       "tramos": [
         { "nombre": "General Paz – Morón", "lat": -34.63280, "lon": -58.59500,
           "manos": [
@@ -67,7 +67,7 @@
       "ruta": "A002 · RN 205",
       "conecta": "CABA ↔ Aeropuerto de Ezeiza, Cañuelas",
       "concesionaria": "Corredores Viales",
-      "rutasTomTom": ["A002", "RN205"],
+      "rutasTomTom": ["RN-A002"],
       "tramos": [
         { "nombre": "Autopista Riccheri", "lat": -34.72255, "lon": -58.51310,
           "manos": [

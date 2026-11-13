@@ -19,9 +19,12 @@ public final class AccessModels {
     }
 
     /**
-     * Un acceso. roadNumbers son los numeros de ruta con que TomTom informa
-     * los embotellamientos de esa autopista ("RN9", "RN8"): asi se sabe que
-     * un embotellamiento es del acceso y no de una calle de al lado.
+     * Un acceso. roadNumbers son los numeros con que TomTom informa los
+     * embotellamientos de esa autopista: Panamericana "AU09" y su ramal Pilar
+     * "AU08", Acceso Oeste "AU07", La Plata "RN-01", Riccheri "RN-A002". Asi
+     * se sabe que un embotellamiento es del acceso y no de la colectora o de
+     * una calle de al lado (la RN 205, por ejemplo, tambien son calles de
+     * Ezeiza; la autopista Ezeiza-Cañuelas todavia no se vio con su numero).
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record AccessDefinition(

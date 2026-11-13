@@ -246,7 +246,7 @@ public class AccessService {
         return result;
     }
 
-    /** "RN 9", "RN-9" y "rn9" son la misma ruta. */
+    /** "AU09", "AU 9" y "au-9" son la misma ruta (TomTom escribe "AU09", "RN-01", "RN-A002"). */
     static boolean sameRoad(List<String> accessRoads, List<String> incidentRoads) {
         for (String a : accessRoads) {
             for (String b : incidentRoads) {
@@ -259,7 +259,8 @@ public class AccessService {
     }
 
     private static String roadKey(String road) {
-        return road == null ? "" : road.toUpperCase(Locale.ROOT).replaceAll("[^A-Z0-9]", "");
+        return road == null ? "" : road.toUpperCase(Locale.ROOT).replaceAll("[^A-Z0-9]", "")
+                .replaceAll("(?<=[A-Z])0+(?=\\d)", "");
     }
 
     /** El tramo del acceso mas cercano a la mitad del embotellamiento; null si todos quedan lejos. */

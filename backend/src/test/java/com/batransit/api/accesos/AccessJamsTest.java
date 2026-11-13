@@ -75,6 +75,16 @@ class AccessJamsTest {
     }
 
     @Test
+    void reconoceLosNumerosComoLosEscribeTomTom() {
+        assertThat(AccessService.sameRoad(List.of("AU09"), List.of("AU9"))).isTrue();
+        assertThat(AccessService.sameRoad(List.of("RN-01"), List.of("RN1"))).isTrue();
+        assertThat(AccessService.sameRoad(List.of("AU07"), List.of("AU6", "AU07"))).isTrue();
+        assertThat(AccessService.sameRoad(List.of("RN-A002"), List.of("RN-A001"))).isFalse();
+        assertThat(AccessService.sameRoad(List.of("AU09"), List.of("RP-24"))).isFalse();
+        assertThat(AccessService.sameRoad(List.of("AU07"), List.of())).isFalse();
+    }
+
+    @Test
     void unEmbotellamientoGraveDejaLaManoCongestionadaAunqueElPuntoEsteLibre() {
         SegmentReport measured = new SegmentReport("General Paz – Márquez", TrafficStatus.FLUIDO, 95, 100, false,
                 List.of(), List.of(
