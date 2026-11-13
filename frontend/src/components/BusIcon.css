@@ -6,6 +6,11 @@
   border-radius: 7px;
 }
 
+/* El colectivo en vivo, redondo como en el mapa (y como el tren). */
+.bus-icon.bus-icon-live {
+  border-radius: 50%;
+}
+
 .bus-icon svg {
   width: 62%;
   height: 62%;

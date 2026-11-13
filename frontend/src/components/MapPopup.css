@@ -601,6 +601,7 @@ button.station-popup-link {
 }
 
 .station-popup.has-header .station-icon,
+.station-popup.has-header .bus-icon-live,
 .station-popup.has-header .station-popup-line .line-badge,
 .station-popup.has-header .speed-gauge {
   background: var(--card-ink) !important;

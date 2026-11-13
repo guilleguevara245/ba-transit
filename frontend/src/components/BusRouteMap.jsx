@@ -141,13 +141,20 @@ export default function BusRouteMap({ route, directionIndex, className, vehicles
         </>
       )}
 
-      {/* Cada 30 segundos, cada colectivo se desliza a su nueva posicion. */}
+      {/* Cada 30 segundos, cada colectivo se desliza a su nueva posicion. Un circulo con halo, como los trenes. */}
       {vehicles.map((v) => (
         <GlideMarker
           key={v.id}
           position={[v.latitude, v.longitude]}
           title={`Colectivo de la línea ${route.shortName || '?'}`}
-          icon={badgeIcon('bus', { bg: BUS_YELLOW, fg: '#17171a', border: '#17171a', shape: 'square', size: 28 })}
+          icon={badgeIcon('bus', {
+            bg: BUS_YELLOW,
+            fg: '#17171a',
+            border: '#17171a',
+            shape: 'circle',
+            size: 32,
+            pulse: true,
+          })}
         >
           <MapCard
             color={BUS_YELLOW}

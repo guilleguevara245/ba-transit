@@ -23,10 +23,14 @@ export const GLYPHS = {
 /** Dibujos que van rellenos en vez de con trazo. */
 export const FILLED = new Set(['plane'])
 
-/** HTML del distintivo, para usarlo tambien fuera del mapa (referencias). */
-export function badgeHtml(glyph, { bg, fg, border = 'transparent', shape = 'circle' }) {
+/**
+ * HTML del distintivo, para usarlo tambien fuera del mapa (referencias).
+ * pulse: un halo del color de fondo que late, como los trenes en vivo.
+ */
+export function badgeHtml(glyph, { bg, fg, border = 'transparent', shape = 'circle', pulse = false }) {
   return (
     `<span class="map-badge map-badge-${shape}${FILLED.has(glyph) ? ' map-badge-filled' : ''}" style="background:${bg};color:${fg};border-color:${border}">` +
+    (pulse ? `<i class="map-badge-pulse" style="background:${bg}"></i>` : '') +
     `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${GLYPHS[glyph]}"/></svg></span>`
   )
 }

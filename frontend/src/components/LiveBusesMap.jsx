@@ -17,7 +17,8 @@ const ZOOM = 11
 // Son miles: con el mapa lejos van como puntos en un canvas (livianos); desde
 // este zoom, con el dibujo de un colectivo, y solo los que estan a la vista.
 const ICON_ZOOM = 14
-const BUS_BADGE = { bg: '#f4c11b', fg: '#17171a', border: '#17171a', shape: 'square', size: 24 }
+// Circulo, como los trenes en vivo; sin halo: con cientos a la vista seria mucho movimiento.
+const BUS_BADGE = { bg: '#f4c11b', fg: '#17171a', border: '#17171a', shape: 'circle', size: 24 }
 // Desde este zoom los colectivos a la vista se deslizan a su nueva posicion; mas lejos, en
 // 30 segundos se mueven un par de pixeles y animar miles no vale la pena.
 const GLIDE_ZOOM = 13

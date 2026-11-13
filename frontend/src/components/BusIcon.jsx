@@ -11,15 +11,15 @@ const PATHS = {
 const LIVE = { background: '#f4c11b', color: '#17171a', borderColor: '#17171a' }
 
 /**
- * Icono cuadrado para las tarjetas de colectivos: kind="bus" (un
- * colectivo en vivo, en amarillo como en el mapa) o kind="stop" (una
- * parada, del color de la linea).
+ * Icono para las tarjetas de colectivos: kind="bus" (un colectivo en
+ * vivo, un circulo amarillo como en el mapa) o kind="stop" (una parada,
+ * cuadrada, del color de la linea).
  */
 export default function BusIcon({ kind = 'bus', color, size = 30 }) {
   const fill = color ?? '#17171a'
   const style = kind === 'bus' ? LIVE : { background: fill, color: readableTextColor(fill) }
   // Sin color de linea, la parada va oscura: con el tema oscuro lleva un borde para que no se pierda.
-  const className = kind === 'stop' && !color ? 'bus-icon plain' : 'bus-icon'
+  const className = kind === 'bus' ? 'bus-icon bus-icon-live' : !color ? 'bus-icon plain' : 'bus-icon'
   return (
     <span className={className} style={{ ...style, width: size, height: size }} aria-hidden="true">
       <svg viewBox="0 0 24 24" focusable="false">
