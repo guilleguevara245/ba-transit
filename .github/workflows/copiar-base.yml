@@ -1,0 +1,94 @@
+name: Copiar la base de Neon a Supabase
+
+# Se corre a mano, una sola vez: Actions > "Copiar la base de Neon a Supabase" >
+# Run workflow, escribiendo COPIAR. Copia todo el esquema public (tablas, datos,
+# secuencias e historial de Flyway) de Neon a un proyecto nuevo de Supabase y al
+# final compara cuantas filas tiene cada tabla en las dos bases.
+#
+# Las dos direcciones van en secrets del repositorio (Settings > Secrets and
+# variables > Actions), nunca en este archivo:
+#   NEON_DATABASE_URL      la "Connection string" de Neon (sin pooler)
+#   SUPABASE_DATABASE_URL  la del "Session pooler" de Supabase, con ?sslmode=require
+#
+# La copia queda solo en la maquina de la corrida: no se sube como artefacto.
+on:
+  workflow_dispatch:
+    inputs:
+      confirmar:
+        description: "Escribí COPIAR para cargar los datos en Supabase"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  copiar:
+    name: Copiar
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.confirmar == 'COPIAR' }}
+    env:
+      ORIGEN: ${{ secrets.NEON_DATABASE_URL }}
+      DESTINO: ${{ secrets.SUPABASE_DATABASE_URL }}
+      PG: /usr/lib/postgresql/17/bin
+    steps:
+      - name: Revisar los secrets
+        run: |
+          test -n "$ORIGEN" || { echo "Falta el secret NEON_DATABASE_URL"; exit 1; }
+          test -n "$DESTINO" || { echo "Falta el secret SUPABASE_DATABASE_URL"; exit 1; }
+
+      - name: Instalar el cliente de PostgreSQL 17
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -y -qq postgresql-client-17
+
+      - name: Versiones de las dos bases
+        run: |
+          $PG/psql "$ORIGEN" -At -c "select 'Neon: ' || version()"
+          $PG/psql "$DESTINO" -At -c "select 'Supabase: ' || version()"
+
+      - name: La base de Supabase tiene que estar vacia
+        run: |
+          tablas=$($PG/psql "$DESTINO" -At -c "select count(*) from pg_tables where schemaname = 'public'")
+          if [ "$tablas" != "0" ]; then
+            echo "Supabase ya tiene $tablas tablas en public: no se copia nada encima."
+            exit 1
+          fi
+
+      - name: Copiar de Neon
+        run: $PG/pg_dump "$ORIGEN" --schema=public --no-owner --no-privileges --format=custom --file=base.dump
+
+      - name: Cargar en Supabase
+        # En Neon el esquema public tiene otro duenio y la copia trae su
+        # CREATE SCHEMA; en Supabase public ya existe, asi que se saltea.
+        run: |
+          $PG/pg_restore --list base.dump | grep -v -E "SCHEMA - public |COMMENT - SCHEMA public " > lista.txt
+          $PG/pg_restore --dbname="$DESTINO" --no-owner --no-privileges --exit-on-error --use-list=lista.txt base.dump
+
+      - name: Cerrar las tablas a la API de datos de Supabase
+        # El backend entra como duenio de las tablas y no lo afecta; la API
+        # publica de Supabase (anon, authenticated) queda sin acceso.
+        run: |
+          $PG/psql "$DESTINO" -v ON_ERROR_STOP=1 -At -c "
+            do \$\$ declare t record; begin
+              for t in select tablename from pg_tables where schemaname = 'public' loop
+                execute format('alter table public.%I enable row level security', t.tablename);
+              end loop;
+            end \$\$;"
+
+      - name: Comparar filas tabla por tabla
+        run: |
+          contar() {
+            $PG/psql "$1" -At -F' ' -c "
+              select tablename from pg_tables where schemaname = 'public' order by 1" |
+            while read -r tabla; do
+              echo "$tabla $($PG/psql "$1" -At -c "select count(*) from public.\"$tabla\"")"
+            done
+          }
+          contar "$ORIGEN" > neon.txt
+          contar "$DESTINO" > supabase.txt
+          join -a1 -a2 -e "-" -o 0,1.2,2.2 neon.txt supabase.txt | awk 'BEGIN { printf "%-24s %10s %10s\n", "tabla", "neon", "supabase" } { printf "%-24s %10s %10s%s\n", $1, $2, $3, ($2 == $3 ? "" : "   <- distinto") }'
+          if ! diff -q neon.txt supabase.txt > /dev/null; then
+            echo "Hay tablas con distinta cantidad de filas: si son alertas, colectivos o envios de notificaciones, es porque Neon siguio cambiando durante la copia."
+          fi
