@@ -34,7 +34,7 @@ public class SourceHealth {
     /** Las fuentes, en el orden en que se muestran. */
     public enum Source {
         SUBTE_ALERTAS("Alertas del subte", "API Transporte GCBA (Gobierno de la Ciudad)"),
-        TRANSPORTE_VIVO("Subte, colectivos y EcoBici en vivo", "API Transporte GCBA (Gobierno de la Ciudad)"),
+        TRANSPORTE_VIVO("Próximos colectivos y estado EcoBici", "API Transporte GCBA (Gobierno de la Ciudad)"),
         COLECTIVOS_RECORRIDOS("Recorridos de colectivos", "API Transporte GCBA (Gobierno de la Ciudad)"),
         SUBTE_HORARIO("Próximas formaciones del subte", "API Transporte GCBA (Gobierno de la Ciudad)"),
         FERROVIAS("Próximos trenes del Belgrano Norte", "Ferrovías"),

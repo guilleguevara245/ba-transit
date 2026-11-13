@@ -31,7 +31,7 @@ describe('statusGroups', () => {
       ['trenes', 'SIN_DATOS'],
       ['otros', 'OK'],
     ])
-    expect(groups[0].sources.map((s) => s.name)).toEqual(['Alertas', 'Próximas formaciones del subte'])
+    expect(groups[0].sources.map((s) => s.name)).toEqual(['Alertas de GCBA', 'Próximas formaciones del subte'])
     expect(groups[2].sources[0].name).toBe('Fuente nueva')
   })
 

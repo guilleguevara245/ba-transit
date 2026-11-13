@@ -30,7 +30,7 @@ export const STATUS_GROUPS = [
     id: 'subte',
     title: 'Subte',
     icon: 'SUBTE',
-    items: { 'subte-alertas': 'Alertas', 'subte-horario': 'Próximas formaciones del subte' },
+    items: { 'subte-alertas': 'Alertas de GCBA', 'subte-horario': 'Próximas formaciones del subte' },
   },
   {
     id: 'trenes',
@@ -47,7 +47,7 @@ export const STATUS_GROUPS = [
     id: 'vivo',
     title: 'Colectivos y EcoBici',
     icon: 'COLECTIVO',
-    items: { 'transporte-vivo': 'Subte, colectivos y EcoBici en vivo', 'colectivos-recorridos': 'Recorridos' },
+    items: { 'transporte-vivo': 'Próximos colectivos y estado EcoBici', 'colectivos-recorridos': 'Recorridos' },
   },
   { id: 'accesos', title: 'Accesos', icon: 'ACCESOS', items: { tomtom: 'Tránsito en las autopistas' } },
   {

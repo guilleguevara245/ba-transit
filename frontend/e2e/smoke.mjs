@@ -16,7 +16,7 @@ const CHECKS = [
   { path: '/', name: 'Inicio', expect: ['Estado de la red', 'Alertas destacadas', 'Tarifas vigentes'] },
   { path: '/lineas/subte-b', name: 'Línea B', expect: ['Línea B', 'Ramales y estaciones', 'Medrano'] },
   { path: '/mapa', name: 'Mapa', expect: ['Mapa de la red'], selector: '.leaflet-container' },
-  { path: '/estado', name: 'Estado de los datos', expect: ['Estado de los datos', 'Horarios programados'] },
+  { path: '/estado', name: 'Estado de los datos', expect: ['Estado de los datos', 'Próximas formaciones del subte', 'Alertas de Trenes Argentinos'] },
   { path: '/contacto', name: 'Contacto', expect: ['Contacto', 'De qué se trata', 'Mandar mensaje'] },
 ]
 
