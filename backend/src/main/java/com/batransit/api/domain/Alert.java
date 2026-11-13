@@ -13,6 +13,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 import java.time.Instant;
+import java.util.Objects;
 
 /**
  * Una alerta de servicio sobre una TransportLine completa (no un
@@ -157,10 +158,16 @@ public class Alert {
     /**
      * Actualiza los campos que pueden cambiar entre una corrida del
      * job y la siguiente, cuando la alerta ya existia (mismo
-     * externalId). No toca id, transportLine, source, ni las fechas
-     * de creacion/publicacion originales.
+     * externalId). No toca id, transportLine, source ni la fecha de
+     * creacion. La de publicacion se renueva solo si la alerta vuelve
+     * despues de haberse dado de baja o si cambio el texto: la fuente
+     * reusa los ids, y un aviso nuevo con un id viejo no tiene que
+     * decir "hace 40 dias".
      */
     public void updateFromSource(AlertType type, String description, Integer sourceCause, Integer sourceEffect) {
+        if (!this.active || !Objects.equals(this.description, description)) {
+            this.publishedAt = Instant.now();
+        }
         this.type = type;
         this.description = description;
         this.sourceCause = sourceCause;

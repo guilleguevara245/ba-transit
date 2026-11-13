@@ -53,7 +53,7 @@ export default function AlertsPanel({ alerts, lines }) {
             ))}
           </div>
         ) : (
-          <span className="count">{alerts.length} activas</span>
+          <span className="count">{alerts.length === 1 ? '1 activa' : `${alerts.length} activas`}</span>
         )}
       </div>
 
