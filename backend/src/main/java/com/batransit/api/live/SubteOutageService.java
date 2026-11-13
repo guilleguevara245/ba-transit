@@ -47,7 +47,8 @@ import java.util.regex.Pattern;
  * si estan todas las lineas sin trenes y la noticia lo nombra o habla de
  * todas las lineas.
  *
- * Si el pronostico no responde o esta congelado, no se toca nada.
+ * Si el pronostico no responde o esta congelado, no cambia que lineas
+ * estan sin trenes. Paro de toda la red: ver withNetworkStrike.
  */
 @Service
 public class SubteOutageService {
@@ -110,29 +111,28 @@ public class SubteOutageService {
 
     @Scheduled(initialDelay = 60_000L, fixedDelay = 60_000L)
     public void check() {
-        Optional<Fetched> feed = client.get("/subtes/forecastGTFS", SubteArrivalsController.MAX_AGE);
-        if (feed.isEmpty()) {
-            return;
-        }
         Instant now = Instant.now();
-        JsonNode body = feed.get().body();
-        if (frozen(body, now)) {
-            log.warn("Subte sin servicio: el pronostico esta congelado; no se toca nada.");
-            return;
-        }
-        Set<String> running = SubteArrivals.linesWithTrains(body, now.getEpochSecond());
         LocalDateTime local = LocalDateTime.ofInstant(now, BUENOS_AIRES);
-        for (String line : LINES) {
-            if (running.contains(line) || !schedule.inService(line, local, AFTER_FIRST_SECONDS, BEFORE_LAST_SECONDS)) {
-                emptySince.remove(line);
-            } else {
-                emptySince.putIfAbsent(line, now);
+        // Con el pronostico caido o congelado no se cambia que lineas estan sin trenes.
+        Optional<Fetched> feed = client.get("/subtes/forecastGTFS", SubteArrivalsController.MAX_AGE);
+        if (feed.isPresent() && frozen(feed.get().body(), now)) {
+            log.warn("Subte sin servicio: el pronostico esta congelado; no se cambia que lineas estan sin trenes.");
+        } else if (feed.isPresent()) {
+            Set<String> running = SubteArrivals.linesWithTrains(feed.get().body(), now.getEpochSecond());
+            for (String line : LINES) {
+                boolean expected = schedule.inService(line, local, AFTER_FIRST_SECONDS, BEFORE_LAST_SECONDS);
+                if (running.contains(line) || !expected) {
+                    emptySince.remove(line);
+                } else {
+                    emptySince.putIfAbsent(line, now);
+                }
             }
         }
         List<NewsItem> items = news.current() == null ? List.of() : news.current().items();
-        List<Outage> outages = outages(emptySince, now, strikeNews(items, now));
+        Optional<NewsItem> strike = strikeNews(items, now);
+        List<Outage> outages = outages(emptySince, now, strike);
         try {
-            transactionTemplate.executeWithoutResult(s -> apply(outages, local.toLocalDate()));
+            transactionTemplate.executeWithoutResult(s -> apply(outages, strike, now, local.toLocalDate()));
         } catch (Exception e) {
             log.error("Subte sin servicio: error al guardar ({})", e.getClass().getSimpleName());
         }
@@ -170,6 +170,73 @@ public class SubteOutageService {
         return result;
     }
 
+    /** Con cuantas lineas paradas por el paro se da por parada toda la red. */
+    static final int NETWORK_MIN_LINES = 3;
+    static final String NETWORK_TEXT = "Sin servicio por paro, según las noticias de hoy.";
+    private static final Pattern UNTIL_MIDNIGHT = Pattern.compile("\\bhasta (la medianoche|las 24)\\b");
+    private static final Pattern UNTIL_HOUR = Pattern.compile("\\bhasta las (\\d{1,2})(?:[:.](\\d{2}))?\\b");
+
+    /**
+     * Paro de toda la red: si la noticia del paro habla de todas las lineas
+     * (o del Premetro) y ya hay al menos NETWORK_MIN_LINES lineas sin
+     * servicio (por el pronostico o por los avisos de la Ciudad), se suman
+     * las que faltan y el Premetro, hasta que termina el paro segun la
+     * noticia. outByOthers: las lineas que ya tienen una interrupcion por
+     * el paro de otra fuente (no se repiten).
+     */
+    static List<Outage> withNetworkStrike(List<Outage> outages, Set<String> outByOthers, Optional<NewsItem> strike,
+                                          Instant now) {
+        List<Outage> result = new ArrayList<>(outages.stream()
+                .filter(o -> !outByOthers.contains(o.lineCode())).toList());
+        if (strike.isEmpty() || !ALL_LINES.matcher(normalize(strike.get().title())).find()
+                || !now.isBefore(strikeEnd(strike.get()))) {
+            return result;
+        }
+        Set<String> out = new HashSet<>(outByOthers);
+        outages.forEach(o -> out.add(o.lineCode()));
+        if (LINES.stream().filter(out::contains).count() < NETWORK_MIN_LINES) {
+            return result;
+        }
+        for (String line : LINES) {
+            if (!out.contains(line)) {
+                result.add(new Outage(line, TransportMode.SUBTE, NETWORK_TEXT));
+            }
+        }
+        if (!out.contains("P")) {
+            result.add(new Outage("P", TransportMode.PREMETRO, NETWORK_TEXT));
+        }
+        return result;
+    }
+
+    /**
+     * Hasta cuando dura el paro segun el titulo de la noticia: "hasta la
+     * medianoche", "hasta las 15"; si no lo dice, hasta la medianoche del
+     * dia en que salio la noticia.
+     */
+    static Instant strikeEnd(NewsItem item) {
+        LocalDateTime published = LocalDateTime.ofInstant(item.publishedAt(), BUENOS_AIRES);
+        LocalDateTime midnight = published.toLocalDate().plusDays(1).atStartOfDay();
+        String title = normalize(item.title());
+        java.util.regex.Matcher hour = UNTIL_HOUR.matcher(title);
+        LocalDateTime end = midnight;
+        if (!UNTIL_MIDNIGHT.matcher(title).find() && hour.find()) {
+            int h = Integer.parseInt(hour.group(1));
+            int m = hour.group(2) == null ? 0 : Integer.parseInt(hour.group(2));
+            if (h < 24 && m < 60) {
+                end = published.toLocalDate().atTime(h, m);
+                if (end.isBefore(published)) {
+                    end = end.plusDays(1);
+                }
+            }
+        }
+        return end.atZone(BUENOS_AIRES).toInstant();
+    }
+
+    /** Si el texto de un aviso habla de un paro ("medida de fuerza gremial"). */
+    static boolean mentionsStrikeText(String text) {
+        return STRIKE.matcher(normalize(text)).find();
+    }
+
     static String description(boolean strike, String since) {
         String noTrains = "el pronóstico en vivo no muestra trenes desde las " + since + ".";
         return strike
@@ -204,7 +271,21 @@ public class SubteOutageService {
         return ID_PREFIX + lineCode + ":" + day;
     }
 
-    void apply(List<Outage> outages, LocalDate day) {
+    void apply(List<Outage> forecastOutages, Optional<NewsItem> strike, Instant now, LocalDate day) {
+        // Las lineas que la Ciudad (u otra fuente) ya da por interrumpidas por el paro.
+        Map<Long, String> codeById = new java.util.HashMap<>();
+        for (String code : LINES) {
+            lineRepository.findByModeAndCodeIgnoreCase(TransportMode.SUBTE, code)
+                    .ifPresent(l -> codeById.put(l.getId(), code));
+        }
+        Set<String> outByOthers = new HashSet<>();
+        for (Alert alert : alertRepository.findByActiveTrueOrderByPublishedAtDesc()) {
+            if (!SOURCE_NAME.equals(alert.getSource()) && alert.getType() == AlertType.INTERRUPCION
+                    && mentionsStrikeText(alert.getDescription()) && codeById.containsKey(alert.transportLineId())) {
+                outByOthers.add(codeById.get(alert.transportLineId()));
+            }
+        }
+        List<Outage> outages = withNetworkStrike(forecastOutages, outByOthers, strike, now);
         Set<String> current = new HashSet<>();
         for (Outage outage : outages) {
             TransportLine line = lineRepository.findByModeAndCodeIgnoreCase(outage.mode(), outage.lineCode())

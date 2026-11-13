@@ -113,4 +113,59 @@ class SubteOutageServiceTest {
         assertThat(SubteOutageService.externalId("B", java.time.LocalDate.of(2026, 11, 12)))
                 .isEqualTo("subte-sin-servicio:B:2026-11-12");
     }
+
+    private static final java.util.Set<String> CIUDAD_A_E = java.util.Set.of("A", "B", "C", "D", "E");
+
+    private static NewsItem paroHastaMedianoche() {
+        // Salio a las 19 (22 UTC) del jueves 12/11.
+        return new NewsItem("n", "Empezó el paro de subte: afecta a todas las líneas hasta la medianoche",
+                "https://example.com", "La Nación", Instant.parse("2026-11-12T22:00:00Z"), Category.SUBTE);
+    }
+
+    @Test
+    void enUnParoDeTodaLaRedSeSumanLasQueFaltanYElPremetro() {
+        // La Ciudad ya da por interrumpidas la A a la E; la H solo tiene un aviso viejo de demoras.
+        List<Outage> result = SubteOutageService.withNetworkStrike(List.of(), CIUDAD_A_E,
+                Optional.of(paroHastaMedianoche()), Instant.parse("2026-11-13T02:17:00Z"));
+
+        assertThat(result).extracting(Outage::lineCode).containsExactly("H", "P");
+        assertThat(result.get(1).mode()).isEqualTo(TransportMode.PREMETRO);
+        assertThat(result.get(0).description()).isEqualTo("Sin servicio por paro, según las noticias de hoy.");
+    }
+
+    @Test
+    void conPocasLineasParadasOTerminadoElParoNoSeSumaNada() {
+        assertThat(SubteOutageService.withNetworkStrike(List.of(), java.util.Set.of("A", "B"),
+                Optional.of(paroHastaMedianoche()), Instant.parse("2026-11-13T02:17:00Z"))).isEmpty();
+        // 00:10 del viernes: ya termino.
+        assertThat(SubteOutageService.withNetworkStrike(List.of(), CIUDAD_A_E,
+                Optional.of(paroHastaMedianoche()), Instant.parse("2026-11-13T03:10:00Z"))).isEmpty();
+    }
+
+    @Test
+    void laLineaQueYaInterrumpioLaCiudadNoSeRepite() {
+        List<Outage> forecast = List.of(new Outage("B", TransportMode.SUBTE, "Sin servicio: ..."),
+                new Outage("H", TransportMode.SUBTE, "Sin servicio: ..."));
+        assertThat(SubteOutageService.withNetworkStrike(forecast, java.util.Set.of("B"), Optional.empty(), NOW))
+                .extracting(Outage::lineCode).containsExactly("H");
+    }
+
+    @Test
+    void elFinDelParoSaleDeLaNoticia() {
+        assertThat(SubteOutageService.strikeEnd(paroHastaMedianoche()))
+                .isEqualTo(Instant.parse("2026-11-13T03:00:00Z"));
+        NewsItem hastaLas15 = new NewsItem("n", "Paro de subte en todas las líneas hasta las 15",
+                "https://example.com", "Clarín", Instant.parse("2026-11-12T11:00:00Z"), Category.SUBTE);
+        assertThat(SubteOutageService.strikeEnd(hastaLas15)).isEqualTo(Instant.parse("2026-11-12T18:00:00Z"));
+        NewsItem sinHora = new NewsItem("n", "Paro de subte en todas las líneas", "https://example.com",
+                "Clarín", Instant.parse("2026-11-12T11:00:00Z"), Category.SUBTE);
+        assertThat(SubteOutageService.strikeEnd(sinHora)).isEqualTo(Instant.parse("2026-11-13T03:00:00Z"));
+    }
+
+    @Test
+    void losAvisosDeLaCiudadPorElParo() {
+        assertThat(SubteOutageService.mentionsStrikeText("Servicio interrumpido por medida de fuerza gremial."))
+                .isTrue();
+        assertThat(SubteOutageService.mentionsStrikeText("Estación Medrano cerrada por obras.")).isFalse();
+    }
 }
