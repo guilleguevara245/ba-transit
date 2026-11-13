@@ -150,7 +150,7 @@ flowchart LR
   tope diario; si dos tramos caen en el mismo tramo de TomTom, se muestran como uno en lugar de repetir el dato.
   Los aviones se piden a adsb.lol solo cuando alguien mira la sección, y el dato se reutiliza 30 segundos.
 - **Salud de las fuentes**: cada integración informa si respondió o falló; una falla aislada no marca la fuente como
-  caída. Los servicios de la Ciudad que hoy no funcionan se prueban una vez por semana.
+  caída.
 - **Seguridad**: los endpoints de escritura piden una clave de administrador (`X-API-Key`), los errores siguen el
   formato estándar Problem Details (RFC 9457) sin detalles internos y el XML externo se procesa sin entidades externas.
   Las contraseñas se guardan con PBKDF2-HMAC-SHA512 (210.000 iteraciones, lo que recomienda OWASP); las sesiones van
@@ -287,8 +287,7 @@ npm install --no-save playwright && npx playwright install chromium && node e2e/
 
 - Trenes Argentinos no publica una API abierta: sus datos llegan por la API de Trenes (un proyecto comunitario), y
   muchas veces traen solo el horario programado, sin seguir al tren.
-- La API Transporte dio de baja los cortes y eventos, y hoy no responde con semáforos ni datos de movilidad: los
-  eventos se cargan a mano y esos servicios se prueban una vez por semana por si vuelven.
+- La API Transporte dio de baja los cortes y eventos: los eventos se cargan a mano.
 - El estacionamiento del conurbano sale de OpenStreetMap (colaborativo): en algunos partidos hay pocos datos.
 - Plan gratuito de Render: si nadie entró en un rato, la primera visita tarda en despertar el servidor.
 
