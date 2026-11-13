@@ -202,6 +202,15 @@ class SubteAlertSyncServiceTest {
                 .isEqualTo(AlertType.AVISO);
         assertThat(SubteAlertSyncService.typeOf(5, "Servicio por el recital")).isEqualTo(AlertType.AVISO);
         assertThat(SubteAlertSyncService.typeOf(1, "Servicio interrumpido")).isEqualTo(AlertType.INTERRUPCION);
+        // Con un efecto generico, el texto: las estaciones cerradas por obras son obras, no demoras.
+        assertThat(SubteAlertSyncService.typeOf(null, "Independencia y Lavalle cerradas por obras de renovación integral."))
+                .isEqualTo(AlertType.OBRA);
+        assertThat(SubteAlertSyncService.typeOf(null, "Mañana extendido por la Noche de los Museos. Medrano cerrado por obras"))
+                .isEqualTo(AlertType.OBRA);
+        assertThat(SubteAlertSyncService.typeOf(8, "Servicio interrumpido entre Perú y San Pedrito"))
+                .isEqualTo(AlertType.INTERRUPCION);
+        assertThat(SubteAlertSyncService.typeOf(null, "Estación Callao cerrada")).isEqualTo(AlertType.DESVIO);
+        assertThat(SubteAlertSyncService.typeOf(null, "Servicio limitado")).isEqualTo(AlertType.DEMORA);
     }
 
     private static SubteAlertsFeed feed(FeedEntity... entities) {

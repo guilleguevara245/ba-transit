@@ -11,9 +11,14 @@ import java.util.regex.Pattern;
  */
 public final class AlertTexts {
 
-    /** Algo bueno o neutro: horario extendido o especial, servicio adicional o reforzado. */
+    /**
+     * Algo bueno o neutro: horario extendido o especial, servicio adicional o
+     * reforzado. "Extendido" solo alcanza: el feed escribe "Mañana extendido
+     * por la Noche de los Museos".
+     */
     private static final Pattern INFORMATIVE = Pattern.compile(
-            "\\bhorario (?:extendido|ampliado|especial)\\b"
+            "\\bextendid[oa]s?\\b"
+                    + "|\\bhorario (?:ampliado|especial)\\b"
                     + "|\\b(?:extiende|extienden|extendera|extenderan|amplia|amplian|ampliara|ampliaran)"
                     + " (?:su |el )?horario\\b"
                     + "|\\bextension (?:del |de )?horario\\b"
@@ -21,9 +26,9 @@ public final class AlertTexts {
                     + "|\\b(?:trenes|servicios|formaciones) adicionales\\b"
                     + "|\\brefuerz(?:o|a|an) (?:de |del |el |su )?servicio\\b");
 
-    /** Si ademas habla de un problema, no es solo un aviso. */
+    /** Si ademas habla de un problema, no es solo un aviso ("Medrano cerrado por obras"). */
     private static final Pattern PROBLEM = Pattern.compile(
-            "interrump|suspend|sin servicio|demora|cerrad|limitad|desvi|no se detiene|no para\\b|no habra");
+            "interrump|suspend|sin servicio|demora|cerrad|limitad|desvi|obra|no se detiene|no para\\b|no habra");
 
     private AlertTexts() {
     }
@@ -33,10 +38,15 @@ public final class AlertTexts {
         if (text == null || text.isBlank()) {
             return false;
         }
-        String t = Normalizer.normalize(text, Normalizer.Form.NFD)
+        String t = normalize(text);
+        return INFORMATIVE.matcher(t).find() && !PROBLEM.matcher(t).find();
+    }
+
+    /** En minusculas, sin acentos y con un solo espacio entre palabras. */
+    public static String normalize(String text) {
+        return Normalizer.normalize(text == null ? "" : text, Normalizer.Form.NFD)
                 .replaceAll("\\p{M}", "")
                 .toLowerCase(Locale.ROOT)
                 .replaceAll("\\s+", " ");
-        return INFORMATIVE.matcher(t).find() && !PROBLEM.matcher(t).find();
     }
 }

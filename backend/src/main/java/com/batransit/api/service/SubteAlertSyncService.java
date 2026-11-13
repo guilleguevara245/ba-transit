@@ -259,12 +259,30 @@ public class SubteAlertSyncService {
 
     /**
      * El tipo de una alerta del feed: un aviso (horario extendido, servicio
-     * adicional) si el efecto o el texto lo dicen; si no, por el efecto. El
-     * feed informa casi siempre un efecto generico, asi que el texto decide.
+     * adicional) si el efecto o el texto lo dicen; si el efecto es claro
+     * (sin servicio, desvio), ese. Si no, como en los trenes, el texto: el
+     * feed informa casi siempre un efecto generico, y "Independencia y
+     * Lavalle cerradas por obras" no es una demora.
      */
     static AlertType typeOf(Integer effect, String text) {
         if (Integer.valueOf(ADDITIONAL_SERVICE).equals(effect) || AlertTexts.isInformative(text)) {
             return AlertType.AVISO;
+        }
+        if (effect != null && (effect == 1 || effect == 4)) {
+            return mapEffectToType(effect);
+        }
+        String t = AlertTexts.normalize(text);
+        if (t.contains("interrump") || t.contains("suspend") || t.contains("sin servicio")) {
+            return AlertType.INTERRUPCION;
+        }
+        if (t.contains("demora") || t.contains("frecuencia")) {
+            return AlertType.DEMORA;
+        }
+        if (t.contains("obra") || t.contains("renovacion")) {
+            return AlertType.OBRA;
+        }
+        if (t.contains("cerrad") || t.contains("desvi") || t.contains("no se detiene")) {
+            return AlertType.DESVIO;
         }
         return mapEffectToType(effect);
     }
