@@ -130,11 +130,12 @@ export function busParams(shortName, id) {
   return shortName ? { linea: shortName, id } : { linea: id }
 }
 
-/** "12 en la calle ahora" / "Ninguno en la calle ahora". */
+/** "12 colectivos en vivo" / "1 colectivo en vivo" / "Ningún colectivo en vivo" (como "5 trenes en vivo"). */
 export function movingLabel(count) {
   if (count == null) return null
-  if (count === 0) return 'Ninguno en la calle ahora'
-  return `${count.toLocaleString('es-AR')} en la calle ahora`
+  if (count === 0) return 'Ningún colectivo en vivo'
+  if (count === 1) return '1 colectivo en vivo'
+  return `${count.toLocaleString('es-AR')} colectivos en vivo`
 }
 
 /** Los avisos de la API Transporte que nombran el numero de esa linea (sin cartel). */

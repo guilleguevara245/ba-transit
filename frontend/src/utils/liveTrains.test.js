@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { branchName, positionAge, trainsMovingLabel } from './liveTrains.js'
+import { branchName, positionAge, secondsAgoText, trainsMovingLabel } from './liveTrains.js'
 
 describe('positionAge', () => {
   const now = new Date('2026-11-12T22:30:00Z')
@@ -19,8 +19,17 @@ describe('branchName', () => {
 })
 
 describe('trainsMovingLabel', () => {
-  it('como los colectivos en la calle', () => {
-    expect(trainsMovingLabel(1)).toBe('1 en las vías ahora')
-    expect(trainsMovingLabel(5)).toBe('5 en las vías ahora')
+  it('dice que son trenes y que es en vivo', () => {
+    expect(trainsMovingLabel(1)).toBe('1 tren en vivo')
+    expect(trainsMovingLabel(5)).toBe('5 trenes en vivo')
+  })
+})
+
+describe('secondsAgoText', () => {
+  it('en segundos el primer minuto', () => {
+    expect(secondsAgoText(4)).toBe('recién')
+    expect(secondsAgoText(38)).toBe('hace 38 s')
+    expect(secondsAgoText(130)).toBe('hace 2 min')
+    expect(secondsAgoText(null)).toBeNull()
   })
 })

@@ -1,6 +1,7 @@
+import { Fragment } from 'react'
 import { Link } from 'react-router-dom'
 import FavoriteButton from './FavoriteButton.jsx'
-import { ClockIcon } from './NextTrains.jsx'
+import { ArrivingTag, ClockIcon } from './NextTrains.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { useFavoriteList } from '../hooks/useFavoriteList.js'
 import { busTitle, headsignName, nextBusText, parseStopFavorite, stopName } from '../utils/busNames.js'
@@ -34,9 +35,10 @@ function StopRow({ id, inPanel }) {
     parada: fav.stopId,
   })}`
   const next = nextBusText(data?.buses)
+  // Los dos proximos: "llegando" con el colectivo de frente (como los trenes) o los minutos.
   const times = (data?.buses ?? [])
     .slice(0, 2)
-    .map((b) => (b.arriving ? 'Llegando' : b.minutes != null ? `${b.minutes} min` : null))
+    .map((b) => (b.arriving ? <ArrivingTag key={b.id} kind="bus" /> : b.minutes != null ? `${b.minutes} min` : null))
     .filter(Boolean)
 
   let status
@@ -51,7 +53,14 @@ function StopRow({ id, inPanel }) {
       <>
         <strong>
           <ClockIcon />
-          {times.length > 0 ? times.join(' · ') : next.time}
+          {times.length > 0
+            ? times.map((t, i) => (
+                <Fragment key={i}>
+                  {i > 0 && ' · '}
+                  {t}
+                </Fragment>
+              ))
+            : next.time}
         </strong>
         {next.detail && <small>{next.detail}</small>}
       </>

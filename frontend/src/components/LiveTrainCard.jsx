@@ -71,6 +71,44 @@ function SourceIcon({ estimated }) {
 }
 
 /**
+ * La proxima parada o estacion destacada, con los minutos que faltan en una
+ * pastilla del color de la linea ("llegando" con 0). Lo usan las tarjetas
+ * del tren y del colectivo en vivo.
+ */
+export function NextStop({ label, name, minutes, color }) {
+  const ink = color ? readableTextColor(color) : undefined
+  return (
+    <div className="live-train-next">
+      <div>
+        <span className="live-train-next-label">{label}</span>
+        <strong>{name}</strong>
+      </div>
+      {minutes != null && (
+        <span className="live-train-mins" style={color ? { background: color, color: ink } : undefined}>
+          {minutes === 0 ? 'llegando' : `${minutes} min`}
+        </span>
+      )}
+    </div>
+  )
+}
+
+/** Al pie: de donde sale la posicion (GPS o estimada) y hace cuanto. */
+export function PositionSource({ estimated = false, text, age }) {
+  return (
+    <div className="live-train-source">
+      <SourceIcon estimated={estimated} />
+      {text}
+      {age && (
+        <>
+          <span className="station-popup-dot">·</span>
+          {age}
+        </>
+      )}
+    </div>
+  )
+}
+
+/**
  * Tarjeta de un tren andando en el mapa, con el mismo formato que la de
  * una estacion: la linea, hacia donde va, la proxima estacion con los
  * minutos que le faltan, el tipo de servicio y el ramal, y de donde sale
@@ -79,7 +117,6 @@ function SourceIcon({ estimated }) {
 export default function LiveTrainCard({ train, line, estimated, updatedAt }) {
   const now = useNow(10_000)
   const color = line?.colorHex
-  const ink = color ? readableTextColor(color) : undefined
   const subway = line?.mode === 'SUBTE' || line?.mode === 'PREMETRO'
   const operator = shortOperator(line?.operator)
   const minutes = train.minutesToNext
@@ -112,17 +149,7 @@ export default function LiveTrainCard({ train, line, estimated, updatedAt }) {
       title={train.destination ? `Hacia ${train.destination}` : 'Tren en servicio'}
     >
       {train.nextStation && (
-        <div className="live-train-next">
-          <div>
-            <span className="live-train-next-label">Próxima estación</span>
-            <strong>{train.nextStation}</strong>
-          </div>
-          {minutes != null && (
-            <span className="live-train-mins" style={color ? { background: color, color: ink } : undefined}>
-              {minutes === 0 ? 'llegando' : `${minutes} min`}
-            </span>
-          )}
-        </div>
+        <NextStop label="Próxima estación" name={train.nextStation} minutes={minutes} color={color} />
       )}
       {(train.service || train.branch) && (
         <div className="live-train-service" style={color ? { '--line-color': color } : undefined}>
@@ -137,16 +164,11 @@ export default function LiveTrainCard({ train, line, estimated, updatedAt }) {
           {train.branch && <span>Ramal {branchName(train.branch)}</span>}
         </div>
       )}
-      <div className="live-train-source">
-        <SourceIcon estimated={estimated} />
-        {estimated ? 'Posición estimada con los horarios' : 'GPS del tren'}
-        {age && (
-          <>
-            <span className="station-popup-dot">·</span>
-            {age}
-          </>
-        )}
-      </div>
+      <PositionSource
+        estimated={estimated}
+        text={estimated ? 'Posición estimada con los horarios' : 'GPS del tren'}
+        age={age}
+      />
     </MapCard>
   )
 }

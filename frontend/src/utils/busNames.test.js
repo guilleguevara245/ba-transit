@@ -65,8 +65,9 @@ describe('colectivos favoritos', () => {
 
   it('movingLabel', () => {
     expect(movingLabel(null)).toBeNull()
-    expect(movingLabel(0)).toBe('Ninguno en la calle ahora')
-    expect(movingLabel(1234)).toBe('1.234 en la calle ahora')
+    expect(movingLabel(0)).toBe('Ningún colectivo en vivo')
+    expect(movingLabel(1)).toBe('1 colectivo en vivo')
+    expect(movingLabel(1234)).toBe('1.234 colectivos en vivo')
   })
 
   it('alertsForBus busca por numero, sin cartel', () => {

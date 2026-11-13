@@ -201,13 +201,16 @@
   flex-shrink: 0;
 }
 
-.my-bus-moving {
+/* "10 colectivos en vivo" y "5 trenes en vivo": el punto y el numero, con el mismo aire. */
+.my-bus-moving,
+.live-count {
   display: inline-flex;
   align-items: center;
   gap: 5px;
 }
 
-.my-bus-moving .live-dot {
+.my-bus-moving .live-dot,
+.live-count .live-dot {
   margin-left: 0;
 }
 

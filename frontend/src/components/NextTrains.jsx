@@ -82,9 +82,10 @@ function CompactTrains({ directions, scheduled = false, live = false, color, mov
       <span className="mini-trains-tag">
         {live && moving > 0 ? (
           // Como los colectivos: cuantos andan ahora en toda la linea (con el GPS o estimados).
-          <>
-            <span className="live-dot" aria-hidden="true" /> {trainsMovingLabel(moving)}
-          </>
+          <span className="live-count">
+            <span className="live-dot" aria-hidden="true" />
+            {trainsMovingLabel(moving)}
+          </span>
         ) : live ? (
           <>
             En vivo <span className="live-dot" aria-hidden="true" />
@@ -354,18 +355,17 @@ export function ClockIcon() {
   )
 }
 
-/** Los simbolos de los horarios y que quiere decir cada uno (en el orden en que suelen aparecer). */
+/**
+ * Los simbolos de los horarios que no se explican solos (los tipos de
+ * servicio, que en las tarjetas chicas van sin la palabra) y que quiere
+ * decir cada uno.
+ */
 const SYMBOLS = [
-  { icon: <ClockIcon />, text: 'Próximos horarios' },
-  { icon: <span className="live-dot" aria-hidden="true" />, text: 'En vivo, con los datos de la empresa' },
-  { icon: <ScheduleTag />, text: 'Horario programado, sin datos en vivo' },
   { icon: <ServiceIcon name="Semirrápido" />, text: 'Semirrápido: saltea algunas estaciones' },
   { icon: <ServiceIcon name="Rápido" />, text: 'Rápido o expreso: para en pocas estaciones' },
   { icon: <ServiceIcon name="Directo" />, text: 'Directo: no para hasta el final' },
   { icon: <ServiceIcon name="Especial" />, text: 'Especial: tren agregado, fuera del horario' },
-  { icon: <ArrivingIcon />, text: 'Llegando a la estación' },
   { icon: <CancelIcon />, text: 'Cancelado' },
-  { icon: <span className="next-trains-platform-sign">2</span>, text: 'Andén' },
 ]
 
 /**
@@ -426,23 +426,34 @@ export function SymbolsHelp({ className = '' }) {
   )
 }
 
-/** El tren de frente de "llegando". */
-function ArrivingIcon() {
+/** El tren (o el colectivo, con kind="bus") de frente de "llegando". */
+function ArrivingIcon({ kind = 'train' }) {
   return (
     <svg className="next-trains-arriving-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <rect x="5" y="3" width="14" height="14" rx="3" />
-      <path d="M5 10h14M9 21l1.5-3M15 21l-1.5-3" />
-      <circle cx="9" cy="13.5" r="1" />
-      <circle cx="15" cy="13.5" r="1" />
+      {kind === 'bus' ? (
+        <>
+          <rect x="4" y="3" width="16" height="15" rx="2" />
+          <path d="M4 11h16M8 21v-3M16 21v-3" />
+          <circle cx="8" cy="14.5" r="1" />
+          <circle cx="16" cy="14.5" r="1" />
+        </>
+      ) : (
+        <>
+          <rect x="5" y="3" width="14" height="14" rx="3" />
+          <path d="M5 10h14M9 21l1.5-3M15 21l-1.5-3" />
+          <circle cx="9" cy="13.5" r="1" />
+          <circle cx="15" cy="13.5" r="1" />
+        </>
+      )}
     </svg>
   )
 }
 
-/** "llegando": un tren de frente y la palabra, del color de la linea. */
-function ArrivingTag() {
+/** "llegando": un tren (o un colectivo) de frente y la palabra, del color de la linea. */
+export function ArrivingTag({ kind = 'train' }) {
   return (
     <span className="next-trains-arriving">
-      <ArrivingIcon />
+      <ArrivingIcon kind={kind} />
       llegando
     </span>
   )

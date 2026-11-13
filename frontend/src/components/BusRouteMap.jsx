@@ -3,8 +3,11 @@ import { CircleMarker, MapContainer, Polyline, TileLayer, useMap, useMapEvents }
 import { badgeIcon } from '../utils/mapIcons.js'
 import BusIcon from './BusIcon.jsx'
 import { DrawnPolyline, GlideMarker } from './GlideMarkers.jsx'
+import { NextStop, PositionSource } from './LiveTrainCard.jsx'
 import MapCard from './MapCard.jsx'
-import { headsignName, stopName } from '../utils/busNames.js'
+import { busTitle, headsignName, operatorName, stopName } from '../utils/busNames.js'
+import { nextStop } from '../utils/busProgress.js'
+import { secondsAgoText } from '../utils/liveTrains.js'
 
 function FitToRoute({ positions }) {
   const map = useMap()
@@ -47,6 +50,38 @@ function FocusStop({ focused, stops, markers }) {
     return () => map.off('moveend', open)
   }, [map, focused, stops, markers])
   return null
+}
+
+/**
+ * Tarjeta de un colectivo en vivo, como la del tren: el cartel de la
+ * linea y la empresa, hacia donde va, la proxima parada con los minutos que le faltan
+ * (si esta sobre el recorrido) y hace cuanto mando su posicion.
+ */
+function LiveBusCard({ route, vehicle, direction, badge }) {
+  // El sentido del colectivo (el feed usa el mismo direction_id que el GTFS); si no esta, el elegido.
+  const own = route.directions.find((d) => d.directionId === vehicle.direction) ?? direction
+  const next = nextStop(own, vehicle.latitude, vehicle.longitude, vehicle.ageSeconds ?? 0)
+  const agency = route.agency ? operatorName(route.agency) : null
+  return (
+    <MapCard
+      color={BUS_YELLOW}
+      minWidth={240}
+      badge={badge}
+      // El cartel (303A) ya dice la linea: al lado, la empresa.
+      kicker={agency ?? busTitle(route)}
+      icon={<BusIcon kind="bus" />}
+      title={vehicle.headsign ? `Hacia ${headsignName(vehicle.headsign)}` : 'Colectivo en servicio'}
+    >
+      {next ? (
+        <NextStop label="Próxima parada" name={stopName(next.stop.name)} minutes={next.minutes} color={BUS_YELLOW} />
+      ) : (
+        vehicle.otherRoute && (
+          <div className="live-train-service live-train-dim">Puede ir por un ramal distinto del recorrido dibujado.</div>
+        )
+      )}
+      <PositionSource text="GPS del colectivo" age={secondsAgoText(vehicle.ageSeconds)} />
+    </MapCard>
+  )
 }
 
 /**
@@ -156,23 +191,7 @@ export default function BusRouteMap({ route, directionIndex, className, vehicles
             pulse: true,
           })}
         >
-          <MapCard
-            color={BUS_YELLOW}
-            badge={busBadge}
-            kicker={
-              <>
-                Colectivo en vivo <span className="live-dot" aria-hidden="true" />
-              </>
-            }
-            icon={<BusIcon kind="bus" />}
-            title={`Línea ${route.shortName || '?'}`}
-            subtitle={[
-              v.headsign ? `Hacia ${headsignName(v.headsign)}` : null,
-              v.ageSeconds > 60 ? `posición de hace ${Math.round(v.ageSeconds / 60)} min` : 'posición actual',
-            ]
-              .filter(Boolean)
-              .join(' · ')}
-          />
+          <LiveBusCard route={route} vehicle={v} direction={active} badge={busBadge} />
         </GlideMarker>
       ))}
 
