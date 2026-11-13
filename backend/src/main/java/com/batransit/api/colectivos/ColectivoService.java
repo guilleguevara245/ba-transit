@@ -64,6 +64,12 @@ public class ColectivoService {
     private final ColectivoSnapshotStore snapshotStore;
     /** Ultimo intento de bajar el feed, para no reintentar cada hora si falla. */
     private volatile Instant lastAttempt;
+    /**
+     * La copia de la base se leyo con una version anterior que perdia letras
+     * ("MU?ECAS"): se usa mientras tanto, pero se vuelve a bajar el feed
+     * enseguida en lugar de esperar a que tenga un dia.
+     */
+    private volatile boolean snapshotNeedsReparse;
     static final Duration RETRY_AFTER_FAILURE = Duration.ofHours(6);
 
     /** Sin copia en la base (tests). */
@@ -91,6 +97,8 @@ public class ColectivoService {
     /** Descarga y procesa el feed. Si algo falla, se conserva lo que habia. */
     public void refresh() {
         lastAttempt = Instant.now();
+        // Una sola vez: si el feed nuevo tambien trae algun "?", no se lo vuelve a bajar cada hora.
+        snapshotNeedsReparse = false;
         if (snapshotStore != null) {
             snapshotStore.markAttempt(lastAttempt);
         }
@@ -160,6 +168,10 @@ public class ColectivoService {
             catalog.compareAndSet(null, saved);
             log.info("Colectivos: {} lineas cargadas desde la copia de la base (feed del {}).",
                     saved.routes().size(), saved.loadedAt());
+            if (lostLetters(saved)) {
+                snapshotNeedsReparse = true;
+                log.info("Colectivos: la copia tiene letras perdidas; se vuelve a bajar el feed.");
+            }
         });
         // Si el ultimo intento de bajar el feed no termino (el servidor se reinicio en el
         // medio), no se reintenta enseguida: se espera RETRY_AFTER_FAILURE desde ese intento.
@@ -170,13 +182,24 @@ public class ColectivoService {
         });
     }
 
-    /** Si hace falta bajar el feed: no hay datos o los que hay tienen mas de maxAge. */
+    /**
+     * Si hace falta bajar el feed: no hay datos, los que hay tienen mas de
+     * maxAge o son de una copia con letras perdidas.
+     */
     public boolean needsRefresh(Duration maxAge, Instant now) {
         if (lastAttempt != null && lastAttempt.plus(RETRY_AFTER_FAILURE).isAfter(now)) {
             return false;
         }
         Catalog loaded = catalog.get();
-        return loaded == null || loaded.loadedAt().plus(maxAge).isBefore(now);
+        return loaded == null || snapshotNeedsReparse || loaded.loadedAt().plus(maxAge).isBefore(now);
+    }
+
+    /** Si alguna parada o destino perdio letras al leerse (ver TextRepair.lostLetters). */
+    static boolean lostLetters(Catalog catalog) {
+        return catalog.routes().values().stream()
+                .flatMap(r -> r.directions().stream())
+                .anyMatch(d -> TextRepair.lostLetters(d.headsign())
+                        || d.stops().stream().anyMatch(s -> TextRepair.lostLetters(s.name())));
     }
 
     /** Usado por los tests y por refresh(). */

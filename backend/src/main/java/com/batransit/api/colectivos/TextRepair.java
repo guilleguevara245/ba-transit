@@ -25,6 +25,19 @@ public final class TextRepair {
     private TextRepair() {
     }
 
+    /** Una letra perdida: el caracter de reemplazo o un "?" entre letras ("MU?ECAS"). */
+    private static final java.util.regex.Pattern LOST_LETTER =
+            java.util.regex.Pattern.compile("\uFFFD|\\p{L}\\?\\p{L}");
+
+    /**
+     * Si el texto perdio alguna letra al leerlo (la "Ñ" de un renglon en
+     * Windows-1252 leido como UTF-8): eso ya no se puede arreglar aca, hay
+     * que volver a leer el feed.
+     */
+    public static boolean lostLetters(String text) {
+        return text != null && LOST_LETTER.matcher(text).find();
+    }
+
     public static String fix(String text) {
         if (text == null || (text.indexOf('Ã') < 0 && text.indexOf('Â') < 0)) {
             return text;

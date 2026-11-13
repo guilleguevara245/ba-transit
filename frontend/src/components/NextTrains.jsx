@@ -1,4 +1,4 @@
-import { Fragment } from 'react'
+import { Fragment, useEffect, useId, useRef, useState } from 'react'
 import { useApi } from '../hooks/useApi.js'
 import Chevrons from './Chevrons.jsx'
 import { useNow } from '../hooks/useNow.js'
@@ -100,9 +100,9 @@ function UrquizaTrains({ stationName, asCard, compact, color }) {
     <ScheduledTrains directions={schedule.directions} source={schedule.source} stale={schedule.stale} color={color} />
   )
   return asCard ? (
-    <section className="station-card">
+    <section className="station-card next-trains-card">
+      <SymbolsHelp className="next-trains-help" />
       {content}
-      <SymbolsLegend />
     </section>
   ) : (
     content
@@ -154,9 +154,9 @@ function ApiTrains({ mode, lineCode, stationName, asCard, compact, color }) {
   }
   if (!content) return null
   return asCard ? (
-    <section className="station-card">
+    <section className="station-card next-trains-card">
+      <SymbolsHelp className="next-trains-help" />
       {content}
-      <SymbolsLegend />
     </section>
   ) : (
     content
@@ -359,24 +359,57 @@ const SYMBOLS = [
 ]
 
 /**
- * "Que significa cada simbolo": la lista plegada, al pie de Tus favoritos
- * y de los proximos trenes de una estacion.
+ * "?" que abre "Que significa cada simbolo": arriba a la derecha de Tus
+ * favoritos y de los proximos trenes de una estacion. Se cierra con Escape,
+ * tocando afuera o con el mismo boton.
  */
-export function SymbolsLegend() {
+export function SymbolsHelp({ className = '' }) {
+  const [open, setOpen] = useState(false)
+  const box = useRef(null)
+  const id = useId()
+
+  useEffect(() => {
+    if (!open) return undefined
+    const close = (event) => {
+      if (event.type === 'keydown' ? event.key === 'Escape' : !box.current?.contains(event.target)) setOpen(false)
+    }
+    document.addEventListener('pointerdown', close)
+    document.addEventListener('keydown', close)
+    return () => {
+      document.removeEventListener('pointerdown', close)
+      document.removeEventListener('keydown', close)
+    }
+  }, [open])
+
   return (
-    <details className="symbols-legend">
-      <summary>Qué significa cada símbolo</summary>
-      <ul>
-        {SYMBOLS.map((s) => (
-          <li key={s.text}>
-            <span className="symbols-legend-icon" aria-hidden="true">
-              {s.icon}
-            </span>
-            {s.text}
-          </li>
-        ))}
-      </ul>
-    </details>
+    <div className={`symbols-help ${className}`.trim()} ref={box}>
+      <button
+        type="button"
+        className="symbols-help-button"
+        aria-expanded={open}
+        aria-controls={id}
+        aria-label="Qué significa cada símbolo"
+        title="Qué significa cada símbolo"
+        onClick={() => setOpen((o) => !o)}
+      >
+        ?
+      </button>
+      {open && (
+        <div className="symbols-help-box" id={id} role="dialog" aria-label="Qué significa cada símbolo">
+          <div className="symbols-help-title">Qué significa cada símbolo</div>
+          <ul className="symbols-list">
+            {SYMBOLS.map((s) => (
+              <li key={s.text}>
+                <span className="symbols-list-icon" aria-hidden="true">
+                  {s.icon}
+                </span>
+                {s.text}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
   )
 }
 

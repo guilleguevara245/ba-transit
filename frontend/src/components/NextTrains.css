@@ -147,87 +147,109 @@
 }
 
 /*
- * "Que significa cada simbolo": plegado al pie de Tus favoritos y de los
- * proximos trenes de una estacion. El icono en una columna fija, el texto al lado.
+ * "?" con "Que significa cada simbolo": un circulo chico; la lista se abre
+ * debajo, alineada a la derecha del boton. El icono en una columna fija.
  */
-.symbols-legend {
-  margin-top: 12px;
-  font-size: 12px;
-  color: var(--text-dim);
+.symbols-help {
+  position: relative;
+  flex-shrink: 0;
 }
 
-.symbols-legend summary {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 600;
+.symbols-help-button {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1.5px solid color-mix(in srgb, var(--text-dim) 40%, transparent);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text-dim);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
   cursor: pointer;
-  list-style: none;
   user-select: none;
 }
 
-.symbols-legend summary::-webkit-details-marker {
-  display: none;
-}
-
-/* Un chevron que gira al abrir. */
-.symbols-legend summary::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  border-right: 2px solid currentColor;
-  border-bottom: 2px solid currentColor;
-  rotate: -45deg;
-  transition: rotate 0.15s ease;
-}
-
-.symbols-legend[open] summary::before {
-  rotate: 45deg;
-}
-
-.symbols-legend summary:hover {
+.symbols-help-button:hover,
+.symbols-help-button[aria-expanded='true'] {
+  border-color: var(--text-dim);
   color: var(--text);
 }
 
-.symbols-legend ul {
-  display: grid;
-  grid-template-columns: max-content minmax(0, 1fr);
-  gap: 6px 10px;
-  align-items: center;
-  margin: 10px 0 0;
+.symbols-help-box {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 40;
+  width: 330px;
+  max-width: calc(100vw - 32px);
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-raised, var(--surface));
+  box-shadow: 0 8px 28px rgba(23, 23, 26, 0.18);
+  font-size: 12.5px;
+  color: var(--text);
+  text-align: left;
+}
+
+.symbols-help-title {
+  margin-bottom: 10px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.symbols-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.symbols-legend li {
-  display: contents;
+.symbols-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.symbols-legend-icon {
+/* Una columna fija para los iconos; la etiqueta "segun horario", mas ancha, corre su texto. */
+.symbols-list-icon {
   display: inline-flex;
+  flex-shrink: 0;
   justify-content: center;
   min-width: 26px;
   font-size: 13px;
 }
 
-.symbols-legend-icon .next-trains-icon,
-.symbols-legend-icon .next-trains-clock,
-.symbols-legend-icon .next-trains-arriving-icon {
+.symbols-list-icon .next-trains-icon,
+.symbols-list-icon .next-trains-clock,
+.symbols-list-icon .next-trains-arriving-icon {
   margin: 0;
   vertical-align: 0;
 }
 
-.symbols-legend-icon .next-trains-arriving-icon {
+.symbols-list-icon .next-trains-arriving-icon {
   color: var(--accent-text);
 }
 
-.symbols-legend-icon .live-dot,
-.symbols-legend-icon .next-trains-tag {
+.symbols-list-icon .live-dot,
+.symbols-list-icon .next-trains-tag {
   margin: 0;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .symbols-legend summary::before {
-    transition: none;
-  }
+/* En la tarjeta de proximos trenes de la estacion, el "?" arriba a la derecha. */
+.next-trains-card {
+  position: relative;
+}
+
+.next-trains-help {
+  position: absolute;
+  top: 12px;
+  right: 14px;
 }

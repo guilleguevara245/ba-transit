@@ -3,7 +3,7 @@ import MyBuses from './MyBuses.jsx'
 import MyLines from './MyLines.jsx'
 import MyStops from './MyStops.jsx'
 import NotificationsLink from './NotificationsLink.jsx'
-import { SymbolsLegend } from './NextTrains.jsx'
+import { SymbolsHelp } from './NextTrains.jsx'
 import { MyAccesses, MyStations } from './MyPlaces.jsx'
 import { useFavoriteList } from '../hooks/useFavoriteList.js'
 import './FavoritesPanel.css'
@@ -30,7 +30,10 @@ export default function FavoritesPanel({ lines, alerts }) {
           <ModeIcon mode="FAVORITOS" size="title" />
           Tus favoritos
         </h2>
-        {ready && <NotificationsLink compact />}
+        <div className="fav-head-actions">
+          {total > 0 && <SymbolsHelp />}
+          {ready && <NotificationsLink compact />}
+        </div>
       </header>
       {total === 0 ? (
         <p className="fav-empty">
@@ -46,7 +49,6 @@ export default function FavoritesPanel({ lines, alerts }) {
           <MyStops inPanel />
         </div>
       )}
-      {total > 0 && <SymbolsLegend />}
     </section>
   )
 }

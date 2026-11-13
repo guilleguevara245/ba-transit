@@ -31,4 +31,13 @@ class TextRepairTest {
         // Una "Ã" de verdad (no es un arreglo posible): queda como vino.
         assertThat(TextRepair.fix("SÃO PAULO")).isEqualTo("SÃO PAULO");
     }
+
+    @Test
+    void reconoceLasLetrasPerdidas() {
+        assertThat(TextRepair.lostLetters("893 MU?ECAS")).isTrue();
+        assertThat(TextRepair.lostLetters("2012 CASTA\uFFFDEDA")).isTrue();
+        assertThat(TextRepair.lostLetters("893 MUÑECAS")).isFalse();
+        assertThat(TextRepair.lostLetters("¿Viene?")).isFalse();
+        assertThat(TextRepair.lostLetters(null)).isFalse();
+    }
 }

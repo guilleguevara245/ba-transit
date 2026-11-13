@@ -114,9 +114,28 @@
   }
 }
 
-/* "Que significa cada simbolo", al pie del panel. */
-.fav-panel .symbols-legend {
-  margin: 0;
-  padding: 12px 14px 14px;
-  border-top: 1px solid var(--line);
+/* A la derecha del titulo: el "?" de los simbolos y la campana. */
+.fav-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* En el celular la lista de simbolos ocupa el ancho del panel (debajo del encabezado), no sale de la pantalla. */
+@media (max-width: 520px) {
+  .fav-head {
+    position: relative;
+  }
+
+  .fav-head .symbols-help {
+    position: static;
+  }
+
+  .fav-head .symbols-help-box {
+    top: calc(100% - 2px);
+    right: 10px;
+    left: 10px;
+    width: auto;
+    max-width: none;
+  }
 }
