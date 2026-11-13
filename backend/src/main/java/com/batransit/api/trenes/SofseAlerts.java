@@ -162,8 +162,18 @@ public final class SofseAlerts {
     static boolean resolved(String text) {
         String t = normalize(text);
         return t.contains("normalizad") || t.contains("se normalizo") || t.contains("restablecid")
-                || t.contains("regularizad");
+                || t.contains("regularizad") || RESUMED.matcher(t).find();
     }
+
+    /**
+     * "reanuda su recorrido", "se reanudo el servicio", "vuelven a circular",
+     * "circula con normalidad". En presente o pasado: "se reanudara a las
+     * 23" (futuro) es un aviso de que todavia no anda.
+     */
+    private static final Pattern RESUMED = Pattern.compile(
+            "\\breanud(?:a|an|o|aron|ado|ada|ados|adas)\\b"
+                    + "|\\b(?:vuelve|vuelven|volvio|volvieron) a (?:circular|prestar servicio|funcionar)\\b"
+                    + "|\\bcircula(?:n)? con normalidad\\b");
 
     /**
      * Nuestro tipo de alerta: por el efecto que informa la fuente y, si es

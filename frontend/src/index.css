@@ -452,3 +452,59 @@ body {
 .glyph-badge .map-badge-square {
   border-radius: 8px;
 }
+
+/*
+ * Cartel con el nombre al pasar el mouse (data-tip), con el estilo de las
+ * etiquetas del mapa: arriba, con una flechita. Solo con mouse: en el
+ * celular no hay "pasar por encima" (ahi esta "Que significa cada simbolo").
+ */
+.has-tip {
+  position: relative;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .has-tip[data-tip]::after,
+  .has-tip[data-tip]::before {
+    position: absolute;
+    left: 50%;
+    z-index: 5;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease;
+  }
+
+  .has-tip[data-tip]::after {
+    content: attr(data-tip);
+    bottom: calc(100% + 8px);
+    translate: -50% 0;
+    padding: 5px 9px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--surface-raised);
+    color: var(--text);
+    box-shadow: 0 4px 14px rgba(23, 23, 26, 0.14);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  .has-tip[data-tip]::before {
+    content: '';
+    bottom: calc(100% + 3px);
+    width: 8px;
+    height: 8px;
+    translate: -50% 0;
+    rotate: 45deg;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    background: var(--surface-raised);
+    z-index: 6;
+  }
+
+  .has-tip[data-tip]:hover::after,
+  .has-tip[data-tip]:hover::before {
+    opacity: 1;
+  }
+}

@@ -137,7 +137,7 @@ public final class SofseArrivals {
                 destinationIds.putIfAbsent(destination, destinationId);
             }
             List<RouteStop> route = route(service.path("estaciones"), base);
-            trains.add(new Train(service.path("sentido").asInt(0), at, arrival.path("programada").asBoolean(true),
+            trains.add(new Train(service.path("sentido").asInt(0), at, !hasLiveTimes(arrival),
                     destination.isEmpty() ? null : destination, platform(arrival, service, here),
                     serviceType(service), text(service.path("leyenda")), hasValue(service.path("cancelacion")),
                     route));
@@ -260,6 +260,107 @@ public final class SofseArrivals {
             route.add(new RouteStop(id, station.path("parada").asBoolean(true), at));
         }
         return List.copyOf(route);
+    }
+
+    /**
+     * Si una parada del tren trae hora estimada o real: el tren esta seguido
+     * en vivo. Ojo: "programada" no dice eso, dice si el servicio esta en el
+     * horario oficial (un tren "Especial" viene con programada=false aunque
+     * no tenga seguimiento, y los del horario con programada=true aunque lo
+     * tengan).
+     */
+    static boolean hasLiveTimes(JsonNode stop) {
+        return hasValue(stop.path("llegada").path("estimada")) || hasValue(stop.path("salida").path("estimada"))
+                || hasValue(stop.path("llegada").path("real")) || hasValue(stop.path("salida").path("real"));
+    }
+
+    /**
+     * Un tren andando, con su posicion en vivo (el GPS que manda la
+     * formacion, campo "location"). nextStation y minutesToNext: la proxima
+     * estacion donde para y cuanto le falta.
+     */
+    public record LiveTrain(String id, int number, int sentido, double latitude, double longitude, String destination,
+                            String branch, String service, String nextStation, Integer minutesToNext) {
+    }
+
+    /**
+     * Los trenes de una respuesta de /arribos/estacion/{id} que ya salieron
+     * de su cabecera (tienen hora real de salida) y todavia no llegaron, con
+     * su posicion. Un tren que espera en la cabecera manda la posicion de la
+     * formacion parada: no se muestra hasta que sale.
+     */
+    public static List<LiveTrain> liveTrains(JsonNode root, Instant now) {
+        long timestamp = root.path("timestamp").asLong(0);
+        Instant base = timestamp > 0 && Math.abs(now.getEpochSecond() - timestamp) <= 600
+                ? Instant.ofEpochSecond(timestamp) : now;
+        List<LiveTrain> result = new ArrayList<>();
+        for (JsonNode item : root.path("results")) {
+            JsonNode service = item.path("servicio");
+            JsonNode location = service.path("location");
+            Double lat = decimal(location.path("lat"));
+            Double lon = decimal(location.path("long").isMissingNode() ? location.path("lon") : location.path("long"));
+            if (lat == null || lon == null || service.path("oculto").asBoolean(false) || !forPassengers(service)
+                    || hasValue(service.path("cancelacion"))) {
+                continue;
+            }
+            JsonNode from = service.path("desde").path("estacion");
+            JsonNode to = service.path("hasta").path("estacion");
+            boolean departed = hasValue(from.path("salida").path("real"));
+            boolean arrived = hasValue(to.path("llegada").path("real"));
+            if (!departed || arrived) {
+                continue;
+            }
+            JsonNode next = null;
+            for (JsonNode station : service.path("estaciones")) {
+                if (!station.path("parada").asBoolean(false) || !station.path("segundos").isNumber()
+                        || hasValue(station.path("llegada").path("real"))) {
+                    continue;
+                }
+                long seconds = base.plusSeconds(station.path("segundos").asLong()).getEpochSecond() - now.getEpochSecond();
+                if (seconds >= -30 && (next == null || station.path("segundos").asLong() < next.path("segundos").asLong())) {
+                    next = station;
+                }
+            }
+            Integer minutes = null;
+            String nextName = null;
+            if (next != null) {
+                long seconds = base.plusSeconds(next.path("segundos").asLong()).getEpochSecond() - now.getEpochSecond();
+                minutes = (int) Math.max(0, Math.floorDiv(seconds, 60));
+                nextName = cleanName(next.path("nombre").asText(""));
+            }
+            String destination = cleanName(to.path("nombre").asText(""));
+            String id = text(service.path("id"));
+            result.add(new LiveTrain(id != null ? id : String.valueOf(service.path("numero").asInt()),
+                    service.path("numero").asInt(0), service.path("sentido").asInt(0), lat, lon,
+                    destination.isEmpty() ? null : destination, text(service.path("ramal").path("nombre")),
+                    serviceType(service), nextName, minutes));
+        }
+        return List.copyOf(result);
+    }
+
+    /** Cada cuantas estaciones de un ramal se miran los trenes andando. */
+    static final int WATCH_EVERY = 6;
+
+    /**
+     * Donde mirar los trenes de un ramal: la segunda estacion, una cada
+     * WATCH_EVERY y la anteultima. Todo tren andando va hacia una de las
+     * cabeceras y figura en los arribos de la proxima de esas que le toca
+     * (en la cabecera misma solo figuran los que salen); las del medio son
+     * para los que terminan antes de la cabecera (un Retiro - Jose C. Paz
+     * no llega a la anteultima del ramal a Pilar). stations: las del
+     * ramal, en orden.
+     */
+    public static List<Integer> watchStations(List<Station> stations) {
+        if (stations.size() < 3) {
+            return stations.stream().map(Station::id).toList();
+        }
+        int beforeLast = stations.size() - 2;
+        Set<Integer> watch = new LinkedHashSet<>();
+        for (int i = 1; i < beforeLast; i += WATCH_EVERY) {
+            watch.add(stations.get(i).id());
+        }
+        watch.add(stations.get(beforeLast).id());
+        return List.copyOf(watch);
     }
 
     /** El anden donde para el tren en esta estacion, si lo informan. */

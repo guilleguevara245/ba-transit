@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import FavoriteButton from './FavoriteButton.jsx'
+import { ClockIcon } from './NextTrains.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { useFavoriteList } from '../hooks/useFavoriteList.js'
 import { busTitle, headsignName, nextBusText, parseStopFavorite, stopName } from '../utils/busNames.js'
@@ -49,7 +50,7 @@ function StopRow({ id, inPanel }) {
     status = (
       <>
         <strong>
-          <i className="live-dot" aria-hidden="true" />
+          <ClockIcon />
           {times.length > 0 ? times.join(' · ') : next.time}
         </strong>
         {next.detail && <small>{next.detail}</small>}

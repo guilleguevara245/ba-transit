@@ -63,4 +63,46 @@ class SubteArrivalsTest {
                 .containsExactly(4);
         assertThat(compute("A", "Bulnes")).isEmpty();
     }
+
+    @Test
+    void ubicaLosTrenesAndandoEntreDosEstaciones() throws Exception {
+        List<SubteArrivals.Place> places = List.of(
+                new SubteArrivals.Place("Congreso de Tucumán", -34.5550, -58.4620),
+                new SubteArrivals.Place("Juramento", -34.5620, -58.4560),
+                new SubteArrivals.Place("Bulnes", -34.5880, -58.4110),
+                new SubteArrivals.Place("Catedral", -34.6080, -58.3740));
+
+        List<SubteArrivals.Position> trains = SubteArrivals.positions(new ObjectMapper().readTree(FEED), "D", places, NOW);
+
+        // Tren 1: salio de Juramento hace 100 s y llega a Bulnes en 180 s (100/280 del tramo).
+        // Tren 2: todavia no salio (faltan 5 min). Tren 3: entre Bulnes y Congreso de Tucuman.
+        assertThat(trains).extracting(SubteArrivals.Position::id).containsExactly("1", "3");
+        SubteArrivals.Position first = trains.get(0);
+        assertThat(first.nextStation()).isEqualTo("Bulnes");
+        assertThat(first.destination()).isEqualTo("Catedral");
+        assertThat(first.minutesToNext()).isEqualTo(3);
+        assertThat(first.latitude()).isEqualTo(-34.5620 + (-34.5880 + 34.5620) * 100 / 280.0);
+        assertThat(trains.get(1).nextStation()).isEqualTo("Congreso de Tucumán");
+    }
+
+    @Test
+    void siElPronosticoTraeSoloLasQueFaltanVieneDeLaAnteriorDeLaLinea() throws Exception {
+        String feed = """
+                {"Header": {"timestamp": %d}, "Entity": [
+                  {"ID": "9", "Linea": {"Route_Id": "LineaD", "Direction_ID": 1, "Estaciones": [
+                    {"stop_name": "Bulnes", "arrival": {"time": %d}},
+                    {"stop_name": "Catedral", "arrival": {"time": %d}}]}}]}
+                """.formatted(NOW, NOW + 55, NOW + 700);
+        List<SubteArrivals.Place> places = List.of(
+                new SubteArrivals.Place("Juramento", -34.5620, -58.4560, 1),
+                new SubteArrivals.Place("Bulnes", -34.5880, -58.4110, 2),
+                new SubteArrivals.Place("Catedral", -34.6080, -58.3740, 3));
+
+        List<SubteArrivals.Position> trains = SubteArrivals.positions(new ObjectMapper().readTree(feed), "D", places, NOW);
+
+        // Le faltan 55 s para Bulnes: viene de Juramento, a la mitad del tramo (110 s por estacion).
+        assertThat(trains).hasSize(1);
+        assertThat(trains.get(0).nextStation()).isEqualTo("Bulnes");
+        assertThat(trains.get(0).latitude()).isEqualTo(-34.5620 + (-34.5880 + 34.5620) * 0.5);
+    }
 }

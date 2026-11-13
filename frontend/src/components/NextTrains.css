@@ -124,7 +124,7 @@
   color: color-mix(in srgb, var(--line-color, var(--accent-text)) 70%, #fff);
 }
 
-.next-trains-arriving svg {
+.next-trains-arriving-icon {
   width: 1.1em;
   height: 1.1em;
   margin-right: 2px;
@@ -136,7 +136,98 @@
   stroke-linejoin: round;
 }
 
-.next-trains-arriving svg circle {
+.next-trains-arriving-icon circle {
   fill: currentColor;
   stroke: none;
+}
+
+/* La cruz de los cancelados, en rojo tambien fuera de su etiqueta (en la leyenda). */
+.next-trains-cancel-icon {
+  color: var(--interrupted);
+}
+
+/*
+ * "Que significa cada simbolo": plegado al pie de Tus favoritos y de los
+ * proximos trenes de una estacion. El icono en una columna fija, el texto al lado.
+ */
+.symbols-legend {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.symbols-legend summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.symbols-legend summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Un chevron que gira al abrir. */
+.symbols-legend summary::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  rotate: -45deg;
+  transition: rotate 0.15s ease;
+}
+
+.symbols-legend[open] summary::before {
+  rotate: 45deg;
+}
+
+.symbols-legend summary:hover {
+  color: var(--text);
+}
+
+.symbols-legend ul {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 6px 10px;
+  align-items: center;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.symbols-legend li {
+  display: contents;
+}
+
+.symbols-legend-icon {
+  display: inline-flex;
+  justify-content: center;
+  min-width: 26px;
+  font-size: 13px;
+}
+
+.symbols-legend-icon .next-trains-icon,
+.symbols-legend-icon .next-trains-clock,
+.symbols-legend-icon .next-trains-arriving-icon {
+  margin: 0;
+  vertical-align: 0;
+}
+
+.symbols-legend-icon .next-trains-arriving-icon {
+  color: var(--accent-text);
+}
+
+.symbols-legend-icon .live-dot,
+.symbols-legend-icon .next-trains-tag {
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .symbols-legend summary::before {
+    transition: none;
+  }
 }

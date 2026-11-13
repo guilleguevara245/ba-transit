@@ -1,6 +1,7 @@
 package com.batransit.api.trenes;
 
 import com.batransit.api.estado.SourceHealth;
+import com.batransit.api.trenes.SofseArrivals.LiveTrain;
 import com.batransit.api.trenes.SofseArrivals.Parsed;
 import com.batransit.api.trenes.SofseArrivals.Station;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -20,11 +21,16 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * Pide los proximos trenes de Trenes Argentinos a la API de Trenes de Ariel
@@ -51,6 +57,15 @@ public class SofseArrivalsClient {
     public record Snapshot(Instant fetchedAt, Parsed parsed) {
     }
 
+    /** Los trenes andando de una linea, con su posicion; fetchedAt: el pedido mas viejo que se uso. */
+    public record LiveSnapshot(Instant fetchedAt, List<LiveTrain> trains) {
+    }
+
+    /** Para ver los trenes andando se piden mas arribos (en el tronco del Roca pasan muchos ramales). */
+    static final int LIVE_REQUESTED = 30;
+    /** Cuantos pedidos de trenes andando a la vez, como mucho. */
+    static final int LIVE_PARALLEL = 4;
+
     private record Entry<T>(Instant at, T value) {
     }
 
@@ -68,6 +83,11 @@ public class SofseArrivalsClient {
     private final Set<String> seenTypes = ConcurrentHashMap.newKeySet();
     private final Set<String> seenLegends = ConcurrentHashMap.newKeySet();
     private final Map<Integer, Entry<List<Station>>> catalogs = new ConcurrentHashMap<>();
+    /** Por linea: las estaciones donde mirar los trenes andando (unas por ramal), con el catalogo. */
+    private final Map<Integer, List<Integer>> watched = new ConcurrentHashMap<>();
+    private final Map<Integer, Entry<List<LiveTrain>>> live = new ConcurrentHashMap<>();
+    private final ExecutorService liveFetcher =
+            Executors.newFixedThreadPool(LIVE_PARALLEL, Thread.ofVirtual().name("sofse-vivo-", 0).factory());
 
     @Autowired
     public SofseArrivalsClient(@Value("${app.trenes.sofse-url:https://ariedro.dev/api-trenes}") String baseUrl,
@@ -158,6 +178,62 @@ public class SofseArrivalsClient {
         }
     }
 
+    /**
+     * Los trenes andando de una linea, con su posicion en vivo: se miran
+     * unas estaciones por ramal (ver SofseArrivals.watchStations) y se junta
+     * lo que traen, sin repetir. Las que hay que volver a pedir se piden de
+     * a LIVE_PARALLEL a la vez. Vacio si no se pudo pedir nada.
+     */
+    public Optional<LiveSnapshot> liveTrains(int gerencia) {
+        catalog(gerencia);
+        List<Integer> stations = watched.getOrDefault(gerencia, List.of());
+        List<Future<Entry<List<LiveTrain>>>> pending = new ArrayList<>();
+        for (Integer station : stations) {
+            pending.add(liveFetcher.submit(() -> liveAt(station)));
+        }
+        Map<String, LiveTrain> byId = new LinkedHashMap<>();
+        Instant oldest = null;
+        for (Future<Entry<List<LiveTrain>>> future : pending) {
+            Entry<List<LiveTrain>> entry = result(future);
+            if (entry == null || entry.value() == null) {
+                continue;
+            }
+            oldest = oldest == null || entry.at().isBefore(oldest) ? entry.at() : oldest;
+            for (LiveTrain train : entry.value()) {
+                byId.putIfAbsent(train.id(), train);
+            }
+        }
+        return oldest == null ? Optional.empty() : Optional.of(new LiveSnapshot(oldest, List.copyOf(byId.values())));
+    }
+
+    private static <T> T result(Future<T> future) {
+        try {
+            return future.get();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return null;
+        } catch (ExecutionException e) {
+            log.warn("Trenes (SOFSE): fallo un pedido de trenes andando: {}", e.getCause().toString());
+            return null;
+        }
+    }
+
+    private Entry<List<LiveTrain>> liveAt(int stationId) {
+        Instant now = clock.instant();
+        Entry<List<LiveTrain>> cached = live.get(stationId);
+        if (cached != null) {
+            Duration maxAge = cached.value() == null ? FAILURE_BACKOFF : MAX_AGE;
+            if (cached.at().plus(maxAge).isAfter(now)) {
+                return cached;
+            }
+        }
+        JsonNode root = get("/arribos/estacion/" + stationId + "?cantidad=" + LIVE_REQUESTED);
+        List<LiveTrain> trains = root != null && root.has("results") ? SofseArrivals.liveTrains(root, now) : null;
+        Entry<List<LiveTrain>> entry = new Entry<>(now, trains);
+        live.put(stationId, entry);
+        return entry;
+    }
+
     /** Las estaciones de una linea (de todos sus ramales), guardadas un dia. */
     List<Station> catalog(int gerencia) {
         Instant now = clock.instant();
@@ -184,6 +260,7 @@ public class SofseArrivalsClient {
             return List.of();
         }
         Map<Integer, Station> byId = new LinkedHashMap<>();
+        Set<Integer> watch = new LinkedHashSet<>();
         for (Integer branch : SofseArrivals.parseBranchIds(branches)) {
             JsonNode stations = get("/infraestructura/estaciones?idRamal=" + branch);
             if (stations == null || !stations.isArray()) {
@@ -192,10 +269,13 @@ public class SofseArrivalsClient {
                 log.warn("Trenes (SOFSE): no se pudieron leer las estaciones de la gerencia {}.", gerencia);
                 return List.of();
             }
-            for (Station station : SofseArrivals.parseStations(stations)) {
+            List<Station> branchStations = SofseArrivals.parseStations(stations);
+            for (Station station : branchStations) {
                 byId.putIfAbsent(station.id(), station);
             }
+            watch.addAll(SofseArrivals.watchStations(branchStations));
         }
+        watched.put(gerencia, List.copyOf(watch));
         return new ArrayList<>(byId.values());
     }
 

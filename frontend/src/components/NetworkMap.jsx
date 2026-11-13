@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { divIcon } from 'leaflet'
 import { CircleMarker, MapContainer, Marker, Polyline, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet'
-import { DrawnPolyline } from './GlideMarkers.jsx'
+import { DrawnPolyline, GlideMarker } from './GlideMarkers.jsx'
+import LiveTrainCard from './LiveTrainCard.jsx'
 import StationPopup from './StationPopup.jsx'
+import { readableTextColor } from '../utils/color.js'
 import { buildRoutes } from '../utils/map.js'
+import { MODE_PATHS } from '../utils/modePaths.js'
 import { mentionsStation } from '../utils/stationAlerts.js'
 import './NetworkMap.css'
 
@@ -52,6 +55,24 @@ function stationNotices(stations, alerts) {
     if (alert) notices[station.stationId] = { closed: /cerrad/i.test(alert.description ?? ''), text: alert.description }
   }
   return notices
+}
+
+/**
+ * Un tren andando: un circulo blanco con el borde del color de la linea y
+ * el dibujo del modo (el de los iconos del sitio). Con la posicion del
+ * GPS late un halo, como el "en vivo"; estimada, el borde va punteado y
+ * sin halo. En las lineas de color claro (la H) el dibujo va oscuro.
+ */
+const trainIcon = (color, estimated, mode) => {
+  const ink = readableTextColor(color) === '#ffffff' ? color : '#17171a'
+  const pulse = estimated ? '' : '<i class="live-train-pulse"></i>'
+  return divIcon({
+    className: estimated ? 'live-train estimated' : 'live-train',
+    html: `<span style="--train-color:${color};--train-ink:${ink}">${pulse}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${MODE_PATHS[mode] ?? MODE_PATHS.TREN}"/></svg></span>`,
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+    popupAnchor: [0, -16],
+  })
 }
 
 /** Avisa el zoom actual cada vez que cambia. */
@@ -143,6 +164,8 @@ function FocusOnStation({ station, markers, openPopup }) {
  *   openFocusedPopup = false).
  * - onSelect: se llama con el id de la estacion al hacer click.
  * - drawRoutes: los recorridos se dibujan de punta a punta al aparecer.
+ * - liveTrains: los trenes andando (useLiveTrains); trainLine: su linea
+ *   (mode, code, name, colorHex, operator), para el icono y la tarjeta.
  */
 export default function NetworkMap({
   stations,
@@ -154,6 +177,8 @@ export default function NetworkMap({
   onSelect,
   className,
   drawRoutes = false,
+  liveTrains = null,
+  trainLine = null,
 }) {
   const markers = useRef({})
   const routes = useMemo(() => buildRoutes(routeStations), [routeStations])
@@ -161,6 +186,11 @@ export default function NetworkMap({
   const focused = stations.find((s) => s.stationId === focusId) ?? null
   const notices = useMemo(() => stationNotices(stations, alerts), [stations, alerts])
   const [zoom, setZoom] = useState(ZOOM)
+  const trainColor = trainLine?.colorHex ?? '#17171a'
+  const liveIcon = useMemo(
+    () => trainIcon(trainColor, liveTrains?.estimated, trainLine?.mode),
+    [trainColor, liveTrains?.estimated, trainLine?.mode],
+  )
 
   return (
     <MapContainer center={CENTER} zoom={ZOOM} className={className} scrollWheelZoom>
@@ -236,6 +266,24 @@ export default function NetworkMap({
           </CircleMarker>
         )
       })}
+
+      {/* Los trenes andando de la linea (encima de las estaciones). */}
+      {liveTrains?.trains.map((train) => (
+        <GlideMarker
+          key={train.id}
+          position={[train.latitude, train.longitude]}
+          icon={liveIcon}
+          zIndexOffset={2000}
+          title={train.destination ? `Tren hacia ${train.destination}` : 'Tren en servicio'}
+        >
+          <LiveTrainCard
+            train={train}
+            line={trainLine}
+            estimated={liveTrains.estimated}
+            updatedAt={liveTrains.updatedAt}
+          />
+        </GlideMarker>
+      ))}
 
       <ZoomTracker onZoom={setZoom} />
       <FitToStations positions={positions} skip={Boolean(focused)} />

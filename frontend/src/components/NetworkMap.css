@@ -21,3 +21,68 @@
   stroke-width: 2.4;
   stroke-linecap: round;
 }
+
+/*
+ * Un tren andando: circulo blanco con el borde del color de la linea y el
+ * dibujo del modo. Con GPS, un halo que late (como el "en vivo"); estimado,
+ * el borde punteado y sin halo.
+ */
+.live-train {
+  background: none;
+  border: none;
+}
+
+.live-train span {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--train-color);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(23, 23, 26, 0.35);
+}
+
+.live-train.estimated span {
+  border-style: dashed;
+}
+
+.live-train svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: var(--train-ink);
+  stroke-width: 2.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.live-train-pulse {
+  position: absolute;
+  inset: -10px;
+  z-index: -1;
+  border-radius: 50%;
+  background: var(--train-color);
+  opacity: 0;
+  animation: live-train-pulse 1.8s ease-out infinite;
+}
+
+@keyframes live-train-pulse {
+  0% {
+    opacity: 0.4;
+    transform: scale(0.6);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.15);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-train-pulse {
+    opacity: 0.2;
+    animation: none;
+  }
+}

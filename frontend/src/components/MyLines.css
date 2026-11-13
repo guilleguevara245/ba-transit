@@ -252,8 +252,9 @@
   white-space: nowrap;
 }
 
-.my-stop-next strong .live-dot {
-  margin-left: 0;
+/* El reloj, como en los proximos trenes (el espacio lo da el gap). */
+.my-stop-next .next-trains-clock {
+  margin-right: 0;
 }
 
 .my-stop-next small {

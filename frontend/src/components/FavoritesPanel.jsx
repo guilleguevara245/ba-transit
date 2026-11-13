@@ -3,6 +3,7 @@ import MyBuses from './MyBuses.jsx'
 import MyLines from './MyLines.jsx'
 import MyStops from './MyStops.jsx'
 import NotificationsLink from './NotificationsLink.jsx'
+import { SymbolsLegend } from './NextTrains.jsx'
 import { MyAccesses, MyStations } from './MyPlaces.jsx'
 import { useFavoriteList } from '../hooks/useFavoriteList.js'
 import './FavoritesPanel.css'
@@ -45,6 +46,7 @@ export default function FavoritesPanel({ lines, alerts }) {
           <MyStops inPanel />
         </div>
       )}
+      {total > 0 && <SymbolsLegend />}
     </section>
   )
 }

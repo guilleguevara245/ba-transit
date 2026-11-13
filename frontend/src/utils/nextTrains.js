@@ -76,6 +76,8 @@ export function serviceKind(name) {
   if (n.includes('semirrapido') || n.includes('semi rapido') || n.includes('semi-rapido')) return 'semirrapido'
   if (n.includes('rapido') || n.includes('expreso')) return 'rapido'
   if (n.includes('directo')) return 'directo'
+  // Tren agregado fuera del horario oficial (eventos, refuerzos).
+  if (n.includes('especial')) return 'especial'
   return null
 }
 

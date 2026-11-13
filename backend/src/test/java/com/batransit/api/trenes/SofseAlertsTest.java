@@ -86,6 +86,19 @@ class SofseAlertsTest {
     }
 
     @Test
+    void elServicioQueSeReanudaNoEsAlerta() throws IOException {
+        // Tal como lo mando la API para el Mitre (12/11/2026), como demora.
+        JsonNode node = MAPPER.readTree("[{\"id\": 9, \"alerta\": [" + alert(1, "SIGNIFICANT_DELAYS",
+                "El servicio José L. Suárez reanuda su recorrido completo entre cabeceras tras fallas en el "
+                        + "suministro eléctrico.", "") + ","
+                + alert(2, "OTHER_EFFECT", "Los trenes vuelven a circular entre Tigre y Retiro.", "") + ","
+                + alert(3, "NO_SERVICE", "Sin servicio. El servicio se reanudará a las 23 hs.", "") + "]}]");
+
+        // El que dice que se reanudara (todavia no anda) sigue siendo alerta.
+        assertThat(SofseAlerts.parse(node, NOW)).extracting(SofseAlert::id).containsExactly(3);
+    }
+
+    @Test
     void laAlertaDeUnTrenPuntualTerminaCuandoElTrenYaPaso() throws IOException {
         // Tal como estaban en el Sarmiento (12/11/2026), sin fecha de fin.
         JsonNode node = MAPPER.readTree("[{\"id\": 51, \"alerta\": [" + alert(99691, "SIGNIFICANT_DELAYS",

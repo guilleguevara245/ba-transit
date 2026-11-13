@@ -60,6 +60,21 @@ class StopArrivalsTest {
     }
 
     @Test
+    void losQueEsperanCercaPeroFueraDelRecorridoNoCuentan() {
+        BusDirection base = straight();
+        List<double[]> shape = List.of(new double[] {-34.6, -58.45}, new double[] {-34.6, -58.45 + 9 * 0.002});
+        BusDirection direction = new BusDirection(0, base.headsign(), shape, base.stops(), base.minutes());
+        // Tres cuadras al norte de la parada 6 (unos 330 m): un garage o la terminal, no el recorrido.
+        Vehicle garage = new Vehicle("garage", -34.597, -58.45 + 6 * 0.002, 0, "", 0, false);
+        Vehicle enCamino = at("en camino", 4.5);
+
+        assertThat(StopArrivals.approaching(direction, 7, List.of(garage, enCamino)))
+                .extracting(Approaching::id).containsExactly("en camino");
+        // Sin el recorrido dibujado, a esa distancia todavia se lo ubicaba en el tramo.
+        assertThat(StopArrivals.approaching(base, 7, List.of(garage))).hasSize(1);
+    }
+
+    @Test
     void laPosicionViejaDescuentaElTiempo() {
         Vehicle viejo = new Vehicle("viejo", -34.6, -58.45 + 2 * 0.002, 0, "", 180, false);
         // Desde la 2 a la 7 son 10 minutos; la posicion es de hace 3.

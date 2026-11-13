@@ -77,11 +77,15 @@
   color: var(--text-dim);
 }
 
+/* El mapa (y debajo, que son los trenes) queda fijo al bajar por la columna de la izquierda. */
+.station-map-wrap {
+  position: sticky;
+  top: 16px;
+}
+
 .station-map {
   height: 520px;
   border: 1px solid var(--line);
-  position: sticky;
-  top: 16px;
 }
 
 @media (max-width: 900px) {
@@ -89,8 +93,11 @@
     grid-template-columns: 1fr;
   }
 
-  .station-map {
+  .station-map-wrap {
     position: static;
+  }
+
+  .station-map {
     height: 380px;
   }
 }

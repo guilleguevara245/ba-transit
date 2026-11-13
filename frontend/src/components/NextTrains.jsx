@@ -99,7 +99,14 @@ function UrquizaTrains({ stationName, asCard, compact, color }) {
   const content = (
     <ScheduledTrains directions={schedule.directions} source={schedule.source} stale={schedule.stale} color={color} />
   )
-  return asCard ? <section className="station-card">{content}</section> : content
+  return asCard ? (
+    <section className="station-card">
+      {content}
+      <SymbolsLegend />
+    </section>
+  ) : (
+    content
+  )
 }
 
 function ApiTrains({ mode, lineCode, stationName, asCard, compact, color }) {
@@ -146,7 +153,14 @@ function ApiTrains({ mode, lineCode, stationName, asCard, compact, color }) {
     )
   }
   if (!content) return null
-  return asCard ? <section className="station-card">{content}</section> : content
+  return asCard ? (
+    <section className="station-card">
+      {content}
+      <SymbolsLegend />
+    </section>
+  ) : (
+    content
+  )
 }
 
 /**
@@ -255,9 +269,10 @@ function LiveTrains({ data, color }) {
 
 /**
  * Icono de cada tipo de servicio, del color de la linea: rapido (y
- * expreso) con el rayo de zigzag doble, semirrapido con el rayo simple y
- * directo con una flecha que va derecho hasta el final. Con label (donde
- * no esta escrito el tipo) se lee en voz alta.
+ * expreso) con el rayo de zigzag doble, semirrapido con el rayo simple,
+ * directo con una flecha que va derecho hasta el final y especial (tren
+ * agregado) con un mas en un circulo. Con label (donde no esta escrito el
+ * tipo) se lee en voz alta.
  */
 export function ServiceIcon({ name, label }) {
   const kind = serviceKind(name)
@@ -267,6 +282,11 @@ export function ServiceIcon({ name, label }) {
       <svg className="next-trains-icon next-trains-direct" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
         <path className="stroke" d="M3 12H17M12 7l5 5-5 5M21 5v14" />
       </svg>
+    ) : kind === 'especial' ? (
+      <svg className="next-trains-icon next-trains-direct" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <circle className="stroke" cx="12" cy="12" r="9" />
+        <path className="stroke" d="M12 7.5v9M7.5 12h9" />
+      </svg>
     ) : (
       <svg className="next-trains-icon next-trains-bolt" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
         <path d={kind === 'rapido' ? ZIGZAG_BOLT : BOLT} />
@@ -274,10 +294,10 @@ export function ServiceIcon({ name, label }) {
     )
   if (!label) return icon
   return (
-    <>
+    <span className="has-tip" data-tip={label}>
       {icon}
       <span className="visually-hidden">{label}: </span>
-    </>
+    </span>
   )
 }
 
@@ -294,21 +314,28 @@ export function Platform({ number }) {
   )
 }
 
+/** La cruz en un circulo de los trenes cancelados. */
+function CancelIcon() {
+  return (
+    <svg className="next-trains-icon next-trains-cancel-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <circle className="stroke" cx="12" cy="12" r="9" />
+      <path className="stroke" d="m8.5 8.5 7 7m0-7-7 7" />
+    </svg>
+  )
+}
+
 /** Tren cancelado: la cruz y la palabra, en rojo. */
 function CancelledTag() {
   return (
     <span className="next-trains-cancel-tag">
-      <svg className="next-trains-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <circle className="stroke" cx="12" cy="12" r="9" />
-        <path className="stroke" d="m8.5 8.5 7 7m0-7-7 7" />
-      </svg>
+      <CancelIcon />
       cancelado
     </span>
   )
 }
 
 /** Reloj gris antes de los horarios de cada sentido. */
-function ClockIcon() {
+export function ClockIcon() {
   return (
     <svg className="next-trains-clock" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
       <circle cx="12" cy="12" r="9" />
@@ -317,16 +344,59 @@ function ClockIcon() {
   )
 }
 
+/** Los simbolos de los horarios y que quiere decir cada uno (en el orden en que suelen aparecer). */
+const SYMBOLS = [
+  { icon: <ClockIcon />, text: 'Próximos horarios' },
+  { icon: <span className="live-dot" aria-hidden="true" />, text: 'En vivo, con los datos de la empresa' },
+  { icon: <ScheduleTag />, text: 'Horario programado, sin datos en vivo' },
+  { icon: <ServiceIcon name="Semirrápido" />, text: 'Semirrápido: saltea algunas estaciones' },
+  { icon: <ServiceIcon name="Rápido" />, text: 'Rápido o expreso: para en pocas estaciones' },
+  { icon: <ServiceIcon name="Directo" />, text: 'Directo: no para hasta el final' },
+  { icon: <ServiceIcon name="Especial" />, text: 'Especial: tren agregado, fuera del horario' },
+  { icon: <ArrivingIcon />, text: 'Llegando a la estación' },
+  { icon: <CancelIcon />, text: 'Cancelado' },
+  { icon: <span className="next-trains-platform-sign">2</span>, text: 'Andén' },
+]
+
+/**
+ * "Que significa cada simbolo": la lista plegada, al pie de Tus favoritos
+ * y de los proximos trenes de una estacion.
+ */
+export function SymbolsLegend() {
+  return (
+    <details className="symbols-legend">
+      <summary>Qué significa cada símbolo</summary>
+      <ul>
+        {SYMBOLS.map((s) => (
+          <li key={s.text}>
+            <span className="symbols-legend-icon" aria-hidden="true">
+              {s.icon}
+            </span>
+            {s.text}
+          </li>
+        ))}
+      </ul>
+    </details>
+  )
+}
+
+/** El tren de frente de "llegando". */
+function ArrivingIcon() {
+  return (
+    <svg className="next-trains-arriving-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <rect x="5" y="3" width="14" height="14" rx="3" />
+      <path d="M5 10h14M9 21l1.5-3M15 21l-1.5-3" />
+      <circle cx="9" cy="13.5" r="1" />
+      <circle cx="15" cy="13.5" r="1" />
+    </svg>
+  )
+}
+
 /** "llegando": un tren de frente y la palabra, del color de la linea. */
 function ArrivingTag() {
   return (
     <span className="next-trains-arriving">
-      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <rect x="5" y="3" width="14" height="14" rx="3" />
-        <path d="M5 10h14M9 21l1.5-3M15 21l-1.5-3" />
-        <circle cx="9" cy="13.5" r="1" />
-        <circle cx="15" cy="13.5" r="1" />
-      </svg>
+      <ArrivingIcon />
       llegando
     </span>
   )

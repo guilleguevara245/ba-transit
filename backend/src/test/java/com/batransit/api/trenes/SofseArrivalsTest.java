@@ -2,8 +2,10 @@ package com.batransit.api.trenes;
 
 import com.batransit.api.trenes.FerroviasArrivals.Arrival;
 import com.batransit.api.trenes.FerroviasArrivals.Direction;
+import com.batransit.api.trenes.SofseArrivals.LiveTrain;
 import com.batransit.api.trenes.SofseArrivals.Parsed;
 import com.batransit.api.trenes.SofseArrivals.Station;
+import com.batransit.api.trenes.SofseArrivals.Train;
 import com.batransit.api.trenes.SofseArrivals.Trip;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,13 +31,17 @@ class SofseArrivalsTest {
         }
     }
 
-    /** Un arribo armado a mano, con lo que mira el parser. */
+    /**
+     * Un arribo armado a mano, con lo que mira el parser. scheduled: sin
+     * hora estimada (el tren no esta seguido en vivo).
+     */
     private static String result(int sentido, int seconds, boolean scheduled, String to, int toId, String extra) {
+        String live = scheduled ? "" : ", \"llegada\": {\"estimada\": \"2026-11-12T19:00:00.000Z\"}";
         return """
-                {"arribo": {"idElemento": 271, "parada": true, "programada": %s, "segundos": %d},
+                {"arribo": {"idElemento": 271, "parada": true, "programada": true, "segundos": %d%s},
                  "servicio": {"sentido": %d, "cancelacion": null, "oculto": false,
                               "hasta": {"estacion": {"idElemento": %d, "nombre": "%s"}}%s}}
-                """.formatted(scheduled, seconds, sentido, toId, to, extra);
+                """.formatted(seconds, live, sentido, toId, to, extra);
     }
 
     private static JsonNode response(String... results) throws IOException {
@@ -261,5 +267,52 @@ class SofseArrivalsTest {
         assertThat(SofseArrivals.cleanName("Retiro - LSM")).isEqualTo("Retiro");
         assertThat(SofseArrivals.cleanName("Tigre (C)")).isEqualTo("Tigre (C)");
         assertThat(SofseArrivals.cleanName("J. L. Suarez")).isEqualTo("J. L. Suarez");
+    }
+
+    @Test
+    void enVivoEsLaHoraEstimadaNoElCampoProgramada() throws IOException {
+        // San Miguel: el 3433 esta en el horario (programada=true) pero trae hora estimada: en vivo.
+        // El 4116 es un Especial (programada=false) sin hora estimada: segun horario.
+        JsonNode root = resource("sofse-arribos-san-miguel.json");
+        Instant asked = Instant.ofEpochSecond(1794531744);
+        Parsed parsed = SofseArrivals.parse(root, asked);
+
+        assertThat(parsed.trains()).extracting(Train::scheduled).containsExactly(false, true, true);
+        assertThat(parsed.scheduledOnly()).isFalse();
+    }
+
+    @Test
+    void losTrenesAndandoConSuPosicion() throws IOException {
+        JsonNode root = resource("sofse-arribos-san-miguel.json");
+        Instant asked = Instant.ofEpochSecond(1794531744);
+
+        List<LiveTrain> trains = SofseArrivals.liveTrains(root, asked);
+
+        // El 4116 espera en Jose C. Paz (no salio) y el 3440 no manda posicion: solo el 3433.
+        assertThat(trains).hasSize(1);
+        LiveTrain train = trains.get(0);
+        assertThat(train.number()).isEqualTo(3433);
+        assertThat(train.latitude()).isEqualTo(-34.550518);
+        assertThat(train.longitude()).isEqualTo(-58.704388);
+        assertThat(train.destination()).isEqualTo("José C. Paz");
+        assertThat(train.nextStation()).isEqualTo("San Miguel");
+        assertThat(train.minutesToNext()).isEqualTo(1);
+        assertThat(train.service()).isNull();
+    }
+
+    @Test
+    void seMiraLaSegundaUnaCadaSeisYLaAnteultimaDeCadaRamal() throws IOException {
+        List<Station> suarez = SofseArrivals.parseStations(resource("sofse-estaciones-ramal-9.json"));
+
+        // 15 estaciones: la segunda (1), seis despues (7) y la anteultima (13).
+        assertThat(suarez).hasSize(15);
+        assertThat(SofseArrivals.watchStations(suarez))
+                .containsExactly(suarez.get(1).id(), suarez.get(7).id(), suarez.get(13).id());
+    }
+
+    @Test
+    void enUnRamalCortoSeMiraLaDelMedio() {
+        List<Station> three = List.of(new Station(1, "A", 0, 0), new Station(2, "B", 0, 0), new Station(3, "C", 0, 0));
+        assertThat(SofseArrivals.watchStations(three)).containsExactly(2);
     }
 }

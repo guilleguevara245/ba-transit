@@ -16,8 +16,19 @@ import java.util.List;
  */
 final class StopArrivals {
 
-    /** Mas lejos que esto del recorrido, el colectivo no se tiene en cuenta (desvio, otro ramal o GPS errado). */
+    /**
+     * Mas lejos que esto de la linea entre paradas, el colectivo no se tiene
+     * en cuenta (desvio, otro ramal o GPS errado). Solo si el sentido no
+     * trae el recorrido dibujado: entre parada y parada la calle dobla.
+     */
     static final double MAX_OFF_ROUTE_METERS = 400;
+    /**
+     * Mas lejos que esto del recorrido dibujado (GPS y recorte del dibujo
+     * incluidos), no esta en el recorrido: por ejemplo, los que esperan en
+     * la terminal o el garage a unas cuadras, que si no se ubicaban en el
+     * tramo mas cercano y quedaban "a 1 parada" sin moverse.
+     */
+    static final double MAX_OFF_SHAPE_METERS = 80;
     /** A menos de esto de la parada (y antes de pasarla) se dice "llegando". */
     static final double ARRIVING_METERS = 120;
     /** Cuantos colectivos se devuelven. */
@@ -41,7 +52,11 @@ final class StopArrivals {
             return List.of();
         }
         List<Approaching> result = new ArrayList<>();
+        List<double[]> shape = direction.shape() == null ? List.of() : direction.shape();
         for (Vehicle vehicle : vehicles) {
+            if (shape.size() >= 2 && metersToShape(shape, vehicle.latitude(), vehicle.longitude()) > MAX_OFF_SHAPE_METERS) {
+                continue;
+            }
             Position position = locate(stops, vehicle.latitude(), vehicle.longitude());
             if (position == null || position.meters() > MAX_OFF_ROUTE_METERS) {
                 continue;
@@ -72,26 +87,43 @@ final class StopArrivals {
         for (int i = 0; i < stops.size() - 1; i++) {
             BusStop a = stops.get(i);
             BusStop b = stops.get(i + 1);
-            // Proyeccion sobre el tramo en un plano local (alcanza para distancias de cuadras).
-            double cos = Math.cos(Math.toRadians(lat));
-            double ax = a.longitude() * cos;
-            double ay = a.latitude();
-            double bx = b.longitude() * cos;
-            double by = b.latitude();
-            double px = lon * cos;
-            double dx = bx - ax;
-            double dy = by - ay;
-            double length2 = dx * dx + dy * dy;
-            double t = length2 == 0 ? 0 : ((px - ax) * dx + (lat - ay) * dy) / length2;
-            t = Math.max(0, Math.min(1, t));
-            double qLat = ay + t * dy;
-            double qLon = (ax + t * dx) / cos;
-            double d = meters(lat, lon, qLat, qLon);
-            if (best == null || d < best.meters()) {
-                best = new Position(i, t, d);
+            double[] near = project(a.latitude(), a.longitude(), b.latitude(), b.longitude(), lat, lon);
+            if (best == null || near[1] < best.meters()) {
+                best = new Position(i, near[0], near[1]);
             }
         }
         return best;
+    }
+
+    /** Distancia al recorrido dibujado (puntos {lat, lon} en orden). */
+    static double metersToShape(List<double[]> shape, double lat, double lon) {
+        double best = Double.MAX_VALUE;
+        for (int i = 0; i < shape.size() - 1; i++) {
+            double[] a = shape.get(i);
+            double[] b = shape.get(i + 1);
+            best = Math.min(best, project(a[0], a[1], b[0], b[1], lat, lon)[1]);
+        }
+        return best;
+    }
+
+    /**
+     * El punto del tramo a-b mas cercano a (lat, lon): {cuanto avanzo en el
+     * tramo (0 a 1), distancia en metros}. Proyeccion en un plano local
+     * (alcanza para distancias de cuadras).
+     */
+    private static double[] project(double aLat, double aLon, double bLat, double bLon, double lat, double lon) {
+        double cos = Math.cos(Math.toRadians(lat));
+        double ax = aLon * cos;
+        double bx = bLon * cos;
+        double px = lon * cos;
+        double dx = bx - ax;
+        double dy = bLat - aLat;
+        double length2 = dx * dx + dy * dy;
+        double t = length2 == 0 ? 0 : ((px - ax) * dx + (lat - aLat) * dy) / length2;
+        t = Math.max(0, Math.min(1, t));
+        double qLat = aLat + t * dy;
+        double qLon = (ax + t * dx) / cos;
+        return new double[] {t, meters(lat, lon, qLat, qLon)};
     }
 
     /**

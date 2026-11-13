@@ -139,4 +139,126 @@ public final class SubteArrivals {
         return Normalizer.normalize(text, Normalizer.Form.NFD).replaceAll("\\p{M}", "")
                 .toLowerCase(Locale.ROOT).replaceAll("\\s+", " ").trim();
     }
+
+    /**
+     * Un tren de subte andando, ubicado entre la estacion por la que paso y
+     * la proxima segun los horarios del pronostico (no hay GPS): por eso es
+     * una posicion estimada.
+     */
+    public record Position(String id, double latitude, double longitude, String destination, String nextStation,
+                           Integer minutesToNext) {
+    }
+
+    /** Una estacion nuestra de la linea: nombre, ubicacion y orden en la linea (null si no se sabe). */
+    public record Place(String name, double latitude, double longitude, Integer order) {
+        public Place(String name, double latitude, double longitude) {
+            this(name, latitude, longitude, null);
+        }
+    }
+
+    /** Un tren que espera en la cabecera y sale en menos de esto se muestra en la cabecera. */
+    static final long DEPARTING_SECONDS = 60;
+
+    /**
+     * Los trenes de la linea que estan andando ahora: cada viaje del
+     * pronostico trae la hora en cada estacion; el tren esta entre la ultima
+     * por la que ya paso y la proxima, en proporcion al tiempo.
+     */
+    public static List<Position> positions(JsonNode feed, String lineCode, List<Place> places, long nowEpochSeconds) {
+        long headerTs = feed.path("Header").path("timestamp").asLong(0);
+        String routeId = "linea" + lineCode.toLowerCase(Locale.ROOT);
+        List<Position> result = new ArrayList<>();
+        for (JsonNode entity : feed.path("Entity")) {
+            JsonNode trip = entity.path("Linea");
+            if (!normalize(trip.path("Route_Id").asText("")).equals(routeId)) {
+                continue;
+            }
+            JsonNode stops = trip.path("Estaciones");
+            int n = stops.size();
+            if (n < 2) {
+                continue;
+            }
+            long[] raw = new long[n];
+            for (int i = 0; i < n; i++) {
+                raw[i] = stops.get(i).path("arrival").path("time").asLong(0);
+            }
+            long[] times = new long[n];
+            boolean any = false;
+            for (int i = 0; i < n; i++) {
+                Long t = isFiller(raw[i], headerTs) ? interpolate(raw, i, headerTs) : Long.valueOf(raw[i]);
+                if (t == null) {
+                    any = false;
+                    break;
+                }
+                times[i] = t;
+                any = true;
+            }
+            if (!any || nowEpochSeconds >= times[n - 1]) {
+                continue; // sin datos o ya termino
+            }
+            String destination = stops.get(n - 1).path("stop_name").asText("");
+            String id = entity.path("ID").asText(trip.path("Trip_Id").asText(""));
+            if (nowEpochSeconds < times[0]) {
+                Place first = place(places, stops.get(0).path("stop_name").asText(""));
+                Place second = place(places, stops.get(1).path("stop_name").asText(""));
+                Place previous = previous(places, first, second);
+                long left = times[0] - nowEpochSeconds;
+                if (previous != null && left <= 2 * SECONDS_PER_STATION) {
+                    // El pronostico trae solo las que le faltan: viene de la anterior en la linea.
+                    double f = Math.max(0, Math.min(1, 1 - (double) left / SECONDS_PER_STATION));
+                    result.add(new Position(id,
+                            previous.latitude() + (first.latitude() - previous.latitude()) * f,
+                            previous.longitude() + (first.longitude() - previous.longitude()) * f,
+                            destination, first.name(), (int) (left / 60)));
+                } else if (previous == null && first != null && left <= DEPARTING_SECONDS) {
+                    // Esta por salir de la cabecera.
+                    result.add(new Position(id, first.latitude(), first.longitude(), destination, first.name(),
+                            (int) (left / 60)));
+                }
+                continue;
+            }
+            int i = 0;
+            while (i < n - 2 && times[i + 1] <= nowEpochSeconds) {
+                i++;
+            }
+            Place from = place(places, stops.get(i).path("stop_name").asText(""));
+            Place to = place(places, stops.get(i + 1).path("stop_name").asText(""));
+            if (from == null || to == null) {
+                continue;
+            }
+            long span = Math.max(1, times[i + 1] - times[i]);
+            double f = Math.max(0, Math.min(1, (double) (nowEpochSeconds - times[i]) / span));
+            result.add(new Position(id,
+                    from.latitude() + (to.latitude() - from.latitude()) * f,
+                    from.longitude() + (to.longitude() - from.longitude()) * f,
+                    destination, to.name(), (int) Math.max(0, (times[i + 1] - nowEpochSeconds) / 60)));
+        }
+        return List.copyOf(result);
+    }
+
+    /**
+     * La estacion de la linea antes de first, en el sentido en que va el tren
+     * (de first a second); null si first es la cabecera o no se sabe el orden.
+     */
+    static Place previous(List<Place> places, Place first, Place second) {
+        if (first == null || second == null || first.order() == null || second.order() == null
+                || first.order().equals(second.order())) {
+            return null;
+        }
+        int wanted = first.order() + (second.order() > first.order() ? -1 : 1);
+        return places.stream().filter(p -> p.order() != null && p.order() == wanted).findFirst().orElse(null);
+    }
+
+    /** La estacion nuestra con ese nombre del pronostico (igual, o igual antes del guion). */
+    static Place place(List<Place> places, String stopName) {
+        String name = normalize(stopName);
+        String shortName = beforeDash(name);
+        for (Place p : places) {
+            String ours = normalize(p.name());
+            if (ours.equals(name) || beforeDash(ours).equals(shortName)) {
+                return p;
+            }
+        }
+        return null;
+    }
 }

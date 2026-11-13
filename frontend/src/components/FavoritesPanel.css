@@ -113,3 +113,10 @@
     padding-left: 14px;
   }
 }
+
+/* "Que significa cada simbolo", al pie del panel. */
+.fav-panel .symbols-legend {
+  margin: 0;
+  padding: 12px 14px 14px;
+  border-top: 1px solid var(--line);
+}

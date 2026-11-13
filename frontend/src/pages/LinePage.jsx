@@ -11,7 +11,9 @@ import FavoriteButton from '../components/FavoriteButton.jsx'
 import LineBadge from '../components/LineBadge.jsx'
 import LineInfoCard from '../components/LineInfoCard.jsx'
 import NetworkMap from '../components/NetworkMap.jsx'
+import { LiveTrainsLegend } from '../components/LiveTrainCard.jsx'
 import { useApi } from '../hooks/useApi.js'
+import { useLiveTrains } from '../hooks/useLiveTrains.js'
 import { MODE_LABELS, MODE_LABELS_PLURAL, MODE_SLUGS } from '../constants.js'
 import { mentionsStation } from '../utils/stationAlerts.js'
 import { findLine, lineSlug, stationPath } from '../utils/lineSlug.js'
@@ -147,6 +149,8 @@ export default function LinePage() {
   )
   const locatedIds = useMemo(() => new Set(lineStations.map((s) => s.stationId)), [lineStations])
   const hasMap = lineStations.length > 0
+  // Los trenes andando, en el minimapa (Trenes Argentinos, subte y Premetro).
+  const liveTrains = useLiveTrains(hasMap ? line?.mode : null, line?.code)
   // Para mostrar los badges de las lineas con las que combina.
   // Subte y premetro combinan entre si: hacen falta todas las lineas para los badges.
   const isMetro = line?.mode === 'SUBTE' || line?.mode === 'PREMETRO'
@@ -238,12 +242,15 @@ export default function LinePage() {
                     allStations={modeStations}
                     alerts={alertsState.data ?? []}
                     focusId={selected.id}
+                    liveTrains={liveTrains}
+                    trainLine={line}
                     onSelect={(id) => {
                       setSelected({ id, fromUrl: false })
                       setListScroll(null)
                     }}
                   />
                   <p className="line-minimap-hint">Tocá una estación de la lista o del mapa para ubicarla.</p>
+                  {liveTrains && <LiveTrainsLegend line={line} estimated={liveTrains.estimated} />}
                   {listScroll != null && (
                     <button type="button" className="line-back-to-list" onClick={backToList}>
                       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">

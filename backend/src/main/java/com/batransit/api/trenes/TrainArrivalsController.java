@@ -5,6 +5,7 @@ import com.batransit.api.dto.MapStation;
 import com.batransit.api.repository.StationRepository;
 import com.batransit.api.trenes.FerroviasArrivals.Direction;
 import com.batransit.api.trenes.FerroviasArrivalsClient.Snapshot;
+import com.batransit.api.trenes.SofseArrivals.LiveTrain;
 import com.batransit.api.trenes.SofseArrivals.Parsed;
 import com.batransit.api.trenes.SofseArrivals.Trip;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -58,6 +59,13 @@ public class TrainArrivalsController {
         }
     }
 
+    /** Los trenes andando de una linea con su posicion en vivo (solo las de Trenes Argentinos). */
+    public record LiveResponse(boolean available, Instant updatedAt, String source, List<LiveTrain> trains) {
+        static LiveResponse unavailable() {
+            return new LiveResponse(false, null, null, List.of());
+        }
+    }
+
     private record Match(Instant at, Integer sofseId) {
     }
 
@@ -102,6 +110,18 @@ public class TrainArrivalsController {
                             parsed.directions());
                 })
                 .orElseGet(ArrivalsResponse::unavailable);
+    }
+
+    /** GET /api/v1/trenes/en-vivo?linea=SAN_MARTIN: los trenes andando, para el mapa. */
+    @GetMapping("/en-vivo")
+    public LiveResponse live(@RequestParam("linea") String line) {
+        Integer gerencia = SofseArrivals.GERENCIAS.get(line.trim().toUpperCase(Locale.ROOT));
+        if (gerencia == null) {
+            return LiveResponse.unavailable();
+        }
+        return sofse.liveTrains(gerencia)
+                .map(s -> new LiveResponse(true, s.fetchedAt(), SOFSE_SOURCE, s.trains()))
+                .orElseGet(LiveResponse::unavailable);
     }
 
     /**

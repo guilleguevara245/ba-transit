@@ -64,6 +64,8 @@ con APIs públicas, pruebas, integración continua y despliegue.
   Mitre, Sarmiento, San Martín, Belgrano Sur y Tren de la Costa, los de Trenes Argentinos (en vivo o según su horario,
   como lo informe, con el andén, los trenes rápidos y los cancelados); según el horario programado para el subte sin
   datos en vivo y para el Urquiza (horario de Metrovías, con servicio nocturno).
+- Trenes en el mapa de cada línea y estación: los de Trenes Argentinos en su posición GPS y los del subte en una
+  posición estimada con los horarios en vivo.
 - Estado del Urquiza leído del panel de Metrovías, y las alertas de la app de Trenes Argentinos (interrupciones,
   demoras, obras) para sus seis líneas.
 - **Cómo llegar**: planificador propio (algoritmo de Dijkstra sobre el grafo de la red) con combinaciones, tiempo

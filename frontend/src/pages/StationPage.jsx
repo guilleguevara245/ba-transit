@@ -8,10 +8,12 @@ import Chevrons from '../components/Chevrons.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
 import LineBadge from '../components/LineBadge.jsx'
 import NetworkMap from '../components/NetworkMap.jsx'
+import { LiveTrainsLegend } from '../components/LiveTrainCard.jsx'
 import NextTrains from '../components/NextTrains.jsx'
 import { busParams } from '../utils/busNames.js'
 import Skeleton from '../components/Skeleton.jsx'
 import { useApi } from '../hooks/useApi.js'
+import { useLiveTrains } from '../hooks/useLiveTrains.js'
 import { MODE_LABELS, MODE_LABELS_PLURAL, MODE_SLUGS } from '../constants.js'
 import { formatLongDate, yearsSince } from '../utils/format.js'
 import { findTransfers, stationBranches } from '../utils/map.js'
@@ -111,6 +113,19 @@ export default function StationPage() {
   const lineStations = useMemo(
     () => (station ? allStations.filter((s) => s.lineId === station.lineId) : []),
     [allStations, station],
+  )
+  // Los trenes andando de la linea, en el mapa, con su linea para el icono y la tarjeta.
+  const liveTrains = useLiveTrains(station?.lineMode, station?.lineCode)
+  const trainLine = useMemo(
+    () =>
+      station && {
+        mode: station.lineMode,
+        code: station.lineCode,
+        name: station.lineName,
+        colorHex: station.lineColorHex,
+        operator: station.lineOperator,
+      },
+    [station],
   )
 
   if (loading) {
@@ -408,14 +423,19 @@ export default function StationPage() {
           </section>
         </div>
 
-        <NetworkMap
-          className="station-map"
-          stations={lineStations}
-          allStations={allStations}
-          alerts={alerts}
-          focusId={station.stationId}
-          openFocusedPopup={false}
-        />
+        <div className="station-map-wrap">
+          <NetworkMap
+            className="station-map"
+            stations={lineStations}
+            allStations={allStations}
+            alerts={alerts}
+            focusId={station.stationId}
+            openFocusedPopup={false}
+            liveTrains={liveTrains}
+            trainLine={trainLine}
+          />
+          {liveTrains && <LiveTrainsLegend line={trainLine} estimated={liveTrains.estimated} />}
+        </div>
       </div>
     </div>
   )

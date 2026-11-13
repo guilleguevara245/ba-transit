@@ -102,12 +102,13 @@ describe('tripTrainsPath', () => {
 })
 
 describe('serviceKind', () => {
-  it('rápido (y expreso), semirrápido y directo; el resto, sin icono', () => {
+  it('rápido (y expreso), semirrápido, directo y especial; el resto, sin icono', () => {
     expect(serviceKind('Rápido')).toBe('rapido')
     expect(serviceKind('Expreso')).toBe('rapido')
     expect(serviceKind('Semirrápido')).toBe('semirrapido')
     expect(serviceKind('SEMIRRAPIDO')).toBe('semirrapido')
     expect(serviceKind('Directo')).toBe('directo')
+    expect(serviceKind('Especial')).toBe('especial')
     expect(serviceKind('Diferencial')).toBe(null)
     expect(serviceKind(null)).toBe(null)
   })
