@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { statusFor, summarizeByMode, worstAlertType } from './network.js'
+import { isProblem, statusFor, summarizeByMode, worstAlertType } from './network.js'
 
 const lines = [
   { id: 1, mode: 'SUBTE' },
@@ -31,6 +31,15 @@ describe('summarizeByMode', () => {
       { type: 'INTERRUPCION', lineIds: [2] },
       { type: 'DEMORA', lineIds: [1] },
     ])
+  })
+
+  it('un aviso no cambia el estado ni cuenta como alerta', () => {
+    const summary = summarizeByMode(lines, [{ transportLineId: 1, type: 'AVISO' }])
+
+    expect(summary.get('SUBTE')).toEqual({ lineCount: 2, alertCount: 0, worstType: null, groups: [] })
+    expect(statusFor(worstAlertType([{ type: 'AVISO' }])).label).toBe('Normal')
+    expect(isProblem({ type: 'AVISO' })).toBe(false)
+    expect(isProblem({ type: 'DESVIO' })).toBe(true)
   })
 
   it('ignora alertas de lineas desconocidas', () => {

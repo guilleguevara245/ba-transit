@@ -4,5 +4,10 @@ public enum AlertType {
     OBRA,
     DEMORA,
     INTERRUPCION,
-    DESVIO
+    DESVIO,
+    /**
+     * Un aviso que no es un problema (horario extendido, servicio
+     * adicional): se muestra y se notifica, pero la linea sigue normal.
+     */
+    AVISO
 }

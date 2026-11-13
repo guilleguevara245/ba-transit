@@ -166,6 +166,8 @@ class SofseAlertsTest {
                 .isEqualTo(AlertType.OBRA);
         assertThat(SofseAlerts.typeOf("NO_EFFECT", "OTHER_CAUSE", "Los trenes salen del andén 4"))
                 .isEqualTo(AlertType.DESVIO);
+        assertThat(SofseAlerts.typeOf("MODIFIED_SERVICE", "OTHER_CAUSE", "Servicio extendido por la Noche de los Museos"))
+                .isEqualTo(AlertType.AVISO);
         assertThat(SofseAlerts.typeOf("REDUCED_SERVICE", "STRIKE", "Medida de fuerza"))
                 .isEqualTo(AlertType.DEMORA);
     }

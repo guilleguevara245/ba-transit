@@ -1,12 +1,19 @@
 // Orden fijo, para que la grilla no salte de lugar entre renders.
 export const MODE_ORDER = ['TREN', 'SUBTE', 'PREMETRO', 'COLECTIVO', 'AEROPUERTO']
 
-// INTERRUPCION pesa mas que DEMORA, que pesa mas que OBRA/DESVIO.
+// INTERRUPCION pesa mas que DEMORA, que pesa mas que OBRA/DESVIO. Un AVISO
+// (horario extendido, servicio adicional) no pesa: la linea sigue normal.
 const SEVERITY = { INTERRUPCION: 3, DEMORA: 2, DESVIO: 1, OBRA: 1 }
+
+/** Si la alerta cambia el estado de la linea (un aviso no). */
+export function isProblem(alert) {
+  return (SEVERITY[alert.type] ?? 0) > 0
+}
 
 /**
  * A partir de la lista de lineas y de alertas activas, arma un mapa
- * mode -> { lineCount, alertCount, worstType, groups }. "worstType" es el
+ * mode -> { lineCount, alertCount, worstType, groups }. alertCount no cuenta
+ * los avisos (no son problemas). "worstType" es el
  * tipo de alerta mas grave presente en ese modo; "groups", las lineas con
  * alertas agrupadas por su peor alerta ([{ type, lineIds }], del estado
  * mas grave al mas leve).
@@ -27,7 +34,7 @@ export function summarizeByMode(lines, alerts) {
     if (!mode || !summary.has(mode)) continue
 
     const entry = summary.get(mode)
-    entry.alertCount += 1
+    if (isProblem(alert)) entry.alertCount += 1
 
     const currentSeverity = entry.worstType ? SEVERITY[entry.worstType] : 0
     if ((SEVERITY[alert.type] ?? 0) > currentSeverity) {

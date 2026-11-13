@@ -60,6 +60,14 @@ class SummaryBuilderTest {
     }
 
     @Test
+    void unAvisoNoEsUnProblema() {
+        List<ActiveAlert> alerts = List.of(new ActiveAlert(2, AlertType.AVISO, "14-11 horario extendido por la Noche de los Museos"));
+        PushMessage m = SummaryBuilder.build(sub(Set.of(2L), Set.of(), Set.of()), "Ana", 7, LINES, alerts, STATIONS, null, SITE)
+                .orElseThrow();
+        assertThat(m.title()).isEqualTo("Buen día, Ana: todo normal");
+    }
+
+    @Test
     void sinFavoritosNoHayResumen() {
         assertThat(SummaryBuilder.build(sub(Set.of(), Set.of(), Set.of()), "Ana", 7, LINES, List.of(), STATIONS, null, SITE))
                 .isEqualTo(Optional.empty());

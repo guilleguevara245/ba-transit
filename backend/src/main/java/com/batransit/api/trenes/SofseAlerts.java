@@ -1,5 +1,6 @@
 package com.batransit.api.trenes;
 
+import com.batransit.api.domain.AlertTexts;
 import com.batransit.api.domain.AlertType;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -180,6 +181,10 @@ public final class SofseAlerts {
      * generico, por el texto (como con los avisos de la pagina).
      */
     static AlertType typeOf(String effect, String cause, String text) {
+        // Un horario extendido o un servicio adicional no es un problema, aunque venga como cambio de servicio.
+        if ("ADDITIONAL_SERVICE".equals(effect) || AlertTexts.isInformative(text)) {
+            return AlertType.AVISO;
+        }
         switch (effect) {
             case "NO_SERVICE":
                 return AlertType.INTERRUPCION;

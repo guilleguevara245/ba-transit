@@ -58,6 +58,7 @@ public final class NotificationTexts {
             case INTERRUPCION -> line.display() + " interrumpid" + a;
             case OBRA -> "Obras en " + line.withArticle();
             case DESVIO -> "Cambios en el servicio " + (line.feminine() ? "de la " : "del ") + line.display();
+            case AVISO -> "Aviso en " + line.withArticle();
         };
     }
 
@@ -71,6 +72,7 @@ public final class NotificationTexts {
             case INTERRUPCION -> "El servicio volvió a funcionar.";
             case OBRA -> "Terminaron las obras informadas.";
             case DESVIO -> "El servicio volvió a su recorrido habitual.";
+            case AVISO -> "Terminó el aviso.";
         };
     }
 

@@ -42,6 +42,8 @@ public final class SummaryBuilder {
     public static Optional<PushMessage> build(Subscriber sub, String name, int hour, Map<Long, LineInfo> lines,
                                               List<ActiveAlert> alerts, Map<Long, StationRef> stations,
                                               AccessesResponse accesses, String siteUrl) {
+        // Los avisos (horario extendido, servicio adicional) no son problemas.
+        List<ActiveAlert> troubles = alerts.stream().filter(a -> a.type() != AlertType.AVISO).toList();
         List<String> problems = new ArrayList<>();
         int lineCount = 0;
         int stationCount = 0;
@@ -53,7 +55,7 @@ public final class SummaryBuilder {
                 continue;
             }
             stationCount++;
-            alerts.stream()
+            troubles.stream()
                     .filter(a -> a.lineId() == ref.lineId() && StationMatcher.mentions(a.description(), ref.station().name()))
                     .findFirst()
                     .ifPresent(a -> problems.add(StationMatcher.saysClosed(a.description())
@@ -66,7 +68,7 @@ public final class SummaryBuilder {
                 continue;
             }
             lineCount++;
-            alerts.stream()
+            troubles.stream()
                     .filter(a -> a.lineId() == lineId)
                     .map(ActiveAlert::type)
                     .min(Comparator.comparingInt(SEVERITY::indexOf))

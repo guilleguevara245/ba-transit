@@ -5,6 +5,7 @@ import com.batransit.api.client.SubteAlertsFeed;
 import com.batransit.api.client.TransporteApiClient;
 import com.batransit.api.client.TransporteApiException;
 import com.batransit.api.domain.Alert;
+import com.batransit.api.domain.AlertTexts;
 import com.batransit.api.domain.AlertType;
 import com.batransit.api.domain.TransportLine;
 import com.batransit.api.domain.TransportMode;
@@ -150,7 +151,7 @@ public class SubteAlertSyncService {
         }
 
         String description = describe(alert);
-        AlertType type = mapEffectToType(alert.effect());
+        AlertType type = typeOf(alert.effect(), description);
         boolean multiLine = lineCodes.size() > 1;
 
         for (String lineCode : lineCodes) {
@@ -255,6 +256,21 @@ public class SubteAlertSyncService {
         String text = translatedText.translation().get(0).text();
         return (text == null || text.isBlank()) ? null : text;
     }
+
+    /**
+     * El tipo de una alerta del feed: un aviso (horario extendido, servicio
+     * adicional) si el efecto o el texto lo dicen; si no, por el efecto. El
+     * feed informa casi siempre un efecto generico, asi que el texto decide.
+     */
+    static AlertType typeOf(Integer effect, String text) {
+        if (Integer.valueOf(ADDITIONAL_SERVICE).equals(effect) || AlertTexts.isInformative(text)) {
+            return AlertType.AVISO;
+        }
+        return mapEffectToType(effect);
+    }
+
+    /** ADDITIONAL_SERVICE de GTFS-Realtime. */
+    private static final int ADDITIONAL_SERVICE = 5;
 
     /**
      * Mapeo aproximado de "effect" (GTFS-Realtime) a nuestro AlertType.

@@ -11,6 +11,7 @@ export const ALERT_TYPE_LABELS = {
   DEMORA: 'Demora',
   INTERRUPCION: 'Interrupción',
   DESVIO: 'Desvío',
+  AVISO: 'Aviso',
 }
 
 // Para titulos y tarjetas que hablan del modo en general ("Trenes").

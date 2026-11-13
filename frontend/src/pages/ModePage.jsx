@@ -9,7 +9,7 @@ import LineBadge from '../components/LineBadge.jsx'
 import NetworkMap from '../components/NetworkMap.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { MODE_LABELS_PLURAL, modeFromSlug } from '../constants.js'
-import { statusFor, worstAlertType } from '../utils/network.js'
+import { isProblem, statusFor, worstAlertType } from '../utils/network.js'
 import './ModePage.css'
 import { linePath } from '../utils/lineSlug.js'
 import StatusPill from '../components/StatusPill.jsx'
@@ -62,6 +62,7 @@ export default function ModePage() {
         {lines.map((line) => {
           const lineAlerts = alerts.filter((a) => a.transportLineId === line.id)
           const status = statusFor(worstAlertType(lineAlerts))
+          const problems = lineAlerts.filter(isProblem).length
           return (
             <Link key={line.id} to={linePath(line)} className="mode-line-card" style={{ '--line-color': line.colorHex }}>
               <LineBadge line={line} size="md" />
@@ -70,7 +71,7 @@ export default function ModePage() {
               <span className="mode-line-text">
                 <span className="mode-line-name">{line.name}</span>
                 <StatusPill tone={status.className}>
-                  {lineAlerts.length > 1 ? `${status.label} (${lineAlerts.length})` : status.label}
+                  {problems > 1 ? `${status.label} (${problems})` : status.label}
                 </StatusPill>
               </span>
               <FavoriteButton lineId={line.id} lineName={line.name} compact />

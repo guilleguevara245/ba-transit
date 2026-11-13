@@ -197,6 +197,11 @@ class SubteAlertSyncServiceTest {
         assertThat(SubteAlertSyncService.mapEffectToType(1)).isEqualTo(AlertType.INTERRUPCION);
         assertThat(SubteAlertSyncService.mapEffectToType(4)).isEqualTo(AlertType.DESVIO);
         assertThat(SubteAlertSyncService.mapEffectToType(null)).isEqualTo(AlertType.DEMORA);
+        // Un horario extendido llega con un efecto generico: el texto dice que es un aviso.
+        assertThat(SubteAlertSyncService.typeOf(null, "14-11 horario extendido por la Noche de los Museos"))
+                .isEqualTo(AlertType.AVISO);
+        assertThat(SubteAlertSyncService.typeOf(5, "Servicio por el recital")).isEqualTo(AlertType.AVISO);
+        assertThat(SubteAlertSyncService.typeOf(1, "Servicio interrumpido")).isEqualTo(AlertType.INTERRUPCION);
     }
 
     private static SubteAlertsFeed feed(FeedEntity... entities) {

@@ -4,6 +4,7 @@ import com.batransit.api.accesos.AccessModels.TrafficStatus;
 import com.batransit.api.domain.AlertType;
 import com.batransit.api.notificaciones.NotificationTexts.LineInfo;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -35,8 +36,24 @@ public final class NotificationPlanner {
     public record StationInfo(long id, String name, long branchId, int order) {
     }
 
-    /** Una alerta que empieza (ended=false) o termina (ended=true). */
-    public record AlertEvent(long alertId, LineInfo line, AlertType type, String description, boolean ended) {
+    /**
+     * Una alerta que empieza (ended=false) o termina (ended=true). publishedAt
+     * separa los avisos que la fuente publica con un id que ya uso: cada uno
+     * tiene su propia clave (null: solo el id).
+     */
+    public record AlertEvent(long alertId, LineInfo line, AlertType type, String description, boolean ended,
+                             Instant publishedAt) {
+        public AlertEvent(long alertId, LineInfo line, AlertType type, String description, boolean ended) {
+            this(alertId, line, type, description, ended, null);
+        }
+
+        String startKey() {
+            return "alerta:" + alertId + (publishedAt == null ? "" : ":" + publishedAt.getEpochSecond());
+        }
+
+        String endKey() {
+            return "alerta-fin:" + alertId + (publishedAt == null ? "" : ":" + publishedAt.getEpochSecond());
+        }
     }
 
     public record Planned(long subscriptionId, String eventKey, PushMessage message) {
@@ -49,12 +66,16 @@ public final class NotificationPlanner {
     public static List<Planned> forAlert(AlertEvent event, List<StationInfo> lineStations, List<Subscriber> subscribers,
                                          String siteUrl, BiPredicate<Long, String> alreadySent) {
         List<Planned> out = new ArrayList<>();
-        String startKey = "alerta:" + event.alertId();
+        // Cuando termina un aviso (horario extendido) no hay nada que avisar: la linea siempre anduvo normal.
+        if (event.ended() && event.type() == AlertType.AVISO) {
+            return out;
+        }
+        String startKey = event.startKey();
         for (Subscriber sub : subscribers) {
             if (event.ended() && (!sub.notifyResolved() || !alreadySent.test(sub.id(), startKey))) {
                 continue;
             }
-            String key = event.ended() ? "alerta-fin:" + event.alertId() : startKey;
+            String key = event.ended() ? event.endKey() : startKey;
             Optional<StationInfo> station = sub.wantStations()
                     ? lineStations.stream()
                             .filter(s -> sub.stations().contains(s.id()))

@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -43,12 +44,16 @@ import java.util.stream.Collectors;
 public class NotificationJobs {
 
     private static final Logger log = LoggerFactory.getLogger(NotificationJobs.class);
-    /** Una alerta creada hace mas que esto no se avisa como nueva (por ejemplo, tras un reinicio largo). */
+    /** Una alerta publicada hace mas que esto no se avisa como nueva (por ejemplo, tras un reinicio largo). */
     static final Duration MAX_ALERT_AGE = Duration.ofHours(1);
     private static final DateTimeFormatter HOUR = DateTimeFormatter.ofPattern("yyyyMMddHH");
 
-    /** Lo que hace falta recordar de una alerta activa para avisar su fin. */
-    record Snapshot(long id, long lineId, AlertType type, String description) {
+    /**
+     * Lo que hace falta recordar de una alerta activa para avisar su fin.
+     * publishedAt cambia si la fuente reusa el id para otro aviso (ver
+     * Alert.updateFromSource): entonces es una alerta nueva.
+     */
+    record Snapshot(long id, long lineId, AlertType type, String description, Instant publishedAt) {
     }
 
     private final AlertRepository alerts;
@@ -83,21 +88,19 @@ public class NotificationJobs {
     }
 
     synchronized void runAlerts(Instant now) {
-        record Loaded(Map<Long, Snapshot> active, Map<Long, Instant> createdAt, Map<Long, LineInfo> lineInfo) {
+        record Loaded(Map<Long, Snapshot> active, Map<Long, LineInfo> lineInfo) {
         }
         Loaded loaded = tx.execute(status -> {
             Map<Long, Snapshot> active = new HashMap<>();
-            Map<Long, Instant> created = new HashMap<>();
             for (Alert a : alerts.findByActiveTrueOrderByPublishedAtDesc()) {
                 active.put(a.getId(), new Snapshot(a.getId(), a.transportLineId(), a.getType(),
-                        a.getDescription() == null ? "" : a.getDescription()));
-                created.put(a.getId(), a.getCreatedAt());
+                        a.getDescription() == null ? "" : a.getDescription(), a.getPublishedAt()));
             }
             Map<Long, LineInfo> info = new HashMap<>();
             for (TransportLine l : lines.findAll()) {
                 info.put(l.getId(), new LineInfo(l.getId(), l.getMode(), l.getCode(), l.getName()));
             }
-            return new Loaded(active, created, info);
+            return new Loaded(active, info);
         });
         if (loaded == null) {
             return;
@@ -108,15 +111,19 @@ public class NotificationJobs {
         }
         List<AlertEvent> events = new ArrayList<>();
         for (Snapshot s : loaded.active().values()) {
-            Instant created = loaded.createdAt().get(s.id());
-            boolean recent = created == null || created.isAfter(now.minus(MAX_ALERT_AGE));
-            if (!previous.containsKey(s.id()) && recent && loaded.lineInfo().containsKey(s.lineId())) {
-                events.add(new AlertEvent(s.id(), loaded.lineInfo().get(s.lineId()), s.type(), s.description(), false));
+            // Nueva, o la fuente reuso el id para otro aviso (cambio la fecha de publicacion).
+            Snapshot before = previous.get(s.id());
+            boolean isNew = before == null || !Objects.equals(before.publishedAt(), s.publishedAt());
+            boolean recent = s.publishedAt() == null || s.publishedAt().isAfter(now.minus(MAX_ALERT_AGE));
+            if (isNew && recent && loaded.lineInfo().containsKey(s.lineId())) {
+                events.add(new AlertEvent(s.id(), loaded.lineInfo().get(s.lineId()), s.type(), s.description(), false,
+                        s.publishedAt()));
             }
         }
         for (Snapshot s : previous.values()) {
             if (!loaded.active().containsKey(s.id()) && loaded.lineInfo().containsKey(s.lineId())) {
-                events.add(new AlertEvent(s.id(), loaded.lineInfo().get(s.lineId()), s.type(), s.description(), true));
+                events.add(new AlertEvent(s.id(), loaded.lineInfo().get(s.lineId()), s.type(), s.description(), true,
+                        s.publishedAt()));
             }
         }
         previous = loaded.active();

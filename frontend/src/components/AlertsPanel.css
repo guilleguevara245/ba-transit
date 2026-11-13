@@ -35,6 +35,12 @@
   color: var(--interrupted);
 }
 
+/* Un aviso no es un problema (horario extendido, servicio adicional): gris. */
+.alert-tag-aviso {
+  background: var(--line);
+  color: var(--text-dim);
+}
+
 .alert-line {
   font-size: 13px;
   font-weight: 600;

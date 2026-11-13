@@ -99,6 +99,25 @@ class NotificationPlannerTest {
     }
 
     @Test
+    void avisoSeNotificaYSuFinNo() {
+        Instant published = Instant.parse("2026-11-13T14:30:00Z");
+        AlertEvent start = new AlertEvent(53, B, AlertType.AVISO, "14-11 horario extendido por la Noche de los Museos", false,
+                published);
+        List<Planned> plan = NotificationPlanner.forAlert(start, B_STATIONS, List.of(sub(1, Set.of(2L), Set.of(), Set.of())),
+                SITE, (s, k) -> false);
+        assertThat(plan.size()).isEqualTo(1);
+        assertThat(plan.get(0).message().title()).isEqualTo("Aviso en la Línea B");
+        assertThat(plan.get(0).message().body()).isEqualTo("14-11 horario extendido por la Noche de los Museos");
+        // Con la fecha de publicacion en la clave: si la fuente reusa el id, el aviso nuevo no choca con el viejo.
+        assertThat(plan.get(0).eventKey()).isEqualTo("alerta:53:" + published.getEpochSecond());
+
+        AlertEvent end = new AlertEvent(53, B, AlertType.AVISO, "14-11 horario extendido por la Noche de los Museos", true,
+                published);
+        assertThat(NotificationPlanner.forAlert(end, B_STATIONS, List.of(sub(1, Set.of(2L), Set.of(), Set.of())), SITE,
+                (s, k) -> true)).isEmpty();
+    }
+
+    @Test
     void tiposApagados() {
         AlertEvent e = new AlertEvent(52, B, AlertType.DEMORA, "Demoras en la línea.", false);
         Subscriber noLines = new Subscriber(1, Set.of(2L), Set.of(), Set.of(), false, true, true, true);
