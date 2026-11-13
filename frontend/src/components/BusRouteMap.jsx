@@ -25,6 +25,11 @@ const STOP_ZOOM = 16
 const SMALL_STOPS_ZOOM = 14
 /** El amarillo de los colectivos del mapa (tambien el encabezado de sus tarjetas en el celular). */
 const BUS_YELLOW = '#f4c11b'
+/** Gris de los colectivos quietos fuera del recorrido (garage o terminal). */
+const BUS_PARKED = '#cfccc4'
+/** El colectivo andando: circulo amarillo con halo, como los trenes; quieto afuera: gris, chico y sin halo. */
+const LIVE_ICON = badgeIcon('bus', { bg: BUS_YELLOW, fg: '#17171a', border: '#17171a', shape: 'circle', size: 32, pulse: true })
+const PARKED_ICON = badgeIcon('bus', { bg: BUS_PARKED, fg: '#55534d', border: '#8a877f', shape: 'circle', size: 26 })
 
 function ZoomTracker({ onZoom }) {
   const map = useMapEvents({ zoomend: () => onZoom(map.getZoom()) })
@@ -55,33 +60,47 @@ function FocusStop({ focused, stops, markers }) {
 /**
  * Tarjeta de un colectivo en vivo, como la del tren: el cartel de la
  * linea y la empresa, hacia donde va, la proxima parada con los minutos que le faltan
- * (si esta sobre el recorrido) y hace cuanto mando su posicion.
+ * (si esta sobre el recorrido; si no, si esta detenido o puede ir por otro
+ * ramal) y hace cuanto mando su posicion.
  */
-function LiveBusCard({ route, vehicle, direction, badge }) {
-  // El sentido del colectivo (el feed usa el mismo direction_id que el GTFS); si no esta, el elegido.
-  const own = route.directions.find((d) => d.directionId === vehicle.direction) ?? direction
-  const next = nextStop(own, vehicle.latitude, vehicle.longitude, vehicle.ageSeconds ?? 0)
+function LiveBusCard({ route, vehicle, next, parked, badge }) {
   const agency = route.agency ? operatorName(route.agency) : null
   return (
     <MapCard
-      color={BUS_YELLOW}
+      color={parked ? BUS_PARKED : BUS_YELLOW}
       minWidth={240}
       badge={badge}
       // El cartel (303A) ya dice la linea: al lado, la empresa.
       kicker={agency ?? busTitle(route)}
       icon={<BusIcon kind="bus" />}
-      title={vehicle.headsign ? `Hacia ${headsignName(vehicle.headsign)}` : 'Colectivo en servicio'}
+      title={
+        parked
+          ? 'Colectivo detenido'
+          : vehicle.headsign
+            ? `Hacia ${headsignName(vehicle.headsign)}`
+            : 'Colectivo en servicio'
+      }
     >
       {next ? (
         <NextStop label="Próxima parada" name={stopName(next.stop.name)} minutes={next.minutes} color={BUS_YELLOW} />
       ) : (
-        vehicle.otherRoute && (
-          <div className="live-train-service live-train-dim">Puede ir por un ramal distinto del recorrido dibujado.</div>
-        )
+        <div className="live-train-service live-train-dim">
+          {parked
+            ? 'Quieto fuera del recorrido: en el garage o la terminal.'
+            : 'Fuera del recorrido dibujado: puede ir por otro ramal o un desvío.'}
+        </div>
       )}
       <PositionSource text="GPS del colectivo" age={secondsAgoText(vehicle.ageSeconds)} />
     </MapCard>
   )
+}
+
+/** Donde va cada colectivo sobre el recorrido de su sentido (null si esta fuera) y si esta quieto ahi afuera. */
+function placeOf(route, vehicle, fallback) {
+  // El feed usa el mismo direction_id que el GTFS; si no esta, el sentido elegido.
+  const own = route.directions.find((d) => d.directionId === vehicle.direction) ?? fallback
+  const next = nextStop(own, vehicle.latitude, vehicle.longitude, vehicle.ageSeconds ?? 0)
+  return { next, parked: !next && vehicle.moving === false }
 }
 
 /**
@@ -177,23 +196,20 @@ export default function BusRouteMap({ route, directionIndex, className, vehicles
       )}
 
       {/* Cada 30 segundos, cada colectivo se desliza a su nueva posicion. Un circulo con halo, como los trenes. */}
-      {vehicles.map((v) => (
-        <GlideMarker
-          key={v.id}
-          position={[v.latitude, v.longitude]}
-          title={`Colectivo de la línea ${route.shortName || '?'}`}
-          icon={badgeIcon('bus', {
-            bg: BUS_YELLOW,
-            fg: '#17171a',
-            border: '#17171a',
-            shape: 'circle',
-            size: 32,
-            pulse: true,
-          })}
-        >
-          <LiveBusCard route={route} vehicle={v} direction={active} badge={busBadge} />
-        </GlideMarker>
-      ))}
+      {vehicles.map((v) => {
+        const { next, parked } = placeOf(route, v, active)
+        return (
+          <GlideMarker
+            key={v.id}
+            position={[v.latitude, v.longitude]}
+            title={parked ? 'Colectivo detenido fuera del recorrido' : `Colectivo de la línea ${route.shortName || '?'}`}
+            zIndexOffset={parked ? -100 : 0}
+            icon={parked ? PARKED_ICON : LIVE_ICON}
+          >
+            <LiveBusCard route={route} vehicle={v} next={next} parked={parked} badge={busBadge} />
+          </GlideMarker>
+        )
+      })}
 
       <ZoomTracker onZoom={setZoom} />
       <FitToRoute positions={positions} />

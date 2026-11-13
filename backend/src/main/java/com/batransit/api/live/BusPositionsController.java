@@ -28,9 +28,19 @@ public class BusPositionsController {
     /** Posiciones mas viejas que esto se descartan (colectivo fuera de servicio o sin GPS). */
     static final long MAX_POSITION_AGE_SECONDS = 10 * 60;
 
-    /** otherRoute: de la misma linea (mismo cartel) pero con otro route_id, por ejemplo otro ramal. */
+    /**
+     * otherRoute: de la misma linea (mismo cartel) pero con otro route_id, por
+     * ejemplo otro ramal. moving: si va a mas de 0 km/h (sin el dato, se lo
+     * toma como andando); quieto y lejos del recorrido suele estar en el
+     * garage o la terminal.
+     */
     public record Vehicle(String id, double latitude, double longitude, int direction, String headsign,
-                          long ageSeconds, boolean otherRoute) {
+                          long ageSeconds, boolean otherRoute, boolean moving) {
+
+        public Vehicle(String id, double latitude, double longitude, int direction, String headsign, long ageSeconds,
+                       boolean otherRoute) {
+            this(id, latitude, longitude, direction, headsign, ageSeconds, otherRoute, true);
+        }
     }
 
     public record VehiclesResponse(boolean available, Instant updatedAt, List<Vehicle> vehicles) {
@@ -180,8 +190,10 @@ public class BusPositionsController {
             if (timestamp > 0 && age > MAX_POSITION_AGE_SECONDS) {
                 continue;
             }
+            boolean moving = !v.hasNonNull("speed") || v.path("speed").asDouble(0) > 0;
             result.add(new Vehicle(v.path("id").asText(""), lat, lon, v.path("direction").asInt(0),
-                    com.batransit.api.colectivos.TextRepair.fix(v.path("trip_headsign").asText("")), age, !sameRoute));
+                    com.batransit.api.colectivos.TextRepair.fix(v.path("trip_headsign").asText("")), age, !sameRoute,
+                    moving));
         }
         return result;
     }

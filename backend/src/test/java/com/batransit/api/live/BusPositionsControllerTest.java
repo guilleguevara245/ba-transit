@@ -30,6 +30,21 @@ class BusPositionsControllerTest {
     }
 
     @Test
+    void enLaLineaSeMarcaElQueEstaQuieto() throws Exception {
+        String json = """
+                [{"route_id": "764", "latitude": -34.6, "longitude": -58.4, "timestamp": 1776129290, "id": "1",
+                  "speed": 0},
+                 {"route_id": "764", "latitude": -34.6, "longitude": -58.4, "timestamp": 1776129290, "id": "2",
+                  "speed": 7.5},
+                 {"route_id": "764", "latitude": -34.6, "longitude": -58.4, "timestamp": 1776129290, "id": "3"}]
+                """;
+        List<Vehicle> vehicles = BusPositionsController.vehiclesOf(new ObjectMapper().readTree(json), "764", NOW);
+
+        // Quieto, andando y sin el dato (se lo toma como andando).
+        assertThat(vehicles).extracting(Vehicle::moving).containsExactly(false, true, true);
+    }
+
+    @Test
     void elMapaGeneralSoloIncluyeLosQueSeMueven() throws Exception {
         String json = """
                 [{"route_id": "764", "route_short_name": "159C", "latitude": -34.786681, "longitude": -58.249,
