@@ -49,10 +49,6 @@ con APIs públicas, pruebas, integración continua y despliegue.
 - Estado de cada modo (trenes, subtes, Premetro, accesos) con las líneas o autopistas afectadas por cada problema, y
   alertas de servicio sincronizadas cada 5 minutos desde la API Transporte de la Ciudad y la de Trenes Argentinos (con
   el ramal afectado).
-- Subte sin servicio aunque la Ciudad no lo avise: si en horario de servicio una línea pasa 10 minutos sin ningún tren
-  en el pronóstico en vivo, queda como interrumpida; si una noticia del día habla de un paro, se dice el motivo. Si la
-  noticia habla de todas las líneas y ya hay tres o más paradas (por el pronóstico o por los avisos de la Ciudad), se
-  marcan todas y el Premetro hasta la hora en que termina el paro según la noticia.
 - Alertas meteorológicas del Servicio Meteorológico Nacional (tormentas, lluvias, calor) que afectan al AMBA, con un
   consejo para quien va a viajar.
 - Eventos masivos, manifestaciones y obras que cortan calles, con aviso en las estaciones y los accesos cercanos, y

@@ -23,7 +23,7 @@ export const SOURCE_GROUPS = [
         source: API_TRANSPORTE,
         url: API_TRANSPORTE_URL,
         detail:
-          'Próximos trenes de cada estación, alertas de servicio de cada línea y, en el mapa, la posición de cada tren estimada con esos horarios (el subte no informa GPS). Si en horario de servicio una línea pasa 10 minutos sin ningún tren en el pronóstico, se avisa "Sin servicio" (con el motivo si las noticias hablan de un paro).',
+          'Próximos trenes de cada estación, alertas de servicio de cada línea y, en el mapa, la posición de cada tren estimada con esos horarios (el subte no informa GPS).',
         when: 'live',
       },
       {

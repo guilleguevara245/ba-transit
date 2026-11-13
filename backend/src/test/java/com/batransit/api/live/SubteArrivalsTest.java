@@ -105,12 +105,4 @@ class SubteArrivalsTest {
         assertThat(trains.get(0).nextStation()).isEqualTo("Bulnes");
         assertThat(trains.get(0).latitude()).isEqualTo(-34.5620 + (-34.5880 + 34.5620) * 0.5);
     }
-
-    @Test
-    void lasLineasConTrenesSonLasQueTienenAlgunaHoraCercaDeAhora() throws Exception {
-        assertThat(SubteArrivals.linesWithTrains(new ObjectMapper().readTree(FEED), NOW)).containsExactly("B", "D");
-        // Tres horas despues ya no queda ningun tren del pronostico.
-        assertThat(SubteArrivals.linesWithTrains(new ObjectMapper().readTree(FEED), NOW + 3 * 3600)).isEmpty();
-        assertThat(SubteArrivals.linesWithTrains(new ObjectMapper().readTree("{\"Entity\": []}"), NOW)).isEmpty();
-    }
 }

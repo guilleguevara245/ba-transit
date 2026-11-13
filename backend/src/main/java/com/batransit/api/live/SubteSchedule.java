@@ -208,40 +208,6 @@ public final class SubteSchedule {
         return List.copyOf(byTowards.values());
     }
 
-    /**
-     * Si a esta hora la linea tiene que estar andando segun el horario (con
-     * los feriados): salen trenes de las cabeceras desde hace al menos
-     * afterFirstSeconds y hasta dentro de al menos beforeLastSeconds. Las
-     * franjas de frecuencia seguidas se juntan, para que el cambio de franja
-     * no cuente como un hueco.
-     */
-    public boolean inService(String lineCode, LocalDateTime now, int afterFirstSeconds, int beforeLastSeconds) {
-        String line = lineCode.trim().toUpperCase(Locale.ROOT);
-        int nowSeconds = now.toLocalTime().toSecondOfDay();
-        Set<String> active = activeServices(now.toLocalDate());
-        List<int[]> windows = new ArrayList<>();
-        for (Trip trip : trips) {
-            if (trip.lineCode().equals(line) && active.contains(trip.serviceId())) {
-                trip.frequencies().forEach(f -> windows.add(new int[] {f.start(), f.end()}));
-            }
-        }
-        windows.sort((a, b) -> Integer.compare(a[0], b[0]));
-        int start = -1;
-        int end = -1;
-        for (int[] w : windows) {
-            if (start >= 0 && w[0] <= end + 60) {
-                end = Math.max(end, w[1]);
-                continue;
-            }
-            if (start >= 0 && nowSeconds >= start + afterFirstSeconds && nowSeconds <= end - beforeLastSeconds) {
-                return true;
-            }
-            start = w[0];
-            end = w[1];
-        }
-        return start >= 0 && nowSeconds >= start + afterFirstSeconds && nowSeconds <= end - beforeLastSeconds;
-    }
-
     /** Servicios del dia: calendario + excepciones (feriados). Pasado el fin del GTFS, se usa el dia de la semana. */
     Set<String> activeServices(LocalDate date) {
         Set<String> active = new java.util.HashSet<>();
