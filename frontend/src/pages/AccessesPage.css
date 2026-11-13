@@ -182,6 +182,15 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Un embotellamiento en la mano: en el color de su estado, debajo de la velocidad. */
+.access-jam {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--status-color);
+  font-variant-numeric: tabular-nums;
+}
+
 .access-operator {
   margin-top: auto;
   font-size: 12px;

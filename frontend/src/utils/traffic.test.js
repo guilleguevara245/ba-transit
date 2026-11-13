@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  jamText,
   accessGroups,
   accessShortName,
   delayMinutes,
@@ -140,5 +141,36 @@ describe('accessShortName y accessGroups', () => {
     expect(accessGroups([access('oeste', 'Acceso Oeste', 'FLUIDO')])).toEqual([])
     expect(accessGroups([access('oeste', 'Acceso Oeste')])).toEqual([])
     expect(accessGroups(undefined)).toEqual([])
+  })
+})
+
+describe('jamText', () => {
+  it('largo, entre que puntos y demora', () => {
+    expect(jamText({ lengthMeters: 2413, delaySeconds: 481, from: 'Márquez', to: 'Paraná' })).toBe(
+      'Embotellamiento de 2,4 km entre Márquez y Paraná · 8 min de demora',
+    )
+  })
+
+  it('en metros, con un solo punto y sin demora', () => {
+    expect(jamText({ lengthMeters: 760, delaySeconds: 20, from: 'Márquez', to: null })).toBe(
+      'Embotellamiento de 800 m en Márquez',
+    )
+  })
+
+  it('la demora del resumen toma la del embotellamiento si es mayor', () => {
+    const accesses = [
+      {
+        id: 'norte',
+        segments: [
+          {
+            name: 'General Paz – Márquez',
+            directions: [
+              { towards: 'CABA', status: 'DEMORADO', currentSpeed: 95, freeFlowSpeed: 100, jams: [{ delaySeconds: 600 }] },
+            ],
+          },
+        ],
+      },
+    ]
+    expect(trafficProblems(accesses)[0].delay).toBe(10)
   })
 })

@@ -71,6 +71,28 @@ export function speedText({ currentSpeed, freeFlowSpeed }) {
   return `${currentSpeed} km/h · normal ${freeFlowSpeed} km/h`
 }
 
+/**
+ * Un embotellamiento que informa TomTom en una mano: "Embotellamiento de
+ * 2,4 km entre Márquez y Paraná · 8 min de demora".
+ */
+export function jamText({ lengthMeters, delaySeconds, from, to }) {
+  const length =
+    lengthMeters >= 1000
+      ? `${(lengthMeters / 1000).toLocaleString('es-AR', { maximumFractionDigits: 1 })} km`
+      : `${Math.round(lengthMeters / 100) * 100} m`
+  const where = from && to && from !== to ? ` entre ${from} y ${to}` : from || to ? ` en ${from || to}` : ''
+  const minutes = Math.round((delaySeconds ?? 0) / 60)
+  return `Embotellamiento de ${length}${where}${minutes >= 1 ? ` · ${minutes} min de demora` : ''}`
+}
+
+/** La demora de la mano: la de su velocidad o la del peor embotellamiento, la que sea mayor. */
+function partDelay(part) {
+  const bySpeed = delayMinutes(part)
+  const byJam = Math.max(0, ...(part.jams ?? []).map((j) => Math.round((j.delaySeconds ?? 0) / 60)))
+  const minutes = Math.max(bySpeed ?? 0, byJam)
+  return minutes >= 1 ? minutes : null
+}
+
 const PROBLEMS = ['DEMORADO', 'CONGESTIONADO', 'CORTADO']
 
 /**
@@ -92,7 +114,7 @@ export function trafficProblems(accesses) {
           status: part.status,
           currentSpeed: part.currentSpeed,
           freeFlowSpeed: part.freeFlowSpeed,
-          delay: delayMinutes(part),
+          delay: partDelay(part),
         })
       }
     }

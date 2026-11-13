@@ -3,6 +3,7 @@ package com.batransit.api.accesos;
 import com.batransit.api.accesos.AccessModels.AccessReport;
 import com.batransit.api.accesos.AccessModels.AccessesResponse;
 import com.batransit.api.accesos.AccessModels.DirectionReport;
+import com.batransit.api.accesos.AccessModels.IncidentsResponse;
 import com.batransit.api.accesos.AccessModels.SegmentReport;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,6 +34,16 @@ public class AccessController {
         return summary ? summarize(response) : response;
     }
 
+    /**
+     * Los embotellamientos que informo TomTom en la ultima medicion y a que
+     * acceso, tramo y mano se asigno cada uno (null si a ninguno): sirve
+     * para revisar la asignacion contra el mapa. No hace consultas extra.
+     */
+    @GetMapping("/incidentes")
+    public IncidentsResponse incidents() {
+        return service.incidents();
+    }
+
     static AccessesResponse summarize(AccessesResponse response) {
         List<AccessReport> accesses = response.accesses().stream()
                 .map(a -> new AccessReport(a.id(), a.name(), a.road(), a.connects(), a.operator(),
@@ -43,7 +54,8 @@ public class AccessController {
 
     private static SegmentReport withoutDirectionGeometry(SegmentReport s) {
         List<DirectionReport> directions = s.directions().stream()
-                .map(d -> new DirectionReport(d.towards(), d.status(), d.currentSpeed(), d.freeFlowSpeed(), List.of()))
+                .map(d -> new DirectionReport(d.towards(), d.status(), d.currentSpeed(), d.freeFlowSpeed(), List.of(),
+                        d.jams()))
                 .toList();
         return new SegmentReport(s.name(), s.status(), s.currentSpeed(), s.freeFlowSpeed(), s.checkLocation(),
                 s.geometry(), directions);

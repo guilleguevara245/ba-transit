@@ -17,7 +17,15 @@ import { holidayOn } from '../utils/holidays.js'
 import { useNow } from '../hooks/useNow.js'
 import { useFlash } from '../hooks/useFlash.js'
 import { formatLongDate } from '../utils/format.js'
-import { problemsTitle, speedPercent, speedText, trafficProblems, trafficStatus, worstStatus } from '../utils/traffic.js'
+import {
+  jamText,
+  problemsTitle,
+  speedPercent,
+  speedText,
+  trafficProblems,
+  trafficStatus,
+  worstStatus,
+} from '../utils/traffic.js'
 import './ModePage.css'
 import './AirportsPage.css'
 import './AccessesPage.css'
@@ -42,7 +50,10 @@ function StatusPill({ status }) {
   )
 }
 
-/** Una mano del tramo: hacia donde va, su estado y la barra de velocidad. */
+/**
+ * Una mano del tramo: hacia donde va, su estado, la barra de velocidad y
+ * los embotellamientos que TomTom informa en toda la mano.
+ */
 function DirectionRow({ direction }) {
   const percent = speedPercent(direction)
   const { label, color } = trafficStatus(direction.status)
@@ -58,6 +69,11 @@ function DirectionRow({ direction }) {
         <span style={{ width: `${percent ?? 0}%`, background: color }} />
       </div>
       <div className="access-segment-speed">{speedText(direction)}</div>
+      {direction.jams?.map((jam, i) => (
+        <div key={i} className="access-jam">
+          {jamText(jam)}
+        </div>
+      ))}
     </div>
   )
 }
@@ -377,7 +393,8 @@ export default function AccessesPage() {
 
           <p className="airports-source">
             Datos de tránsito: TomTom Traffic. Fluido = se circula al 75% o más de la velocidad normal del tramo;
-            demorado = entre 45% y 75%; congestionado = menos de 45%. Se actualiza cada 20 minutos.
+            demorado = entre 45% y 75%; congestionado = menos de 45%. Un embotellamiento en cualquier parte de la
+            mano la deja por lo menos demorada (congestionada si es grave). Se actualiza cada 20 minutos.
           </p>
         </>
       )}

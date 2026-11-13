@@ -2,6 +2,7 @@ package com.batransit.api.accesos;
 
 import com.batransit.api.estado.SourceHealth;
 import com.batransit.api.accesos.AccessModels.FlowData;
+import com.batransit.api.accesos.AccessModels.Incident;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +49,17 @@ public class TomTomTrafficClient {
     private static final String URL = "https://api.tomtom.com/traffic/services/4/flowSegmentData/absolute/" + ZOOM + "/json"
             + "?point={point}&unit=KMPH&key={key}";
 
+    /**
+     * Traffic Incidents (Incident Details): los embotellamientos (6) de un
+     * rectangulo, con su recorrido, largo y demora. fields pide solo lo que
+     * se usa; la API lo recibe con las llaves codificadas.
+     */
+    private static final String INCIDENTS_URL = "https://api.tomtom.com/traffic/services/5/incidentDetails"
+            + "?bbox={bbox}&fields={fields}&language=es-ES&categoryFilter=6&timeValidityFilter=present&key={key}";
+
+    static final String INCIDENT_FIELDS = "{incidents{type,geometry{type,coordinates},"
+            + "properties{iconCategory,magnitudeOfDelay,from,to,length,delay,roadNumbers}}}";
+
     private final String apiKey;
     private final RestClient restClient;
 
@@ -77,6 +89,64 @@ public class TomTomTrafficClient {
             health.fail(SourceHealth.Source.TOMTOM, reason);
             return Optional.empty();
         }
+    }
+
+    /**
+     * Los embotellamientos dentro del rectangulo (minLon,minLat,maxLon,maxLat).
+     * Vacio si TomTom no respondio: entonces se muestra solo lo medido en los
+     * puntos, como antes.
+     */
+    public Optional<List<Incident>> incidentsIn(double minLat, double minLon, double maxLat, double maxLon) {
+        String bbox = String.format(Locale.ROOT, "%.5f,%.5f,%.5f,%.5f", minLon, minLat, maxLon, maxLat);
+        try {
+            JsonNode body = restClient.get().uri(INCIDENTS_URL, bbox, INCIDENT_FIELDS, apiKey).retrieve()
+                    .body(JsonNode.class);
+            return Optional.of(parseIncidents(body));
+        } catch (RestClientException e) {
+            String reason = e instanceof RestClientResponseException r
+                    ? "HTTP " + r.getStatusCode().value()
+                    : e.getMostSpecificCause().getClass().getSimpleName();
+            log.warn("TomTom no respondio los embotellamientos ({})", reason);
+            return Optional.empty();
+        }
+    }
+
+    /** Convierte la respuesta de Incident Details; los puntos quedan como [lat, lon]. */
+    static List<Incident> parseIncidents(JsonNode body) {
+        List<Incident> result = new ArrayList<>();
+        if (body == null) {
+            return result;
+        }
+        for (JsonNode item : body.path("incidents")) {
+            JsonNode p = item.path("properties");
+            List<double[]> geometry = new ArrayList<>();
+            JsonNode coordinates = item.path("geometry").path("coordinates");
+            if ("Point".equals(item.path("geometry").path("type").asText())) {
+                if (coordinates.size() >= 2) {
+                    geometry.add(new double[] {coordinates.get(1).asDouble(), coordinates.get(0).asDouble()});
+                }
+            } else {
+                for (JsonNode c : coordinates) {
+                    if (c.size() >= 2) {
+                        geometry.add(new double[] {c.get(1).asDouble(), c.get(0).asDouble()});
+                    }
+                }
+            }
+            List<String> roads = new ArrayList<>();
+            for (JsonNode r : p.path("roadNumbers")) {
+                roads.add(r.asText());
+            }
+            result.add(new Incident(
+                    p.path("iconCategory").asInt(0),
+                    p.path("magnitudeOfDelay").asInt(0),
+                    p.path("from").asText(null),
+                    p.path("to").asText(null),
+                    (int) Math.round(p.path("length").asDouble(0)),
+                    p.path("delay").asInt(0),
+                    roads,
+                    geometry));
+        }
+        return result;
     }
 
     /** Convierte la respuesta JSON de TomTom; null si no trae datos. */

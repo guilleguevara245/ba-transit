@@ -7,6 +7,10 @@ import com.batransit.api.accesos.AccessModels.Definitions;
 import com.batransit.api.accesos.AccessModels.DirectionDefinition;
 import com.batransit.api.accesos.AccessModels.DirectionReport;
 import com.batransit.api.accesos.AccessModels.FlowData;
+import com.batransit.api.accesos.AccessModels.Incident;
+import com.batransit.api.accesos.AccessModels.IncidentCheck;
+import com.batransit.api.accesos.AccessModels.IncidentsResponse;
+import com.batransit.api.accesos.AccessModels.Jam;
 import com.batransit.api.accesos.AccessModels.SegmentDefinition;
 import com.batransit.api.accesos.AccessModels.SegmentReport;
 import com.batransit.api.accesos.AccessModels.TrafficStatus;
@@ -43,6 +47,12 @@ import java.util.Set;
  * Las consultas se hacen solo cuando alguien pide la pagina. Si un punto
  * cae fuera de la autopista se buscan puntos cercanos una sola vez (como
  * mucho 16 consultas por tramo) y se recuerda el que funciono.
+ *
+ * Un punto por mano no ve un embotellamiento que esta en otra parte del
+ * tramo. Por eso cada medicion pide tambien los embotellamientos de toda la
+ * zona (Traffic Incidents, una consulta, con su propio cupo gratuito de
+ * 2.500 por mes) y los asigna a la mano de su acceso: por el numero de ruta,
+ * el tramo mas cercano y el sentido en que avanza.
  */
 @Service
 public class AccessService {
@@ -78,6 +88,24 @@ public class AccessService {
 
     private AccessesResponse cached;
     private Instant cachedAt;
+
+    /** Consultas de embotellamientos por dia: 80 x 31 = 2.480, debajo de las 2.500 gratis por mes. */
+    static final int INCIDENT_DAILY_BUDGET = 80;
+    private java.time.LocalDate incidentBudgetDay;
+    private int incidentCallsToday;
+
+    /** Un embotellamiento cuenta desde este largo y esta demora (los mas chicos son ruido). */
+    static final int MIN_JAM_METERS = 500;
+    static final int MIN_JAM_DELAY_SECONDS = 60;
+
+    /** Un embotellamiento se asigna al tramo mas cercano si esta a menos de esto de su punto. */
+    static final double MAX_SEGMENT_DISTANCE_METERS = 12_000;
+
+    /** El Obelisco: una mano va "hacia CABA" si al avanzar se acerca. */
+    static final double[] CITY_CENTER = {-34.6037, -58.3816};
+
+    /** Los incidentes de la ultima medicion y donde se asignaron (para revisar la asignacion). */
+    private List<IncidentCheck> lastIncidents = List.of();
 
     /** Puntos ajustados por searchNearby, por nombre de tramo. */
     private final Map<String, double[]> resolvedPoints = new HashMap<>();
@@ -119,12 +147,185 @@ public class AccessService {
             return cached;
         }
 
+        List<Incident> incidents = fetchIncidents(now);
+        List<IncidentCheck> checks = new ArrayList<>();
+        Map<String, List<Jam>> jams = assignJams(definitions, incidents, checks);
+        lastIncidents = List.copyOf(checks);
         List<AccessReport> accesses = definitions.stream()
-                .map(a -> toReport(a, mergeSameSegment(a.segments().stream().map(this::measure).toList())))
+                .map(a -> toReport(a, mergeSameSegment(a.segments().stream()
+                        .map(s -> withJams(measure(s), a.id(), jams)).toList())))
                 .toList();
         cached = new AccessesResponse(true, now, accesses);
         cachedAt = now;
         return cached;
+    }
+
+    /** Los incidentes de la ultima medicion, con el acceso, tramo y mano a que se asignaron. */
+    public synchronized IncidentsResponse incidents() {
+        report();
+        return new IncidentsResponse(cachedAt, lastIncidents);
+    }
+
+    /**
+     * Los embotellamientos de la zona de los accesos; vacio sin cupo, si
+     * TomTom no responde o si ningun acceso tiene sus numeros de ruta (sin
+     * ellos no se pueden asignar).
+     */
+    private List<Incident> fetchIncidents(Instant now) {
+        if (definitions.stream().allMatch(a -> a.roadNumbers().isEmpty())) {
+            return List.of();
+        }
+        java.time.LocalDate today = now.atZone(BUENOS_AIRES).toLocalDate();
+        if (!today.equals(incidentBudgetDay)) {
+            incidentBudgetDay = today;
+            incidentCallsToday = 0;
+        }
+        if (incidentCallsToday >= INCIDENT_DAILY_BUDGET) {
+            return List.of();
+        }
+        incidentCallsToday++;
+        double[] box = boundingBox(definitions);
+        return client.incidentsIn(box[0], box[1], box[2], box[3]).orElse(List.of());
+    }
+
+    /** Rectangulo (minLat, minLon, maxLat, maxLon) de todos los puntos medidos, con ~8 km de margen. */
+    static double[] boundingBox(List<AccessDefinition> definitions) {
+        double minLat = 90;
+        double minLon = 180;
+        double maxLat = -90;
+        double maxLon = -180;
+        for (AccessDefinition access : definitions) {
+            for (SegmentDefinition segment : access.segments()) {
+                minLat = Math.min(minLat, segment.lat());
+                maxLat = Math.max(maxLat, segment.lat());
+                minLon = Math.min(minLon, segment.lon());
+                maxLon = Math.max(maxLon, segment.lon());
+            }
+        }
+        double margin = 0.08;
+        return new double[] {minLat - margin, minLon - margin, maxLat + margin, maxLon + margin};
+    }
+
+    /**
+     * Reparte los embotellamientos entre las manos: clave "acceso|tramo|hacia".
+     * En checks deja cada incidente con donde se asigno (o sin asignar).
+     */
+    static Map<String, List<Jam>> assignJams(List<AccessDefinition> definitions, List<Incident> incidents,
+                                             List<IncidentCheck> checks) {
+        Map<String, List<Jam>> result = new HashMap<>();
+        for (Incident incident : incidents) {
+            String accessId = null;
+            String segmentName = null;
+            String towards = null;
+            if (incident.category() == 6 && incident.geometry().size() >= 2
+                    && incident.lengthMeters() >= MIN_JAM_METERS && incident.delaySeconds() >= MIN_JAM_DELAY_SECONDS) {
+                for (AccessDefinition access : definitions) {
+                    if (!sameRoad(access.roadNumbers(), incident.roadNumbers())) {
+                        continue;
+                    }
+                    SegmentDefinition segment = nearestSegment(access, incident.geometry());
+                    if (segment != null) {
+                        accessId = access.id();
+                        segmentName = segment.name();
+                        towards = towards(incident.geometry());
+                        break;
+                    }
+                }
+            }
+            if (accessId != null) {
+                result.computeIfAbsent(accessId + "|" + segmentName + "|" + towards, k -> new ArrayList<>())
+                        .add(new Jam(incident.lengthMeters(), incident.delaySeconds(), incident.from(), incident.to(),
+                                incident.magnitude()));
+            }
+            List<double[]> g = incident.geometry();
+            checks.add(new IncidentCheck(incident.category(), incident.magnitude(), incident.from(), incident.to(),
+                    incident.lengthMeters(), incident.delaySeconds(), incident.roadNumbers(),
+                    g.isEmpty() ? null : g.get(0), g.isEmpty() ? null : g.get(g.size() - 1),
+                    accessId, segmentName, towards));
+        }
+        return result;
+    }
+
+    /** "RN 9", "RN-9" y "rn9" son la misma ruta. */
+    static boolean sameRoad(List<String> accessRoads, List<String> incidentRoads) {
+        for (String a : accessRoads) {
+            for (String b : incidentRoads) {
+                if (roadKey(a).equals(roadKey(b)) && !roadKey(a).isEmpty()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static String roadKey(String road) {
+        return road == null ? "" : road.toUpperCase(Locale.ROOT).replaceAll("[^A-Z0-9]", "");
+    }
+
+    /** El tramo del acceso mas cercano a la mitad del embotellamiento; null si todos quedan lejos. */
+    static SegmentDefinition nearestSegment(AccessDefinition access, List<double[]> geometry) {
+        double[] middle = geometry.get(geometry.size() / 2);
+        SegmentDefinition best = null;
+        double bestMeters = MAX_SEGMENT_DISTANCE_METERS;
+        for (SegmentDefinition segment : access.segments()) {
+            double meters = meters(middle, new double[] {segment.lat(), segment.lon()});
+            if (meters < bestMeters) {
+                bestMeters = meters;
+                best = segment;
+            }
+        }
+        return best;
+    }
+
+    /** "CABA" si el embotellamiento avanza hacia el centro; si no, "Provincia". */
+    static String towards(List<double[]> geometry) {
+        double start = meters(geometry.get(0), CITY_CENTER);
+        double end = meters(geometry.get(geometry.size() - 1), CITY_CENTER);
+        return end < start ? "CABA" : "Provincia";
+    }
+
+    static double meters(double[] a, double[] b) {
+        double dLat = Math.toRadians(b[0] - a[0]);
+        double dLon = Math.toRadians(b[1] - a[1]);
+        double h = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(Math.toRadians(a[0]))
+                * Math.cos(Math.toRadians(b[0])) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        return 6_371_000 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+    }
+
+    /**
+     * Suma a cada mano sus embotellamientos y sube su estado si hace falta:
+     * uno grave la deja congestionada; uno leve o moderado, por lo menos
+     * demorada. El tramo queda con la mano mas complicada.
+     */
+    static SegmentReport withJams(SegmentReport segment, String accessId, Map<String, List<Jam>> jams) {
+        if (segment.directions().isEmpty()) {
+            return segment;
+        }
+        List<DirectionReport> directions = new ArrayList<>();
+        boolean changed = false;
+        for (DirectionReport d : segment.directions()) {
+            List<Jam> list = jams.getOrDefault(accessId + "|" + segment.name() + "|" + d.towards(), List.of());
+            if (list.isEmpty()) {
+                directions.add(d);
+                continue;
+            }
+            changed = true;
+            TrafficStatus status = d.status();
+            for (Jam jam : list) {
+                TrafficStatus byJam = jam.magnitude() >= 3 ? TrafficStatus.CONGESTIONADO : TrafficStatus.DEMORADO;
+                if (severity(byJam) > severity(status)) {
+                    status = byJam;
+                }
+            }
+            directions.add(new DirectionReport(d.towards(), status, d.currentSpeed(), d.freeFlowSpeed(), d.geometry(),
+                    list));
+        }
+        if (!changed) {
+            return segment;
+        }
+        DirectionReport worst = worst(directions);
+        return new SegmentReport(segment.name(), worst.status(), worst.currentSpeed(), worst.freeFlowSpeed(),
+                segment.checkLocation(), worst.geometry().isEmpty() ? segment.geometry() : worst.geometry(), directions);
     }
 
     private SegmentReport measure(SegmentDefinition segment) {
@@ -165,14 +366,34 @@ public class AccessService {
         for (SegmentReport segment : segments) {
             SegmentReport last = result.isEmpty() ? null : result.get(result.size() - 1);
             if (last != null && sameTomTomSegment(last, segment)) {
-                result.set(result.size() - 1, new SegmentReport(joinNames(last.name(), segment.name()), last.status(),
-                        last.currentSpeed(), last.freeFlowSpeed(), last.checkLocation(), last.geometry(),
-                        last.directions()));
+                result.set(result.size() - 1, merge(last, segment));
             } else {
                 result.add(segment);
             }
         }
         return result;
+    }
+
+    /**
+     * Dos tramos con el mismo dato de TomTom en uno: las velocidades son las
+     * del primero (son las mismas) y cada mano junta los embotellamientos
+     * de los dos, con el estado mas complicado.
+     */
+    private static SegmentReport merge(SegmentReport first, SegmentReport second) {
+        List<DirectionReport> directions = new ArrayList<>();
+        for (int i = 0; i < first.directions().size(); i++) {
+            DirectionReport a = first.directions().get(i);
+            DirectionReport b = second.directions().get(i);
+            List<Jam> jams = new ArrayList<>(a.jams());
+            jams.addAll(b.jams());
+            TrafficStatus status = severity(b.status()) > severity(a.status()) ? b.status() : a.status();
+            directions.add(new DirectionReport(a.towards(), status, a.currentSpeed(), a.freeFlowSpeed(), a.geometry(),
+                    jams));
+        }
+        DirectionReport worst = worst(directions);
+        TrafficStatus status = worst == null ? first.status() : worst.status();
+        return new SegmentReport(joinNames(first.name(), second.name()), status, first.currentSpeed(),
+                first.freeFlowSpeed(), first.checkLocation(), first.geometry(), directions);
     }
 
     private static boolean sameTomTomSegment(SegmentReport a, SegmentReport b) {
