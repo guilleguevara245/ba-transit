@@ -15,11 +15,15 @@ import java.util.Map;
  * Corrige los sentidos con el destino cambiado. En el feed, algunas lineas
  * tienen el cartel de un sentido en el otro: el 303A dice "a Est. Moron" en
  * el sentido que sale de Moron y va a Pacheco, y "a Colectora Pta. 2 Ford" en
- * el que vuelve. Se nota cuando el cartel nombra una estacion de tren o de
- * subte ("a Est. Moron", "a Constitucion") y el recorrido empieza al lado de
- * esa estacion y termina lejos: ese cartel es el del otro sentido, y se
- * intercambian. Si el otro sentido si termina en la estacion que nombra (los
- * dos carteles dicen lo mismo) no se toca nada.
+ * el que vuelve. Se nota cuando el cartel nombra como destino una estacion
+ * de tren ("a Est. Moron", "a Constitucion"; las de subte no, porque se
+ * llaman como calles: "Belgrano", "Moreno") y el recorrido empieza
+ * al lado de esa estacion y termina lejos, o cuando nombra una calle o un
+ * lugar que aparece en las primeras paradas y no en las ultimas ("a Newton y
+ * Epecuen" en el sentido que sale de Epecuen): ese cartel es el del otro
+ * sentido, y se intercambian. Si el otro sentido si termina donde dice su
+ * cartel no se toca nada, y tampoco los carteles con IDA o VUELTA ni las
+ * listas con guiones ("a X - Y - Z"), que no dicen un solo destino.
  */
 final class HeadsignCheck {
 
@@ -72,8 +76,8 @@ final class HeadsignCheck {
     }
 
     static boolean shouldSwap(BusDirection a, BusDirection b, Map<String, List<Place>> byName) {
-        Ends endsA = ends(a, byName);
-        Ends endsB = ends(b, byName);
+        Ends endsA = ends(a, b.headsign(), byName);
+        Ends endsB = ends(b, a.headsign(), byName);
         boolean someNamesItsStart = endsA == Ends.STARTS_THERE || endsB == Ends.STARTS_THERE;
         boolean someNamesItsEnd = endsA == Ends.ENDS_THERE || endsB == Ends.ENDS_THERE;
         return someNamesItsStart && !someNamesItsEnd;
@@ -81,8 +85,37 @@ final class HeadsignCheck {
 
     enum Ends { STARTS_THERE, ENDS_THERE, UNKNOWN }
 
-    /** Donde queda, respecto del recorrido, la estacion que nombra el cartel como destino. */
-    static Ends ends(BusDirection direction, Map<String, List<Place>> byName) {
+    /**
+     * Donde queda, respecto del recorrido, el destino que nombra el cartel:
+     * primero por la estacion; si no nombra ninguna, por las calles (salvo que
+     * el cartel del otro sentido nombre el mismo lugar: "a Zapiola / Padua" y
+     * "a Confiteria Zapiola" no dicen cual es cual).
+     */
+    static Ends ends(BusDirection direction, String otherHeadsign, Map<String, List<Place>> byName) {
+        Ends byStation = byStation(direction, byName);
+        if (byStation != Ends.UNKNOWN) {
+            return byStation;
+        }
+        // Del otro cartel, su destino; si no dice uno claro ("a Zapiola / Padua"), todo el cartel.
+        String otherDestination = destinationText(otherHeadsign);
+        java.util.Set<String> other = new java.util.HashSet<>(placeWords(otherDestination != null ? otherDestination
+                : otherHeadsign == null ? "" : normalize(otherHeadsign)));
+        return placeWords(destinationText(direction.headsign())).stream().anyMatch(other::contains)
+                ? Ends.UNKNOWN : byStreet(direction);
+    }
+
+    /** Las palabras de 5 letras o mas que nombran un lugar (sin "avenida", "plaza", numeros). */
+    static List<String> placeWords(String text) {
+        if (text == null) {
+            return List.of();
+        }
+        return java.util.Arrays.stream(text.trim().split(" "))
+                .filter(w -> w.length() >= 5 && !COMMON_WORDS.contains(w) && !w.chars().allMatch(Character::isDigit))
+                .toList();
+    }
+
+    /** Por la estacion que nombra el cartel: cerca del final, o cerca del inicio y lejos del final. */
+    static Ends byStation(BusDirection direction, Map<String, List<Place>> byName) {
         List<BusStop> stops = direction.stops();
         List<Place> named = destination(direction.headsign(), byName);
         if (named.isEmpty() || stops.size() < 2) {
@@ -105,21 +138,79 @@ final class HeadsignCheck {
         return Ends.UNKNOWN;
     }
 
+    /** Palabras que no identifican un lugar ("a Av. Paseo Colon": "paseo" y "colon", no "avenida"). */
+    private static final java.util.Set<String> COMMON_WORDS = java.util.Set.of("avenida", "avda", "estacion", "plaza",
+            "barrio", "calle", "ruta", "puente", "parada", "terminal", "centro", "general", "presidente", "doctor",
+            "santa", "hospital", "interna", "entrada");
+
     /**
-     * Las estaciones que el cartel nombra como destino: lo que va despues del
-     * ultimo "a" o "hasta" y antes de un "x" o "por" (por donde pasa). La de
-     * nombre mas largo ("Remedios de Escalada" antes que "Escalada"). "Ramal
-     * A" o "Cartel B" no cuentan como "a".
+     * Por las calles: las palabras del destino (de 5 letras o mas) en el
+     * nombre de alguna de las 4 ultimas paradas (termina ahi) o, si no, de las
+     * 2 primeras (empieza ahi). Sin IDA, VUELTA ni guiones en el cartel.
      */
-    static List<Place> destination(String headsign, Map<String, List<Place>> byName) {
+    static Ends byStreet(BusDirection direction) {
+        List<BusStop> stops = direction.stops();
+        String headsign = direction.headsign();
+        String tail = destinationText(headsign);
+        if (tail == null || headsign.contains("-") || stops.size() < 6) {
+            return Ends.UNKNOWN;
+        }
+        List<String> words = placeWords(tail);
+        if (words.isEmpty()) {
+            return Ends.UNKNOWN;
+        }
+        if (mentions(stops.subList(stops.size() - 4, stops.size()), words)) {
+            return Ends.ENDS_THERE;
+        }
+        return mentions(stops.subList(0, 2), words) ? Ends.STARTS_THERE : Ends.UNKNOWN;
+    }
+
+    private static boolean mentions(List<BusStop> stops, List<String> words) {
+        for (BusStop stop : stops) {
+            String name = " " + normalize(stop.name()) + " ";
+            for (String word : words) {
+                if (name.contains(" " + word + " ")) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * El destino del cartel, normalizado y entre espacios: lo que va despues
+     * del ultimo "a" o "hasta" y antes de un "x" o "por". Null si el cartel no
+     * dice un destino: si dice IDA o VUELTA, o si despues del "a" hay una
+     * lista con guiones o barras ("a Est. Merlo - x Libertad - Lasalle").
+     */
+    static String destinationText(String headsign) {
         if (headsign == null) {
-            return List.of();
+            return null;
+        }
+        String plain = normalize(headsign);
+        if (plain.matches(".*\\b(ida|vuelta)\\b.*")) {
+            return null;
+        }
+        String original = " " + headsign.toLowerCase(java.util.Locale.ROOT)
+                .replaceAll("\\b(ramal|cartel|linea|línea) [a-z0-9]{1,2}\\b", " ") + " ";
+        int from = Math.max(original.lastIndexOf(" a "), original.lastIndexOf(" hasta "));
+        if (from >= 0) {
+            String rest = original.substring(from);
+            for (String via : List.of(" x ", " por ")) {
+                int cut = rest.indexOf(via, 1);
+                if (cut > 0) {
+                    rest = rest.substring(0, cut);
+                }
+            }
+            if (rest.contains("-") || rest.contains("/")) {
+                return null;
+            }
         }
         // "Ramal A" o "Cartel B" no son "a" de destino.
-        String text = " " + normalize(headsign).replaceAll("\\b(ramal|cartel|linea) [a-z0-9]{1,2}\\b", " ") + " ";
+        String text = " " + plain.replaceAll("\\b(ramal|cartel|linea) [a-z0-9]{1,2}\\b", " ") + " ";
         int at = Math.max(text.lastIndexOf(" a "), text.lastIndexOf(" hasta "));
         if (at < 0) {
-            return List.of();
+            return null;
         }
         String tail = text.substring(at);
         for (String via : List.of(" x ", " por ")) {
@@ -127,6 +218,20 @@ final class HeadsignCheck {
             if (cut > 0) {
                 tail = tail.substring(0, cut + 1);
             }
+        }
+        return tail;
+    }
+
+    /**
+     * Las estaciones que el cartel nombra como destino: lo que va despues del
+     * ultimo "a" o "hasta" y antes de un "x" o "por" (por donde pasa). La de
+     * nombre mas largo ("Remedios de Escalada" antes que "Escalada"). "Ramal
+     * A" o "Cartel B" no cuentan como "a".
+     */
+    static List<Place> destination(String headsign, Map<String, List<Place>> byName) {
+        String tail = destinationText(headsign);
+        if (tail == null) {
+            return List.of();
         }
         String best = destinationName(tail, byName);
         return best == null ? List.of() : byName.get(best);

@@ -68,4 +68,36 @@ class HeadsignCheckTest {
         assertThat(HeadsignCheck.destination("x Morón hasta Constitución", byName)).containsExactly(PLACES.get(1));
         assertThat(HeadsignCheck.destination("Ramal A - Morón", byName)).isEmpty();
     }
+
+    static Catalog withStreets(String headsign0, String headsign1) {
+        // De Saenz (Nueva Pompeya) a Epecuen, y la vuelta.
+        List<BusStop> there = new ArrayList<>();
+        String[] names = {"1149 SAENZ AV.", "1200 SAENZ AV.", "CALLE 1", "CALLE 2", "CALLE 3", "CALLE 4", "NEWTON 100",
+            "EPECUÉN 801-861"};
+        for (int i = 0; i < names.length; i++) {
+            there.add(new BusStop("S" + i, names[i], -34.64 + i * 0.002, -58.41));
+        }
+        List<BusStop> back = new ArrayList<>(there);
+        java.util.Collections.reverse(back);
+        BusRoute route = new BusRoute("31C", "31C", "", "", null, List.of(
+                new BusDirection(0, headsign0, List.of(), there, List.of()),
+                new BusDirection(1, headsign1, List.of(), back, List.of())));
+        return new Catalog(Map.of("31C", route), Instant.EPOCH);
+    }
+
+    @Test
+    void tambienPorLasCallesDelInicioYDelFinal() {
+        // "a Nueva Pompeya" en el que sale de Saenz y "a Newton y Epecuen" en el que sale de Epecuen.
+        Catalog fixed = HeadsignCheck.fix(withStreets("a Nueva Pompeya x Newton", "a Newton y Epecuen"), PLACES, new ArrayList<>());
+        assertThat(fixed.routes().get("31C").directions().get(0).headsign()).isEqualTo("a Newton y Epecuen");
+        // Con IDA y VUELTA o una lista con guiones no se toca.
+        Catalog idaVuelta = HeadsignCheck.fix(withStreets("a Saenz - IDA", "a Saenz - VUELTA"), PLACES, new ArrayList<>());
+        assertThat(idaVuelta.routes().get("31C").directions().get(0).headsign()).isEqualTo("a Saenz - IDA");
+        // Si el otro cartel nombra el mismo lugar ("a Saenz / Newton" y "a Confiteria Saenz"), no se sabe cual es cual.
+        Catalog same = HeadsignCheck.fix(withStreets("a Saenz / Newton", "a Confiteria Saenz"), PLACES, new ArrayList<>());
+        assertThat(same.routes().get("31C").directions().get(1).headsign()).isEqualTo("a Confiteria Saenz");
+        // Una lista despues del "a" no es un destino.
+        assertThat(HeadsignCheck.destinationText("a Est. Merlo - x Libertad - Lasalle")).isNull();
+        assertThat(HeadsignCheck.destinationText("Ramal 19 - a San Miguel")).isEqualTo(" a san miguel ");
+    }
 }

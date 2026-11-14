@@ -2,6 +2,7 @@ package com.batransit.api.colectivos;
 
 import com.batransit.api.estado.MemoryReport;
 import com.batransit.api.estado.SourceHealth;
+import com.batransit.api.domain.TransportMode;
 import com.batransit.api.repository.StationRepository;
 import com.batransit.api.colectivos.BusModels.BusRoute;
 import com.batransit.api.colectivos.BusModels.Catalog;
@@ -72,16 +73,18 @@ public class ColectivoService {
             return loaded;
         }
         try {
-            places = stations.findAll().stream()
-                    .filter(s -> s.getLatitude() != null && s.getLongitude() != null)
-                    .map(s -> new HeadsignCheck.Place(s.getName(), s.getLatitude().doubleValue(),
-                            s.getLongitude().doubleValue()))
+            // Solo las de tren: las de subte se llaman como calles del centro ("Belgrano", "Moreno") y un
+            // cartel "a Est. Belgrano" (la estacion de tren del barrio) se confundia con la del subte E.
+            places = stations.findMapStationsByMode(TransportMode.TREN).stream()
+                    .map(s -> new HeadsignCheck.Place(s.stationName(), s.latitude().doubleValue(),
+                            s.longitude().doubleValue()))
                     .toList();
             List<String> swapped = new java.util.ArrayList<>();
             Catalog fixed = HeadsignCheck.fix(loaded, places, swapped);
             swappedRoutes.clear();
             swappedRoutes.addAll(swapped);
-            log.info("Colectivos: {} lineas con los carteles de los sentidos intercambiados.", swapped.size());
+            log.info("Colectivos: {} lineas con los carteles de los sentidos intercambiados (ids {}).", swapped.size(),
+                    String.join(", ", swapped));
             return fixed;
         } catch (RuntimeException e) {
             log.warn("Colectivos: no se pudieron revisar los carteles ({}).", e.getClass().getSimpleName());
@@ -274,9 +277,15 @@ public class ColectivoService {
                                     stops.subList(0, Math.min(3, stops.size())),
                                     stops.subList(Math.max(0, stops.size() - 3), stops.size()),
                                     named.isEmpty() ? null : named.get(0).name(),
-                                    HeadsignCheck.ends(d, byName).name());
+                                    HeadsignCheck.ends(d, otherHeadsign(route, d), byName).name());
                         }).toList()))
                 .toList();
+    }
+
+    /** El cartel del otro sentido de la linea (o null). */
+    private static String otherHeadsign(BusRoute route, BusModels.BusDirection direction) {
+        return route.directions().stream().filter(d -> d != direction).map(BusModels.BusDirection::headsign)
+                .findFirst().orElse(null);
     }
 
     /** Usado por los tests y por refresh(). */
