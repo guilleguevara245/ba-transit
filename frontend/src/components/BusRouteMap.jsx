@@ -105,7 +105,8 @@ function LiveBusCard({ route, vehicle, next, parked, badge }) {
 /** "Llega en 8 min · a 2 paradas" (o "Llegando") para un colectivo de otra linea que viene a la parada. */
 function arrivalText(bus) {
   if (bus.arriving) return 'Llegando a la parada'
-  const stops = `a ${bus.stopsAway} ${bus.stopsAway === 1 ? 'parada' : 'paradas'}`
+  // Las paradas son las de su linea, que pueden no ser las del recorrido dibujado.
+  const stops = `a ${bus.stopsAway} ${bus.stopsAway === 1 ? 'parada' : 'paradas'} del ${bus.line}`
   return bus.minutes != null ? `Llega en ${bus.minutes} min · ${stops}` : `Viene ${stops}`
 }
 
