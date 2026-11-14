@@ -20,6 +20,7 @@ export function MapCardIcon({ path }) {
  * un icono opcional al lado, como el de estacion), subtitulo, contenido
  * libre y enlaces al pie. color: el de lo que se toco en el mapa (el
  * marcador, la linea o el estado); en el celular pinta el encabezado.
+ * headerAction: un boton chico arriba a la derecha (la estrella de favorito).
  */
 export default function MapCard({
   badge,
@@ -33,6 +34,7 @@ export default function MapCard({
   position,
   onClose,
   color,
+  headerAction,
 }) {
   // Con position la tarjeta es un popup suelto (uno solo para miles de
   // puntos, como los colectivos en vivo); sin position va dentro de un marcador.
@@ -79,6 +81,7 @@ export default function MapCard({
         <div className="station-popup-line">
           {badge}
           {kicker}
+          {headerAction && <span className="station-popup-action">{headerAction}</span>}
         </div>
         <h3 className="station-popup-name">
           {icon}

@@ -398,6 +398,31 @@
 
 /* ---- Tarjeta generica (MapCard) ---- */
 
+/* Boton chico arriba a la derecha (la estrella), antes de la cruz de cerrar. */
+.station-popup-action {
+  display: inline-flex;
+  margin: -6px 22px -6px auto;
+}
+
+.station-popup.has-header .station-popup-action .favorite-button {
+  color: inherit;
+}
+
+.station-popup.has-header .station-popup-action .favorite-button:hover {
+  border-color: color-mix(in srgb, currentColor 35%, transparent);
+}
+
+/* Guardada, sobre el encabezado de color: blanca con borde oscuro (amarilla no se veria). */
+.station-popup.has-header .station-popup-action .favorite-button.active svg {
+  fill: #ffffff;
+  stroke: #17171a;
+}
+
+.station-popup.has-header.header-light-ink .station-popup-action .favorite-button.active svg {
+  fill: var(--yellow);
+  stroke: var(--yellow-deep);
+}
+
 .map-card-stats {
   display: flex;
   gap: 18px;

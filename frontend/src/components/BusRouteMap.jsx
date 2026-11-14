@@ -2,10 +2,11 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { CircleMarker, MapContainer, Polyline, TileLayer, useMap, useMapEvents } from 'react-leaflet'
 import { badgeIcon } from '../utils/mapIcons.js'
 import BusIcon from './BusIcon.jsx'
+import FavoriteButton from './FavoriteButton.jsx'
 import { DrawnPolyline, GlideMarker } from './GlideMarkers.jsx'
 import { NextStop, PositionSource } from './LiveTrainCard.jsx'
 import MapCard from './MapCard.jsx'
-import { busTitle, headsignName, operatorName, stopName } from '../utils/busNames.js'
+import { busTitle, headsignName, operatorName, stopFavoriteId, stopName } from '../utils/busNames.js'
 import { nextStop } from '../utils/busProgress.js'
 import { secondsAgoText } from '../utils/liveTrains.js'
 
@@ -180,6 +181,14 @@ export default function BusRouteMap({ route, directionIndex, className, vehicles
                   kicker={index === 0 ? 'Cabecera' : index === active.stops.length - 1 ? 'Última parada' : 'Parada'}
                   icon={<BusIcon kind="stop" color={route.color} />}
                   title={stopName(stop.name)}
+                  headerAction={
+                    <FavoriteButton
+                      kind="paradas"
+                      id={stopFavoriteId(route.id, active.directionId, stop.id)}
+                      name={`la parada ${stopName(stop.name)} de la ${busTitle(route)}`}
+                      compact
+                    />
+                  }
                   subtitle={[
                     `Parada ${index + 1} de ${active.stops.length}`,
                     index > 0 && active.minutes?.[index] != null
