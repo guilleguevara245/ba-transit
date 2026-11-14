@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { errorLabel, lastAttemptFailed, statusGroups, statusSummary } from './status.js'
+import { errorLabel, lastAttemptFailed, standbyFor, statusGroups, statusSummary } from './status.js'
 
 describe('statusSummary', () => {
   it('todas bien (las que no se consultaron no cuentan como falla)', () => {
@@ -51,6 +51,56 @@ describe('statusGroups', () => {
 
   it('sin fuentes, sin grupos', () => {
     expect(statusGroups([])).toEqual([])
+  })
+})
+
+describe('pronostico y su respaldo', () => {
+  const smn = { key: 'smn', what: 'Alertas meteorológicas', status: 'OK' }
+  const openMeteo = (status, lastSuccess) => ({
+    key: 'pronostico',
+    what: 'Pronóstico del clima (Open-Meteo)',
+    provider: 'Open-Meteo',
+    status,
+    lastSuccess,
+  })
+  const met = (status, lastSuccess) => ({
+    key: 'pronostico-respaldo',
+    what: 'Pronóstico del clima de respaldo (MET Norway)',
+    provider: 'MET Norway (Instituto Meteorológico de Noruega)',
+    status,
+    lastSuccess,
+  })
+
+  it('cada fuente en su fila, dentro de Clima', () => {
+    const [clima] = statusGroups([smn, openMeteo('OK', '2026-11-14T16:00:00Z'), met('SIN_DATOS', null)])
+    expect(clima.sources.map((s) => s.name)).toEqual([
+      'Alertas del SMN',
+      'Pronóstico (Open-Meteo)',
+      'Pronóstico de respaldo (MET Norway)',
+    ])
+  })
+
+  it('con Open-Meteo funcionando, MET Norway queda en espera y no cuenta', () => {
+    const sources = [smn, openMeteo('OK', '2026-11-14T16:00:00Z'), met('ERROR', '2026-11-14T12:00:00Z')]
+    expect(standbyFor(sources[2], sources)).toBe('Open-Meteo')
+    expect(statusGroups(sources)[0].status).toBe('OK')
+    expect(statusSummary(sources).tone).toBe('ok')
+  })
+
+  it('con Open-Meteo caido, Clima tiene problemas y se avisa que se usa el respaldo', () => {
+    const sources = [smn, openMeteo('ERROR', null), met('OK', '2026-11-14T16:39:00Z')]
+    expect(standbyFor(sources[2], sources)).toBeNull()
+    expect(statusGroups(sources)[0].status).toBe('ERROR')
+    expect(statusSummary(sources)).toEqual({
+      tone: 'error',
+      title: 'Pronóstico del clima (Open-Meteo): con problemas',
+      text: 'Mientras tanto, se usa el respaldo: MET Norway (Instituto Meteorológico de Noruega).',
+    })
+  })
+
+  it('si el respaldo respondio despues de un intento fallido de Open-Meteo, no esta en espera', () => {
+    const sources = [openMeteo('OK', '2026-11-14T16:00:00Z'), met('OK', '2026-11-14T16:05:00Z')]
+    expect(standbyFor(sources[1], sources)).toBeNull()
   })
 })
 

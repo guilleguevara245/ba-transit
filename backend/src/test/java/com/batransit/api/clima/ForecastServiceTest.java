@@ -3,6 +3,8 @@ package com.batransit.api.clima;
 import com.batransit.api.clima.ForecastService.Day;
 import com.batransit.api.clima.ForecastService.Forecast;
 import com.batransit.api.clima.ForecastService.Hour;
+import com.batransit.api.estado.SourceHealth;
+import com.batransit.api.estado.SourceHealth.Check;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
@@ -128,6 +130,25 @@ class ForecastServiceTest {
         assertThat(service.forecast(-34.70, -58.50).isPresent()).isEqualTo(true);
         assertThat(service.urls.size()).isEqualTo(3);
         assertThat(service.urls.get(2)).contains("api.met.no");
+    }
+
+    @Test
+    void cadaProveedorTieneSuFilaEnElEstado() throws IOException {
+        SourceHealth health = new SourceHealth();
+        FakeService service = new FakeService(null);
+        service.setHealth(health);
+        service.met = metSample();
+        assertThat(service.forecast(-34.60, -58.38).isPresent()).isEqualTo(true);
+        Check openMeteo = health.checks().get(SourceHealth.Source.PRONOSTICO.ordinal());
+        Check met = health.checks().get(SourceHealth.Source.PRONOSTICO_RESPALDO.ordinal());
+        assertThat(openMeteo.status()).isEqualTo(SourceHealth.Status.ERROR);
+        assertThat(openMeteo.lastError()).isEqualTo("IllegalStateException");
+        assertThat(met.status()).isEqualTo(SourceHealth.Status.OK);
+        // Mientras Open-Meteo esta en pausa no se lo consulta, y eso no cuenta como otra falla.
+        service.forecast(-34.70, -58.50);
+        assertThat(service.urls.size()).isEqualTo(3);
+        assertThat(health.checks().get(SourceHealth.Source.PRONOSTICO.ordinal()).lastFailure())
+                .isEqualTo(openMeteo.lastFailure());
     }
 
     @Test

@@ -217,56 +217,45 @@ public class ForecastService {
      */
     private Optional<Forecast> download(double lat, double lon) {
         Instant now = Instant.now();
-        String[] openMeteo = {null};
-        Optional<Forecast> forecast = attempt(OPEN_METEO, openMeteo,
+        Optional<Forecast> forecast = attempt(OPEN_METEO, SourceHealth.Source.PRONOSTICO,
                 () -> parse(objectMapper.readTree(fetch(url(lat, lon))), lat, lon, now));
-        String[] met = {null};
         if (forecast.isEmpty()) {
-            forecast = attempt(MET_NORWAY, met,
+            forecast = attempt(MET_NORWAY, SourceHealth.Source.PRONOSTICO_RESPALDO,
                     () -> parseMet(objectMapper.readTree(fetch(metUrl(lat, lon))), lat, lon, now));
-        }
-        if (forecast.isPresent()) {
-            health.ok(SourceHealth.Source.PRONOSTICO);
-        } else {
-            health.fail(SourceHealth.Source.PRONOSTICO,
-                    OPEN_METEO + ": " + openMeteo[0] + " · " + MET_NORWAY + ": " + met[0]);
         }
         return forecast;
     }
 
-    private Optional<Forecast> attempt(String provider, String[] reason, Download download) {
+    /**
+     * Le pide el pronostico a un proveedor, salvo que este en pausa, y anota
+     * en la pagina de estado como le fue (cada proveedor tiene su fila; una
+     * pausa no cuenta como otra falla).
+     */
+    private Optional<Forecast> attempt(String provider, SourceHealth.Source source, Download download) {
         Instant paused = pausedUntil.get(provider);
         if (paused != null && paused.isAfter(Instant.now())) {
-            if (reason[0] == null) {
-                reason[0] = "en pausa";
-            }
             return Optional.empty();
         }
         try {
             Forecast forecast = download.get();
             strikes.remove(provider);
             pausedUntil.remove(provider);
+            health.ok(source);
             return Optional.of(forecast);
         } catch (RestClientResponseException e) {
             int status = e.getStatusCode().value();
             String why = "HTTP " + status;
             pause(provider, status == 429 ? retryAfter(e) : null);
-            if (reason[0] == null) {
-                reason[0] = why;
-            }
+            health.fail(source, why);
             // El motivo que da el proveedor (por ejemplo, "Hourly API request limit exceeded") va al log.
             log.warn("{} no respondio bien ({}): {}", provider, why, shortBody(e.getResponseBodyAsString()));
         } catch (RestClientException e) {
             pause(provider, null);
-            if (reason[0] == null) {
-                reason[0] = e.getMostSpecificCause().getClass().getSimpleName();
-            }
+            health.fail(source, e.getMostSpecificCause().getClass().getSimpleName());
             log.warn("{} no respondio ({})", provider, e.getMostSpecificCause().getClass().getSimpleName());
         } catch (Exception e) {
             pause(provider, null);
-            if (reason[0] == null) {
-                reason[0] = e.getClass().getSimpleName();
-            }
+            health.fail(source, e.getClass().getSimpleName());
             log.warn("{}: respuesta que no se pudo leer ({})", provider, e.getClass().getSimpleName());
         }
         return Optional.empty();

@@ -159,6 +159,8 @@ public class ColectivoService {
         snapshotStore.load().ifPresent(saved -> {
             // Una copia guardada por una version anterior puede tener las letras sin adivinar ("MU?ECAS").
             catalog.compareAndSet(null, withLostLettersGuessed(saved));
+            // En la pagina de estado figura como actualizado cuando se bajo ese feed.
+            health.ok(SourceHealth.Source.COLECTIVOS_RECORRIDOS, saved.loadedAt());
             log.info("Colectivos: {} lineas cargadas desde la copia de la base (feed del {}).",
                     saved.routes().size(), saved.loadedAt());
         });

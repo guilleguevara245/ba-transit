@@ -29,9 +29,11 @@ function StateIcon({ tone, className = '' }) {
 
 /** Lo que dice cada fuente en palabras simples (y, con los detalles, lo tecnico). */
 function SourceRow({ source, now, details }) {
-  const label = STATUS_LABELS[source.status]
+  const label = source.standby ? STATUS_LABELS.SIN_DATOS : STATUS_LABELS[source.status]
   let plain
-  if (source.status === 'OK') {
+  if (source.standby) {
+    plain = `En espera: se usa solo si ${source.standby} no responde`
+  } else if (source.status === 'OK') {
     plain = source.lastSuccess ? `Actualizado ${formatRelativeTime(source.lastSuccess, now)}` : label.text
   } else if (source.status === 'ERROR') {
     plain = source.lastSuccess
@@ -51,6 +53,7 @@ function SourceRow({ source, now, details }) {
           <span className="status-source-tech">
             Fuente: {source.provider}
             {source.status === 'ERROR' &&
+              !source.standby &&
               source.lastFailure &&
               ` · falló ${formatRelativeTime(source.lastFailure, now)}${source.lastError ? ` (${errorLabel(source.lastError)})` : ''}`}
             {lastAttemptFailed(source) &&

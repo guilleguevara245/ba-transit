@@ -2,6 +2,7 @@ package com.batransit.api.colectivos;
 
 import com.batransit.api.colectivos.BusModels.BusRoute;
 import com.batransit.api.config.TransporteApiProperties;
+import com.batransit.api.estado.SourceHealth;
 import com.batransit.api.exception.NotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -108,9 +109,14 @@ class ColectivoServiceTest {
             }
         };
         ColectivoService service = new ColectivoService(new TransporteApiProperties(), "", "/colectivos/feed-gtfs", store);
+        SourceHealth health = new SourceHealth();
+        service.setHealth(health);
         service.restoreSnapshot();
 
         assertThat(service.find(any.id()).directions().get(0).stops().get(0).name()).isEqualTo("893 MUÑECAS");
+        // En la pagina de estado figura como actualizado cuando se bajo el feed de la copia.
+        assertThat(health.checks().get(SourceHealth.Source.COLECTIVOS_RECORRIDOS.ordinal()).lastSuccess())
+                .isEqualTo(old.loadedAt());
         // No hace falta volver a bajar el feed por eso.
         assertThat(service.needsRefresh(Duration.ofHours(24), now)).isFalse();
     }

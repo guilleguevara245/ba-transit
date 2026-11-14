@@ -25,6 +25,10 @@ public class SourceHealth {
         }
 
         @Override
+        public void ok(Source source, Instant at) {
+        }
+
+        @Override
         public void fail(Source source, String reason) {
         }
     };
@@ -43,7 +47,9 @@ public class SourceHealth {
         CORTES_CIUDAD("Cortes de tránsito", "Noticias del Gobierno de la Ciudad"),
         METROVIAS("Estado del Urquiza", "Metrovías"),
         SMN("Alertas meteorológicas", "Servicio Meteorológico Nacional"),
-        PRONOSTICO("Pronóstico del clima", "Open-Meteo, con MET Norway de respaldo"),
+        PRONOSTICO("Pronóstico del clima (Open-Meteo)", "Open-Meteo"),
+        PRONOSTICO_RESPALDO("Pronóstico del clima de respaldo (MET Norway)",
+                "MET Norway (Instituto Meteorológico de Noruega)"),
         GEOREF("Búsqueda de direcciones (Mis lugares y Cómo llegar)", "Georef (datos.gob.ar)"),
         TOMTOM("Tránsito en los accesos", "TomTom"),
         ADSB_LOL("Aviones en vivo", "adsb.lol"),
@@ -97,6 +103,16 @@ public class SourceHealth {
         Instant now = clock.instant();
         entries.merge(source, new Entry(now, null, null, 0),
                 (old, fresh) -> new Entry(now, old.lastFailure(), old.lastError(), 0));
+    }
+
+    /**
+     * Un exito de antes, con su hora: por ejemplo, los datos que se recuperan
+     * de la base al arrancar. No pisa uno mas nuevo.
+     */
+    public void ok(Source source, Instant at) {
+        entries.merge(source, new Entry(at, null, null, 0), (old, fresh) ->
+                old.lastSuccess() != null && old.lastSuccess().isAfter(at)
+                        ? old : new Entry(at, old.lastFailure(), old.lastError(), 0));
     }
 
     /** reason: motivo corto y sin datos sensibles ("HTTP 503", "SocketTimeoutException"). */

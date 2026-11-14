@@ -6,17 +6,40 @@ export const STATUS_LABELS = {
 }
 
 /**
+ * Fuentes de respaldo (key del respaldo: key de la principal). El respaldo
+ * se consulta solo cuando la principal no responde.
+ */
+export const BACKUPS = { 'pronostico-respaldo': 'pronostico' }
+
+/**
+ * Si el respaldo esta en espera, el proveedor de la principal (que funciona
+ * y respondio despues que el respaldo); si no, null.
+ */
+export function standbyFor(source, sources = []) {
+  const mainKey = BACKUPS[source.key]
+  if (!mainKey) return null
+  const main = sources.find((s) => s.key === mainKey)
+  if (!main || main.status !== 'OK') return null
+  const idle = !source.lastSuccess || (main.lastSuccess && new Date(main.lastSuccess) >= new Date(source.lastSuccess))
+  return idle ? main.provider : null
+}
+
+/**
  * Resumen de arriba, en palabras simples: todo funciona, o que anda mal.
- * title va grande; text explica que pasa mientras tanto.
+ * title va grande; text explica que pasa mientras tanto. Un respaldo en
+ * espera no cuenta.
  */
 export function statusSummary(sources = []) {
-  const failing = sources.filter((s) => s.status === 'ERROR')
+  const failing = sources.filter((s) => s.status === 'ERROR' && !standbyFor(s, sources))
   if (failing.length === 0) {
     return { tone: 'ok', title: 'Todo funciona', text: 'Todos los datos que consultamos están llegando bien.' }
   }
   const meanwhile = 'Mientras tanto, el sitio muestra los últimos datos que tiene.'
   if (failing.length === 1) {
-    return { tone: 'error', title: `${failing[0].what}: con problemas`, text: meanwhile }
+    const backupKey = Object.keys(BACKUPS).find((key) => BACKUPS[key] === failing[0].key)
+    const backup = backupKey && sources.find((s) => s.key === backupKey && s.status === 'OK')
+    const text = backup ? `Mientras tanto, se usa el respaldo: ${backup.provider}.` : meanwhile
+    return { tone: 'error', title: `${failing[0].what}: con problemas`, text }
   }
   return { tone: 'error', title: `${failing.length} servicios con problemas`, text: meanwhile }
 }
@@ -54,7 +77,11 @@ export const STATUS_GROUPS = [
     id: 'clima',
     title: 'Clima',
     icon: 'CLIMA',
-    items: { smn: 'Alertas del SMN', pronostico: 'Pronóstico' },
+    items: {
+      smn: 'Alertas del SMN',
+      pronostico: 'Pronóstico (Open-Meteo)',
+      'pronostico-respaldo': 'Pronóstico de respaldo (MET Norway)',
+    },
   },
   { id: 'aviones', title: 'Aeropuertos', icon: 'AEROPUERTO', items: { 'adsb-lol': 'Aviones en vivo' } },
   { id: 'noticias', title: 'Noticias', icon: 'NOTICIAS', items: { noticias: 'Noticias del transporte' } },
@@ -71,7 +98,8 @@ const RANK = { ERROR: 2, OK: 1, SIN_DATOS: 0 }
 /**
  * Las fuentes agrupadas: [{ id, title, icon, status, sources }]. status
  * del grupo: el peor de sus fuentes (con problemas > funciona > sin
- * consultar). Las fuentes que no estan en ningun grupo van a "Otros".
+ * consultar); un respaldo en espera (standby: la principal que funciona) no
+ * cuenta. Las fuentes que no estan en ningun grupo van a "Otros".
  */
 export function statusGroups(sources = []) {
   const used = new Set()
@@ -80,7 +108,7 @@ export function statusGroups(sources = []) {
       .filter((s) => Object.hasOwn(group.items, s.key))
       .map((s) => {
         used.add(s.key)
-        return { ...s, name: group.items[s.key] }
+        return { ...s, name: group.items[s.key], standby: standbyFor(s, sources) }
       })
     return { id: group.id, title: group.title, icon: group.icon, sources: list }
   })
@@ -90,7 +118,9 @@ export function statusGroups(sources = []) {
     .filter((g) => g.sources.length > 0)
     .map((g) => ({
       ...g,
-      status: g.sources.reduce((worst, s) => (RANK[s.status] > RANK[worst] ? s.status : worst), 'SIN_DATOS'),
+      status: g.sources
+        .filter((s) => !s.standby)
+        .reduce((worst, s) => (RANK[s.status] > RANK[worst] ? s.status : worst), 'SIN_DATOS'),
     }))
 }
 

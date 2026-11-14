@@ -84,6 +84,19 @@ class SourceHealthTest {
 
 
     @Test
+    void unExitoDeAntesConservaSuHora() {
+        SourceHealth health = new SourceHealth(ticking());
+        Instant loaded = Instant.parse("2026-11-14T16:35:00Z");
+        health.ok(Source.COLECTIVOS_RECORRIDOS, loaded);
+        Check check = check(health, Source.COLECTIVOS_RECORRIDOS);
+        assertEquals(Status.OK, check.status());
+        assertEquals(loaded, check.lastSuccess());
+        // Uno mas viejo no pisa al que ya habia.
+        health.ok(Source.COLECTIVOS_RECORRIDOS, loaded.minusSeconds(3600));
+        assertEquals(loaded, check(health, Source.COLECTIVOS_RECORRIDOS).lastSuccess());
+    }
+
+    @Test
     void elRegistroVacioNoGuardaNada() {
         SourceHealth.NOOP.fail(Source.SMN, "x");
         assertEquals(Status.SIN_DATOS, check(SourceHealth.NOOP, Source.SMN).status());
