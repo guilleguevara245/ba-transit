@@ -52,6 +52,7 @@ La descripcion general del proyecto esta en el [README principal](../README.md).
 
 | Variable                    | Descripcion                             | Default (local) |
 | ---------------------------- | ---------------------------------------- | ----------------- |
+| `DATABASE_URL`               | La base en una sola direccion (`postgresql://usuario:clave@host:puerto/base?sslmode=require`); reemplaza a las `DB_*`. Si las `DB_*` siguen con otra base, al arrancar se copian sus datos a esta una sola vez | (vacio) |
 | `DB_HOST`                    | Host de PostgreSQL                       | `localhost`        |
 | `DB_PORT`                    | Puerto de PostgreSQL                     | `5432`             |
 | `DB_NAME`                    | Nombre de la base de datos               | `batransit`        |
