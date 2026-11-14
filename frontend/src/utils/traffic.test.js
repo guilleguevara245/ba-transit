@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   jamText,
+  placeName,
   accessGroups,
   accessShortName,
   delayMinutes,
@@ -148,6 +149,23 @@ describe('jamText', () => {
   it('largo, entre que puntos y demora', () => {
     expect(jamText({ lengthMeters: 2413, delaySeconds: 481, from: 'Márquez', to: 'Paraná' })).toBe(
       'Embotellamiento de 2,4 km entre Márquez y Paraná · 8 min de demora',
+    )
+  })
+
+  it('las salidas en castellano y sin repetir la ruta', () => {
+    expect(placeName('Calle Int. P. Quintana exit [29]')).toBe('Int. P. Quintana (salida 29)')
+    expect(placeName('Ruta 23 (RP-23) exit [35]')).toBe('Ruta 23 (salida 35)')
+    expect(placeName('exit [26]')).toBe('salida 26')
+    expect(placeName('Avenida Fernández Garcia exit [25]')).toBe('Avenida Fernández Garcia (salida 25)')
+    expect(placeName('RN-8 exit [58]')).toBe('Ruta 8 (salida 58)')
+    expect(placeName('Autopista Perito Moreno')).toBe('Autopista Perito Moreno')
+    expect(placeName(null)).toBe('')
+    expect(
+      jamText({ lengthMeters: 6300, delaySeconds: 420, from: 'Calle Int. P. Quintana exit [29]', to: 'Ruta 23 (RP-23) exit [35]' }),
+    ).toBe('Embotellamiento de 6,3 km entre Int. P. Quintana (salida 29) y Ruta 23 (salida 35) · 7 min de demora')
+    // Si las dos puntas son la misma salida, una sola.
+    expect(jamText({ lengthMeters: 900, delaySeconds: 180, from: 'RP-25 exit [36]', to: 'RP-25 exit [36]' })).toBe(
+      'Embotellamiento de 900 m en Ruta 25 (salida 36) · 3 min de demora',
     )
   })
 

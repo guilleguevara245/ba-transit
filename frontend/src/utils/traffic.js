@@ -72,6 +72,27 @@ export function speedText({ currentSpeed, freeFlowSpeed }) {
 }
 
 /**
+ * Un lugar como lo nombra TomTom, en castellano y sin repetir la ruta:
+ * "Calle Int. P. Quintana exit [29]" queda "Int. P. Quintana (salida 29)",
+ * "Ruta 23 (RP-23) exit [35]" queda "Ruta 23 (salida 35)", "exit [26]"
+ * queda "salida 26" y "RN-8" queda "Ruta 8".
+ */
+export function placeName(name) {
+  if (!name) return ''
+  let text = name
+    .replace(/\s*\((?:RN|RP|AU)-?[A-Z]?\d+\)/gi, '')
+    .replace(/\b(?:RN|RP)-?0*(\d+)\b/g, 'Ruta $1')
+    .replace(/^Calle\s+/i, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+  const exit = text.match(/^(.*?)\s*\bexit \[(\d+)\]$/i)
+  if (exit) {
+    text = exit[1] ? `${exit[1]} (salida ${exit[2]})` : `salida ${exit[2]}`
+  }
+  return text.replace(/\bexit \[(\d+)\]/gi, 'salida $1')
+}
+
+/**
  * Un embotellamiento que informa TomTom en una mano: "Embotellamiento de
  * 2,4 km entre Márquez y Paraná · 8 min de demora".
  */
@@ -80,7 +101,9 @@ export function jamText({ lengthMeters, delaySeconds, from, to }) {
     lengthMeters >= 1000
       ? `${(lengthMeters / 1000).toLocaleString('es-AR', { maximumFractionDigits: 1 })} km`
       : `${Math.round(lengthMeters / 100) * 100} m`
-  const where = from && to && from !== to ? ` entre ${from} y ${to}` : from || to ? ` en ${from || to}` : ''
+  const a = placeName(from)
+  const b = placeName(to)
+  const where = a && b && a !== b ? ` entre ${a} y ${b}` : a || b ? ` en ${a || b}` : ''
   const minutes = Math.round((delaySeconds ?? 0) / 60)
   return `Embotellamiento de ${length}${where}${minutes >= 1 ? ` · ${minutes} min de demora` : ''}`
 }
