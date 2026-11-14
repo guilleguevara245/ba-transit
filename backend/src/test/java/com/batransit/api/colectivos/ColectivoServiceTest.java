@@ -10,6 +10,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 import java.time.Duration;
 import java.time.Instant;
 
@@ -34,6 +35,20 @@ class ColectivoServiceTest {
 
         assertThat(service.current()).isEmpty();
         assertThatThrownBy(() -> service.search("152")).isInstanceOf(ResponseStatusException.class);
+    }
+
+    @Test
+    void laRevisionDeSentidosTraeTodasLasLineas() throws IOException {
+        ColectivoService service = loadedService();
+        List<ColectivoService.RouteCheck> report = service.directionsReport();
+
+        List<String> ids = report.stream().map(ColectivoService.RouteCheck::id).toList();
+        assertThat(ids.contains("R152") && ids.contains("R8")).isTrue();
+        ColectivoService.RouteCheck route = report.stream().filter(r -> r.id().equals("R152")).findFirst().orElseThrow();
+        // Sin estaciones cargadas no se puede decir nada del cartel, y no se intercambio.
+        assertThat(route.swapped()).isFalse();
+        assertThat(route.directions().get(0).verdict()).isEqualTo("UNKNOWN");
+        assertThat(route.directions().get(0).firstStops().isEmpty()).isFalse();
     }
 
     @Test

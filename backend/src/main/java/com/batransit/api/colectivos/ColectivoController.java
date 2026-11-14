@@ -82,6 +82,16 @@ public class ColectivoController {
      * tambien el numero (?numero=53) y el destino (?destino=...), por si
      * el id del feed en vivo no esta en el GTFS del dia.
      */
+    /**
+     * Revision de los sentidos de todas las lineas: el cartel de cada sentido,
+     * sus primeras y ultimas paradas y si se le intercambiaron los carteles.
+     * Para diagnosticar (como /api/v1/accesos/incidentes).
+     */
+    @GetMapping("/sentidos")
+    public List<ColectivoService.RouteCheck> directions() {
+        return service.directionsReport();
+    }
+
     @GetMapping("/{routeId}")
     public RouteDetail detail(@PathVariable String routeId,
                               @RequestParam(value = "numero", required = false) String line,

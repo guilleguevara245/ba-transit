@@ -6,6 +6,7 @@ import com.batransit.api.colectivos.BusModels.BusStop;
 import com.batransit.api.colectivos.BusModels.Catalog;
 import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,18 +35,24 @@ final class HeadsignCheck {
     private HeadsignCheck() {
     }
 
-    /** El catalogo con los carteles de los sentidos cambiados intercambiados; cuantos, en swapped. */
-    static Catalog fix(Catalog catalog, List<Place> places, int[] swapped) {
-        if (places == null || places.isEmpty()) {
-            return catalog;
-        }
+    /** Las estaciones por nombre normalizado ("moron"), sin los nombres de menos de 4 letras. */
+    static Map<String, List<Place>> index(List<Place> places) {
         Map<String, List<Place>> byName = new LinkedHashMap<>();
-        for (Place place : places) {
+        for (Place place : places == null ? List.<Place>of() : places) {
             String name = normalize(place.name());
             if (name.length() >= 4) {
                 byName.computeIfAbsent(name, k -> new ArrayList<>()).add(place);
             }
         }
+        return byName;
+    }
+
+    /** El catalogo con los carteles de los sentidos cambiados intercambiados; los ids de esas lineas, en swapped. */
+    static Catalog fix(Catalog catalog, List<Place> places, Collection<String> swapped) {
+        if (places == null || places.isEmpty()) {
+            return catalog;
+        }
+        Map<String, List<Place>> byName = index(places);
         Map<String, BusRoute> routes = new LinkedHashMap<>();
         catalog.routes().forEach((id, route) -> {
             List<BusDirection> directions = route.directions();
@@ -56,7 +63,7 @@ final class HeadsignCheck {
                         List.of(new BusDirection(a.directionId(), b.headsign(), a.shape(), a.stops(), a.minutes()),
                                 new BusDirection(b.directionId(), a.headsign(), b.shape(), b.stops(), b.minutes())));
                 if (swapped != null) {
-                    swapped[0]++;
+                    swapped.add(id);
                 }
             }
             routes.put(id, route);
@@ -121,13 +128,18 @@ final class HeadsignCheck {
                 tail = tail.substring(0, cut + 1);
             }
         }
+        String best = destinationName(tail, byName);
+        return best == null ? List.of() : byName.get(best);
+    }
+
+    private static String destinationName(String tail, Map<String, List<Place>> byName) {
         String best = null;
         for (String name : byName.keySet()) {
             if (tail.contains(" " + name + " ") && (best == null || name.length() > best.length())) {
                 best = name;
             }
         }
-        return best == null ? List.of() : byName.get(best);
+        return best;
     }
 
     /** "Est. Morón" -> "est moron". */

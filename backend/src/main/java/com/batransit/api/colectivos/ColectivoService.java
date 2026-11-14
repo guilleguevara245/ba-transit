@@ -56,6 +56,9 @@ public class ColectivoService {
     }
 
     private StationRepository stations;
+    /** Las estaciones (para la revision de carteles) y las lineas a las que se les intercambiaron. */
+    private volatile List<HeadsignCheck.Place> places = List.of();
+    private final java.util.Set<String> swappedRoutes = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     /** Las estaciones de tren y subte, para corregir los sentidos con el destino cambiado; opcional. */
     @Autowired(required = false)
@@ -69,14 +72,16 @@ public class ColectivoService {
             return loaded;
         }
         try {
-            List<HeadsignCheck.Place> places = stations.findAll().stream()
+            places = stations.findAll().stream()
                     .filter(s -> s.getLatitude() != null && s.getLongitude() != null)
                     .map(s -> new HeadsignCheck.Place(s.getName(), s.getLatitude().doubleValue(),
                             s.getLongitude().doubleValue()))
                     .toList();
-            int[] swapped = {0};
+            List<String> swapped = new java.util.ArrayList<>();
             Catalog fixed = HeadsignCheck.fix(loaded, places, swapped);
-            log.info("Colectivos: {} lineas con los carteles de los sentidos intercambiados.", swapped[0]);
+            swappedRoutes.clear();
+            swappedRoutes.addAll(swapped);
+            log.info("Colectivos: {} lineas con los carteles de los sentidos intercambiados.", swapped.size());
             return fixed;
         } catch (RuntimeException e) {
             log.warn("Colectivos: no se pudieron revisar los carteles ({}).", e.getClass().getSimpleName());
@@ -235,6 +240,43 @@ public class ColectivoService {
                         d.minutes()))
                 .toList())));
         return new Catalog(routes, catalog.loadedAt());
+    }
+
+    /** Un sentido para la revision de carteles: como quedo, sus primeras y ultimas paradas y que dice la regla. */
+    public record DirectionCheck(int directionId, String headsign, int stops, List<BusModels.BusStop> firstStops,
+                                 List<BusModels.BusStop> lastStops, String station, String verdict) {
+    }
+
+    /** Una linea para la revision de carteles; swapped: si se le intercambiaron los carteles al cargarla. */
+    public record RouteCheck(String id, String shortName, String agency, boolean swapped,
+                             List<DirectionCheck> directions) {
+    }
+
+    /**
+     * Todas las lineas con sus dos sentidos, para revisar los carteles (son
+     * datos publicos del feed). verdict: ENDS_THERE (el cartel nombra una
+     * estacion donde termina), STARTS_THERE (donde empieza) o UNKNOWN.
+     */
+    public List<RouteCheck> directionsReport() {
+        Catalog current = catalog.get();
+        if (current == null) {
+            return List.of();
+        }
+        Map<String, List<HeadsignCheck.Place>> byName = HeadsignCheck.index(places);
+        return current.routes().values().stream()
+                .sorted(Comparator.comparing(BusRoute::shortName, Comparator.nullsLast(Comparator.naturalOrder())))
+                .map(route -> new RouteCheck(route.id(), route.shortName(), route.agency(),
+                        swappedRoutes.contains(route.id()),
+                        route.directions().stream().map(d -> {
+                            List<BusModels.BusStop> stops = d.stops();
+                            List<HeadsignCheck.Place> named = HeadsignCheck.destination(d.headsign(), byName);
+                            return new DirectionCheck(d.directionId(), d.headsign(), stops.size(),
+                                    stops.subList(0, Math.min(3, stops.size())),
+                                    stops.subList(Math.max(0, stops.size() - 3), stops.size()),
+                                    named.isEmpty() ? null : named.get(0).name(),
+                                    HeadsignCheck.ends(d, byName).name());
+                        }).toList()))
+                .toList();
     }
 
     /** Usado por los tests y por refresh(). */

@@ -39,13 +39,13 @@ class HeadsignCheckTest {
 
     @Test
     void elCartelQueNombraElOrigenSeIntercambia() {
-        int[] swapped = {0};
+        List<String> swapped = new ArrayList<>();
         Catalog fixed = HeadsignCheck.fix(catalog("a Colectora Pta. 2 Ford", "a Est. Morón"), PLACES, swapped);
         List<BusDirection> directions = fixed.routes().get("1469").directions();
         // El que sale de Moron va a Ford; el que vuelve, a Moron.
         assertThat(directions.get(1).headsign()).isEqualTo("a Colectora Pta. 2 Ford");
         assertThat(directions.get(0).headsign()).isEqualTo("a Est. Morón");
-        assertThat(swapped[0]).isEqualTo(1);
+        assertThat(swapped).containsExactly("1469");
     }
 
     @Test
