@@ -2,6 +2,7 @@ package com.batransit.api.colectivos;
 
 import com.batransit.api.estado.MemoryReport;
 import com.batransit.api.estado.SourceHealth;
+import com.batransit.api.repository.StationRepository;
 import com.batransit.api.colectivos.BusModels.BusRoute;
 import com.batransit.api.colectivos.BusModels.Catalog;
 import com.batransit.api.config.TransporteApiProperties;
@@ -53,6 +54,35 @@ public class ColectivoService {
     void setHealth(SourceHealth health) {
         this.health = health;
     }
+
+    private StationRepository stations;
+
+    /** Las estaciones de tren y subte, para corregir los sentidos con el destino cambiado; opcional. */
+    @Autowired(required = false)
+    void setStations(StationRepository stations) {
+        this.stations = stations;
+    }
+
+    /** El catalogo con los carteles cambiados del feed corregidos (ver HeadsignCheck). */
+    Catalog withHeadsignsChecked(Catalog loaded) {
+        if (stations == null) {
+            return loaded;
+        }
+        try {
+            List<HeadsignCheck.Place> places = stations.findAll().stream()
+                    .filter(s -> s.getLatitude() != null && s.getLongitude() != null)
+                    .map(s -> new HeadsignCheck.Place(s.getName(), s.getLatitude().doubleValue(),
+                            s.getLongitude().doubleValue()))
+                    .toList();
+            int[] swapped = {0};
+            Catalog fixed = HeadsignCheck.fix(loaded, places, swapped);
+            log.info("Colectivos: {} lineas con los carteles de los sentidos intercambiados.", swapped[0]);
+            return fixed;
+        } catch (RuntimeException e) {
+            log.warn("Colectivos: no se pudieron revisar los carteles ({}).", e.getClass().getSimpleName());
+            return loaded;
+        }
+    }
     static final int MAX_RESULTS = 30;
 
     private final TransporteApiProperties apiProperties;
@@ -100,7 +130,7 @@ public class ColectivoService {
             file = Files.createTempFile("colectivos-gtfs", ".zip");
             download(file);
             log.info("Colectivos: feed GTFS bajado ({} MB).", Files.size(file) / (1024 * 1024));
-            Catalog loaded = parser.parse(file);
+            Catalog loaded = withHeadsignsChecked(parser.parse(file));
             catalog.set(loaded);
             log.info("Colectivos: {} lineas cargadas desde el feed GTFS.", loaded.routes().size());
             MemoryReport.log("colectivos, despues de procesar el feed");
@@ -158,7 +188,7 @@ public class ColectivoService {
         }
         snapshotStore.load().ifPresent(saved -> {
             // Una copia guardada por una version anterior puede tener las letras sin adivinar ("MU?ECAS").
-            catalog.compareAndSet(null, withLostLettersGuessed(saved));
+            catalog.compareAndSet(null, withHeadsignsChecked(withLostLettersGuessed(saved)));
             // En la pagina de estado figura como actualizado cuando se bajo ese feed.
             health.ok(SourceHealth.Source.COLECTIVOS_RECORRIDOS, saved.loadedAt());
             log.info("Colectivos: {} lineas cargadas desde la copia de la base (feed del {}).",
