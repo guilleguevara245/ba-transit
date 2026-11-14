@@ -218,7 +218,6 @@ export default function BusRouteMap({
                 position={[stop.latitude, stop.longitude]}
                 icon={stopSignIcon(color)}
                 zIndexOffset={400}
-                title={stopName(stop.name)}
               >
                 {card}
               </Marker>
@@ -249,9 +248,6 @@ export default function BusRouteMap({
           <GlideMarker
             key={v.id}
             position={[v.latitude, v.longitude]}
-            title={
-              parked ? 'Colectivo detenido fuera del recorrido' : `Colectivo de la línea ${route.shortName || '?'}`
-            }
             zIndexOffset={parked ? -100 : 0}
             icon={parked ? PARKED_ICON : LIVE_ICON}
           >
@@ -265,7 +261,6 @@ export default function BusRouteMap({
         <GlideMarker
           key={`otra-${bus.id}`}
           position={[bus.latitude, bus.longitude]}
-          title={`Colectivo de la línea ${bus.line}`}
           icon={otherBusIcon(bus.line)}
         >
           <MapCard

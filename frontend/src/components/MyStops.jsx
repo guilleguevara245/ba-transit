@@ -92,7 +92,7 @@ function StopRow({ id, inPanel, favoriteBuses }) {
       return (
         <span key={b.id} className="my-stop-time">
           {sign && (
-            <span className="my-stop-sign" title={oneNumber ? `Cartel ${sign}` : `Línea ${sign}`}>
+            <span className="my-stop-sign">
               {sign}
             </span>
           )}

@@ -240,7 +240,6 @@ export default function NotificationsPage() {
                             className={on ? 'notif-day on' : 'notif-day'}
                             aria-pressed={on}
                             aria-label={name}
-                            title={name}
                             onClick={() => {
                               const days = on ? prefs.summaryDays.filter((d) => d !== day) : [...prefs.summaryDays, day]
                               if (days.length > 0) change({ ...prefs, summaryDays: days.sort((a, b) => a - b) })

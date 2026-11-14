@@ -52,7 +52,7 @@ export default function MyBuses({ inPanel = false }) {
             </span>
           </Link>
           {lineAlerts.length > 0 && (
-            <span className="status-pill status-delayed" title={lineAlerts[0].title || undefined}>
+            <span className="status-pill status-delayed">
               <span className="dot"></span>
               {lineAlerts.length === 1 ? 'Con aviso' : `${lineAlerts.length} avisos`}
             </span>

@@ -1,3 +1,4 @@
+import Tip from './Tip.jsx'
 import { useEffect, useId, useRef, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import ClockPanel from './ClockPanel.jsx'
@@ -81,11 +82,11 @@ function Clock({ now }) {
       <button
         ref={button}
         type="button"
-        className={open ? 'clock-button open' : 'clock-button'}
+        className={`clock-button${open ? ' open' : ''}${holiday ? ' has-tip' : ''}`}
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls={open ? panelId : undefined}
-        title={holiday ? `Feriado: ${holiday}` : 'Reloj y calendario'}
+        aria-label={holiday ? `Reloj y calendario. Feriado: ${holiday}` : 'Reloj y calendario'}
         onClick={() => setOpen((v) => !v)}
       >
         <time className={holiday ? 'clock-time holiday' : 'clock-time'} dateTime={now.toISOString()}>
@@ -106,6 +107,7 @@ function Clock({ now }) {
             </small>
           )}
         </time>
+        {holiday && <Tip>Feriado: {holiday}</Tip>}
       </button>
       {open && <ClockPanel id={panelId} now={now} todayKey={localDateKey(now)} clock={clock} onChange={setClock} />}
     </div>

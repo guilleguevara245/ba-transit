@@ -59,7 +59,6 @@ function BusChips({ buses }) {
           key={bus}
           className="bus-chip"
           to={`/colectivos?linea=${encodeURIComponent(bus)}`}
-          title={`Ver la línea ${bus}`}
         >
           {bus}
         </Link>
@@ -122,7 +121,6 @@ export default function AirportsPage() {
           <Marker
             key={airport.code}
             position={[airport.latitude, airport.longitude]}
-            title={airport.name}
             icon={badgeIcon('plane', { bg: AIRPORT_YELLOW, fg: '#17171a', border: '#17171a', size: 30 })}
           >
             <Tooltip permanent direction="right" offset={[6, 0]} className="airport-map-label">

@@ -274,7 +274,6 @@ export default function NetworkMap({
           position={[train.latitude, train.longitude]}
           icon={liveIcon}
           zIndexOffset={2000}
-          title={train.destination ? `Tren hacia ${train.destination}` : 'Tren en servicio'}
         >
           <LiveTrainCard
             train={train}

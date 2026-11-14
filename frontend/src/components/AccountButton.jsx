@@ -1,3 +1,4 @@
+import Tip from './Tip.jsx'
 import { useEffect, useId, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useSession } from '../hooks/useSession.js'
@@ -76,10 +77,11 @@ export default function AccountButton() {
 
   if (!user) {
     return (
-      <Link to="/ingresar" className="account-button" aria-label="Ingresar o crear una cuenta" title="Ingresar">
+      <Link to="/ingresar" className="account-button has-tip" aria-label="Ingresar o crear una cuenta">
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
           <path d={USER_ICON} />
         </svg>
+        <Tip align="end">Ingresar</Tip>
       </Link>
     )
   }

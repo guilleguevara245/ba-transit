@@ -63,7 +63,7 @@ export default function DashboardPage() {
             Estado de la red
           </h2>
           {alertsState.updatedAt && (
-            <span className="updated-at" title={alertsState.updatedAt.toLocaleString('es-AR')}>
+            <span className="updated-at">
               {/* now se usa para que el texto se recalcule cada 30 segundos */}
               Actualizado {formatRelativeTime(alertsState.updatedAt.toISOString(), now)}
             </span>

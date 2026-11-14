@@ -74,7 +74,7 @@ function PlaceWeather({ forecast }) {
         {hourSlots(forecast).map((h) => {
           const slot = describeWeather(h.code, h.isDay)
           return (
-            <div key={h.time} className="dw-hour" title={slot.label}>
+            <div key={h.time} className="dw-hour">
               <small>{h.label}</small>
               <WeatherIcon kind={slot.icon} className="dw-hour-icon" />
               <strong>{Math.round(h.temperature)}°</strong>

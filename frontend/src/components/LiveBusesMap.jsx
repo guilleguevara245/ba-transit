@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { MapContainer, TileLayer, useMapEvents } from 'react-leaflet'
+import { MapContainer, TileLayer, Tooltip, useMapEvents } from 'react-leaflet'
 import { badgeIcon } from '../utils/mapIcons.js'
 import BusIcon from './BusIcon.jsx'
 import Chevrons from './Chevrons.jsx'
@@ -94,10 +94,14 @@ export default function LiveBusesMap({ onSelectRoute }) {
                 key={bus.id || index}
                 animate={glide}
                 position={[bus.latitude, bus.longitude]}
-                title={`Línea ${bus.line || '?'}`}
                 icon={badgeIcon('bus', { ...BUS_BADGE, active: selected?.id === bus.id })}
                 eventHandlers={{ click: () => setSelected(bus) }}
-              />
+              >
+                {/* Con cientos de colectivos, la linea al pasar el mouse sin abrir cada uno. */}
+                <Tooltip direction="top" offset={[0, -14]} className="map-tip">
+                  Línea {bus.line || '?'}
+                </Tooltip>
+              </GlideMarker>
             )
           }
           return (

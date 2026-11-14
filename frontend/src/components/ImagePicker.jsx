@@ -78,7 +78,6 @@ export default function ImagePicker({ user }) {
                     role="radio"
                     aria-checked={chosen}
                     aria-label={a.name}
-                    title={a.name}
                     className={chosen ? 'chosen' : undefined}
                     disabled={busy}
                     onClick={() => run(() => setImage('avatar', a.id))}

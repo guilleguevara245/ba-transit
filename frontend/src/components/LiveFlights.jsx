@@ -225,7 +225,6 @@ export default function LiveFlights({ bounds, children }) {
             heading={f.heading}
             speed={f.speed}
             moving={!f.onGround}
-            title={`${flightTitle(f)}: ${flightStatus(f)}`}
             icon={planeIcon(flightGroup(f), f.heading, f.id === selectedId)}
             zIndexOffset={f.onGround ? 0 : 500}
             eventHandlers={{ click: () => setSelectedId(f.id) }}

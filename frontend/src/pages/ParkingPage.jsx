@@ -318,7 +318,7 @@ export default function ParkingPage() {
             // Son miles: sin tarjeta propia; se abre una sola, compartida (abajo).
             if (view.zoom >= GARAGE_ICON_ZOOM) {
               if (!active && !view.bounds?.contains([p.lat, p.lon])) return null
-              return <Marker key={p.id} position={[p.lat, p.lon]} title={p.title} icon={iconFor(p.layer, active)} eventHandlers={select} />
+              return <Marker key={p.id} position={[p.lat, p.lon]} icon={iconFor(p.layer, active)} eventHandlers={select} />
             }
             return (
               <CircleMarker
@@ -332,7 +332,7 @@ export default function ParkingPage() {
           }
           if (p.layer === 'lot') {
             return (
-              <Marker key={p.id} position={[p.lat, p.lon]} title={p.title} icon={iconFor('lot', active)} eventHandlers={select}>
+              <Marker key={p.id} position={[p.lat, p.lon]} icon={iconFor('lot', active)} eventHandlers={select}>
                 <MapCard
                   color={BADGES.lot.bg}
                   badge={<MapCardIcon path={GLYPHS.lot} />}
@@ -350,7 +350,7 @@ export default function ParkingPage() {
           }
           if (p.layer === 'garage') {
             return (
-              <Marker key={p.id} position={[p.lat, p.lon]} title={p.title} icon={iconFor('garage', active)} eventHandlers={select}>
+              <Marker key={p.id} position={[p.lat, p.lon]} icon={iconFor('garage', active)} eventHandlers={select}>
                 <MapCard
                   color={BADGES.garage.bg}
                   badge={<MapCardIcon path={GLYPHS.motoGarage} />}
@@ -379,7 +379,7 @@ export default function ParkingPage() {
             )
           }
           return (
-            <Marker key={p.id} position={[p.lat, p.lon]} title={p.title} icon={iconFor('street', active)} eventHandlers={select}>
+            <Marker key={p.id} position={[p.lat, p.lon]} icon={iconFor('street', active)} eventHandlers={select}>
               <MapCard
                 color={BADGES.street.bg}
                 badge={<MapCardIcon path={GLYPHS.moto} />}

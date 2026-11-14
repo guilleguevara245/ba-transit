@@ -716,3 +716,101 @@ body {
   stroke: #ffffff;
   stroke-width: 2.6;
 }
+
+/*
+ * Texto al pasar el mouse con la estetica del sitio (Tip): una etiqueta
+ * oscura (clara en el tema oscuro) debajo del elemento, con una flechita.
+ * Aparece con una pequena demora para no saltar al pasar de largo.
+ */
+.has-tip {
+  position: relative;
+}
+
+.tip {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  z-index: 1200;
+  padding: 5px 9px;
+  border-radius: 6px;
+  background: var(--text);
+  color: var(--surface);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, -3px);
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease,
+    visibility 0s linear 0.12s;
+}
+
+.tip::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border: 5px solid transparent;
+  border-bottom-color: var(--text);
+}
+
+.tip-end {
+  left: auto;
+  right: 0;
+  transform: translateY(-3px);
+}
+
+.tip-end::before {
+  left: auto;
+  right: 11px;
+  margin-left: 0;
+}
+
+@media (hover: hover) {
+  .has-tip:hover > .tip {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+    transition-delay: 0.3s;
+  }
+
+  .has-tip:hover > .tip-end {
+    transform: translateY(0);
+  }
+}
+
+.has-tip:focus-visible > .tip {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+
+.has-tip:focus-visible > .tip-end {
+  transform: translateY(0);
+}
+
+/* El mismo estilo para la linea de un colectivo en el mapa en vivo. */
+.leaflet-tooltip.map-tip {
+  padding: 4px 8px;
+  border: none;
+  border-radius: 6px;
+  background: var(--text);
+  color: var(--surface);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.leaflet-tooltip-top.map-tip::before {
+  border-top-color: var(--text);
+}

@@ -1,3 +1,4 @@
+import Tip from './Tip.jsx'
 import { useTheme } from '../hooks/useTheme.js'
 
 const SUN = 'M12 4V2m0 20v-2m8-8h2M2 12h2m13.66-5.66 1.41-1.41M4.93 19.07l1.41-1.41m0-11.32L4.93 4.93m14.14 14.14-1.41-1.41M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z'
@@ -18,15 +19,15 @@ export default function ThemeToggle() {
         <button
           key={option.value}
           type="button"
-          className={theme === option.value ? 'active' : ''}
+          className={theme === option.value ? 'has-tip active' : 'has-tip'}
           aria-pressed={theme === option.value}
           aria-label={option.label}
-          title={option.label}
           onClick={() => choose(option.value)}
         >
           <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <path d={option.icon} />
           </svg>
+          <Tip>{option.label}</Tip>
         </button>
       ))}
     </div>

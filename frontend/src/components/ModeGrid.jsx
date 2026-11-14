@@ -37,7 +37,7 @@ function GroupItems({ items }) {
 function GroupLines({ lines }) {
   const items = lines.map((line) => ({
     key: line.id,
-    icon: <LineBadge line={line} size="sm" title={null} />,
+    icon: <LineBadge line={line} size="sm" />,
     name: line.name,
     to: linePath(line),
   }))

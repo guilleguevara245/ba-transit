@@ -243,7 +243,6 @@ export default function EcobiciPage() {
                 <Marker
                   key={s.id}
                   position={[s.latitude, s.longitude]}
-                  title={`${stationName(s.name)}: ${level.label}`}
                   icon={badgeIcon(badge.glyph, { ...badge, size: 22, active })}
                   eventHandlers={{ click: () => select(s) }}
                 >

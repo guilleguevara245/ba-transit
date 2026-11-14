@@ -1,3 +1,4 @@
+import Tip from '../components/Tip.jsx'
 import { useEffect, useMemo, useState } from 'react'
 import BothWays from '../components/BothWays.jsx'
 import { Link, useNavigate, useParams } from 'react-router-dom'
@@ -373,11 +374,12 @@ export default function StationPage() {
                   <Link
                     key={bus.id}
                     to={`/colectivos?${new URLSearchParams(busParams(bus.shortName, bus.id))}`}
-                    className="station-bus"
+                    className="station-bus has-tip"
                     style={bus.color ? { background: bus.color, color: readableTextColor(bus.color) } : undefined}
-                    title={`Línea ${bus.shortName} · parada a unos ${Math.max(50, Math.round(bus.meters / 50) * 50)} m`}
+                    aria-label={`Línea ${bus.shortName}, parada a unos ${Math.max(50, Math.round(bus.meters / 50) * 50)} m`}
                   >
                     {bus.shortName}
+                    <Tip>Parada a unos {Math.max(50, Math.round(bus.meters / 50) * 50)} m</Tip>
                   </Link>
                 ))}
               </div>
