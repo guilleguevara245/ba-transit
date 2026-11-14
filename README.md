@@ -110,7 +110,7 @@ con APIs públicas, pruebas, integración continua y despliegue.
 flowchart LR
     U[Navegador / app instalada] -->|HTTPS| F[Frontend<br>React + Vite<br>Render Static Site]
     F -->|REST /api/v1| B[Backend<br>Java 21 + Spring Boot<br>Render Web Service]
-    B --> DB[(PostgreSQL<br>Neon)]
+    B --> DB[(PostgreSQL<br>Supabase)]
     B --> T[API Transporte GCBA<br>alertas, subte, colectivos,<br>EcoBici]
     B --> TR[Trenes Argentinos, Ferrovías,<br>Metrovías]
     B --> SMN[SMN<br>alertas CAP]
@@ -165,7 +165,7 @@ flowchart LR
 | Capa | Herramientas |
 |---|---|
 | Backend | Java 21, Spring Boot 3.5, Spring Data JPA, Flyway, springdoc-openapi (Swagger UI) |
-| Base de datos | PostgreSQL 16 (Neon en producción, Docker en desarrollo) |
+| Base de datos | PostgreSQL (Supabase en producción, Docker en desarrollo) |
 | Frontend | React 18, Vite, React Router, Leaflet / React Leaflet |
 | Pruebas | JUnit 5, Mockito, MockMvc, Vitest, Playwright, ESLint |
 | Infraestructura | Docker Compose, GitHub Actions, Render, UptimeRobot |

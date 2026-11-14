@@ -249,7 +249,7 @@ export default function PrivacyPage() {
               El servidor de BA Transit consulta las fuentes de datos (ver{' '}
               <Link to="/acerca">Acerca de y fuentes de datos</Link>) y le responde al sitio. Fuera de las cuentas y los
               avisos, no guarda información de quienes lo visitan. Los datos están en una base de datos PostgreSQL
-              alojada en Neon. Como cualquier sitio web, el proveedor donde está alojado (Render) puede registrar por un
+              alojada en Supabase. Como cualquier sitio web, el proveedor donde está alojado (Render) puede registrar por un
               tiempo la dirección IP y la hora de cada pedido, para su funcionamiento y seguridad.
             </p>
             <p>

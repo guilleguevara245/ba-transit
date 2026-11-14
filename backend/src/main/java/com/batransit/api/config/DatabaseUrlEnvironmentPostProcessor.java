@@ -9,24 +9,16 @@ import org.springframework.core.env.MapPropertySource;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Permite configurar la base con una sola variable, DATABASE_URL, con la
- * direccion tal como la dan Supabase o Neon
+ * direccion tal como la da Supabase
  * (postgresql://usuario:clave@host:puerto/base?sslmode=require), en vez de
- * DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD y DB_SSLMODE.
- *
- * Si ademas siguen las DB_* de otra base, esa queda como "base anterior":
- * al arrancar se copian sus datos a la nueva (ver DatabaseMoveConfig). Asi
- * mudar la base es agregar una variable en Render.
+ * DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD y DB_SSLMODE, que quedan
+ * para el Postgres local.
  */
 public class DatabaseUrlEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered {
-
-    static final String PREVIOUS_URL = "batransit.base-anterior.url";
-    static final String PREVIOUS_USER = "batransit.base-anterior.username";
-    static final String PREVIOUS_PASSWORD = "batransit.base-anterior.password";
 
     /** La direccion de una base, lista para JDBC. */
     record JdbcTarget(String url, String username, String password) {
@@ -39,21 +31,10 @@ public class DatabaseUrlEnvironmentPostProcessor implements EnvironmentPostProce
             return;
         }
         JdbcTarget target = parse(databaseUrl);
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("spring.datasource.url", target.url());
-        properties.put("spring.datasource.username", target.username());
-        properties.put("spring.datasource.password", target.password());
-
-        String previousHost = environment.getProperty("DB_HOST");
-        if (previousHost != null && !previousHost.isBlank() && !target.url().contains("//" + previousHost + ":")) {
-            properties.put(PREVIOUS_URL, "jdbc:postgresql://" + previousHost + ":"
-                    + environment.getProperty("DB_PORT", "5432") + "/"
-                    + environment.getProperty("DB_NAME", "batransit")
-                    + "?sslmode=" + environment.getProperty("DB_SSLMODE", "require"));
-            properties.put(PREVIOUS_USER, environment.getProperty("DB_USER", ""));
-            properties.put(PREVIOUS_PASSWORD, environment.getProperty("DB_PASSWORD", ""));
-        }
-        environment.getPropertySources().addFirst(new MapPropertySource("databaseUrl", properties));
+        environment.getPropertySources().addFirst(new MapPropertySource("databaseUrl", Map.of(
+                "spring.datasource.url", target.url(),
+                "spring.datasource.username", target.username(),
+                "spring.datasource.password", target.password())));
     }
 
     /**

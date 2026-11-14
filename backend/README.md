@@ -10,7 +10,7 @@ La descripcion general del proyecto esta en el [README principal](../README.md).
 ## Stack
 
 - Java 21 + Spring Boot 3.5 (Spring Web, Data JPA, Validation, Actuator)
-- PostgreSQL 16 (Neon en produccion) con Flyway
+- PostgreSQL (Supabase en produccion, 16 en Docker para desarrollo) con Flyway
 - springdoc-openapi (Swagger UI)
 - Maven, Docker + Docker Compose, GitHub Actions (CI) y Render
 
@@ -52,7 +52,7 @@ La descripcion general del proyecto esta en el [README principal](../README.md).
 
 | Variable                    | Descripcion                             | Default (local) |
 | ---------------------------- | ---------------------------------------- | ----------------- |
-| `DATABASE_URL`               | La base en una sola direccion (`postgresql://usuario:clave@host:puerto/base?sslmode=require`); reemplaza a las `DB_*`. Si las `DB_*` siguen con otra base, al arrancar se copian sus datos a esta una sola vez | (vacio) |
+| `DATABASE_URL`               | La base en una sola direccion (`postgresql://usuario:clave@host:puerto/base?sslmode=require`, la del Session pooler de Supabase); reemplaza a las `DB_*` | (vacio) |
 | `DB_HOST`                    | Host de PostgreSQL                       | `localhost`        |
 | `DB_PORT`                    | Puerto de PostgreSQL                     | `5432`             |
 | `DB_NAME`                    | Nombre de la base de datos               | `batransit`        |
