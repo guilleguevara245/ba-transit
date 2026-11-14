@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import BothWays from './BothWays.jsx'
 import AccessibleBadge from './AccessibleBadge.jsx'
 import Chevrons from './Chevrons.jsx'
+import FavoriteButton from './FavoriteButton.jsx'
 import LineBadge from './LineBadge.jsx'
 import NextTrains from './NextTrains.jsx'
 import StationIcon from './StationIcon.jsx'
@@ -113,6 +114,15 @@ export default function StationPopup({ station, stations, alerts, mode }) {
             <span className="station-popup-operator">{operator}</span>
           </>
         )}
+        {/* Guardar la estacion en Mis estaciones, como en la pagina de la estacion. */}
+        <span className="station-popup-action">
+          <FavoriteButton
+            kind="estaciones"
+            id={station.stationId}
+            name={`${station.stationName}, ${station.lineName}`}
+            compact
+          />
+        </span>
       </div>
 
       <h3 className="station-popup-name">
