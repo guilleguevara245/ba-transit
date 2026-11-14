@@ -380,7 +380,25 @@ public final class SofseArrivals {
     /** El tipo de servicio si no es el comun ("Rapido", "Expreso"...); null si es el comun. */
     private static String serviceType(JsonNode service) {
         String name = text(service.path("tipo").path("nombre"));
-        return name == null || name.equalsIgnoreCase("Normal") ? null : name;
+        return name == null || name.equalsIgnoreCase("Normal") ? null : serviceLabel(name);
+    }
+
+    /**
+     * El tipo como se lee en el sitio: la API escribe "Semi Rapido" o "Rapido"
+     * sin tilde. Los que se vieron (13/11/2026): Normal, Directo (Roca),
+     * Especial (Roca y Mitre) y Semi Rapido (San Martin). Uno nuevo queda tal cual.
+     */
+    static String serviceLabel(String name) {
+        String n = java.text.Normalizer.normalize(name, java.text.Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "").toLowerCase(java.util.Locale.ROOT).replaceAll("[\\s-]+", " ").trim();
+        return switch (n) {
+            case "semi rapido", "semirrapido", "semirapido" -> "Semirrápido";
+            case "rapido" -> "Rápido";
+            case "directo" -> "Directo";
+            case "especial" -> "Especial";
+            case "expreso" -> "Expreso";
+            default -> name.trim();
+        };
     }
 
     /** Los trenes sin pasajeros (vacios, de traslado) no se muestran. */

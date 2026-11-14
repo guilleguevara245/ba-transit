@@ -315,4 +315,15 @@ class SofseArrivalsTest {
         List<Station> three = List.of(new Station(1, "A", 0, 0), new Station(2, "B", 0, 0), new Station(3, "C", 0, 0));
         assertThat(SofseArrivals.watchStations(three)).containsExactly(2);
     }
+
+    @Test
+    void elTipoSeLeeConTilde() {
+        // Como los manda la API (13/11/2026).
+        assertThat(SofseArrivals.serviceLabel("Semi Rapido")).isEqualTo("Semirrápido");
+        assertThat(SofseArrivals.serviceLabel("Rapido")).isEqualTo("Rápido");
+        assertThat(SofseArrivals.serviceLabel("Rápido")).isEqualTo("Rápido");
+        assertThat(SofseArrivals.serviceLabel("Directo")).isEqualTo("Directo");
+        assertThat(SofseArrivals.serviceLabel("Especial")).isEqualTo("Especial");
+        assertThat(SofseArrivals.serviceLabel("Diferencial")).isEqualTo("Diferencial");
+    }
 }
