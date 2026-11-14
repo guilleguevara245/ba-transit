@@ -312,7 +312,14 @@ function RouteDetail({ routeId, line, headsign, initialDirection, initialStop })
                       }}
                     >
                       <span className="bus-stop-dot" aria-hidden="true" />
-                      <span className="bus-stop-name">{stopName(stop.name)}</span>
+                      <span className="bus-stop-name">
+                        {stopName(stop.name)}
+                        {/* Donde empieza y donde termina el recorrido de este sentido. */}
+                        {index === 0 && <span className="bus-stop-tag">Inicio</span>}
+                        {index > 0 && index === direction.stops.length - 1 && (
+                          <span className="bus-stop-tag last">Final</span>
+                        )}
+                      </span>
                       {label && <span className="bus-stop-minutes">{label}</span>}
                     </button>
                     {/* Donde subis: el mismo boton que "Bajo aca", marcado; tocarlo vuelve a la cabecera. */}

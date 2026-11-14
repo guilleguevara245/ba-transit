@@ -181,12 +181,14 @@ export default function BusRouteMap({
           />
           {active.stops.map((stop, index) => {
             const isEnd = index === 0 || index === active.stops.length - 1
+            // El inicio, un circulo blanco; el final, lleno del color de la linea con borde blanco.
+            const isLast = index === active.stops.length - 1
             const isFocused = focusedStop?.index === index
             const card = (
               <MapCard
                 color={BUS_YELLOW}
                 badge={busBadge}
-                kicker={index === 0 ? 'Cabecera' : index === active.stops.length - 1 ? 'Última parada' : 'Parada'}
+                kicker={index === 0 ? 'Inicio del recorrido' : index === active.stops.length - 1 ? 'Final del recorrido' : 'Parada'}
                 icon={<BusIcon kind="stop" color={route.color} />}
                 title={stopName(stop.name)}
                 headerAction={
@@ -228,8 +230,8 @@ export default function BusRouteMap({
                 center={[stop.latitude, stop.longitude]}
                 radius={isEnd ? 7 : smallStops ? 2.5 : 4}
                 pathOptions={{
-                  color,
-                  fillColor: '#ffffff',
+                  color: isLast ? '#ffffff' : color,
+                  fillColor: isLast ? color : '#ffffff',
                   fillOpacity: 1,
                   weight: isEnd ? 3 : smallStops ? 1.5 : 2,
                 }}

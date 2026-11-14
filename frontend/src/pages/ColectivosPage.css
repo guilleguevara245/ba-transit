@@ -344,6 +344,34 @@
   font-weight: 600;
 }
 
+/* El final: el punto lleno del color de la linea (el inicio queda hueco). */
+.bus-stop.end:last-child .bus-stop-dot {
+  background: var(--bus-color, var(--text));
+  box-shadow: inset 0 0 0 2px var(--surface);
+}
+
+/* "Inicio" y "Final" al lado del nombre. */
+.bus-stop-tag {
+  display: inline-block;
+  margin-left: 7px;
+  padding: 0 5px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--text-dim);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 16px;
+  text-transform: uppercase;
+  vertical-align: 1px;
+}
+
+.bus-stop-tag.last {
+  border-color: var(--bus-color, var(--text));
+  background: var(--bus-color, var(--text));
+  color: var(--surface);
+}
+
 .bus-stop-button:hover {
   background: var(--bg);
 }
