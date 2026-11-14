@@ -109,6 +109,7 @@ const LOWER_WORDS = new Set(['de', 'del', 'la', 'las', 'el', 'los', 'y', 'e', 'a
  */
 export function stopName(name) {
   const clean = plainText(name)
+    .replace(/\s*[!¡]+/g, '')
     .replace(/^\s*\d+\s*[-–]?\s*/, '')
     .trim()
   if (!clean || clean !== clean.toUpperCase()) return clean || (name ?? '')
@@ -176,7 +177,7 @@ export function headsignTo(headsign) {
 
 /** El destino para leer en un texto: sin la "a" y sin gritar ("A EST. MORON" -> "Est. Moron"). */
 export function headsignName(headsign) {
-  const to = headsignTo(headsign)
+  const to = headsignTo(headsign)?.replace(/\s*[!¡]+/g, '').trim()
   return to && to === to.toUpperCase() && /\p{L}/u.test(to) ? titleCase(to) : to
 }
 

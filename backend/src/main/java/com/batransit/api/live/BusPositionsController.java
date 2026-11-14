@@ -97,7 +97,7 @@ public class BusPositionsController {
             // Se redondea a 5 decimales (~1 m): alcanza para el mapa y achica la respuesta.
             result.add(new MovingBus(v.path("id").asText(""), v.path("route_id").asText(""), v.path("route_short_name").asText(""),
                     Math.round(lat * 1e5) / 1e5, Math.round(lon * 1e5) / 1e5,
-                    com.batransit.api.colectivos.TextRepair.fix(v.path("trip_headsign").asText("")),
+                    com.batransit.api.colectivos.TextRepair.name(v.path("trip_headsign").asText("")),
                     v.path("direction").asInt(0)));
         }
         return result;
@@ -192,7 +192,7 @@ public class BusPositionsController {
             }
             boolean moving = !v.hasNonNull("speed") || v.path("speed").asDouble(0) > 0;
             result.add(new Vehicle(v.path("id").asText(""), lat, lon, v.path("direction").asInt(0),
-                    com.batransit.api.colectivos.TextRepair.fix(v.path("trip_headsign").asText("")), age, !sameRoute,
+                    com.batransit.api.colectivos.TextRepair.name(v.path("trip_headsign").asText("")), age, !sameRoute,
                     moving));
         }
         return result;

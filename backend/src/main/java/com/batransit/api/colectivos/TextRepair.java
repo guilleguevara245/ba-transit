@@ -39,6 +39,23 @@ public final class TextRepair {
         return guessLostLetters(fixDoubleEncoding(text));
     }
 
+    /** Signos de exclamacion que el feed trae pegados a algunos nombres ("DE ROSAS 65!"). */
+    private static final java.util.regex.Pattern EXCLAMATION = java.util.regex.Pattern.compile("\\s*[!¡]+");
+
+    /**
+     * Un nombre de parada o un destino arreglado (ver fix) y sin signos de
+     * exclamacion, que no son parte de ningun nombre.
+     */
+    public static String name(String text) {
+        String fixed = fix(text);
+        return fixed == null ? null : EXCLAMATION.matcher(fixed).replaceAll("").trim();
+    }
+
+    /** Si el nombre necesita arreglo: letras perdidas o signos de exclamacion. */
+    public static boolean needsFixing(String text) {
+        return lostLetters(text) || (text != null && (text.indexOf('!') >= 0 || text.indexOf('¡') >= 0));
+    }
+
     /**
      * El feed trae algunas letras como "?" (se perdieron antes de publicarlo,
      * no se pueden recuperar de los bytes). Se adivinan con reglas que

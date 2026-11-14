@@ -57,4 +57,14 @@ class TextRepairTest {
         // Un signo de pregunta de verdad queda.
         assertThat(TextRepair.fix("¿Viene?")).isEqualTo("¿Viene?");
     }
+
+    @Test
+    void losNombresNoLlevanSignosDeExclamacion() {
+        assertThat(TextRepair.name("AVENIDA BRIGADIER GENERAL JUAN MANUEL DE ROSAS 65!"))
+                .isEqualTo("AVENIDA BRIGADIER GENERAL JUAN MANUEL DE ROSAS 65");
+        assertThat(TextRepair.name("¡ALSINA ! Y MITRE")).isEqualTo("ALSINA Y MITRE");
+        assertThat(TextRepair.name("MU?ECAS!")).isEqualTo("MUÑECAS");
+        assertThat(TextRepair.needsFixing("DE ROSAS 65!")).isTrue();
+        assertThat(TextRepair.needsFixing("DE ROSAS 65")).isFalse();
+    }
 }

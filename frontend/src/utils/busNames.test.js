@@ -47,6 +47,15 @@ describe('stopName', () => {
     expect(stopName('AV. DE MAYO Y PERU')).toBe('Av. de Mayo y Peru')
     expect(stopName('Plaza Italia')).toBe('Plaza Italia')
   })
+
+  it('sin signos de exclamacion', () => {
+    expect(stopName('AVENIDA BRIGADIER GENERAL JUAN MANUEL DE ROSAS 65!')).toBe(
+      'Avenida Brigadier General Juan Manuel de Rosas 65',
+    )
+    expect(stopName('Avenida Brigadier General Juan Manuel de Rosas 65!')).toBe(
+      'Avenida Brigadier General Juan Manuel de Rosas 65',
+    )
+  })
 })
 
 describe('busParams', () => {

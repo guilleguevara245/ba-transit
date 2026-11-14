@@ -182,21 +182,24 @@ public class ColectivoService {
         return loaded == null || loaded.loadedAt().plus(maxAge).isBefore(now);
     }
 
-    /** La copia con los nombres de paradas y destinos con las letras perdidas adivinadas (TextRepair.fix). */
+    /**
+     * La copia con los nombres de paradas y destinos arreglados (TextRepair.name):
+     * las letras perdidas adivinadas y sin signos de exclamacion.
+     */
     static Catalog withLostLettersGuessed(Catalog catalog) {
         boolean any = catalog.routes().values().stream()
                 .flatMap(r -> r.directions().stream())
-                .anyMatch(d -> TextRepair.lostLetters(d.headsign())
-                        || d.stops().stream().anyMatch(s -> TextRepair.lostLetters(s.name())));
+                .anyMatch(d -> TextRepair.needsFixing(d.headsign())
+                        || d.stops().stream().anyMatch(s -> TextRepair.needsFixing(s.name())));
         if (!any) {
             return catalog;
         }
         java.util.Map<String, BusRoute> routes = new java.util.LinkedHashMap<>();
         catalog.routes().forEach((id, r) -> routes.put(id, new BusRoute(r.id(), r.shortName(), r.longName(),
                 r.agency(), r.color(), r.directions().stream()
-                .map(d -> new BusModels.BusDirection(d.directionId(), TextRepair.fix(d.headsign()), d.shape(),
+                .map(d -> new BusModels.BusDirection(d.directionId(), TextRepair.name(d.headsign()), d.shape(),
                         d.stops().stream()
-                                .map(st -> new BusModels.BusStop(st.id(), TextRepair.fix(st.name()), st.latitude(),
+                                .map(st -> new BusModels.BusStop(st.id(), TextRepair.name(st.name()), st.latitude(),
                                         st.longitude()))
                                 .toList(),
                         d.minutes()))

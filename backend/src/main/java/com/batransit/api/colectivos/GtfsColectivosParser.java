@@ -67,7 +67,7 @@ public class GtfsColectivosParser {
                 if (list.size() < CANDIDATES_PER_DIRECTION && !repeatedShape) {
                     String tripId = row.get("trip_id");
                     list.add(tripId);
-                    candidates.put(tripId, new TripInfo(routeId, direction, shapeId, row.get("trip_headsign")));
+                    candidates.put(tripId, new TripInfo(routeId, direction, shapeId, TextRepair.name(row.get("trip_headsign"))));
                 }
             });
 
@@ -134,7 +134,7 @@ public class GtfsColectivosParser {
             read(zip, "stops.txt", row -> {
                 String id = row.get("stop_id");
                 if (neededStops.contains(id)) {
-                    stops.put(id, new BusStop(id, row.get("stop_name"),
+                    stops.put(id, new BusStop(id, TextRepair.name(row.get("stop_name")),
                             parseDoubleOr(row.get("stop_lat")), parseDoubleOr(row.get("stop_lon"))));
                 }
             });
