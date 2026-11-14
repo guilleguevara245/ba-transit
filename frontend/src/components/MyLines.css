@@ -186,6 +186,14 @@
 }
 
 /* Mis colectivos */
+/* El cartel de parada de Tus favoritos, del mismo ancho que el numero de una linea. */
+.my-stop-icon {
+  display: inline-grid;
+  place-items: center;
+  min-width: 40px;
+  flex-shrink: 0;
+}
+
 .my-bus-number {
   display: inline-grid;
   place-items: center;

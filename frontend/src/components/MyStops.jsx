@@ -1,5 +1,6 @@
 import { Fragment } from 'react'
 import { Link } from 'react-router-dom'
+import BusIcon from './BusIcon.jsx'
 import FavoriteButton from './FavoriteButton.jsx'
 import { ArrivingTag, ClockIcon } from './NextTrains.jsx'
 import { useApi } from '../hooks/useApi.js'
@@ -133,7 +134,10 @@ function StopRow({ id, inPanel, favoriteBuses }) {
       <div className="my-line my-line-stop">
         {inPanel && <span className="fav-kind">Parada</span>}
         <Link to={href} className="my-line-link">
-          <span className="my-bus-number">{severalSigns && oneNumber ? parseBusShortName(line).number : (line ?? '·')}</span>
+          {/* Una parada (de una o varias lineas): el cartel de parada, no el numero de una linea. */}
+          <span className="my-stop-icon">
+            <BusIcon kind="stop" size={28} />
+          </span>
           <span className="my-place-text">
             <span className="my-line-name">{name}</span>
             {line && (
