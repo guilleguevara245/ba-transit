@@ -200,7 +200,11 @@ public class TrainArrivalsController {
         }
         Optional<Integer> id = sofse.stationId(gerencia, ours.get().latitude().doubleValue(),
                 ours.get().longitude().doubleValue());
-        matches.put(key, new Match(now, id.orElse(null)));
+        // Si no se encontro porque la API no paso la lista de estaciones, no se recuerda: si no, la
+        // estacion quedaria sin trenes una hora aunque la API vuelva enseguida.
+        if (id.isPresent() || sofse.knowsStations(gerencia)) {
+            matches.put(key, new Match(now, id.orElse(null)));
+        }
         return id;
     }
 }

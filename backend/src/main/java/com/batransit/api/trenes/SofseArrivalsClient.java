@@ -245,13 +245,27 @@ public class SofseArrivalsClient {
             }
         }
         List<Station> stations = fetchCatalog(gerencia);
-        // Si fallo y habia una lista vieja, se sigue usando: las estaciones casi no cambian.
-        if (stations.isEmpty() && cached != null && !cached.value().isEmpty()) {
-            catalogs.put(gerencia, new Entry<>(now.minus(CATALOG_MAX_AGE).plus(CATALOG_BACKOFF), cached.value()));
-            return cached.value();
+        if (stations.isEmpty()) {
+            // Si fallo, se sigue usando la lista que haya: las estaciones casi no cambian. Se mira la
+            // de ahora y no la del principio, porque otro pedido pudo haberla traido mientras tanto
+            // (y no hay que pisarla con una vacia).
+            Entry<List<Station>> latest = catalogs.get(gerencia);
+            if (latest != null && !latest.value().isEmpty()) {
+                if (latest == cached) {
+                    // La vieja: se vuelve a probar en un rato.
+                    catalogs.put(gerencia, new Entry<>(now.minus(CATALOG_MAX_AGE).plus(CATALOG_BACKOFF),
+                            latest.value()));
+                }
+                return latest.value();
+            }
         }
         catalogs.put(gerencia, new Entry<>(now, stations));
         return stations;
+    }
+
+    /** Si se tiene la lista de estaciones de la linea (si no, la API no respondio y no se sabe cual es cual). */
+    public boolean knowsStations(int gerencia) {
+        return !catalog(gerencia).isEmpty();
     }
 
     private List<Station> fetchCatalog(int gerencia) {
@@ -279,7 +293,8 @@ public class SofseArrivalsClient {
         return new ArrayList<>(byId.values());
     }
 
-    private JsonNode get(String path) {
+    /** Un pedido a la API (null si no respondio o no se pudo leer). Sin private: los tests lo reemplazan. */
+    JsonNode get(String path) {
         try {
             String body = restClient.get().uri(baseUrl + path).retrieve().body(String.class);
             return body == null ? null : mapper.readTree(body);

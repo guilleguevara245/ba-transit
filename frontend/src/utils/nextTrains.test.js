@@ -11,6 +11,7 @@ import {
   serverArrivalText,
   serviceKind,
   sharedPlatform,
+  sourcesDown,
   tripTrainsPath,
 } from './nextTrains.js'
 
@@ -111,5 +112,35 @@ describe('serviceKind', () => {
     expect(serviceKind('Especial')).toBe('especial')
     expect(serviceKind('Diferencial')).toBe(null)
     expect(serviceKind(null)).toBe(null)
+  })
+})
+
+describe('sourcesDown', () => {
+  const pending = { data: null, error: null }
+  const failed = { data: null, error: 'HTTP 502' }
+  const unavailable = { data: { available: false }, error: null }
+  const ok = { data: { available: true }, error: null }
+
+  it('el vivo no respondio y la linea no tiene horario: caido', () => {
+    expect(sourcesDown({ hasLive: true, live: unavailable, hasSchedule: false, schedule: pending })).toBe(true)
+    expect(sourcesDown({ hasLive: true, live: failed, hasSchedule: false, schedule: pending })).toBe(true)
+  })
+
+  it('mientras se espera una respuesta, o si respondio, no esta caido', () => {
+    expect(sourcesDown({ hasLive: true, live: pending, hasSchedule: false, schedule: pending })).toBe(false)
+    expect(sourcesDown({ hasLive: true, live: ok, hasSchedule: false, schedule: pending })).toBe(false)
+    // Fallo un refresco pero quedaron los datos de antes.
+    expect(sourcesDown({ hasLive: true, live: { data: { available: true }, error: 'HTTP 502' }, hasSchedule: false, schedule: pending })).toBe(false)
+  })
+
+  it('con horario, hace falta que fallen los dos', () => {
+    expect(sourcesDown({ hasLive: true, live: unavailable, hasSchedule: true, schedule: pending })).toBe(false)
+    expect(sourcesDown({ hasLive: true, live: unavailable, hasSchedule: true, schedule: ok })).toBe(false)
+    expect(sourcesDown({ hasLive: true, live: unavailable, hasSchedule: true, schedule: failed })).toBe(true)
+    expect(sourcesDown({ hasLive: false, live: pending, hasSchedule: true, schedule: unavailable })).toBe(true)
+  })
+
+  it('sin ninguna fuente (el Urquiza va aparte), no hay nada caido', () => {
+    expect(sourcesDown({ hasLive: false, live: pending, hasSchedule: false, schedule: pending })).toBe(false)
   })
 })

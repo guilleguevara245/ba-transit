@@ -105,6 +105,22 @@ export function hasLiveArrivals(data) {
   return Boolean(data?.available && data.directions?.some((d) => d.arrivals?.length > 0))
 }
 
+/**
+ * Ninguna fuente de los proximos trenes respondio: el vivo (si la linea lo
+ * tiene) y el horario (si lo tiene) terminaron con error o con "available:
+ * false". Un pedido que todavia no termino no cuenta como caido, y si un
+ * refresco falla pero quedaron datos buenos, tampoco. live y schedule: lo
+ * que devuelve useApi ({ data, error }).
+ */
+export function sourcesDown({ hasLive, live, hasSchedule, schedule }) {
+  if (!hasLive && !hasSchedule) return false
+  return (!hasLive || answeredWithout(live)) && (!hasSchedule || answeredWithout(schedule))
+}
+
+function answeredWithout(result) {
+  return (result.data != null || result.error != null) && !result.data?.available
+}
+
 /** "8:15": hora de reloj dentro de `minutes` minutos. */
 export function clockIn(minutes, now = new Date()) {
   const at = new Date(now.getTime() + minutes * 60_000)

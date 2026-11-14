@@ -16,6 +16,7 @@ import {
   schedulePath,
   serverArrivalText,
   sharedPlatform,
+  sourcesDown,
 } from '../utils/nextTrains.js'
 import './NextTrains.css'
 
@@ -128,6 +129,13 @@ function ApiTrains({ mode, lineCode, stationName, asCard, compact, color }) {
   })
   // En las tarjetas chicas, cuantos trenes de la linea andan ahora.
   const moving = useLiveTrainCount(compact ? mode : null, lineCode)
+  // La fuente no respondio (no es que no haya trenes): se avisa en vez de no mostrar nada.
+  const down = sourcesDown({
+    hasLive: livePath != null,
+    live,
+    hasSchedule: schedulePath(mode, lineCode, stationName) != null,
+    schedule,
+  })
 
   if (compact) {
     if (liveUsable) {
@@ -143,6 +151,7 @@ function ApiTrains({ mode, lineCode, stationName, asCard, compact, color }) {
     if (schedule.data?.available && schedule.data.directions.length > 0) {
       return <CompactTrains directions={schedule.data.directions} scheduled color={color} />
     }
+    if (down) return <NoData className="mini-trains-empty" />
     if (live.loading || schedule.loading) return <div className="mini-trains-empty">Buscando trenes…</div>
     if (live.data?.available) return <div className="mini-trains-empty">Sin trenes informados ahora.</div>
     return null
@@ -162,6 +171,15 @@ function ApiTrains({ mode, lineCode, stationName, asCard, compact, color }) {
         <div className="next-trains-empty">Sin trenes informados en este momento.</div>
       </div>
     )
+  } else if (down) {
+    const message = (
+      <div className="station-popup-section next-trains">
+        <div className="station-popup-label">Próximos trenes</div>
+        <NoData className="next-trains-empty" />
+      </div>
+    )
+    // Sin trenes no hacen falta las referencias de los simbolos.
+    return asCard ? <section className="station-card next-trains-card">{message}</section> : message
   }
   if (!content) return null
   return asCard ? (
@@ -346,6 +364,31 @@ function CancelledTag() {
 }
 
 /** Reloj gris antes de los horarios de cada sentido. */
+/** "Datos no disponibles en este momento.", con la nube tachada: la fuente no respondio. */
+function NoData({ className }) {
+  return (
+    <div className={`${className} no-data`}>
+      <CloudOffIcon />
+      Datos no disponibles en este momento.
+    </div>
+  )
+}
+
+/** Nube tachada. El corte alrededor de la raya es una mascara, asi sirve sobre cualquier fondo. */
+function CloudOffIcon() {
+  const mask = useId()
+  return (
+    <svg className="no-data-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <mask id={mask}>
+        <rect width="24" height="24" fill="#fff" />
+        <path d="M4 4l16 16" stroke="#000" strokeWidth="5" />
+      </mask>
+      <path mask={`url(#${mask})`} d="M7.5 18.5h9.2a3.8 3.8 0 0 0 .5-7.57A5.6 5.6 0 0 0 6.4 9.6a4.5 4.5 0 0 0 1.1 8.9z" />
+      <path d="M4 4l16 16" />
+    </svg>
+  )
+}
+
 export function ClockIcon() {
   return (
     <svg className="next-trains-clock" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
