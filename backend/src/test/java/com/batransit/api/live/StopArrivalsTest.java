@@ -82,7 +82,19 @@ class StopArrivalsTest {
     void laPosicionViejaDescuentaElTiempo() {
         Vehicle viejo = new Vehicle("viejo", -34.6, -58.45 + 2 * 0.002, 0, "", 180, false);
         // Desde la 2 a la 7 son 10 minutos; la posicion es de hace 3.
-        assertThat(StopArrivals.approaching(straight(), 7, List.of(viejo)).get(0).minutes()).isEqualTo(7);
+        Approaching bus = StopArrivals.approaching(straight(), 7, List.of(viejo)).get(0);
+        assertThat(bus.minutes()).isEqualTo(7);
+        // En esos 3 minutos avanzo una parada y media (de a 2 minutos): ahora esta entre la 3 y la 4,
+        // le faltan 4 paradas y no 5.
+        assertThat(bus.stopsAway()).isEqualTo(4);
+    }
+
+    @Test
+    void conUnaPosicionMuyViejaNoPasaLaParada() {
+        Vehicle viejisimo = new Vehicle("viejo", -34.6, -58.45 + 5 * 0.002, 0, "", 900, false);
+        Approaching bus = StopArrivals.approaching(straight(), 7, List.of(viejisimo)).get(0);
+        assertThat(bus.stopsAway()).isEqualTo(1);
+        assertThat(bus.minutes()).isEqualTo(1);
     }
 
     @Test

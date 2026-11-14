@@ -101,7 +101,11 @@ final class StopArrivals {
             if (progress >= stopIndex && !arriving) {
                 continue; // ya paso la parada
             }
-            int stopsAway = Math.max(1, stopIndex - (int) Math.floor(progress));
+            // Los minutos descuentan lo que paso desde que mando la posicion; las paradas tambien,
+            // asi los dos hablan de ahora (antes decia "1 min, a 3 paradas" con una posicion de
+            // hace un minuto).
+            double now = estimatedProgress(direction.minutes(), position, stopIndex, vehicle.ageSeconds());
+            int stopsAway = Math.max(1, stopIndex - (int) Math.floor(now));
             Integer minutes = minutesLeft(direction.minutes(), position, stopIndex, vehicle.ageSeconds());
             result.add(new Approaching(vehicle.id(), arriving ? Integer.valueOf(0) : minutes, arriving ? 0 : stopsAway,
                     arriving, vehicle.ageSeconds()).at(vehicle.latitude(), vehicle.longitude()));
@@ -177,6 +181,40 @@ final class StopArrivals {
         double at = from + position.fraction() * (to - from);
         double left = target - at - ageSeconds / 60.0;
         return (int) Math.max(1, Math.round(left));
+    }
+
+    /**
+     * Donde estaria ahora, en paradas (5.5 = entre la 5 y la 6): lo que avanzo
+     * desde que mando la posicion, segun los minutos del horario. Sin minutos,
+     * donde la mando. Nunca pasa la parada pedida (no se sabe si ya llego).
+     */
+    static double estimatedProgress(List<Integer> minutes, Position position, int stopIndex, long ageSeconds) {
+        double reported = position.segment() + position.fraction();
+        if (ageSeconds <= 0 || minutes == null || stopIndex >= minutes.size()
+                || position.segment() + 1 >= minutes.size()) {
+            return reported;
+        }
+        Integer from = minutes.get(position.segment());
+        Integer to = minutes.get(position.segment() + 1);
+        if (from == null || to == null) {
+            return reported;
+        }
+        double now = from + position.fraction() * (to - from) + ageSeconds / 60.0;
+        double progress = reported;
+        for (int k = position.segment(); k < stopIndex; k++) {
+            Integer a = minutes.get(k);
+            Integer b = minutes.get(k + 1);
+            if (a == null || b == null) {
+                break;
+            }
+            if (b > now) {
+                double fraction = b.equals(a) ? 0 : (now - a) / (b - a);
+                progress = Math.max(progress, k + Math.max(0, Math.min(1, fraction)));
+                break;
+            }
+            progress = k + 1;
+        }
+        return Math.min(progress, stopIndex - 0.01);
     }
 
     static double meters(double lat1, double lon1, double lat2, double lon2) {
