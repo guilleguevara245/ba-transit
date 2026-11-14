@@ -39,6 +39,35 @@ final class HeadsignCheck {
     private HeadsignCheck() {
     }
 
+    /**
+     * Lineas que las reglas no ven (el cartel no nombra una estacion de tren
+     * ni una calle de sus paradas, o no lleva "a") y que se comprobaron con
+     * los recorridos de OpenStreetMap, que dicen de donde sale y a donde va
+     * cada sentido: id de la linea y sus carteles como vienen en el feed
+     * (sentido 0 y sentido 1). Solo se intercambian si el feed sigue diciendo
+     * eso.
+     */
+    static final Map<String, List<String>> CHECKED_WITH_OSM = Map.of(
+            // 164B: el sentido 0 va de Pompeya a Burzaco.
+            "6721", List.of("Pompeya x Garibaldi", "Burzaco x Garibaldi"),
+            // 237AV: el sentido 0 sale de Beiro y General Paz y va a El Libertador.
+            "2977", List.of("Ramal V - a Beiro", "Ramal V - a Libertador"),
+            // 382R1: el sentido 0 sale de Pontevedra y va a Ruta 3 y General Paz.
+            "2518", List.of("a Pontevedra X Catán X km29", "a Gral Paz X Ruta 3"),
+            // 550B: el sentido 0 sale de Lomas de Zamora y va a Puente La Noria.
+            "3731", List.of("a Est. Lomas", "a Pte. La Noria"));
+
+    /** Si la linea esta en CHECKED_WITH_OSM y el feed trae esos mismos carteles. */
+    static boolean checkedWithOsm(String id, BusDirection a, BusDirection b) {
+        List<String> feed = CHECKED_WITH_OSM.get(id);
+        if (feed == null) {
+            return false;
+        }
+        BusDirection first = a.directionId() <= b.directionId() ? a : b;
+        BusDirection second = first == a ? b : a;
+        return feed.get(0).equals(first.headsign()) && feed.get(1).equals(second.headsign());
+    }
+
     /** Las estaciones por nombre normalizado ("moron"), sin los nombres de menos de 4 letras. */
     static Map<String, List<Place>> index(List<Place> places) {
         Map<String, List<Place>> byName = new LinkedHashMap<>();
@@ -60,7 +89,8 @@ final class HeadsignCheck {
         Map<String, BusRoute> routes = new LinkedHashMap<>();
         catalog.routes().forEach((id, route) -> {
             List<BusDirection> directions = route.directions();
-            if (directions.size() == 2 && shouldSwap(directions.get(0), directions.get(1), byName)) {
+            if (directions.size() == 2 && (checkedWithOsm(id, directions.get(0), directions.get(1))
+                    || shouldSwap(directions.get(0), directions.get(1), byName))) {
                 BusDirection a = directions.get(0);
                 BusDirection b = directions.get(1);
                 route = new BusRoute(route.id(), route.shortName(), route.longName(), route.agency(), route.color(),

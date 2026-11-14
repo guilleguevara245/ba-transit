@@ -75,7 +75,7 @@ export const SOURCE_GROUPS = [
         source: 'OpenStreetMap (datos con licencia ODbL)',
         url: 'https://www.openstreetmap.org/copyright',
         detail:
-          'Las vías del subte, el Premetro y los trenes, para dibujar cada línea por donde va y no en línea recta de estación a estación.',
+          'Las vías del subte, el Premetro y los trenes, para dibujar cada línea por donde va y no en línea recta de estación a estación. También los recorridos de colectivos cargados ahí, para revisar hacia dónde va cada sentido de las líneas que el feed trae con los carteles cambiados.',
         when: 'fixed',
       },
       {

@@ -100,4 +100,22 @@ class HeadsignCheckTest {
         assertThat(HeadsignCheck.destinationText("a Est. Merlo - x Libertad - Lasalle")).isNull();
         assertThat(HeadsignCheck.destinationText("Ramal 19 - a San Miguel")).isEqualTo(" a san miguel ");
     }
+
+    @Test
+    void lasComprobadasConOpenStreetMapSeIntercambiansiElFeedSigueIgual() {
+        List<BusStop> stops = moronToPacheco();
+        BusRoute route = new BusRoute("3731", "550B", "", "", null, List.of(
+                new BusDirection(0, "a Est. Lomas", List.of(), stops, List.of()),
+                new BusDirection(1, "a Pte. La Noria", List.of(), stops, List.of())));
+        List<String> swapped = new ArrayList<>();
+        Catalog fixed = HeadsignCheck.fix(new Catalog(Map.of("3731", route), Instant.EPOCH), PLACES, swapped);
+        assertThat(fixed.routes().get("3731").directions().get(0).headsign()).isEqualTo("a Pte. La Noria");
+        assertThat(swapped).containsExactly("3731");
+        // Si el feed cambio sus carteles, no se toca.
+        BusRoute changed = new BusRoute("3731", "550B", "", "", null, List.of(
+                new BusDirection(0, "a Pte. La Noria", List.of(), stops, List.of()),
+                new BusDirection(1, "a Est. Lomas", List.of(), stops, List.of())));
+        Catalog same = HeadsignCheck.fix(new Catalog(Map.of("3731", changed), Instant.EPOCH), PLACES, new ArrayList<>());
+        assertThat(same.routes().get("3731").directions().get(0).headsign()).isEqualTo("a Pte. La Noria");
+    }
 }
