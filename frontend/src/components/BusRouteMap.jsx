@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { CircleMarker, MapContainer, Polyline, TileLayer, useMap, useMapEvents } from 'react-leaflet'
-import { badgeIcon } from '../utils/mapIcons.js'
+import { CircleMarker, MapContainer, Marker, Polyline, TileLayer, useMap, useMapEvents } from 'react-leaflet'
+import { badgeIcon, otherBusIcon, stopSignIcon } from '../utils/mapIcons.js'
 import BusIcon from './BusIcon.jsx'
 import FavoriteButton from './FavoriteButton.jsx'
 import { DrawnPolyline, GlideMarker } from './GlideMarkers.jsx'
@@ -96,6 +96,13 @@ function LiveBusCard({ route, vehicle, next, parked, badge }) {
   )
 }
 
+/** "Llega en 8 min · a 2 paradas" (o "Llegando") para un colectivo de otra linea que viene a la parada. */
+function arrivalText(bus) {
+  if (bus.arriving) return 'Llegando a la parada'
+  const stops = `a ${bus.stopsAway} ${bus.stopsAway === 1 ? 'parada' : 'paradas'}`
+  return bus.minutes != null ? `Llega en ${bus.minutes} min · ${stops}` : `Viene ${stops}`
+}
+
 /** Donde va cada colectivo sobre el recorrido de su sentido (null si esta fuera) y si esta quieto ahi afuera. */
 function placeOf(route, vehicle, fallback) {
   // El feed usa el mismo direction_id que el GTFS; si no esta, el sentido elegido.
@@ -107,9 +114,18 @@ function placeOf(route, vehicle, fallback) {
 /**
  * Mapa del recorrido de un colectivo: el sentido elegido resaltado, el
  * otro sentido mas tenue y las paradas del sentido elegido. focusedStop:
- * la parada elegida en la lista ({ index }), que se centra y se resalta.
+ * la parada elegida en la lista ({ index }), que se centra y se marca con
+ * el cartel de parada. otherBuses: colectivos de otras lineas que vienen a
+ * esa parada (de /parada/, con su cartel y su posicion), en blanco.
  */
-export default function BusRouteMap({ route, directionIndex, className, vehicles = [], focusedStop = null }) {
+export default function BusRouteMap({
+  route,
+  directionIndex,
+  className,
+  vehicles = [],
+  focusedStop = null,
+  otherBuses = [],
+}) {
   const color = route.color ?? '#17171a'
   const active = route.directions[directionIndex]
   // El encuadre incluye los colectivos en vivo: si el feed usa un recorrido
@@ -160,44 +176,60 @@ export default function BusRouteMap({ route, directionIndex, className, vehicles
           {active.stops.map((stop, index) => {
             const isEnd = index === 0 || index === active.stops.length - 1
             const isFocused = focusedStop?.index === index
-            return (
+            const card = (
+              <MapCard
+                color={BUS_YELLOW}
+                badge={busBadge}
+                kicker={index === 0 ? 'Cabecera' : index === active.stops.length - 1 ? 'Última parada' : 'Parada'}
+                icon={<BusIcon kind="stop" color={route.color} />}
+                title={stopName(stop.name)}
+                headerAction={
+                  <FavoriteButton
+                    kind="paradas"
+                    id={stopFavoriteId(route.id, active.directionId, stop.id)}
+                    name={`la parada ${stopName(stop.name)} de la ${busTitle(route)}`}
+                    compact
+                  />
+                }
+                subtitle={[
+                  `Parada ${index + 1} de ${active.stops.length}`,
+                  index > 0 && active.minutes?.[index] != null
+                    ? `+${active.minutes[index]} min desde la cabecera`
+                    : null,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
+              />
+            )
+            const ref = (layer) => {
+              markers.current[index] = layer
+            }
+            // La parada elegida lleva el cartel de parada; las demas, un punto.
+            return isFocused ? (
+              <Marker
+                key={`${stop.id}-${index}-cartel`}
+                ref={ref}
+                position={[stop.latitude, stop.longitude]}
+                icon={stopSignIcon(color)}
+                zIndexOffset={400}
+                title={stopName(stop.name)}
+              >
+                {card}
+              </Marker>
+            ) : (
               <CircleMarker
                 key={`${stop.id}-${index}`}
-                ref={(layer) => {
-                  markers.current[index] = layer
-                }}
+                ref={ref}
                 center={[stop.latitude, stop.longitude]}
-                radius={isFocused ? 8 : isEnd ? 7 : smallStops ? 2.5 : 4}
+                radius={isEnd ? 7 : smallStops ? 2.5 : 4}
                 pathOptions={{
                   color,
-                  fillColor: isFocused ? color : '#ffffff',
+                  fillColor: '#ffffff',
                   fillOpacity: 1,
-                  weight: isFocused || isEnd ? 3 : smallStops ? 1.5 : 2,
+                  weight: isEnd ? 3 : smallStops ? 1.5 : 2,
                 }}
               >
-                <MapCard
-                  color={BUS_YELLOW}
-                  badge={busBadge}
-                  kicker={index === 0 ? 'Cabecera' : index === active.stops.length - 1 ? 'Última parada' : 'Parada'}
-                  icon={<BusIcon kind="stop" color={route.color} />}
-                  title={stopName(stop.name)}
-                  headerAction={
-                    <FavoriteButton
-                      kind="paradas"
-                      id={stopFavoriteId(route.id, active.directionId, stop.id)}
-                      name={`la parada ${stopName(stop.name)} de la ${busTitle(route)}`}
-                      compact
-                    />
-                  }
-                  subtitle={[
-                    `Parada ${index + 1} de ${active.stops.length}`,
-                    index > 0 && active.minutes?.[index] != null
-                      ? `+${active.minutes[index]} min desde la cabecera`
-                      : null,
-                  ]
-                    .filter(Boolean)
-                    .join(' · ')}
-                />
+                {card}
               </CircleMarker>
             )
           })}
@@ -211,7 +243,9 @@ export default function BusRouteMap({ route, directionIndex, className, vehicles
           <GlideMarker
             key={v.id}
             position={[v.latitude, v.longitude]}
-            title={parked ? 'Colectivo detenido fuera del recorrido' : `Colectivo de la línea ${route.shortName || '?'}`}
+            title={
+              parked ? 'Colectivo detenido fuera del recorrido' : `Colectivo de la línea ${route.shortName || '?'}`
+            }
             zIndexOffset={parked ? -100 : 0}
             icon={parked ? PARKED_ICON : LIVE_ICON}
           >
@@ -219,6 +253,27 @@ export default function BusRouteMap({ route, directionIndex, className, vehicles
           </GlideMarker>
         )
       })}
+
+      {/* Los de otras lineas que vienen a la parada elegida: blancos, con su cartel. */}
+      {otherBuses.map((bus) => (
+        <GlideMarker
+          key={`otra-${bus.id}`}
+          position={[bus.latitude, bus.longitude]}
+          title={`Colectivo de la línea ${bus.line}`}
+          icon={otherBusIcon(bus.line)}
+        >
+          <MapCard
+            color="#ffffff"
+            minWidth={220}
+            badge={<span className="map-card-bus">{bus.line}</span>}
+            kicker="Otra línea que para acá"
+            icon={<BusIcon kind="bus" />}
+            title={arrivalText(bus)}
+          >
+            <PositionSource text="GPS del colectivo" age={secondsAgoText(bus.ageSeconds)} />
+          </MapCard>
+        </GlideMarker>
+      ))}
 
       <ZoomTracker onZoom={setZoom} />
       <FitToRoute positions={positions} />

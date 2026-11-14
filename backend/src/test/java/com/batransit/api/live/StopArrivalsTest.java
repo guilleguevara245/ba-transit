@@ -35,6 +35,10 @@ class StopArrivalsTest {
                 List.of(at("lejos", 1.5), at("cerca", 5.5), at("paso", 8.2)));
 
         assertThat(buses).extracting(Approaching::id).containsExactly("cerca", "lejos");
+        // Cada uno con su posicion, para dibujarlo en el mapa.
+        assertThat(buses.get(0).latitude()).isEqualTo(-34.6);
+        assertThat(buses.get(0).longitude()).isEqualTo(-58.45 + 5.5 * 0.002);
+        assertThat(buses.get(0).withLine("163A").longitude()).isEqualTo(-58.45 + 5.5 * 0.002);
         // Entre la 5 y la 6: le faltan 2 paradas (6 y 7) y 3 minutos (de 11 a 14).
         assertThat(buses.get(0).stopsAway()).isEqualTo(2);
         assertThat(buses.get(0).minutes()).isEqualTo(3);

@@ -11,6 +11,7 @@ import BusAlerts from '../components/BusAlerts.jsx'
 import FavoriteButton from '../components/FavoriteButton.jsx'
 import ErrorMessage from '../components/ErrorMessage.jsx'
 import { useApi } from '../hooks/useApi.js'
+import { useFavoriteList } from '../hooks/useFavoriteList.js'
 import { useDebounce } from '../hooks/useDebounce.js'
 import { NARROW, useMediaQuery } from '../hooks/useMediaQuery.js'
 import {
@@ -24,6 +25,7 @@ import {
   stopName,
 } from '../utils/busNames.js'
 import { formatDuration } from '../utils/travelTime.js'
+import { stopTimes } from '../utils/busTrip.js'
 import './ModePage.css'
 import './ColectivosPage.css'
 import './MapPage.css'
@@ -42,6 +44,9 @@ function BusNumber({ route, large = false }) {
   )
 }
 
+/** "303 a" -> "303A", para comparar carteles. */
+const lineKey = (text) => String(text ?? '').replace(/\s+/g, '').toUpperCase()
+
 /** Parametros extra por si el id del feed en vivo no esta en el GTFS del dia (ver ColectivoService.find). */
 function detailPath(routeId, line, headsign) {
   const params = new URLSearchParams()
@@ -55,7 +60,12 @@ function RouteDetail({ routeId, line, headsign, initialDirection, initialStop })
   const { data: route, loading, error } = useApi(detailPath(routeId, line, headsign))
   const [directionIndex, setDirectionIndex] = useState(0)
   // Parada elegida en la lista: { index, n } (n cambia en cada toque, para volver a centrarla).
+  // Es donde subis: la lista cuenta los minutos desde ahi.
   const [focusedStop, setFocusedStop] = useState(null)
+  // Donde bajas (indice de la parada), para ver el viaje entre las dos.
+  const [alight, setAlight] = useState(null)
+  const { ids: favoriteBuses } = useFavoriteList('colectivos')
+  const { has: isSavedStop } = useFavoriteList('paradas')
   // Con el numero de la linea, el servidor descarta los colectivos de otra linea con el mismo id.
   const live = useApi(
     route
@@ -71,8 +81,25 @@ function RouteDetail({ routeId, line, headsign, initialDirection, initialStop })
     setDirectionIndex(index >= 0 ? index : 0)
   }, [route, initialDirection])
 
-  // Al cambiar de sentido, la parada elegida deja de valer.
-  useEffect(() => setFocusedStop(null), [directionIndex, route])
+  // Al cambiar de sentido, la parada elegida y la de bajada dejan de valer.
+  useEffect(() => {
+    setFocusedStop(null)
+    setAlight(null)
+  }, [directionIndex, route])
+
+  // Los colectivos que vienen a la parada elegida, de esta linea y de las
+  // otras que paran ahi (sus otros carteles y tus colectivos favoritos): los
+  // de otras lineas se dibujan en el mapa, como en Tus favoritos.
+  const shownDirection = route?.directions[directionIndex]
+  const chosenStop = focusedStop && shownDirection ? shownDirection.stops[focusedStop.index] : null
+  const arrivals = useApi(
+    chosenStop
+      ? `/api/v1/colectivos/${encodeURIComponent(route.id)}/parada/${encodeURIComponent(chosenStop.id)}` +
+          `?sentido=${shownDirection.directionId}` +
+          (favoriteBuses.length ? `&lineas=${encodeURIComponent(favoriteBuses.join(','))}` : '')
+      : null,
+    { refreshMs: LIVE_REFRESH_MS },
+  )
 
   // Si se llego desde una parada favorita (&parada=), se marca esa parada una vez.
   const stopApplied = useRef(false)
@@ -117,6 +144,17 @@ function RouteDetail({ routeId, line, headsign, initialDirection, initialStop })
     : -1
   const otherCount =
     otherIndex >= 0 ? allVehicles.filter((v) => v.direction === route.directions[otherIndex].directionId).length : 0
+  // De otras lineas que vienen a la parada elegida (con posicion para el mapa).
+  const ownLine = lineKey(route.shortName)
+  const otherBuses = chosenStop
+    ? (arrivals.data?.buses ?? []).filter((b) => b.line && lineKey(b.line) !== ownLine && b.latitude != null)
+    : []
+  const othersByLine = Object.entries(
+    otherBuses.reduce((acc, b) => ({ ...acc, [b.line]: (acc[b.line] ?? 0) + 1 }), {}),
+  )
+  const chosenId = chosenStop ? stopFavoriteId(route.id, direction.directionId, chosenStop.id) : null
+  const chosenLabel = chosenId && isSavedStop(chosenId) ? 'tu parada' : 'esta parada'
+  const times = stopTimes(direction?.minutes ?? [], direction?.stops.length ?? 0, focusedStop?.index ?? null, alight)
 
   return (
     <section className="bus-detail">
@@ -157,7 +195,7 @@ function RouteDetail({ routeId, line, headsign, initialDirection, initialStop })
           <span className="bus-live-text">
             {vehicles.length > 0 &&
               `${vehicles.length} ${vehicles.length === 1 ? 'colectivo' : 'colectivos'} en vivo${matchesGtfs ? ' en este sentido' : ''}`}
-            {vehicles.length === 0 && otherCount === 0 && 'Sin colectivos en vivo de esta línea ahora.'}
+            {vehicles.length === 0 && otherCount === 0 && `Sin colectivos en vivo de esta línea ahora${othersByLine.length ? '' : '.'}`}
             {vehicles.length > 0 && (route.id !== routeId || vehicles.some((v) => v.otherRoute)) && (
               <span className="bus-live-note"> · pueden ir por un ramal distinto del recorrido dibujado</span>
             )}
@@ -168,6 +206,19 @@ function RouteDetail({ routeId, line, headsign, initialDirection, initialStop })
                   hacia {headsignName(route.directions[otherIndex].headsign) || 'el otro sentido'}
                 </button>
               </>
+            )}
+            {othersByLine.length > 0 && (
+              <span className="bus-live-others">
+                {' · '}
+                {otherBuses.length === 1 ? 'viene ' : 'vienen '}
+                {othersByLine.map(([sign, count], i) => (
+                  <span key={sign}>
+                    {i > 0 && (i === othersByLine.length - 1 ? ' y ' : ', ')}
+                    {count} del <span className="bus-live-sign">{sign}</span>
+                  </span>
+                ))}{' '}
+                a {chosenLabel}
+              </span>
             )}
           </span>
           {live.data.updatedAt && (
@@ -188,6 +239,7 @@ function RouteDetail({ routeId, line, headsign, initialDirection, initialStop })
           directionIndex={directionIndex}
           vehicles={vehicles}
           focusedStop={focusedStop}
+          otherBuses={otherBuses}
         />
         {direction && (
           <div className="panel bus-stops">
@@ -195,33 +247,91 @@ function RouteDetail({ routeId, line, headsign, initialDirection, initialStop })
               Paradas
               <span className="count">{direction.stops.length}</span>
             </div>
-            {totalMinutes != null && (
+            {totalMinutes != null && !times.trip && !chosenStop && (
               <div className="bus-total">
                 Recorrido completo: <strong>{formatDuration(totalMinutes)}</strong>
                 <span> según el horario del feed</span>
               </div>
             )}
+            {/* De una parada a otra: lo que tarda el viaje entre donde subis y donde bajas. */}
+            {times.trip && (
+              <div className="bus-trip" role="status">
+                <span>
+                  {times.trip.from === 0 && !chosenStop ? 'Desde la cabecera' : `De ${stopName(direction.stops[times.trip.from].name)}`}{' '}
+                  a {stopName(direction.stops[times.trip.to].name)}:{' '}
+                  {times.trip.minutes != null && <strong>{formatDuration(times.trip.minutes)}</strong>}
+                  {times.trip.minutes != null && ' · '}
+                  {times.trip.stops} {times.trip.stops === 1 ? 'parada' : 'paradas'}
+                </span>
+                <button type="button" className="bus-trip-clear" onClick={() => setAlight(null)}>
+                  Quitar bajada
+                </button>
+              </div>
+            )}
+            {/* Con una parada elegida, los minutos se cuentan desde ahi. */}
+            {chosenStop && !times.trip && (
+              <div className="bus-from">
+                <span>
+                  Minutos desde <strong>{stopName(chosenStop.name)}</strong>
+                </span>
+                <button type="button" className="bus-from-reset" onClick={() => setFocusedStop(null)}>
+                  Desde la cabecera
+                </button>
+              </div>
+            )}
             {/* El recorrido como una linea con sus paradas; la elegida queda marcada en la linea. */}
-            <ol className="bus-stop-list" style={route.color ? { '--bus-color': route.color } : undefined}>
+            <ol
+              className={`bus-stop-list${focusedStop ? ' has-origin' : ''}`}
+              style={route.color ? { '--bus-color': route.color } : undefined}
+            >
               {direction.stops.map((stop, index) => {
                 const active = focusedStop?.index === index
                 const end = index === 0 || index === direction.stops.length - 1
-                const minutes = direction.minutes?.[index]
+                const { state, minutes } = times.rows[index] ?? { state: 'normal', minutes: null }
+                const origin = focusedStop?.index ?? 0
+                // Se puede bajar en cualquier parada despues de donde subis.
+                const canAlight = index > origin
+                const isAlight = alight === index
+                const label =
+                  state === 'from'
+                    ? times.trip
+                      ? 'subís'
+                      : chosenLabel === 'tu parada'
+                        ? 'tu parada'
+                        : 'desde acá'
+                    : minutes != null && (index > 0 || state !== 'normal')
+                      ? `+${formatDuration(minutes)}`
+                      : null
                 return (
-                  <li key={`${stop.id}-${index}`} className={end ? 'bus-stop end' : 'bus-stop'}>
-                    {/* Tocar la parada la muestra en el mapa con su tarjeta. */}
+                  <li
+                    key={`${stop.id}-${index}`}
+                    className={['bus-stop', end && 'end', state !== 'normal' && `trip-${state}`].filter(Boolean).join(' ')}
+                  >
+                    {/* Tocar la parada la muestra en el mapa con su tarjeta y cuenta los minutos desde ahi. */}
                     <button
                       type="button"
                       className={`bus-stop-button${active ? ' active' : ''}`}
                       aria-current={active ? 'location' : undefined}
-                      onClick={() => setFocusedStop((prev) => ({ index, n: (prev?.n ?? 0) + 1 }))}
+                      onClick={() => {
+                        if (alight != null && index >= alight) setAlight(null)
+                        setFocusedStop((prev) => ({ index, n: (prev?.n ?? 0) + 1 }))
+                      }}
                     >
                       <span className="bus-stop-dot" aria-hidden="true" />
                       <span className="bus-stop-name">{stopName(stop.name)}</span>
-                      {minutes != null && index > 0 && (
-                        <span className="bus-stop-minutes">+{formatDuration(minutes)}</span>
-                      )}
+                      {label && <span className="bus-stop-minutes">{label}</span>}
                     </button>
+                    {/* Bajar aca: el viaje desde la parada elegida (o desde la cabecera) hasta esta. */}
+                    {canAlight && (
+                      <button
+                        type="button"
+                        className={`bus-stop-alight${isAlight ? ' active' : ''}`}
+                        aria-pressed={isAlight}
+                        onClick={() => setAlight(isAlight ? null : index)}
+                      >
+                        {isAlight ? 'Bajás acá' : 'Bajo acá'}
+                      </button>
+                    )}
                     {/* Guardar la parada: aparece al pasar el mouse, en la elegida o si ya esta guardada. */}
                     <span className="bus-stop-fav">
                       <FavoriteButton

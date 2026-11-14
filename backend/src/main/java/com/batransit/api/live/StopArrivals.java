@@ -38,17 +38,24 @@ final class StopArrivals {
      * Un colectivo que viene: minutes, lo que le falta segun el horario
      * (null si el feed no trae los minutos de esas paradas); stopsAway,
      * cuantas paradas le faltan (la elegida incluida); line, el cartel (solo
-     * si la parada junta varios).
+     * si la parada junta varios); latitude y longitude, donde esta (para
+     * dibujarlo en el mapa de otra linea que pasa por la misma parada).
      */
-    record Approaching(String id, Integer minutes, int stopsAway, boolean arriving, long ageSeconds, String line) {
+    record Approaching(String id, Integer minutes, int stopsAway, boolean arriving, long ageSeconds, String line,
+                       Double latitude, Double longitude) {
 
         Approaching(String id, Integer minutes, int stopsAway, boolean arriving, long ageSeconds) {
-            this(id, minutes, stopsAway, arriving, ageSeconds, null);
+            this(id, minutes, stopsAway, arriving, ageSeconds, null, null, null);
         }
 
         /** El mismo, con el cartel de la linea ("42B"). */
         Approaching withLine(String sign) {
-            return new Approaching(id, minutes, stopsAway, arriving, ageSeconds, sign);
+            return new Approaching(id, minutes, stopsAway, arriving, ageSeconds, sign, latitude, longitude);
+        }
+
+        /** El mismo, con su posicion. */
+        Approaching at(double lat, double lon) {
+            return new Approaching(id, minutes, stopsAway, arriving, ageSeconds, line, lat, lon);
         }
     }
 
@@ -97,7 +104,7 @@ final class StopArrivals {
             int stopsAway = Math.max(1, stopIndex - (int) Math.floor(progress));
             Integer minutes = minutesLeft(direction.minutes(), position, stopIndex, vehicle.ageSeconds());
             result.add(new Approaching(vehicle.id(), arriving ? Integer.valueOf(0) : minutes, arriving ? 0 : stopsAway,
-                    arriving, vehicle.ageSeconds()));
+                    arriving, vehicle.ageSeconds()).at(vehicle.latitude(), vehicle.longitude()));
         }
         result.sort(Comparator.comparingInt(Approaching::stopsAway)
                 .thenComparing(a -> a.minutes() == null ? Integer.MAX_VALUE : a.minutes()));

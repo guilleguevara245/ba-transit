@@ -7,6 +7,8 @@ import { divIcon } from 'leaflet'
  */
 export const GLYPHS = {
   bus: 'M6 3h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM4 11h16M8 21v-3m8 3v-3M7.5 14.5h.01m9 0h.01',
+  // Cartel de parada de colectivo en su poste (el mismo de las tarjetas).
+  stop: 'M6.5 3h11a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM12 12v9M8.5 21h7M9 7.5h6',
   bike: 'M5.5 18a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zm13 0a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM5.5 14.5 9 8h6l3.5 6.5M9 8l3 6.5h-1M14 5h2.5',
   // Avion visto desde arriba (se dibuja relleno: ver FILLED).
   plane: 'M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z',
@@ -52,6 +54,57 @@ export function badgeIcon(glyph, options) {
         iconAnchor: [px / 2, px / 2],
         popupAnchor: [0, -px / 2],
         tooltipAnchor: [px / 2, 0],
+      }),
+    )
+  }
+  return cache.get(key)
+}
+
+/** Escapa un texto para meterlo en el HTML de un icono. */
+const escapeHtml = (text) =>
+  String(text).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
+
+/**
+ * La parada elegida: el cartel de parada (cuadro oscuro, o del color de la
+ * linea, con borde blanco) sobre una punta que marca la parada.
+ */
+export function stopSignIcon(color = '#17171a') {
+  const key = JSON.stringify(['stop-sign', color])
+  if (!cache.has(key)) {
+    cache.set(
+      key,
+      divIcon({
+        className: 'stop-sign-icon',
+        html:
+          `<span class="stop-sign" style="--sign:${escapeHtml(color)}">` +
+          `<span class="stop-sign-board"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${GLYPHS.stop}"/></svg></span>` +
+          '<i class="stop-sign-tip"></i><i class="stop-sign-dot"></i></span>',
+        iconSize: [34, 48],
+        iconAnchor: [17, 44],
+        popupAnchor: [0, -42],
+      }),
+    )
+  }
+  return cache.get(key)
+}
+
+/**
+ * Un colectivo de otra linea que viene a la misma parada: blanco con borde
+ * oscuro (el de la linea es amarillo) y el cartel de su linea colgado.
+ */
+export function otherBusIcon(line) {
+  const key = JSON.stringify(['other-bus', line])
+  if (!cache.has(key)) {
+    cache.set(
+      key,
+      divIcon({
+        className: 'map-badge-icon other-bus-icon',
+        html:
+          badgeHtml('bus', { bg: '#ffffff', fg: '#17171a', border: '#17171a', shape: 'circle' }) +
+          `<b class="other-bus-line">${escapeHtml(line)}</b>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14],
+        popupAnchor: [0, -14],
       }),
     )
   }

@@ -469,6 +469,85 @@ body {
   box-shadow: 0 0 0 3px rgba(244, 193, 27, 0.55), 0 1px 3px rgba(0, 0, 0, 0.35);
 }
 
+/* La parada elegida en el mapa de un colectivo: el cartel sobre su punta. */
+.stop-sign-icon {
+  background: none;
+  border: none;
+}
+
+.stop-sign {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+}
+
+.stop-sign-board {
+  position: absolute;
+  top: 0;
+  left: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 2.5px solid #ffffff;
+  border-radius: 8px;
+  background: var(--sign);
+}
+
+.stop-sign-board svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.stop-sign-tip {
+  position: absolute;
+  top: 29px;
+  left: 11px;
+  border-top: 9px solid var(--sign);
+  border-right: 6px solid transparent;
+  border-left: 6px solid transparent;
+}
+
+.stop-sign-dot {
+  position: absolute;
+  top: 40px;
+  left: 13px;
+  width: 8px;
+  height: 8px;
+  border: 1.5px solid #ffffff;
+  border-radius: 50%;
+  background: var(--sign);
+}
+
+/* Colectivo de otra linea que viene a la misma parada, con el cartel de su linea. */
+.other-bus-icon {
+  overflow: visible;
+}
+
+.other-bus-line {
+  position: absolute;
+  top: -11px;
+  left: 19px;
+  padding: 0 4px;
+  border-radius: 3px;
+  background: #17171a;
+  color: #ffffff;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+  white-space: nowrap;
+  box-shadow: 0 0 0 1.5px #ffffff;
+}
+
 /* En las referencias del mapa, el mismo distintivo en chico. */
 .legend-badge {
   display: inline-block;

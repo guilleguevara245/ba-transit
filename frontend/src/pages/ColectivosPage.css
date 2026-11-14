@@ -435,3 +435,148 @@
   border-radius: 50%;
   background: #17171a;
 }
+
+/* ---- De una parada a otra ---- */
+
+/* Con una parada elegida: desde donde se cuentan los minutos. */
+.bus-from {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 10px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.bus-from strong {
+  color: var(--text);
+}
+
+.bus-from-reset,
+.bus-trip-clear {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.bus-from-reset {
+  color: color-mix(in srgb, var(--yellow-deep) 70%, var(--text));
+}
+
+/* El viaje entre donde subis y donde bajas. */
+.bus-trip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+  margin-bottom: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: #17171a;
+  color: #ffffff;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.bus-trip strong {
+  color: var(--yellow);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 18px;
+}
+
+.bus-trip-clear {
+  color: var(--yellow);
+}
+
+/* Antes de subir y despues de bajar, tenues; el viaje, marcado. */
+.bus-stop.trip-before .bus-stop-button,
+.bus-stop.trip-after .bus-stop-button {
+  opacity: 0.45;
+}
+
+.bus-stop.trip-ride .bus-stop-button {
+  background: rgba(244, 193, 27, 0.08);
+}
+
+.bus-stop.trip-to .bus-stop-button {
+  background: rgba(244, 193, 27, 0.16);
+  font-weight: 600;
+}
+
+.bus-stop.trip-to .bus-stop-dot {
+  background: var(--bus-color, var(--text));
+}
+
+.bus-stop.trip-from .bus-stop-minutes,
+.bus-stop.trip-to .bus-stop-minutes {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* "Bajo acá": como la estrella, aparece al pasar el mouse (y en el celular, despues de elegir donde subis). */
+.bus-stop-alight {
+  flex-shrink: 0;
+  margin-left: 4px;
+  padding: 3px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+}
+
+.bus-stop:hover .bus-stop-alight,
+.bus-stop:focus-within .bus-stop-alight,
+.bus-stop-alight.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (hover: none) {
+  .bus-stop-list.has-origin .bus-stop-alight {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+.bus-stop-alight:hover {
+  border-color: var(--text-faint);
+  color: var(--text);
+}
+
+.bus-stop-alight.active {
+  border-color: #17171a;
+  background: #17171a;
+  color: #ffffff;
+}
+
+.bus-stop-alight:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 1px;
+}
+
+/* El cartel de otra linea en el texto de los colectivos en vivo. */
+.bus-live-sign {
+  display: inline-block;
+  padding: 0 4px;
+  border-radius: 3px;
+  background: #17171a;
+  color: #ffffff;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  line-height: 1.35;
+}
