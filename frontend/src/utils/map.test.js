@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { SUBTE_TRANSFERS, buildLegend, buildRoutes, connectingLineCodes, distanceKm, findTransfers, lineSummary, routeInfo, shortOperator, stationBranches } from './map.js'
+import fixtures from '../../e2e/fixtures.json'
+import TRACK_SHAPES from '../data/trackShapes.json'
+import { SUBTE_TRANSFERS, buildLegend, buildRoutes, connectingLineCodes, decodePolyline, distanceKm, findTransfers, lineSummary, routeInfo, shortOperator, stationBranches, trackBetween } from './map.js'
 
 const station = (id, branchId, lineId, sequenceOrder, lat, lng) => ({
   stationId: id,
@@ -21,7 +23,7 @@ describe('buildRoutes', () => {
       station(4, 20, 2, 2, -34.71, -58.41),
     ]
 
-    const routes = buildRoutes(stations)
+    const routes = buildRoutes(stations, {})
 
     expect(routes.length).toBe(2)
     expect(routes[0].positions).toEqual([
@@ -33,6 +35,63 @@ describe('buildRoutes', () => {
 
   it('descarta ramales con una sola estacion', () => {
     expect(buildRoutes([station(1, 10, 1, 1, -34.6, -58.37)])).toEqual([])
+  })
+
+  it('va por el trazado de las vias, cortado en la primera y la ultima estacion', () => {
+    // Un trazado en L: de (0, 0) a (0, 0.02) y de ahi a (0.02, 0.02).
+    const shapes = { 10: '???_|B_|B?' }
+    expect(decodePolyline(shapes[10])).toEqual([
+      [0, 0],
+      [0, 0.02],
+      [0.02, 0.02],
+    ])
+    const routes = buildRoutes([station(1, 10, 1, 1, 0, 0.005), station(2, 10, 1, 2, 0.015, 0.02)], shapes)
+    const rounded = routes[0].positions.map(([lat, lon]) => [+lat.toFixed(6), +lon.toFixed(6)])
+    expect(rounded).toEqual([
+      [0, 0.005],
+      [0, 0.005],
+      [0, 0.02],
+      [0.015, 0.02],
+      [0.015, 0.02],
+    ])
+  })
+
+  it('si las estaciones no caen sobre el trazado, en linea recta', () => {
+    const shapes = { 10: '???_|B_|B?' }
+    const routes = buildRoutes([station(1, 10, 1, 1, 0.5, 0.5), station(2, 10, 1, 2, 0.6, 0.6)], shapes)
+    expect(routes[0].positions).toEqual([
+      [0.5, 0.5],
+      [0.6, 0.6],
+    ])
+    // Al reves del trazado tampoco.
+    expect(trackBetween(decodePolyline(shapes[10]), [0.015, 0.02], [0, 0.005])).toBeNull()
+  })
+
+  it('cada ramal de la red tiene su trazado y pasa cerca de todas sus estaciones', () => {
+    const stations = fixtures['/api/v1/map/stations']
+    const branches = new Set(stations.map((s) => s.branchId))
+    for (const branchId of branches) {
+      // Los ramales de prueba de las fixtures (dos estaciones) no son de la red.
+      if (stations.filter((s) => s.branchId === branchId).length < 5) continue
+      expect(TRACK_SHAPES[branchId], `ramal ${branchId}`).toBeTruthy()
+      const [route] = buildRoutes(stations.filter((s) => s.branchId === branchId))
+      // Con el trazado hay mas puntos que estaciones.
+      const count = stations.filter((s) => s.branchId === branchId).length
+      expect(route.positions.length, `ramal ${branchId}`).toBeGreaterThan(count)
+      for (const s of stations.filter((st) => st.branchId === branchId)) {
+        const near = route.positions.some((p, i) => {
+          if (i === 0) return false
+          const q = route.positions[i - 1]
+          // distancia al tramo, aproximada con puntos intermedios
+          for (let t = 0; t <= 1; t += 0.02) {
+            const x = { latitude: q[0] + t * (p[0] - q[0]), longitude: q[1] + t * (p[1] - q[1]) }
+            if (distanceKm(x, s) < 0.6) return true
+          }
+          return false
+        })
+        expect(near, `${s.stationName} (ramal ${branchId})`).toBe(true)
+      }
+    }
   })
 })
 

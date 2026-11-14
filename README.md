@@ -181,6 +181,7 @@ flowchart LR
 | Estado y horarios del Urquiza | [Metrovías](https://metrovias.com.ar/) |
 | Cortes de tránsito | [Noticias del Gobierno de la Ciudad](https://buenosaires.gob.ar/noticias-relacionadas/Tr%C3%A1nsito) |
 | Estacionamiento | [Buenos Aires Data](https://data.buenosaires.gob.ar/) y [OpenStreetMap](https://www.openstreetmap.org/copyright) (conurbano) |
+| Trazado de las líneas en el mapa | [OpenStreetMap](https://www.openstreetmap.org/copyright) (ODbL), con `frontend/scripts/trackShapes.mjs` |
 | Alertas meteorológicas | [Servicio Meteorológico Nacional](https://www.smn.gob.ar/alertas) |
 | Tránsito en los accesos | [TomTom Traffic](https://www.tomtom.com/products/traffic-apis/) |
 | Aviones en vivo | [adsb.lol](https://adsb.lol/) (ODbL) |

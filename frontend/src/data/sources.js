@@ -71,6 +71,14 @@ export const SOURCE_GROUPS = [
         when: 'fixed',
       },
       {
+        what: 'Trazado de las líneas en el mapa',
+        source: 'OpenStreetMap (datos con licencia ODbL)',
+        url: 'https://www.openstreetmap.org/copyright',
+        detail:
+          'Las vías del subte, el Premetro y los trenes, para dibujar cada línea por donde va y no en línea recta de estación a estación.',
+        when: 'fixed',
+      },
+      {
         what: 'Ramales del Roca',
         source: 'datos.gob.ar — Estaciones de trenes con servicios activos y red ferroviaria (ADIFSE, 2022)',
         url: 'https://datos.gob.ar/dataset/transporte-estaciones-trenes-servicios-activos-2022',
