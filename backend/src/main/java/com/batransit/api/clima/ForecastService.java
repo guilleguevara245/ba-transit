@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -172,6 +173,21 @@ public class ForecastService {
             return Optional.empty();
         }
     }
+
+    /**
+     * Pide el pronostico del centro (el Obelisco) al arrancar y cada 45
+     * minutos. Asi la pagina de estado sabe enseguida que proveedor responde:
+     * el navegador guarda el pronostico 10 minutos, y despues de un reinicio
+     * el sitio puede mostrar el clima sin que el servidor haya consultado
+     * todavia. Tambien deja lista la celda mas pedida.
+     */
+    @Scheduled(initialDelay = 30_000, fixedDelay = 45 * 60 * 1000L)
+    public void checkCenter() {
+        forecast(CENTER_LAT, CENTER_LON);
+    }
+
+    static final double CENTER_LAT = -34.6037;
+    static final double CENTER_LON = -58.3816;
 
     /** Si hay demasiadas celdas guardadas, se olvidan las mas viejas. */
     private void trim() {

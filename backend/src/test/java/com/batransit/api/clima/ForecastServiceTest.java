@@ -133,6 +133,17 @@ class ForecastServiceTest {
     }
 
     @Test
+    void alArrancarConsultaElCentro() throws IOException {
+        FakeService service = new FakeService(sample());
+        service.checkCenter();
+        assertThat(service.urls.size()).isEqualTo(1);
+        assertThat(service.urls.get(0)).contains("latitude=-34.60&longitude=-58.40");
+        // Queda guardado: un usuario del centro no genera otra consulta.
+        assertThat(service.forecast(-34.603, -58.381).isPresent()).isEqualTo(true);
+        assertThat(service.urls.size()).isEqualTo(1);
+    }
+
+    @Test
     void cadaProveedorTieneSuFilaEnElEstado() throws IOException {
         SourceHealth health = new SourceHealth();
         FakeService service = new FakeService(null);
