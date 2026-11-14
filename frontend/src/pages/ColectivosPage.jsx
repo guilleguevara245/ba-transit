@@ -293,15 +293,9 @@ function RouteDetail({ routeId, line, headsign, initialDirection, initialStop })
                 const canAlight = index > origin
                 const isAlight = alight === index
                 const label =
-                  state === 'from'
-                    ? times.trip
-                      ? 'subís'
-                      : chosenLabel === 'tu parada'
-                        ? 'tu parada'
-                        : 'desde acá'
-                    : minutes != null && (index > 0 || state !== 'normal')
-                      ? `+${formatDuration(minutes)}`
-                      : null
+                  state !== 'from' && minutes != null && (index > 0 || state !== 'normal')
+                    ? `+${formatDuration(minutes)}`
+                    : null
                 return (
                   <li
                     key={`${stop.id}-${index}`}
@@ -321,6 +315,20 @@ function RouteDetail({ routeId, line, headsign, initialDirection, initialStop })
                       <span className="bus-stop-name">{stopName(stop.name)}</span>
                       {label && <span className="bus-stop-minutes">{label}</span>}
                     </button>
+                    {/* Donde subis: el mismo boton que "Bajo aca", marcado; tocarlo vuelve a la cabecera. */}
+                    {state === 'from' && (
+                      <button
+                        type="button"
+                        className="bus-stop-alight active"
+                        aria-pressed="true"
+                        onClick={() => {
+                          setFocusedStop(null)
+                          setAlight(null)
+                        }}
+                      >
+                        {times.trip ? 'Subís acá' : 'Desde acá'}
+                      </button>
+                    )}
                     {/* Bajar aca: el viaje desde la parada elegida (o desde la cabecera) hasta esta. */}
                     {canAlight && (
                       <button

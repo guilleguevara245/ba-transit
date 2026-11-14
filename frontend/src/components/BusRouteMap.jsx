@@ -51,6 +51,12 @@ function FocusStop({ focused, stops, markers }) {
       map.getContainer().scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
     const open = () => markers.current[focused.index]?.openPopup()
+    // Si ya se ve bien (cerca y lejos del borde), no se mueve: volver a tocar la misma
+    // parada movia el mapa al centro y el cartel lo volvia a correr (temblaba).
+    if (map.getZoom() >= STOP_ZOOM && map.getBounds().pad(-0.15).contains([stop.latitude, stop.longitude])) {
+      open()
+      return undefined
+    }
     map.once('moveend', open)
     map.flyTo([stop.latitude, stop.longitude], Math.max(map.getZoom(), STOP_ZOOM), { duration: 0.6 })
     return () => map.off('moveend', open)
