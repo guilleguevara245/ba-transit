@@ -453,10 +453,29 @@ public class ForecastService {
                 ? d.path("apparent_air_temperature").asDouble() : apparent(temperature, humidity, windMs);
         String symbol = next.path("summary").path("symbol_code").asText("");
         JsonNode chance = next.path("details").path("probability_of_precipitation");
+        double rain = next.path("details").path("precipitation_amount").asDouble(0);
         return new Hour(localTime(time), temperature, feelsLike,
-                chance.isNumber() ? (int) Math.round(chance.asDouble()) : null,
-                next.path("details").path("precipitation_amount").asDouble(0), wmo(symbol),
+                chance.isNumber() ? (int) Math.round(chance.asDouble()) : null, rain, wmo(symbol, rain),
                 Math.round(windMs * 36) / 10.0, isDay(symbol, time, lat, lon));
+    }
+
+    /** Menos que esto en una hora no es lluvia para el sitio (el mismo umbral que usa para avisar). */
+    static final double MIN_RAIN_MM = 0.3;
+
+    /**
+     * El codigo de la OMM del simbolo, pero sin lluvia si los milimetros no
+     * llegan a MIN_RAIN_MM: MET Norway pone "lloviznas" con 0,1 mm cuando el
+     * modelo ve alguna chance, y el sitio mostraba "Lluvia" mientras decia
+     * "Sin lluvia en las proximas horas". Un chaparron flojo queda como
+     * parcialmente nublado y una lluvia floja como nublado. Las tormentas
+     * quedan siempre.
+     */
+    static int wmo(String symbol, double rainMm) {
+        int code = wmo(symbol);
+        if (rainMm >= MIN_RAIN_MM || code >= 95 || code < 51) {
+            return code;
+        }
+        return code >= 80 ? 2 : 3;
     }
 
     /**

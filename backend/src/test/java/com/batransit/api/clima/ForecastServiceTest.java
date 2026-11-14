@@ -170,7 +170,8 @@ class ForecastServiceTest {
         assertThat(f.current().time()).isEqualTo("2026-11-14T13:15");
         assertThat(f.current().temperature()).isEqualTo(26.5);
         assertThat(f.current().feelsLike()).isEqualTo(27.5);
-        assertThat(f.current().code()).isEqualTo(80);
+        // "lightrainshowers" con 0,1 mm: no llega a lluvia, queda parcialmente nublado.
+        assertThat(f.current().code()).isEqualTo(2);
         assertThat(f.current().isDay()).isEqualTo(true);
         assertThat(f.current().precipitation()).isEqualTo(0.1);
         // 4,1 m/s son 14,8 km/h.
@@ -238,6 +239,12 @@ class ForecastServiceTest {
         assertThat(ForecastService.wmo("lightssnowshowersandthunder_day")).isEqualTo(95);
         assertThat(ForecastService.wmo("snow")).isEqualTo(73);
         assertThat(ForecastService.wmo("")).isEqualTo(3);
+        // Con pocos milimetros no es lluvia; con 0,3 o mas, si. Las tormentas siempre.
+        assertThat(ForecastService.wmo("lightrainshowers_day", 0.1)).isEqualTo(2);
+        assertThat(ForecastService.wmo("lightrain", 0.2)).isEqualTo(3);
+        assertThat(ForecastService.wmo("lightrain", 0.3)).isEqualTo(61);
+        assertThat(ForecastService.wmo("rainshowersandthunder_day", 0.0)).isEqualTo(95);
+        assertThat(ForecastService.wmo("fair_day", 0.0)).isEqualTo(1);
     }
 
     @Test
