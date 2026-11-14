@@ -279,7 +279,7 @@
 }
 
 .bus-stop:hover .bus-stop-fav,
-.bus-stop:focus-within .bus-stop-fav,
+.bus-stop:has(:focus-visible) .bus-stop-fav,
 .bus-stop:has(.bus-stop-button.active) .bus-stop-fav,
 .bus-stop-fav:has(.favorite-button.active) {
   opacity: 1;
@@ -540,7 +540,7 @@
 }
 
 .bus-stop:hover .bus-stop-alight,
-.bus-stop:focus-within .bus-stop-alight,
+.bus-stop:has(:focus-visible) .bus-stop-alight,
 .bus-stop-alight.active {
   opacity: 1;
   pointer-events: auto;
