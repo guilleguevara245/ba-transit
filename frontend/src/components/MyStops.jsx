@@ -18,6 +18,32 @@ import './MyLines.css'
 const REFRESH_MS = 30_000
 
 /**
+ * Lo ultimo que se supo de cada parada favorita (linea, nombre, destino),
+ * para seguir mostrandola si el servidor todavia no tiene los colectivos
+ * (por ejemplo, recien arrancado y bajando el feed).
+ */
+const KNOWN_KEY = 'ba-transit:paradas-conocidas'
+
+function knownStops() {
+  try {
+    return JSON.parse(window.localStorage.getItem(KNOWN_KEY) ?? '{}') ?? {}
+  } catch {
+    return {}
+  }
+}
+
+function rememberStop(id, data) {
+  try {
+    const all = knownStops()
+    const info = { line: data.line, lines: data.lines, stopName: data.stopName, headsign: data.headsign }
+    if (JSON.stringify(all[id]) === JSON.stringify(info)) return
+    window.localStorage.setItem(KNOWN_KEY, JSON.stringify({ ...all, [id]: info }))
+  } catch {
+    // Sin almacenamiento (modo privado): solo no se recuerda.
+  }
+}
+
+/**
  * Una parada favorita: el proximo colectivo de esa linea que viene hacia
  * ella ("6 min · a 3 paradas", o "Llegando"), segun su posicion en vivo y
  * los minutos entre paradas del horario. Si paran otros carteles de la
@@ -35,11 +61,15 @@ function StopRow({ id, inPanel, favoriteBuses }) {
     { refreshMs: REFRESH_MS },
   )
   if (!fav) return null
+  if (data) rememberStop(id, data)
 
   const gone = String(error ?? '').includes('respondió 404')
-  const line = data?.line
-  const name = data ? stopName(data.stopName) : gone ? 'Parada que ya no está en el recorrido' : 'Parada'
-  const to = data ? headsignName(data.headsign) : ''
+  // El servidor todavia no tiene los colectivos (503): se muestra lo ultimo que se supo de la parada.
+  const notReady = String(error ?? '').includes('respondió 503')
+  const known = data ?? (gone ? null : knownStops()[id])
+  const line = known?.line
+  const name = known ? stopName(known.stopName) : gone ? 'Parada que ya no está en el recorrido' : 'Parada'
+  const to = known ? headsignName(known.headsign) : ''
   const href = `/colectivos?${new URLSearchParams({
     ...(line ? { linea: line } : {}),
     id: fav.routeId,
@@ -48,7 +78,7 @@ function StopRow({ id, inPanel, favoriteBuses }) {
   })}`
   const next = nextBusText(data?.buses)
   // Si paran varios carteles de la linea (42A y 42B), cada horario dice de cual es.
-  const lines = data?.lines?.length ? data.lines : line ? [line] : []
+  const lines = known?.lines?.length ? known.lines : line ? [line] : []
   const severalSigns = lines.length > 1
   const oneNumber = sameBusNumber(lines)
   // Los dos proximos: "llegando" con el colectivo de frente (como los trenes) o los minutos.
@@ -74,7 +104,7 @@ function StopRow({ id, inPanel, favoriteBuses }) {
 
   let status
   if (!data) {
-    status = loading ? <small>Buscando…</small> : null
+    status = loading ? <small>Buscando…</small> : notReady ? <small>Sin datos por ahora</small> : null
   } else if (!data.live) {
     status = <small>Sin datos en vivo</small>
   } else if (!next) {
