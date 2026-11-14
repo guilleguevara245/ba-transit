@@ -2,7 +2,7 @@
 
 API REST de [BA Transit](https://ba-transit.onrender.com) (Java 21 + Spring Boot 3.5 + PostgreSQL). Reune las
 fuentes de transporte del AMBA (API Transporte de la Ciudad, Trenes Argentinos, la API de Trenes de Ariel
-Aguirre, Ferrovias, Metrovias, SMN, TomTom, adsb.lol, Open-Meteo y Georef), las guarda o las cachea y las sirve al
+Aguirre, Ferrovias, Metrovias, SMN, TomTom, adsb.lol, Open-Meteo, MET Norway y Georef), las guarda o las cachea y las sirve al
 frontend. Tambien maneja las cuentas de usuario, las sesiones por dispositivo y los avisos Web Push.
 
 La descripcion general del proyecto esta en el [README principal](../README.md).

@@ -16,6 +16,11 @@ import org.springframework.web.client.RestClientResponseException;
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -25,13 +30,16 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Pronostico por hora para un punto del AMBA, de Open-Meteo.
+ * Pronostico por hora para un punto del AMBA, de Open-Meteo, con MET Norway
+ * (el servicio meteorologico de Noruega) de respaldo.
  *
- * El navegador nunca le pide a Open-Meteo: pide aca, con las coordenadas ya
- * redondeadas a una grilla de 0,05 grados (unos 5 km), y el servidor vuelve
- * a redondear. Cada celda de la grilla se consulta como mucho una vez cada
- * 45 minutos, asi que muchos usuarios de la misma zona comparten una sola
- * consulta. Si Open-Meteo falla se devuelve lo ultimo que se tenga (hasta 6
+ * El navegador nunca le pide a ninguno de los dos: pide aca, con las
+ * coordenadas ya redondeadas a una grilla de 0,05 grados (unos 5 km), y el
+ * servidor vuelve a redondear. Cada celda de la grilla se consulta como mucho
+ * una vez cada 45 minutos, asi que muchos usuarios de la misma zona comparten
+ * una sola consulta. Si Open-Meteo no responde (por ejemplo, porque se agoto
+ * el limite diario de la IP de salida, que en Render es compartida) se le
+ * pide a MET Norway; si tampoco, se devuelve lo ultimo que se tenga (hasta 6
  * horas). Las coordenadas no se loguean.
  */
 @Service
@@ -86,6 +94,7 @@ public class ForecastService {
     }
 
     private final String baseUrl;
+    private final String metUrl;
     private final ObjectMapper objectMapper;
     private final RestClient restClient;
     private final Map<String, Cached> cache = new ConcurrentHashMap<>();
@@ -100,15 +109,22 @@ public class ForecastService {
     static final Duration[] BACKOFF = {Duration.ofMinutes(1), Duration.ofMinutes(2), Duration.ofMinutes(5),
             Duration.ofMinutes(10), Duration.ofMinutes(30)};
     static final String OPEN_METEO = "Open-Meteo";
+    static final String MET_NORWAY = "MET Norway";
+    static final ZoneId BUENOS_AIRES = ZoneId.of("America/Argentina/Buenos_Aires");
+    private static final DateTimeFormatter LOCAL_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
     private final Map<String, Object> locks = new ConcurrentHashMap<>();
 
     public ForecastService(@Value("${app.open-meteo.url:https://api.open-meteo.com/v1/forecast}") String baseUrl,
+                           @Value("${app.met-norway.url:https://api.met.no/weatherapi/locationforecast/2.0/complete}")
+                           String metUrl,
                            ObjectMapper objectMapper) {
         this.baseUrl = baseUrl;
+        this.metUrl = metUrl;
         this.objectMapper = objectMapper;
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         requestFactory.setConnectTimeout(5_000);
         requestFactory.setReadTimeout(10_000);
+        // MET Norway pide que cada sitio se identifique con su nombre y una forma de contacto.
         this.restClient = RestClient.builder().requestFactory(requestFactory)
                 .defaultHeader("User-Agent", "BA-Transit/1.0 (https://ba-transit.onrender.com)").build();
     }
@@ -143,7 +159,8 @@ public class ForecastService {
             if (cached != null && cached.fetchedAt().plus(FRESH).isAfter(Instant.now())) {
                 return Optional.of(cached.forecast());
             }
-            Optional<Forecast> fresh = download(toGrid(lat), toGrid(lon));
+            Forecast previous = cached == null ? null : cached.forecast();
+            Optional<Forecast> fresh = download(toGrid(lat), toGrid(lon)).map(f -> keepDay(f, previous));
             if (fresh.isPresent()) {
                 cache.put(key, new Cached(fresh.get(), Instant.now()));
                 trim();
@@ -180,6 +197,10 @@ public class ForecastService {
                 + "&timezone=America%2FArgentina%2FBuenos_Aires&forecast_days=2";
     }
 
+    String metUrl(double lat, double lon) {
+        return metUrl + String.format(Locale.ROOT, "?lat=%.2f&lon=%.2f", lat, lon);
+    }
+
     /** La consulta HTTP (los tests la reemplazan por respuestas grabadas). */
     protected String fetch(String url) {
         return restClient.get().uri(URI.create(url)).retrieve().body(String.class);
@@ -190,16 +211,25 @@ public class ForecastService {
         Forecast get() throws Exception;
     }
 
-    /** El pronostico de Open-Meteo (vacio si no responde o esta en pausa). */
+    /**
+     * El pronostico de Open-Meteo o, si no responde o esta en pausa, el de MET
+     * Norway (vacio si ninguno de los dos).
+     */
     private Optional<Forecast> download(double lat, double lon) {
         Instant now = Instant.now();
-        String[] reason = {null};
-        Optional<Forecast> forecast = attempt(OPEN_METEO, reason,
+        String[] openMeteo = {null};
+        Optional<Forecast> forecast = attempt(OPEN_METEO, openMeteo,
                 () -> parse(objectMapper.readTree(fetch(url(lat, lon))), lat, lon, now));
+        String[] met = {null};
+        if (forecast.isEmpty()) {
+            forecast = attempt(MET_NORWAY, met,
+                    () -> parseMet(objectMapper.readTree(fetch(metUrl(lat, lon))), lat, lon, now));
+        }
         if (forecast.isPresent()) {
             health.ok(SourceHealth.Source.PRONOSTICO);
         } else {
-            health.fail(SourceHealth.Source.PRONOSTICO, reason[0]);
+            health.fail(SourceHealth.Source.PRONOSTICO,
+                    OPEN_METEO + ": " + openMeteo[0] + " · " + MET_NORWAY + ": " + met[0]);
         }
         return forecast;
     }
@@ -208,7 +238,7 @@ public class ForecastService {
         Instant paused = pausedUntil.get(provider);
         if (paused != null && paused.isAfter(Instant.now())) {
             if (reason[0] == null) {
-                reason[0] = provider + " en pausa";
+                reason[0] = "en pausa";
             }
             return Optional.empty();
         }
@@ -327,6 +357,215 @@ public class ForecastService {
                         ? d.path("precipitation_probability_max").path(0).asInt() : null,
                 text(d.path("sunrise").path(1)));
         return new Forecast(lat, lon, current, List.copyOf(hours), today, updatedAt);
+    }
+
+    /**
+     * Arma el pronostico a partir de la respuesta de MET Norway
+     * (locationforecast 2.0 "complete"). Viene en UTC y paso a paso: se pasa a
+     * hora de Buenos Aires y se toman los pasos de una hora (los primeros dos
+     * dias y medio), desde la hora en curso. Lo que MET Norway no da se arma:
+     * la salida y la puesta del sol se calculan, el codigo de la OMM sale del
+     * simbolo y el viento pasa de m/s a km/h. No da probabilidad de lluvia
+     * (queda null: el sitio usa los milimetros). La maxima y la minima de hoy
+     * solo se dan si el pronostico cubre el dia desde la madrugada; si no,
+     * quedan null (y {@link #keepDay} conserva las de Open-Meteo).
+     */
+    static Forecast parseMet(JsonNode root, double lat, double lon, Instant now) {
+        List<JsonNode> steps = new ArrayList<>();
+        List<Instant> times = new ArrayList<>();
+        for (JsonNode s : root.path("properties").path("timeseries")) {
+            if (!s.path("data").path("instant").path("details").path("air_temperature").isNumber()
+                    || !s.path("data").path("next_1_hours").isObject()) {
+                continue;
+            }
+            steps.add(s.path("data"));
+            times.add(Instant.parse(s.path("time").asText()));
+        }
+        if (steps.isEmpty()) {
+            throw new IllegalArgumentException("Respuesta sin pasos por hora");
+        }
+        int start = 0;
+        for (int i = 0; i < times.size(); i++) {
+            if (!times.get(i).isAfter(now)) {
+                start = i;
+            }
+        }
+        List<Hour> hours = new ArrayList<>();
+        for (int i = start; i < steps.size() && hours.size() < HOURS; i++) {
+            hours.add(metHour(steps.get(i), times.get(i), lat, lon));
+        }
+
+        Hour first = hours.get(0);
+        JsonNode details = steps.get(start).path("instant").path("details");
+        // Como Open-Meteo: la hora de "ahora" es el comienzo del cuarto de hora en curso.
+        LocalDateTime local = LocalDateTime.ofInstant(now, BUENOS_AIRES).truncatedTo(ChronoUnit.MINUTES);
+        String nowTime = local.withMinute(local.getMinute() / 15 * 15).format(LOCAL_TIME);
+        Current current = new Current(nowTime, first.temperature(), first.feelsLike(), first.code(), first.isDay(),
+                first.rain(), first.wind(),
+                details.path("relative_humidity").isNumber()
+                        ? (int) Math.round(details.path("relative_humidity").asDouble()) : null);
+
+        LocalDate today = local.toLocalDate();
+        String date = today.toString();
+        Double max = null;
+        Double min = null;
+        Double uvMax = null;
+        Integer rainChanceMax = null;
+        List<Hour> todayHours = hours.stream().filter(h -> h.time().startsWith(date)).toList();
+        if (!todayHours.isEmpty() && Integer.parseInt(todayHours.get(0).time().substring(11, 13)) <= 6) {
+            max = todayHours.stream().mapToDouble(Hour::temperature).max().orElseThrow();
+            min = todayHours.stream().mapToDouble(Hour::temperature).min().orElseThrow();
+        }
+        for (int i = start; i < steps.size(); i++) {
+            if (!localTime(times.get(i)).startsWith(date)) {
+                continue;
+            }
+            JsonNode uv = steps.get(i).path("instant").path("details").path("ultraviolet_index_clear_sky");
+            if (uv.isNumber()) {
+                uvMax = uvMax == null ? uv.asDouble() : Math.max(uvMax, uv.asDouble());
+            }
+        }
+        for (Hour h : todayHours) {
+            if (h.rainChance() != null) {
+                rainChanceMax = rainChanceMax == null ? h.rainChance() : Math.max(rainChanceMax, h.rainChance());
+            }
+        }
+        Instant[] sun = sunTimes(today, lat, lon);
+        Instant[] sunTomorrow = sunTimes(today.plusDays(1), lat, lon);
+        Day day = new Day(max, min, sun == null ? null : localTime(sun[0]), sun == null ? null : localTime(sun[1]),
+                uvMax, rainChanceMax, sunTomorrow == null ? null : localTime(sunTomorrow[0]));
+        return new Forecast(lat, lon, current, List.copyOf(hours), day, now);
+    }
+
+    /** Un paso de una hora de MET Norway. */
+    private static Hour metHour(JsonNode data, Instant time, double lat, double lon) {
+        JsonNode d = data.path("instant").path("details");
+        JsonNode next = data.path("next_1_hours");
+        double temperature = d.path("air_temperature").asDouble();
+        double windMs = d.path("wind_speed").asDouble(0);
+        Double humidity = d.path("relative_humidity").isNumber() ? d.path("relative_humidity").asDouble() : null;
+        double feelsLike = d.path("apparent_air_temperature").isNumber()
+                ? d.path("apparent_air_temperature").asDouble() : apparent(temperature, humidity, windMs);
+        String symbol = next.path("summary").path("symbol_code").asText("");
+        JsonNode chance = next.path("details").path("probability_of_precipitation");
+        return new Hour(localTime(time), temperature, feelsLike,
+                chance.isNumber() ? (int) Math.round(chance.asDouble()) : null,
+                next.path("details").path("precipitation_amount").asDouble(0), wmo(symbol),
+                Math.round(windMs * 36) / 10.0, isDay(symbol, time, lat, lon));
+    }
+
+    /**
+     * El simbolo de MET Norway ("lightrainshowers_day") como codigo de tiempo
+     * de la OMM, el que usa el sitio para el icono. Uno desconocido, nublado.
+     */
+    static int wmo(String symbol) {
+        String base = symbol.replaceAll("_(day|night|polartwilight)$", "");
+        if (base.contains("thunder")) {
+            return 95;
+        }
+        return switch (base) {
+            case "clearsky" -> 0;
+            case "fair" -> 1;
+            case "partlycloudy" -> 2;
+            case "fog" -> 45;
+            case "lightrain" -> 61;
+            case "rain" -> 63;
+            case "heavyrain" -> 65;
+            case "lightrainshowers" -> 80;
+            case "rainshowers" -> 81;
+            case "heavyrainshowers" -> 82;
+            case "lightsleet", "lightsleetshowers" -> 66;
+            case "sleet", "heavysleet", "sleetshowers", "heavysleetshowers" -> 67;
+            case "lightsnow" -> 71;
+            case "snow" -> 73;
+            case "heavysnow" -> 75;
+            case "lightsnowshowers", "snowshowers" -> 85;
+            case "heavysnowshowers" -> 86;
+            default -> 3;
+        };
+    }
+
+    /** De dia segun el simbolo; si el simbolo no lo dice (nublado, lluvia), segun el sol. */
+    private static boolean isDay(String symbol, Instant time, double lat, double lon) {
+        if (symbol.endsWith("_night")) {
+            return false;
+        }
+        if (symbol.endsWith("_day") || symbol.endsWith("_polartwilight")) {
+            return true;
+        }
+        Instant[] sun = sunTimes(LocalDate.ofInstant(time, BUENOS_AIRES), lat, lon);
+        return sun != null && !time.isBefore(sun[0]) && time.isBefore(sun[1]);
+    }
+
+    /** Sensacion termica (la formula de Steadman, la misma de Open-Meteo), si MET Norway no la da. */
+    static double apparent(double temperature, Double humidity, double windMs) {
+        if (humidity == null) {
+            return temperature;
+        }
+        double vapour = humidity / 100 * 6.105 * Math.exp(17.27 * temperature / (237.7 + temperature));
+        return Math.round((temperature + 0.33 * vapour - 0.70 * windMs - 4.00) * 10) / 10.0;
+    }
+
+    /**
+     * Salida y puesta del sol de un dia (la ecuacion de la salida del sol, con
+     * la refraccion y el tamaño del disco), o null si ese dia no sale o no se
+     * pone. Da lo mismo que Open-Meteo con un minuto de diferencia.
+     */
+    static Instant[] sunTimes(LocalDate date, double lat, double lon) {
+        long n = date.toEpochDay() - LocalDate.of(2000, 1, 1).toEpochDay();
+        double jStar = n - lon / 360.0;
+        double m = Math.toRadians((357.5291 + 0.98560028 * jStar) % 360);
+        double c = 1.9148 * Math.sin(m) + 0.0200 * Math.sin(2 * m) + 0.0003 * Math.sin(3 * m);
+        double lambda = Math.toRadians((Math.toDegrees(m) + c + 180 + 102.9372) % 360);
+        double transit = 2451545.0 + jStar + 0.0053 * Math.sin(m) - 0.0069 * Math.sin(2 * lambda);
+        double declination = Math.asin(Math.sin(lambda) * Math.sin(Math.toRadians(23.4397)));
+        double phi = Math.toRadians(lat);
+        double cosW = (Math.sin(Math.toRadians(-0.833)) - Math.sin(phi) * Math.sin(declination))
+                / (Math.cos(phi) * Math.cos(declination));
+        if (cosW < -1 || cosW > 1) {
+            return null;
+        }
+        double half = Math.toDegrees(Math.acos(cosW)) / 360.0;
+        return new Instant[]{julian(transit - half), julian(transit + half)};
+    }
+
+    private static Instant julian(double day) {
+        return Instant.ofEpochMilli(Math.round((day - 2440587.5) * 86_400_000L));
+    }
+
+    /** "2026-11-14T13:00": la hora de Buenos Aires, redondeada al minuto, como la da Open-Meteo. */
+    static String localTime(Instant time) {
+        return LocalDateTime.ofInstant(time.plusSeconds(30), BUENOS_AIRES).truncatedTo(ChronoUnit.MINUTES)
+                .format(LOCAL_TIME);
+    }
+
+    /**
+     * Si el pronostico nuevo no trae la maxima y la minima de hoy (MET Norway
+     * solo pronostica de ahora en adelante) y el anterior de la misma celda si,
+     * del mismo dia, se conservan las de antes (y el UV maximo), ampliadas con
+     * las horas nuevas.
+     */
+    static Forecast keepDay(Forecast fresh, Forecast old) {
+        Day d = fresh.today();
+        Day before = old == null ? null : old.today();
+        if (d == null || d.max() != null || before == null || before.max() == null || before.min() == null
+                || d.sunrise() == null || before.sunrise() == null
+                || !d.sunrise().regionMatches(0, before.sunrise(), 0, 10)) {
+            return fresh;
+        }
+        String date = d.sunrise().substring(0, 10);
+        double max = before.max();
+        double min = before.min();
+        for (Hour h : fresh.hours()) {
+            if (h.time().startsWith(date)) {
+                max = Math.max(max, h.temperature());
+                min = Math.min(min, h.temperature());
+            }
+        }
+        Day merged = new Day(max, min, d.sunrise(), d.sunset(), before.uvMax() != null ? before.uvMax() : d.uvMax(),
+                before.rainChanceMax() != null ? before.rainChanceMax() : d.rainChanceMax(), d.sunriseTomorrow());
+        return new Forecast(fresh.latitude(), fresh.longitude(), fresh.current(), fresh.hours(), merged,
+                fresh.updatedAt());
     }
 
     private static Double number(JsonNode node) {

@@ -47,7 +47,8 @@ public class WeatherAlertController {
 
     /**
      * GET /api/v1/clima/pronostico?lat=..&lon=..: ahora, las proximas 24 horas
-     * y el dia de hoy (Open-Meteo), para la celda de unos 5 km del punto.
+     * y el dia de hoy (Open-Meteo o, de respaldo, MET Norway), para la celda de
+     * unos 5 km del punto.
      * Solo puntos del AMBA.
      */
     @GetMapping("/pronostico")

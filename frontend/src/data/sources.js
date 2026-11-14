@@ -204,6 +204,14 @@ export const SOURCE_GROUPS = [
         when: { every: '45 min' },
       },
       {
+        what: 'Pronóstico del clima (respaldo)',
+        source: 'MET Norway, Instituto Meteorológico de Noruega (datos con licencia CC BY 4.0)',
+        url: 'https://api.met.no/',
+        detail:
+          'Si Open-Meteo no responde, el pronóstico hora por hora sale de acá. No da probabilidad de lluvia, así que se usan los milímetros.',
+        when: { every: '45 min' },
+      },
+      {
         what: 'Alertas meteorológicas',
         source: 'Servicio Meteorológico Nacional (feed CAP)',
         url: 'https://www.smn.gob.ar/alertas',

@@ -91,7 +91,7 @@ con APIs públicas, pruebas, integración continua y despliegue.
   (RFC 8291) y la firma VAPID (RFC 8292) están hechos con lo que trae Java y probados con el ejemplo del RFC. Política de privacidad
   propia y borrado de la cuenta desde el sitio.
 - Aeropuertos: cómo llegar en colectivo y cuántos aviones están aterrizando o despegando en ese momento.
-- **Tu día**: pronóstico hora por hora (Open-Meteo) para la zona elegida, con la ubicación redondeada a unos 5 km.
+- **Tu día**: pronóstico hora por hora (Open-Meteo, con MET Norway de respaldo) para la zona elegida, con la ubicación redondeada a unos 5 km.
 - Cuadro tarifario completo del AMBA y simulador del descuento Red SUBE.
 - Formulario de contacto que llega por mail (Brevo), con freno por IP, tope diario, campo trampa para bots y, con la
   sesión iniciada, los datos de la cuenta.
@@ -116,7 +116,7 @@ flowchart LR
     B --> SMN[SMN<br>alertas CAP]
     B --> TT[TomTom Traffic]
     B --> AD[adsb.lol<br>aviones]
-    B --> OM[Open-Meteo<br>pronóstico]
+    B --> OM[Open-Meteo y MET Norway<br>pronóstico]
     B --> GR[Georef<br>direcciones]
     B --> BR[Brevo<br>mails]
     B --> WP[Servicios de avisos<br>Web Push]
@@ -184,7 +184,7 @@ flowchart LR
 | Alertas meteorológicas | [Servicio Meteorológico Nacional](https://www.smn.gob.ar/alertas) |
 | Tránsito en los accesos | [TomTom Traffic](https://www.tomtom.com/products/traffic-apis/) |
 | Aviones en vivo | [adsb.lol](https://adsb.lol/) (ODbL) |
-| Pronóstico (Tu día) | [Open-Meteo](https://open-meteo.com/) (CC BY 4.0) |
+| Pronóstico (Tu día) | [Open-Meteo](https://open-meteo.com/) (CC BY 4.0) y, de respaldo, [MET Norway](https://api.met.no/) (CC BY 4.0) |
 | Direcciones | [Georef](https://datosgobar.github.io/georef-ar-api/) (datos.gob.ar) |
 | Tarifas | [Red SUBE](https://www.argentina.gob.ar/redsube/tarifas-de-transporte-publico-amba) |
 | Horarios y accesibilidad del subte | [Emova](https://emova.com.ar/) |
@@ -203,7 +203,7 @@ ba-transit/
 │       │   ├── live/         datos en tiempo real (subte, colectivos, EcoBici)
 │       │   ├── colectivos/   feed GTFS de colectivos
 │       │   ├── accesos/      tránsito en autopistas (TomTom)
-│       │   ├── clima/        alertas del SMN (CAP) y pronóstico (Open-Meteo)
+│       │   ├── clima/        alertas del SMN (CAP) y pronóstico (Open-Meteo y MET Norway)
 │       │   ├── vuelos/       aviones en vivo (adsb.lol)
 │       │   ├── cuentas/      cuentas de usuario, sesiones y favoritos
 │       │   ├── direcciones/  búsqueda de direcciones (Georef)

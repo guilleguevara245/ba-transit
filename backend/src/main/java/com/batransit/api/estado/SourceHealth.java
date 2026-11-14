@@ -43,7 +43,7 @@ public class SourceHealth {
         CORTES_CIUDAD("Cortes de tránsito", "Noticias del Gobierno de la Ciudad"),
         METROVIAS("Estado del Urquiza", "Metrovías"),
         SMN("Alertas meteorológicas", "Servicio Meteorológico Nacional"),
-        PRONOSTICO("Pronóstico del clima", "Open-Meteo"),
+        PRONOSTICO("Pronóstico del clima", "Open-Meteo, con MET Norway de respaldo"),
         GEOREF("Búsqueda de direcciones (Mis lugares y Cómo llegar)", "Georef (datos.gob.ar)"),
         TOMTOM("Tránsito en los accesos", "TomTom"),
         ADSB_LOL("Aviones en vivo", "adsb.lol"),

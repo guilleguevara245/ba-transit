@@ -99,8 +99,8 @@ const THIRD_PARTIES = [
 /** Servicios que consulta el servidor: el navegador no se conecta con ellos. */
 const SERVER_SERVICES = [
   {
-    who: 'Open-Meteo',
-    why: 'El pronóstico del clima, pedido con una zona de unos 5 km. No reciben tu IP ni tu ubicación.',
+    who: 'Open-Meteo y MET Norway',
+    why: 'El pronóstico del clima, pedido con una zona de unos 5 km (a MET Norway solo si Open-Meteo no responde). No reciben tu IP ni tu ubicación.',
   },
   {
     who: 'Georef (direcciones del Estado nacional)',

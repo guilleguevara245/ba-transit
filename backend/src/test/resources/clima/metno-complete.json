@@ -1,0 +1,653 @@
+{
+ "type": "Feature",
+ "geometry": {
+  "type": "Point",
+  "coordinates": [
+   -58.4,
+   -34.6,
+   35
+  ]
+ },
+ "properties": {
+  "meta": {
+   "updated_at": "2026-11-14T13:18:47Z"
+  },
+  "timeseries": [
+   {
+    "time": "2026-11-14T16:00:00Z",
+    "data": {
+     "instant": {
+      "details": {
+       "air_temperature": 26.5,
+       "apparent_air_temperature": 27.5,
+       "relative_humidity": 56.6,
+       "ultraviolet_index_clear_sky": 10.6,
+       "wind_speed": 4.1
+      }
+     },
+     "next_1_hours": {
+      "summary": {
+       "symbol_code": "lightrainshowers_day"
+      },
+      "details": {
+       "precipitation_amount": 0.1
+      }
+     }
+    }
+   },
+   {
+    "time": "2026-11-14T17:00:00Z",
+    "data": {
+     "instant": {
+      "details": {
+       "air_temperature": 28.1,
+       "apparent_air_temperature": 28.7,
+       "relative_humidity": 48.3,
+       "ultraviolet_index_clear_sky": 9.1,
+       "wind_speed": 4.1
+      }
+     },
+     "next_1_hours": {
+      "summary": {
+       "symbol_code": "lightrainshowers_day"
+      },
+      "details": {
+       "precipitation_amount": 0.1
+      }
+     }
+    }
+   },
+   {
+    "time": "2026-11-14T18:00:00Z",
+    "data": {
+     "instant": {
+      "details": {
+       "air_temperature": 28.5,
+       "apparent_air_temperature": 29,
+       "relative_humidity": 46.4,
+       "ultraviolet_index_clear_sky": 6.7,
+       "wind_speed": 4.6
+      }
+     },
+     "next_1_hours": {
+      "summary": {
+       "symbol_code": "fair_day"
+      },
+      "details": {
+       "precipitation_amount": 0
+      }
+     }
+    }
+   },
+   {
+    "time": "2026-11-14T19:00:00Z",
+    "data": {
+     "instant": {
+      "details": {
+       "air_temperature": 28,
+       "apparent_air_temperature": 28.6,
+       "relative_humidity": 48.7,
+       "ultraviolet_index_clear_sky": 4.1,
+       "wind_speed": 5.5
+      }
+     },
+     "next_1_hours": {
+      "summary": {
+       "symbol_code": "fair_day"
+      },
+      "details": {
+       "precipitation_amount": 0
+      }
+     }
+    }
+   },
+   {
+    "time": "2026-11-14T20:00:00Z",
+    "data": {
+     "instant": {
+      "details": {
+       "air_temperature": 27.3,
+       "apparent_air_temperature": 27.5,
+       "relative_humidity": 45,
+       "ultraviolet_index_clear_sky": 1.9,
+       "wind_speed": 5.9
+      }
+     },
+     "next_1_hours": {
+      "summary": {
+       "symbol_code": "clearsky_day"
+      },
+      "details": {
+       "precipitation_amount": 0
+      }
+     }
+    }
+   },
+   {
+    "time": "2026-11-14T21:00:00Z",
+    "data": {
+     "instant": {
+      "details": {
+       "air_temperature": 26.6,
+       "apparent_air_temperature": 26.8,
+       "relative_humidity": 44.1,
+       "ultraviolet_index_clear_sky": 0.6,
+       "wind_speed": 6.3
+      }
+     },
+     "next_1_hours": {
+      "summary": {
+       "symbol_code": "clearsky_day"
+      },
+      "details": {
+       "precipitation_amount": 0
+      }
+     }
+    }
+   },
+   {
+    "time": "2026-11-14T22:00:00Z",
+    "data": {
+     "instant": {
+      "details": {
+       "air_temperature": 25.9,
+       "apparent_air_temperature": 25.9,
+       "relative_humidity": 46,
+       "ultraviolet_index_clear_sky": 0.1,
+       "wind_speed": 5.1
+      }
+     },
+     "next_1_hours": {
+      "summary": {
+       "symbol_code": "clearsky_day"
+      },
+      "details": {
+       "precipitation_amount": 0
+      }
+     }
+    }
+   },
+   {
+    "time": "2026-11-14T23:00:00Z",
+    "data": {
+     "instant": {
+      "details": {
+       "air_temperature": 25.3,
+       "apparent_air_temperature": 25.3,
+       "relative_humidity": 48.1,
+       "ultraviolet_index_clear_sky": 0,
+       "wind_speed": 4.1
+      }
+     },
+     "next_1_hours": {
+      "summary": {
+       "symbol_code": "clearsky_night"
+      },
+      "details": {
+       "precipitation_amount": 0
+      }
+     }
+    }
+   },
+   {
+    "time": "2026-11-15T00:00:00Z",
+    "data": {
+     "instant": {
+      "details": {
+       "air_temperature": 25,
+       "apparent_air_temperature": 25,
+       "relative_humidity": 51.1,
+       "ultraviolet_index_clear_sky": 0,
+       "wind_speed": 3.4
+      }
+     },
+     "next_1_hours": {
+      "summary": {
+       "symbol_code": "fair_night"
+      },
+      "details": {
+       "precipitation_amount": 0
+      }
+     }
+    }
+   },
+   {
+    "time": "2026-11-15T01:00:00Z",
+    "data": {
+     "instant": {
+      "details": {
+       "air_temperature": 24.3,
+       "apparent_air_temperature": 24.3,
+       "relative_humidity": 55.6,
+       "ultraviolet_index_clear_sky": 0,
+       "wind_speed": 5.1
+      }
+     },
+     "next_1_hours": {
+      "summary": {
+       "symbol_code": "clearsky_night"
+      },
+      "details": {
+       "precipitation_amount": 0
+      }
+     }
+    }
+   },
+   {
+    "time": "2026-11-15T02:00:00Z",
+    "data": {
+     "instant": {
+      "details": {
+       "air_temperature": 23,
+       "apparent_air_temperature": 23,
+       "relative_humidity": 60.3,
+       "ultraviolet_index_clear_sky": 0,
+       "wind_speed": 6.1
+      }
+     },
+     "next_1_hours": {
+      "summary": {
+       "symbol_code": "clearsky_night"
+      },
+      "details": {
+       "precipitation_amount": 0
+      }
+     }
+    }
+   },
+   {
+    "time": "2026-11-15T03:00:00Z",
+    "data": {
+     "instant": {
+      "details": {
+       "air_temperature": 22,
+       "apparent_air_temperature": 22,
+       "relative_humidity": 64.7,
+       "ultraviolet_index_clear_sky": 0,
+       "wind_speed": 5
+      }
+     },
+     "next_1_hours": {
+      "summary": {
+       "symbol_code": "clearsky_night"
+      },
+      "details": {
+       "precipitation_amount": 0
+      }
+     }
+    }
+   },
+   {
+    "time": "2026-11-15T04:00:00Z",
+    "data": {
+     "instant": {
+      "details": {
+       "air_temperature": 21.2,
+       "apparent_air_temperature": 21.2,
+       "relative_humidity": 68.2,
+       "ultraviolet_index_clear_sky": 0,
+       "wind_speed": 4.1
+      }
+     },
+     "next_1_hours": {
+      "summary": {
+       "symbol_code": "clearsky_night"
+      },
+      "details": {
+       "precipitation_amount": 0
+      }
+     }
+    }
+   },
+   {
+    "time": "2026-11-15T05:00:00Z",
+    "data": {
+     "instant": {
+      "details": {
+       "air_temperature": 20.3,
+       "apparent_air_temperature": 20.3,
+       "relative_humidity": 72.8,
+       "ultraviolet_index_clear_sky": 0,
+       "wind_speed": 4.6
+      }
+     },
+     "next_1_hours": {
+      "summary": {
+       "symbol_code": "clearsky_night"
+      },
+      "details": {
+       "precipitation_amount": 0
+      }
+     }
+    }
+   },
+   {
+    "time": "2026-11-15T06:00:00Z",
+    "data": {
+     "instant": {
+      "details": {
+       "air_temperature": 19.4,
+       "apparent_air_temperature": 19.4,
+       "relative_humidity": 78,
+       "ultraviolet_index_clear_sky": 0,
+       "wind_speed": 4.6
+      }
+     },
+     "next_1_hours": {
+      "summary": {
+       "symbol_code": "clearsky_night"
+      },
+      "details": {
+       "precipitation_amount": 0
+      }
+     }
+    }
+   },
+   {
+    "time": "2026-11-15T07:00:00Z",
+    "data": {
+     "instant": {
+      "details": {
+       "air_temperature": 18.6,
+       "apparent_air_temperature": 18.6,
+       "relative_humidity": 82.8,
+       "ultraviolet_index_clear_sky": 0,
+       "wind_speed": 4.4
+      }
+     },
+     "next_1_hours": {
+      "summary": {
+       "symbol_code": "clearsky_night"
+      },
+      "details": {
+       "precipitation_amount": 0
+      }
+     }
+    }
+   },
+   {
+    "time": "2026-11-15T08:00:00Z",
+    "data": {
+     "instant": {
+      "details": {
+       "air_temperature": 17.9,
+       "apparent_air_temperature": 17.9,
+       "relative_humidity": 86.9,
+       "ultraviolet_index_clear_sky": 0,
+       "wind_speed": 4.2
+      }
+     },
+     "next_1_hours": {
+      "summary": {
+       "symbol_code": "clearsky_night"
+      },
+      "details": {
+       "precipitation_amount": 0
+      }
+     }
+    }
+   },
+   {
+    "time": "2026-11-15T09:00:00Z",
+    "data": {
+     "instant": {
+      "details": {
+       "air_temperature": 17.5,
+       "apparent_air_temperature": 17.5,
+       "relative_humidity": 89.2,
+       "ultraviolet_index_clear_sky": 0.1,
+       "wind_speed": 4.2
+      }
+     },
+     "next_1_hours": {
+      "summary": {
+       "symbol_code": "clearsky_day"
+      },
+      "details": {
+       "precipitation_amount": 0
+      }
+     }
+    }
+   },
+   {
+    "time": "2026-11-15T10:00:00Z",
+    "data": {
+     "instant": {
+      "details": {
+       "air_temperature": 18.3,
+       "apparent_air_temperature": 18.3,
+       "relative_humidity": 85.8,
+       "ultraviolet_index_clear_sky": 0.6,
+       "wind_speed": 4.2
+      }
+     },
+     "next_1_hours": {
+      "summary": {
+       "symbol_code": "fair_day"
+      },
+      "details": {
+       "precipitation_amount": 0
+      }
+     }
+    }
+   },
+   {
+    "time": "2026-11-15T11:00:00Z",
+    "data": {
+     "instant": {
+      "details": {
+       "air_temperature": 19.7,
+       "apparent_air_temperature": 19.7,
+       "relative_humidity": 80.7,
+       "ultraviolet_index_clear_sky": 1.9,
+       "wind_speed": 4.4
+      }
+     },
+     "next_1_hours": {
+      "summary": {
+       "symbol_code": "partlycloudy_day"
+      },
+      "details": {
+       "precipitation_amount": 0
+      }
+     }
+    }
+   },
+   {
+    "time": "2026-11-15T12:00:00Z",
+    "data": {
+     "instant": {
+      "details": {
+       "air_temperature": 20.7,
+       "apparent_air_temperature": 20.7,
+       "relative_humidity": 75.1,
+       "ultraviolet_index_clear_sky": 4.2,
+       "wind_speed": 3.8
+      }
+     },
+     "next_1_hours": {
+      "summary": {
+       "symbol_code": "cloudy"
+      },
+      "details": {
+       "precipitation_amount": 0
+      }
+     }
+    }
+   },
+   {
+    "time": "2026-11-15T13:00:00Z",
+    "data": {
+     "instant": {
+      "details": {
+       "air_temperature": 22,
+       "apparent_air_temperature": 22,
+       "relative_humidity": 68.4,
+       "ultraviolet_index_clear_sky": 7,
+       "wind_speed": 3.1
+      }
+     },
+     "next_1_hours": {
+      "summary": {
+       "symbol_code": "cloudy"
+      },
+      "details": {
+       "precipitation_amount": 0
+      }
+     }
+    }
+   },
+   {
+    "time": "2026-11-15T14:00:00Z",
+    "data": {
+     "instant": {
+      "details": {
+       "air_temperature": 22.2,
+       "apparent_air_temperature": 22.2,
+       "relative_humidity": 69.1,
+       "ultraviolet_index_clear_sky": 9.6,
+       "wind_speed": 3.8
+      }
+     },
+     "next_1_hours": {
+      "summary": {
+       "symbol_code": "partlycloudy_day"
+      },
+      "details": {
+       "precipitation_amount": 0
+      }
+     }
+    }
+   },
+   {
+    "time": "2026-11-15T15:00:00Z",
+    "data": {
+     "instant": {
+      "details": {
+       "air_temperature": 22.6,
+       "apparent_air_temperature": 22.6,
+       "relative_humidity": 70.7,
+       "ultraviolet_index_clear_sky": 11.1,
+       "wind_speed": 3.8
+      }
+     },
+     "next_1_hours": {
+      "summary": {
+       "symbol_code": "fair_day"
+      },
+      "details": {
+       "precipitation_amount": 0
+      }
+     }
+    }
+   },
+   {
+    "time": "2026-11-15T16:00:00Z",
+    "data": {
+     "instant": {
+      "details": {
+       "air_temperature": 23.1,
+       "apparent_air_temperature": 23.1,
+       "relative_humidity": 65.1,
+       "ultraviolet_index_clear_sky": 11.1,
+       "wind_speed": 3.4
+      }
+     },
+     "next_1_hours": {
+      "summary": {
+       "symbol_code": "clearsky_day"
+      },
+      "details": {
+       "precipitation_amount": 0
+      }
+     }
+    }
+   },
+   {
+    "time": "2026-11-15T17:00:00Z",
+    "data": {
+     "instant": {
+      "details": {
+       "air_temperature": 24.3,
+       "apparent_air_temperature": 24.3,
+       "relative_humidity": 57.8,
+       "ultraviolet_index_clear_sky": 9.7,
+       "wind_speed": 3.6
+      }
+     },
+     "next_1_hours": {
+      "summary": {
+       "symbol_code": "clearsky_day"
+      },
+      "details": {
+       "precipitation_amount": 0
+      }
+     }
+    }
+   },
+   {
+    "time": "2026-11-15T18:00:00Z",
+    "data": {
+     "instant": {
+      "details": {
+       "air_temperature": 24.4,
+       "apparent_air_temperature": 24.4,
+       "relative_humidity": 60.7,
+       "ultraviolet_index_clear_sky": 7.2,
+       "wind_speed": 4.3
+      }
+     },
+     "next_1_hours": {
+      "summary": {
+       "symbol_code": "clearsky_day"
+      },
+      "details": {
+       "precipitation_amount": 0
+      }
+     }
+    }
+   },
+   {
+    "time": "2026-11-15T19:00:00Z",
+    "data": {
+     "instant": {
+      "details": {
+       "air_temperature": 24.2,
+       "apparent_air_temperature": 24.2,
+       "relative_humidity": 63.5,
+       "ultraviolet_index_clear_sky": 4.4,
+       "wind_speed": 5.1
+      }
+     },
+     "next_1_hours": {
+      "summary": {
+       "symbol_code": "clearsky_day"
+      },
+      "details": {
+       "precipitation_amount": 0
+      }
+     }
+    }
+   },
+   {
+    "time": "2026-11-17T06:00:00Z",
+    "data": {
+     "instant": {
+      "details": {
+       "air_temperature": 18,
+       "wind_speed": 3
+      }
+     },
+     "next_6_hours": {
+      "summary": {
+       "symbol_code": "rain"
+      },
+      "details": {
+       "precipitation_amount": 2.0
+      }
+     }
+    }
+   }
+  ]
+ }
+}
