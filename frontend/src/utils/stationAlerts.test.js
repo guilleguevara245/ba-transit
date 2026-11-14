@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { mentionsStation, splitAlertsForStation, stationAliases } from './stationAlerts.js'
+import { mentionsStation, noticeKind, splitAlertsForStation, stationAliases } from './stationAlerts.js'
 
 const B = ['Leandro N. Alem', 'Florida', 'Carlos Pellegrini', 'Medrano', 'Ángel Gallardo']
 
@@ -65,5 +65,13 @@ describe('splitAlertsForStation con ramales', () => {
     expect(splitAlertsForStation(alerts, { stationName: 'Tapiales' }, names, [7, 8]).line.map((a) => a.id)).toEqual([1, 2])
     // Sin los ramales de la estacion, como antes.
     expect(splitAlertsForStation(alerts, { stationName: 'Tapiales' }, names).line.map((a) => a.id)).toEqual([1, 2])
+  })
+})
+
+describe('noticeKind', () => {
+  it('cerrada, aviso positivo o precaucion', () => {
+    expect(noticeKind({ type: 'OBRA', description: 'Independencia y Lavalle cerradas por obras.' })).toBe('closed')
+    expect(noticeKind({ type: 'AVISO', description: 'Noche de los Museos: la estación Perú abre hasta las 3.' })).toBe('info')
+    expect(noticeKind({ type: 'DEMORA', description: 'Demoras en la estación Medrano.' })).toBe('warning')
   })
 })

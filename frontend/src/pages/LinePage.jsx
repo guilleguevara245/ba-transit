@@ -14,8 +14,9 @@ import NetworkMap from '../components/NetworkMap.jsx'
 import { LiveTrainsLegend } from '../components/LiveTrainCard.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { useLiveTrains } from '../hooks/useLiveTrains.js'
-import { MODE_LABELS, MODE_LABELS_PLURAL, MODE_SLUGS } from '../constants.js'
-import { mentionsStation } from '../utils/stationAlerts.js'
+import NoticeMark from '../components/NoticeMark.jsx'
+import { ALERT_TYPE_LABELS, MODE_LABELS, MODE_LABELS_PLURAL, MODE_SLUGS } from '../constants.js'
+import { NOTICE_LABELS, mentionsStation, noticeKind } from '../utils/stationAlerts.js'
 import { findLine, lineSlug, stationPath } from '../utils/lineSlug.js'
 import '../components/Panels.css'
 import './LinePage.css'
@@ -59,17 +60,21 @@ function BranchStations({ branch, line, selected, onSelect, locatedIds, alerts =
                 className={classes.join(' ')}
                 onClick={located ? () => onSelect(station.id) : undefined}
               >
-                <span className="station-dot"></span>
-                <span className="station-name">{station.name}</span>
                 {(() => {
-                  // Aviso que nombra a esta estacion (por ejemplo, "Estacion Medrano cerrada").
+                  // Aviso que nombra a esta estacion (por ejemplo, "Estacion Medrano cerrada"): en lugar
+                  // del punto, la cruz (cerrada), el triangulo o la "i" (aviso positivo), y la etiqueta.
                   const notice = alerts.find((a) => mentionsStation(`${a.title ?? ''} ${a.description ?? ''}`, station.name))
-                  if (!notice) return null
-                  const closed = /cerrad/i.test(notice.description ?? '')
+                  const kind = notice ? noticeKind(notice) : null
                   return (
-                    <span className={closed ? 'station-flag-mini closed' : 'station-flag-mini'}>
-                      {closed ? 'Cerrada' : 'Aviso'}
-                    </span>
+                    <>
+                      {kind ? <NoticeMark kind={kind} className="station-notice-mark" /> : <span className="station-dot"></span>}
+                      <span className="station-name">{station.name}</span>
+                      {kind && (
+                        <span className={`station-flag-mini ${kind}`}>
+                          {NOTICE_LABELS[kind] ?? ALERT_TYPE_LABELS[notice.type] ?? 'Aviso'}
+                        </span>
+                      )}
+                    </>
                   )
                 })()}
                 {isSelected && located && (

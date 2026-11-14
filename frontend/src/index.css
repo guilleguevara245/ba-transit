@@ -658,3 +658,61 @@ body {
     border-left: 1px solid var(--line);
   }
 }
+
+/*
+ * Marca de una estacion con aviso (NoticeMark), en la lista de la linea y
+ * en el mapa: cerrada, circulo rojo con cruz; precaucion, triangulo
+ * amarillo; aviso positivo, circulo gris oscuro con una "i".
+ */
+.notice-mark {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.notice-mark svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.notice-mark .mark {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.notice-mark-closed .bg {
+  fill: #c0262d;
+  stroke: #ffffff;
+  stroke-width: 2;
+}
+
+.notice-mark-closed .mark {
+  stroke: #ffffff;
+  stroke-width: 2.6;
+}
+
+.notice-mark-warning .bg {
+  fill: #f4c11b;
+  stroke: #17171a;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.notice-mark-warning .mark {
+  stroke: #17171a;
+  stroke-width: 2.4;
+}
+
+.notice-mark-info .bg {
+  fill: #4a4842;
+  stroke: #ffffff;
+  stroke-width: 2;
+}
+
+.notice-mark-info .mark {
+  stroke: #ffffff;
+  stroke-width: 2.6;
+}

@@ -235,6 +235,20 @@
   color: var(--interrupted);
 }
 
+/* Aviso positivo (por ejemplo, horario extendido): gris, sin alarma. */
+.station-flag-mini.info {
+  background: var(--line);
+  color: var(--text-dim);
+}
+
+/* La marca de aviso en lugar del punto: un poco mas grande, en el mismo eje de la linea. */
+.station-notice-mark {
+  width: 18px;
+  height: 18px;
+  margin: 0 -3px;
+  z-index: 1;
+}
+
 /* Margen arriba al subir hasta el mapa desde la lista (celular). */
 .line-minimap-wrap {
   scroll-margin-top: 12px;

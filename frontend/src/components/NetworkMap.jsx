@@ -7,7 +7,7 @@ import StationPopup from './StationPopup.jsx'
 import { readableTextColor } from '../utils/color.js'
 import { buildRoutes } from '../utils/map.js'
 import { MODE_PATHS } from '../utils/modePaths.js'
-import { mentionsStation } from '../utils/stationAlerts.js'
+import { mentionsStation, noticeKind, noticeMarkHtml } from '../utils/stationAlerts.js'
 import './NetworkMap.css'
 
 // Centro aproximado de CABA, para cuando no hay estaciones que encuadrar.
@@ -16,8 +16,9 @@ const ZOOM = 12
 const FOCUS_ZOOM = 15
 /**
  * Con el mapa mas lejos que esto, las estaciones con aviso van como un
- * punto con borde naranja (o rojo si estan cerradas) en lugar del
- * triangulo: muchos triangulos juntos tapaban el centro del mapa.
+ * punto con borde naranja (o rojo si estan cerradas; los avisos positivos,
+ * sin borde) en lugar de su marca: muchas marcas juntas tapaban el centro
+ * del mapa.
  */
 const WARNING_ICON_ZOOM = 13
 
@@ -27,21 +28,21 @@ const toLatLng = (s) => [Number(s.latitude), Number(s.longitude)]
  * Senal de precaucion (triangulo amarillo con "!") que reemplaza al punto
  * de las estaciones con un aviso propio. Mas grande si esta enfocada.
  */
-const warningIcon = (focused) => {
+const noticeIcon = (kind, focused) => {
   const size = focused ? 28 : 22
   return divIcon({
-    className: focused ? 'station-warning focused' : 'station-warning',
-    html: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5 1.5 21h21L12 2.5z"/><path class="mark" d="M12 9v5.5M12 17.6v.1"/></svg>',
+    className: focused ? 'station-notice focused' : 'station-notice',
+    html: noticeMarkHtml(kind),
     iconSize: [size, size],
     // Centrado en la estacion, como el punto al que reemplaza.
-    iconAnchor: [size / 2, size * 0.62],
+    iconAnchor: [size / 2, size / 2],
     popupAnchor: [0, -size * 0.55],
   })
 }
 
 /**
  * Estaciones nombradas en alertas de su linea ("Estacion Medrano
- * cerrada"): { [stationId]: { closed, text } }.
+ * cerrada"): { [stationId]: { kind } } (ver noticeKind).
  */
 function stationNotices(stations, alerts) {
   const notices = {}
@@ -52,7 +53,7 @@ function stationNotices(stations, alerts) {
         a.transportLineId === station.lineId &&
         mentionsStation(`${a.title ?? ''} ${a.description ?? ''}`, station.stationName),
     )
-    if (alert) notices[station.stationId] = { closed: /cerrad/i.test(alert.description ?? ''), text: alert.description }
+    if (alert) notices[station.stationId] = { kind: noticeKind(alert) }
   }
   return notices
 }
@@ -229,17 +230,16 @@ export default function NetworkMap({
             <StationPopup station={station} stations={allStations} alerts={alerts} mode={station.lineMode} />
           </Popup>
         )
-        // Estacion con aviso propio (por ejemplo, cerrada): la senal de precaucion en lugar del punto
-        // (de lejos, el punto con borde naranja o rojo).
+        // Estacion con aviso propio: en lugar del punto, la cruz roja (cerrada), el triangulo o la
+        // "i" (aviso positivo). De lejos, el punto con borde rojo o naranja (el positivo, sin borde).
         if (notice && (zoom >= WARNING_ICON_ZOOM || isFocused)) {
           return (
             <Marker
               key={station.stationId}
               ref={ref}
               position={toLatLng(station)}
-              icon={warningIcon(isFocused)}
-              title={notice.text}
-              alt={notice.closed ? 'Estación cerrada' : 'Aviso en la estación'}
+              icon={noticeIcon(notice.kind, isFocused)}
+              alt={{ closed: 'Estación cerrada', info: 'Aviso en la estación', warning: 'Precaución en la estación' }[notice.kind]}
               zIndexOffset={1000}
               eventHandlers={handlers}
             >
@@ -247,7 +247,7 @@ export default function NetworkMap({
             </Marker>
           )
         }
-        const ring = notice ? (notice.closed ? '#d62828' : '#f07314') : null
+        const ring = notice ? { closed: '#d62828', warning: '#f07314' }[notice.kind] ?? null : null
         return (
           <CircleMarker
             key={station.stationId}
