@@ -25,7 +25,6 @@ export default function FavoriteButton({ kind = 'lineas', id, name, lineId, line
       className={['favorite-button', active && 'active', compact && 'compact'].filter(Boolean).join(' ')}
       aria-pressed={active}
       aria-label={label}
-      title={label}
       onClick={(event) => {
         // Dentro de una tarjeta-enlace, la estrella no debe navegar.
         event.preventDefault()

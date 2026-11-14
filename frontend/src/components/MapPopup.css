@@ -398,18 +398,45 @@
 
 /* ---- Tarjeta generica (MapCard) ---- */
 
-/* Boton chico arriba a la derecha (la estrella), antes de la cruz de cerrar. */
+/*
+ * La estrella, arriba a la derecha junto a la cruz de cerrar y del mismo
+ * tamaño (24px, en la esquina del contenedor: el contenido tiene 14px de
+ * margen arriba, 16px a los costados y 1px de relleno). La fila de arriba
+ * deja lugar para las dos.
+ */
 .station-popup-action {
-  display: inline-flex;
-  margin: -6px 22px -6px auto;
+  position: absolute;
+  top: -15px;
+  right: 9px;
+  z-index: 2;
+}
+
+/* Con encabezado de color, el margen negativo de la fila de arriba sube la tarjeta hasta el borde. */
+.station-popup.has-header .station-popup-action {
+  top: 0;
+}
+
+.station-popup .station-popup-line:has(> .station-popup-action),
+.station-popup.has-header .station-popup-line:has(> .station-popup-action) {
+  padding-right: 44px;
+}
+
+.station-popup-action .favorite-button {
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  color: var(--text-dim);
+}
+
+.station-popup-action .favorite-button:hover {
+  border: 0;
+  transform: scale(1.15);
 }
 
 .station-popup.has-header .station-popup-action .favorite-button {
   color: inherit;
-}
-
-.station-popup.has-header .station-popup-action .favorite-button:hover {
-  border-color: color-mix(in srgb, currentColor 35%, transparent);
 }
 
 /* Guardada, sobre el encabezado de color: blanca con borde oscuro (amarilla no se veria). */
