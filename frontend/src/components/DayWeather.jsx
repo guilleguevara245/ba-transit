@@ -182,7 +182,7 @@ function Commute({ trip, wet }) {
         <PlaceIcon tipo="trabajo" size="sm" />
       </span>
       <span className="dw-commute-text">
-        <strong>De casa al trabajo ≈ {formatDuration(trip.minutes)}</strong>
+        <strong>De casa al trabajo: {formatDuration(trip.minutes)}</strong>
         <small>{notes.join(' · ')}</small>
         {wet && <small className="dw-commute-wet">Con lluvia puede haber demoras: salí unos minutos antes.</small>}
       </span>

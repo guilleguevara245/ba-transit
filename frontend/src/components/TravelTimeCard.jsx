@@ -73,7 +73,7 @@ export default function TravelTimeCard({ line, stations }) {
         <p className="travel-result-empty">Elegí dos estaciones distintas.</p>
       ) : (
         <p className="travel-result">
-          <strong>≈ {formatDuration(trip.minutes)}</strong>
+          <strong>{formatDuration(trip.minutes)}</strong>
           <span>
             {trip.stops} {trip.stops === 1 ? 'estación' : 'estaciones'} · {trip.km.toFixed(1).replace('.', ',')} km
           </span>

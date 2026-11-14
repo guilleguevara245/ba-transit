@@ -39,7 +39,7 @@ function SegmentCard({ segment }) {
         <i />
         {label}
       </div>
-      {delay != null && <div className="map-card-delay">≈ {delay} min de demora en este tramo</div>}
+      {delay != null && <div className="map-card-delay">{delay} min de demora en este tramo</div>}
       {segment.currentSpeed != null && (
         <>
           <div className="map-card-stats">

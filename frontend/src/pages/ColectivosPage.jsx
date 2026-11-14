@@ -197,7 +197,7 @@ function RouteDetail({ routeId, line, headsign, initialDirection, initialStop })
             </div>
             {totalMinutes != null && (
               <div className="bus-total">
-                Recorrido completo: <strong>≈ {formatDuration(totalMinutes)}</strong>
+                Recorrido completo: <strong>{formatDuration(totalMinutes)}</strong>
                 <span> según el horario del feed</span>
               </div>
             )}

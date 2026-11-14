@@ -318,7 +318,7 @@ export default function StationPage() {
                 {lastTrains.map((t) => (
                   <li key={t.towards}>
                     <span>Hacia {t.towards}</span>
-                    <strong>≈ {t.time}</strong>
+                    <strong>{t.time}</strong>
                   </li>
                 ))}
               </ul>

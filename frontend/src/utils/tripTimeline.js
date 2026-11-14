@@ -92,15 +92,15 @@ function segmentText(leg) {
   const time = duration(leg.minutes)
   const stops = `${leg.stops} ${leg.stops === 1 ? 'estación' : 'estaciones'}`
   // Con un tren real, el viaje dura lo que dice su horario.
-  if (leg.type === 'ride') return leg.train ? `${stops} · ${time}` : `${stops} · ≈ ${time}`
-  if (leg.type === 'walk') return `Caminá unos ${leg.meters} m hasta ${leg.to.stationName} · ≈ ${time} con la espera`
-  if (leg.type === 'branch') return `Esperá el tren del otro ramal · ≈ ${time}`
+  if (leg.type === 'ride') return leg.train ? `${stops} · ${time}` : `${stops} · ${time}`
+  if (leg.type === 'walk') return `Caminá unos ${leg.meters} m hasta ${leg.to.stationName} · ${time} con la espera`
+  if (leg.type === 'branch') return `Esperá el tren del otro ramal · ${time}`
   if (leg.type === 'access') {
     const walk = `Caminá unos ${distance(leg.km)} hasta ${leg.to.stationName}`
-    if (leg.wait >= 1) return `${walk} · ≈ ${duration(leg.minutes - leg.wait)} y ${duration(leg.wait)} de espera`
-    return `${walk} · ≈ ${time}`
+    if (leg.wait >= 1) return `${walk} · ${duration(leg.minutes - leg.wait)} y ${duration(leg.wait)} de espera`
+    return `${walk} · ${time}`
   }
-  return `Caminá unos ${distance(leg.km)} · ≈ ${time}`
+  return `Caminá unos ${distance(leg.km)} · ${time}`
 }
 
 /**

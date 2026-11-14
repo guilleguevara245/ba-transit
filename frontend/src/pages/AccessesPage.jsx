@@ -264,7 +264,7 @@ function TrafficSummary({ accesses }) {
                   {p.segment}
                   {p.towards ? `, hacia ${p.towards}` : ''}
                   {p.currentSpeed != null ? ` · ${p.currentSpeed} km/h` : ''}
-                  {p.delay != null ? ` · ≈ ${p.delay} min de demora` : ''}
+                  {p.delay != null ? ` · ${p.delay} min de demora` : ''}
                 </span>
               </span>
               <StatusPill status={p.status} />

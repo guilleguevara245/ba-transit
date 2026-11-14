@@ -58,10 +58,10 @@ describe('tripTimeline', () => {
   it('describe cada tramo', () => {
     const segments = items.filter((i) => i.type === 'segment').map((i) => i.text)
     expect(segments).toEqual([
-      'Caminá unos 600 m hasta Ituzaingó · ≈ 11 min',
-      '11 estaciones · ≈ 45 min',
-      'Caminá unos 167 m hasta Once - 30 de Diciembre · ≈ 6 min con la espera',
-      '1 estación · ≈ 1 min',
+      'Caminá unos 600 m hasta Ituzaingó · 11 min',
+      '11 estaciones · 45 min',
+      'Caminá unos 167 m hasta Once - 30 de Diciembre · 6 min con la espera',
+      '1 estación · 1 min',
     ])
   })
 
@@ -72,7 +72,7 @@ describe('tripTimeline', () => {
     ]
     const list = tripTimeline(legs)
     expect(list[2]).toMatchObject({ name: 'Once', text: 'Bajá y seguí a pie', out: 'walk' })
-    expect(list[3].text).toBe('Caminá unos 1,2 km · ≈ 21 min')
+    expect(list[3].text).toBe('Caminá unos 1,2 km · 21 min')
     expect(list[4]).toMatchObject({ kind: 'end', address: true, name: 'Martín Rodríguez 800', at: 66 })
   })
 
@@ -96,7 +96,7 @@ describe('tripStrip', () => {
       { type: 'ride', from: ONCE, to: ITU, towards: ITU, stops: 3, minutes: 9 },
     ]
     expect(tripStrip(legs)).toHaveLength(1)
-    expect(tripTimeline(legs)[3]).toMatchObject({ track: 'wait', text: 'Esperá el tren del otro ramal · ≈ 4 min' })
+    expect(tripTimeline(legs)[3]).toMatchObject({ track: 'wait', text: 'Esperá el tren del otro ramal · 4 min' })
   })
 })
 
@@ -117,7 +117,7 @@ describe('con los trenes de Trenes Argentinos', () => {
     expect(stops[1].train).toMatchObject({ platform: '2' })
     expect(stops[1].towards).toBe('Once')
     const segments = items.filter((i) => i.type === 'segment').map((i) => i.text)
-    expect(segments[0]).toBe('Caminá unos 600 m hasta Ituzaingó · ≈ 11 min y 9 min de espera')
+    expect(segments[0]).toBe('Caminá unos 600 m hasta Ituzaingó · 11 min y 9 min de espera')
     expect(segments[1]).toBe('11 estaciones · 42 min')
   })
 

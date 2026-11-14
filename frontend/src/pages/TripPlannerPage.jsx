@@ -468,12 +468,12 @@ export default function TripPlannerPage() {
             <div className="planner-result">
               <div className="planner-summary">
                 <div>
-                  <strong>≈ {formatDuration(totalMinutes)}</strong>
+                  <strong>{formatDuration(totalMinutes)}</strong>
                   <span>
                     {plan.transfers === 0
                       ? 'Sin combinaciones'
                       : `${plan.transfers} ${plan.transfers === 1 ? 'combinación' : 'combinaciones'}`}{' '}
-                    · si salís ahora, llegás ≈{' '}
+                    · si salís ahora, llegás a las{' '}
                     {clockText(new Date(now.getTime() + totalMinutes * 60_000), clock.formato)}
                   </span>
                 </div>

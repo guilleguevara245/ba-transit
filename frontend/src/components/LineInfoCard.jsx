@@ -62,7 +62,7 @@ export default function LineInfoCard({ line, stations, branches = [], allLines =
                 <BothWays />
                 {b.to}
                 {b.via && <span className="info-sub inline"> ({b.via})</span>}
-                <span className="info-sub inline"> · ≈ {Math.round(b.km)} km</span>
+                <span className="info-sub inline"> · {Math.round(b.km)} km</span>
               </span>
             ))}
           </Row>
