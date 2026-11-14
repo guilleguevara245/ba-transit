@@ -212,7 +212,8 @@
 .my-bus-moving .live-dot,
 .live-count .live-dot {
   flex-shrink: 0;
-  margin-left: 0;
+  /* Lugar para la onda, que crece alrededor del punto. */
+  margin: 0 2px 0 3px;
 }
 
 /* Con el punto al lado, los puntos suspensivos van en el texto (en el celular "1 colectivo en viv" se cortaba). */
