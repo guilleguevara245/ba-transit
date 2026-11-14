@@ -67,7 +67,7 @@ function BranchStations({ branch, line, selected, onSelect, locatedIds, alerts =
                   if (!notice) return null
                   const closed = /cerrad/i.test(notice.description ?? '')
                   return (
-                    <span className={closed ? 'station-flag-mini closed' : 'station-flag-mini'} title={notice.description}>
+                    <span className={closed ? 'station-flag-mini closed' : 'station-flag-mini'}>
                       {closed ? 'Cerrada' : 'Aviso'}
                     </span>
                   )
