@@ -149,6 +149,12 @@
   white-space: nowrap;
 }
 
+/* "Datos no disponibles en este momento." entero: en el celular baja de renglon en vez de cortarse. */
+.my-place-text small.no-data {
+  align-items: flex-start;
+  white-space: normal;
+}
+
 /* Celular: todas las tarjetas a lo ancho, una debajo de la otra. */
 @media (max-width: 600px) {
   .my-line-card {

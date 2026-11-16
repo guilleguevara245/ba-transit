@@ -1,5 +1,6 @@
 import LiveBusesMap from '../components/LiveBusesMap.jsx'
 import UpdatedAt from '../components/UpdatedAt.jsx'
+import NoData from '../components/NoData.jsx'
 import MyBuses from '../components/MyBuses.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import ModeIcon from '../components/ModeIcon.jsx'
@@ -230,6 +231,11 @@ function RouteDetail({ routeId, line, headsign, initialDirection, initialStop })
             />
           )}
         </div>
+      )}
+
+      {/* La API en vivo no responde: se avisa (no es que no haya colectivos). */}
+      {!live.loading && ((live.data && !live.data.available) || (!live.data && live.error)) && (
+        <NoData className="bus-live" />
       )}
 
       <div className="bus-layout">

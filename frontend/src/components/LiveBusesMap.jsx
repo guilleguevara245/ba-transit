@@ -8,6 +8,7 @@ import MapCard from './MapCard.jsx'
 import UpdatedAt from './UpdatedAt.jsx'
 import { useApi } from '../hooks/useApi.js'
 import Skeleton from './Skeleton.jsx'
+import NoData from './NoData.jsx'
 import { useFavoriteList } from '../hooks/useFavoriteList.js'
 import { busFavoriteId, headsignName, movingLabel } from '../utils/busNames.js'
 import '../pages/EcobiciPage.css'
@@ -54,7 +55,17 @@ export default function LiveBusesMap({ onSelectRoute }) {
   const showIcons = view.zoom >= ICON_ZOOM && view.bounds
 
   if (loading) return <Skeleton variant="map" label="Cargando colectivos en vivo…" />
-  if (!data?.available) return null
+  if (!data?.available) {
+    // La API en vivo no responde: en vez del mapa vacio, el aviso.
+    return (
+      <section className="live-buses" aria-label="Colectivos en movimiento">
+        <div className="live-buses-head">
+          <span className="section-label live-buses-title">Colectivos en movimiento ahora</span>
+        </div>
+        <NoData className="live-buses-down" />
+      </section>
+    )
+  }
 
   const counts = {}
   for (const bus of data.buses) {

@@ -27,6 +27,12 @@ public class BusPositionsController {
     static final Duration MAX_AGE = Duration.ofSeconds(20);
     /** Posiciones mas viejas que esto se descartan (colectivo fuera de servicio o sin GPS). */
     static final long MAX_POSITION_AGE_SECONDS = 10 * 60;
+    /**
+     * Si la API no responde hace mas que esto, la ultima respuesta guardada ya no sirve: sus posiciones
+     * quedaron viejas y todas las lineas parecerian sin colectivos.
+     */
+    static final Duration MAX_STALE = Duration.ofMinutes(3);
+    static final String FEED = "/colectivos/vehiclePositionsSimple";
 
     /**
      * otherRoute: de la misma linea (mismo cartel) pero con otro route_id, por
@@ -76,12 +82,35 @@ public class BusPositionsController {
      */
     @GetMapping("/vivo")
     public MovingResponse moving() {
-        Optional<Fetched> feed = client.get("/colectivos/vehiclePositionsSimple", MAX_AGE);
+        Optional<Fetched> feed = usableFeed(client);
         if (feed.isEmpty()) {
             return new MovingResponse(false, null, List.of());
         }
         return new MovingResponse(true, feed.get().fetchedAt(),
                 movingOf(feed.get().body(), Instant.now().getEpochSecond()));
+    }
+
+    /**
+     * Las posiciones de todos los colectivos, si sirven. Vacio (sin datos, no "ningun colectivo") si la
+     * API no responde hace un rato, o si responde pero sin ninguna posicion reciente (vacia, o con el
+     * feed trabado): que no haya colectivos en ninguna linea es una falla de la carga, no la realidad.
+     */
+    static Optional<Fetched> usableFeed(TransporteLiveClient client) {
+        return client.get(FEED, MAX_AGE).filter(feed -> usable(feed, Instant.now()));
+    }
+
+    static boolean usable(Fetched feed, Instant now) {
+        if (feed.fetchedAt().plus(MAX_STALE).isBefore(now)) {
+            return false;
+        }
+        long nowEpochSeconds = now.getEpochSecond();
+        for (JsonNode v : feed.body()) {
+            long timestamp = v.path("timestamp").asLong(0);
+            if (timestamp <= 0 || nowEpochSeconds - timestamp <= MAX_POSITION_AGE_SECONDS) {
+                return true;
+            }
+        }
+        return false;
     }
 
     static List<MovingBus> movingOf(JsonNode feed, long nowEpochSeconds) {
@@ -111,7 +140,7 @@ public class BusPositionsController {
     @GetMapping("/vivo/lineas")
     public LineCountsResponse movingByLine(@org.springframework.web.bind.annotation.RequestParam(name = "lineas", required = false) String lines) {
         List<String> wanted = parseLines(lines);
-        Optional<Fetched> feed = wanted.isEmpty() ? Optional.empty() : client.get("/colectivos/vehiclePositionsSimple", MAX_AGE);
+        Optional<Fetched> feed = wanted.isEmpty() ? Optional.empty() : usableFeed(client);
         if (feed.isEmpty()) {
             return new LineCountsResponse(false, null, List.of());
         }
@@ -149,7 +178,7 @@ public class BusPositionsController {
     @GetMapping("/{routeId}/vivo")
     public VehiclesResponse vehicles(@PathVariable String routeId,
                                      @org.springframework.web.bind.annotation.RequestParam(name = "numero", required = false) String line) {
-        Optional<Fetched> feed = client.get("/colectivos/vehiclePositionsSimple", MAX_AGE);
+        Optional<Fetched> feed = usableFeed(client);
         if (feed.isEmpty()) {
             return new VehiclesResponse(false, null, List.of());
         }

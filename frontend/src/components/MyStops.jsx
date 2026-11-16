@@ -2,6 +2,7 @@ import { Fragment } from 'react'
 import { Link } from 'react-router-dom'
 import BusIcon from './BusIcon.jsx'
 import FavoriteButton from './FavoriteButton.jsx'
+import NoData from './NoData.jsx'
 import { ArrivingTag, ClockIcon } from './NextTrains.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { useFavoriteList } from '../hooks/useFavoriteList.js'
@@ -65,8 +66,7 @@ function StopRow({ id, inPanel, favoriteBuses }) {
   if (data) rememberStop(id, data)
 
   const gone = String(error ?? '').includes('respondió 404')
-  // El servidor todavia no tiene los colectivos (503): se muestra lo ultimo que se supo de la parada.
-  const notReady = String(error ?? '').includes('respondió 503')
+  // Si no hay respuesta (el servidor todavia no tiene los colectivos, 503): lo ultimo que se supo de la parada.
   const known = data ?? (gone ? null : knownStops()[id])
   const line = known?.line
   const name = known ? stopName(known.stopName) : gone ? 'Parada que ya no está en el recorrido' : 'Parada'
@@ -105,9 +105,11 @@ function StopRow({ id, inPanel, favoriteBuses }) {
 
   let status
   if (!data) {
-    status = loading ? <small>Buscando…</small> : notReady ? <small>Sin datos por ahora</small> : null
+    // Sin respuesta (el servidor todavia no tiene los colectivos o no contesta): falla de la carga.
+    status = loading ? <small>Buscando…</small> : error && !gone ? <NoData as="small" /> : null
   } else if (!data.live) {
-    status = <small>Sin datos en vivo</small>
+    // La API en vivo no responde: no es que no venga ninguno.
+    status = <NoData as="small" />
   } else if (!next) {
     status = <small>Ninguno en camino</small>
   } else {

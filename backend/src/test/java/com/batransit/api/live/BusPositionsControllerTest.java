@@ -116,4 +116,27 @@ class BusPositionsControllerTest {
         // Sin numero no se puede saber cual es la misma linea: solo los del id.
         assertThat(BusPositionsController.vehiclesOf(feed, "500", NOW)).extracting(Vehicle::id).containsExactly("1");
     }
+
+    @Test
+    void unaRespuestaSinPosicionesRecientesOViejaNoSirve() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        java.time.Instant now = java.time.Instant.ofEpochSecond(NOW);
+        var fresh = mapper.readTree("""
+                [{"route_id": "764", "latitude": -34.7, "longitude": -58.3, "timestamp": 1776120000, "id": "1"},
+                 {"route_id": "100", "latitude": -34.6, "longitude": -58.4, "timestamp": 1776129290, "id": "2"}]
+                """);
+        var stuck = mapper.readTree("""
+                [{"route_id": "764", "latitude": -34.7, "longitude": -58.3, "timestamp": 1776120000, "id": "1"}]
+                """);
+
+        assertThat(BusPositionsController.usable(new TransporteLiveClient.Fetched(fresh, now.minusSeconds(30)), now))
+                .isTrue();
+        // Responde vacia, o con todas las posiciones viejas (el feed trabado): es una falla, no "ningun colectivo".
+        assertThat(BusPositionsController.usable(new TransporteLiveClient.Fetched(mapper.readTree("[]"), now), now))
+                .isFalse();
+        assertThat(BusPositionsController.usable(new TransporteLiveClient.Fetched(stuck, now), now)).isFalse();
+        // La API no responde hace rato: la ultima respuesta guardada ya no sirve.
+        assertThat(BusPositionsController.usable(new TransporteLiveClient.Fetched(fresh,
+                now.minus(BusPositionsController.MAX_STALE).minusSeconds(1)), now)).isFalse();
+    }
 }

@@ -608,3 +608,9 @@
   font-weight: 700;
   line-height: 1.35;
 }
+
+/* "Datos no disponibles en este momento." en lugar del mapa de los colectivos en movimiento. */
+.live-buses-down {
+  font-size: 13px;
+  color: var(--text-dim);
+}

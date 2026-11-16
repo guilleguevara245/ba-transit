@@ -1,0 +1,17 @@
+/* "Datos no disponibles en este momento.": la fuente no respondio. Nube tachada gris, sin el triangulo de advertencia (el servicio anda, falta el dato). */
+.no-data {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.no-data-icon {
+  width: 1.25em;
+  height: 1.25em;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

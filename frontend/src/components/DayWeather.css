@@ -244,8 +244,8 @@
   stroke-linejoin: round;
 }
 
-/* De noche: el cielo oscuro de fondo y el texto claro (en los dos temas). */
-.day-weather.dw-night {
+/* De noche, en el modo oscuro: el cielo oscuro de fondo y el texto claro. En el modo claro queda blanca, como el resto del sitio. */
+:root[data-theme='dark'] .day-weather.dw-night {
   --text: #f5f4ef;
   --text-dim: rgba(245, 244, 239, 0.82);
   --text-faint: rgba(245, 244, 239, 0.62);
@@ -258,21 +258,21 @@
   border-top-color: var(--yellow);
 }
 
-.dw-night .dw-tone-rain,
-.dw-night .dw-tone-storm,
-.dw-night .dw-hour span.dw-wet {
+:root[data-theme='dark'] .dw-night .dw-tone-rain,
+:root[data-theme='dark'] .dw-night .dw-tone-storm,
+:root[data-theme='dark'] .dw-night .dw-hour span.dw-wet {
   color: #9cc6f0;
 }
 
-.dw-night .dw-tone-heat {
+:root[data-theme='dark'] .dw-night .dw-tone-heat {
   color: #f6a58f;
 }
 
-.dw-night .dw-link {
+:root[data-theme='dark'] .dw-night .dw-link {
   color: var(--yellow);
 }
 
-.dw-night .dw-switch button.on {
+:root[data-theme='dark'] .dw-night .dw-switch button.on {
   background: rgba(244, 193, 27, 0.18);
 }
 
@@ -385,7 +385,7 @@
   color: var(--delayed);
 }
 
-.dw-night .dw-commute-text .dw-commute-wet {
+:root[data-theme='dark'] .dw-night .dw-commute-text .dw-commute-wet {
   color: #f6c177;
 }
 

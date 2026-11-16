@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import Chevrons from './Chevrons.jsx'
 import FavoriteButton from './FavoriteButton.jsx'
+import NoData from './NoData.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { useFavoriteList } from '../hooks/useFavoriteList.js'
 import { alertsForBus, busTitle, movingLabel } from '../utils/busNames.js'
@@ -24,6 +25,8 @@ export default function MyBuses({ inPanel = false }) {
 
   const countOf = (line) =>
     counts.data?.available ? (counts.data.lines.find((l) => l.line === line)?.moving ?? 0) : null
+  // La API en vivo no responde (no es que no haya ninguno en movimiento): la nube tachada.
+  const countsDown = !counts.loading && ((counts.data && !counts.data.available) || (!counts.data && counts.error))
 
   const cards = ids.map((line) => {
     const title = busTitle({ shortName: line })
@@ -49,6 +52,7 @@ export default function MyBuses({ inPanel = false }) {
                   <span className="my-bus-moving-text">{movingLabel(moving)}</span>
                 </small>
               )}
+              {countsDown && <NoData as="small" />}
             </span>
           </Link>
           {lineAlerts.length > 0 && (

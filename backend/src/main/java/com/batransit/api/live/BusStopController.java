@@ -82,7 +82,7 @@ public class BusStopController {
         lines.add(route.shortName());
         others.keySet().forEach(r -> lines.add(r.shortName()));
 
-        Optional<Fetched> feed = client.get("/colectivos/vehiclePositionsSimple", BusPositionsController.MAX_AGE);
+        Optional<Fetched> feed = BusPositionsController.usableFeed(client);
         if (feed.isEmpty()) {
             return new StopResponse(route.id(), route.shortName(), directionId, direction.headsign(), stop.id(),
                     stop.name(), false, null, List.of(), lines);
